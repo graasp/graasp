@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { FASTIFY_LOGGER_DI_KEY } from '../src/di/constants';
 import { registerValue } from '../src/di/utils';
+import { client } from '../src/drizzle/db';
 
 registerValue(FASTIFY_LOGGER_DI_KEY, console);
 
@@ -9,3 +10,5 @@ jest.mock('../src/services/item/plugins/publication/published/plugins/search/mei
 
 // some tests are flacky and need to be retested
 // jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
+client.connect();

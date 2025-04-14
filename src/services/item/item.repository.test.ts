@@ -86,14 +86,6 @@ const itemRawRepository = {
 };
 
 describe('Item Repository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
-  afterAll(() => {
-    client.end();
-  });
-
   describe('checkHierarchyDepth', () => {
     it('depth is acceptable', async () => {
       const {
@@ -680,11 +672,16 @@ describe('Item Repository', () => {
       } = await seedFromJson({ actor: null, members: [{}] });
       const data = { name: 'name', type: ItemType.FOLDER };
 
-      await itemRepository.addOne(db, { item: data, creator: new MemberDTO(member).toMinimal() });
-      const newItem = (await db.select().from(items).where(eq(items.name, data.name))).at(0);
-      expect(newItem!.name).toEqual(data.name);
-      expect(newItem!.type).toEqual(data.type);
-      expect(newItem!.creatorId).toEqual(member.id);
+      const newItem = await itemRepository.addOne(db, {
+        item: data,
+        creator: new MemberDTO(member).toMinimal(),
+      });
+      const newItemInDb = await db.query.itemsRawTable.findFirst({
+        where: eq(items.id, newItem.id),
+      });
+      expect(newItemInDb!.name).toEqual(data.name);
+      expect(newItemInDb!.type).toEqual(data.type);
+      expect(newItemInDb!.creatorId).toEqual(member.id);
     });
     it('post successfully with parent item', async () => {
       const {
@@ -693,17 +690,19 @@ describe('Item Repository', () => {
       } = await seedFromJson({ members: [{}], items: [{}] });
       const data = { name: 'name-1', type: ItemType.S3_FILE };
 
-      await itemRepository.addOne(db, {
+      const newItem = await itemRepository.addOne(db, {
         item: data,
         creator: new MemberDTO(member).toMinimal(),
         parentItem: parentItem as FolderItem,
       });
-      const newItem = (await db.select().from(items).where(eq(items.name, data.name))).at(0);
+      const newItemInDb = await db.query.itemsRawTable.findFirst({
+        where: eq(items.id, newItem.id),
+      });
 
-      expect(newItem!.name).toEqual(data.name);
-      expect(newItem!.type).toEqual(data.type);
-      expect(newItem!.path).toContain(parentItem.path);
-      expect(newItem!.creatorId).toEqual(member.id);
+      expect(newItemInDb!.name).toEqual(data.name);
+      expect(newItemInDb!.type).toEqual(data.type);
+      expect(newItemInDb!.path).toContain(parentItem.path);
+      expect(newItemInDb!.creatorId).toEqual(member.id);
     });
   });
 

@@ -34,14 +34,9 @@ async function saveItemTag(args: { itemId: string; tagId: string }) {
 }
 
 describe('ItemTag Repository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
   afterAll(async () => {
     // less chaos if tag is wiped out
     await db.delete(tagsTable);
-    client.end();
   });
 
   describe('getCountBy', () => {

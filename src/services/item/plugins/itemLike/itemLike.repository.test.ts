@@ -11,14 +11,6 @@ import { ItemLikeRepository } from './itemLike.repository';
 const repository = new ItemLikeRepository();
 
 describe('ItemLike Repository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
-  afterAll(() => {
-    client.end();
-  });
-
   describe('getByItemIdId', () => {
     it('throw for invalid id', async () => {
       await expect(async () => await repository.getByItemId(db, undefined!)).rejects.toBeInstanceOf(

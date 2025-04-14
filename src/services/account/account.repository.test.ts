@@ -1,20 +1,13 @@
 import { v4 as uuidV4 } from 'uuid';
 
 import { seedFromJson } from '../../../test/mocks/seed';
-import { client, db } from '../../drizzle/db';
+import { db } from '../../drizzle/db';
 import { AccountRaw } from '../../drizzle/types';
 import { AccountDTO, AccountRepository } from './account.repository';
 
 const accountRepository = new AccountRepository();
 
 describe('AccountRepository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-  afterAll(() => {
-    client.end();
-  });
-
   describe('get', () => {
     it('get member', async () => {
       const {

@@ -41,7 +41,7 @@ export interface GraaspChatPluginOptions {
 const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastify) => {
   await fastify.register(fp(mentionPlugin));
 
-  const { websockets: websockets } = fastify;
+  const { websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const chatService = resolveDependency(ChatMessageService);

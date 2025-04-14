@@ -20,14 +20,6 @@ const getActionsByAccountId = async (accountId: string) => {
 };
 
 describe('Action Repository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
-  afterAll(() => {
-    client.end();
-  });
-
   describe('postMany', () => {
     it('save many actions', async () => {
       const actions = [ActionFactory(), ActionFactory(), ActionFactory(), ActionFactory()];

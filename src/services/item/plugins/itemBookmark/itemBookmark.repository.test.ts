@@ -32,14 +32,6 @@ async function prepareTest() {
 }
 
 describe('ItemBookmark Repository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
-  afterAll(() => {
-    client.end();
-  });
-
   describe('get', () => {
     it('returns favorite by id', async () => {
       const { favorites } = await prepareTest();

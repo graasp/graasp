@@ -6,14 +6,6 @@ import { ItemPublishedRepository } from './itemPublished.repository';
 const repository = new ItemPublishedRepository();
 
 describe('ItemPublishedRepository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
-  afterAll(() => {
-    client.end();
-  });
-
   describe('touchUpdatedAt', () => {
     it('undefined path throws', async () => {
       await expect(() =>

@@ -792,7 +792,8 @@ export class ItemService {
         dbConnection,
         item,
       );
-      await this.itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+      // this function is not a promise!
+      this.itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
     // post hook
@@ -919,7 +920,8 @@ export class ItemService {
         dbConnection,
         item,
       );
-      await this.itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+      // this function is not a promise!
+      this.itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
     // check how "big the tree is" below the item

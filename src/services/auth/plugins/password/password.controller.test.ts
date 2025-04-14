@@ -131,7 +131,7 @@ describe('Password', () => {
       });
       const pwd = 'MOCK_PASSWORD';
 
-      const { actor } = await seedFromJson({ actor: { password: await pwd } });
+      const { actor } = await seedFromJson({ actor: { password: pwd } });
       assertIsDefined(actor);
       assertIsMember(actor);
 
@@ -156,7 +156,7 @@ describe('Password', () => {
       });
       const pwd = 'MOCK_PASSWORD';
 
-      const { actor } = await seedFromJson({ actor: { password: await pwd } });
+      const { actor } = await seedFromJson({ actor: { password: pwd } });
       assertIsDefined(actor);
       assertIsMember(actor);
 

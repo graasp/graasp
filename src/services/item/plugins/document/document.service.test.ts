@@ -53,12 +53,6 @@ const documentService = new DocumentItemService(
 );
 
 describe('Document Service', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-  afterAll(() => {
-    client.end();
-  });
   afterEach(() => {
     jest.clearAllMocks();
   });

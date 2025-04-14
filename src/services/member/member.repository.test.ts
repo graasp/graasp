@@ -29,13 +29,6 @@ const expectMembersById = (
 };
 
 describe('MemberRepository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-  afterAll(() => {
-    client.end();
-  });
-
   describe('deleteOne', () => {
     it('delete member', async () => {
       const {

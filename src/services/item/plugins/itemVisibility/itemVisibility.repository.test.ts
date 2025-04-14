@@ -20,14 +20,6 @@ async function saveVisibility({
 }
 
 describe('getManyBelowAndSelf', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
-  afterAll(() => {
-    client.end();
-  });
-
   it('get empty', async () => {
     const {
       items: [item],

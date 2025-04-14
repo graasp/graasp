@@ -53,14 +53,6 @@ const saveItemWithChatMessagesAndMentionsAndNoise = async () => {
 };
 
 describe('ChatMentionRepository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
-  afterAll(() => {
-    client.end();
-  });
-
   describe('getForMember', () => {
     it('returns mentions for member', async () => {
       const { mentions, actor } = await saveItemWithChatMessagesAndMentionsAndNoise();

@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { TagCategory, TagFactory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../test/mocks/seed';
-import { client, db } from '../../drizzle/db';
+import { db } from '../../drizzle/db';
 import { tagsTable } from '../../drizzle/schema';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { TagRepository } from './tag.repository';
@@ -12,12 +12,6 @@ import { TagRepository } from './tag.repository';
 const repository = new TagRepository();
 
 describe('Tag Repository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-  afterAll(() => {
-    client.end();
-  });
   afterEach(async () => {
     // delete all tags to prevent adding duplicates
     await db.delete(tagsTable);

@@ -4,7 +4,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item, ItemGeolocationRaw } from '../../../../drizzle/types';
+import { Item, ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
@@ -39,7 +39,7 @@ export class ItemGeolocationService {
     this.geolocationKey = geolocationKey;
   }
 
-  async delete(dbConnection: DBConnection, member: MinimalMember, itemId: Item['id']) {
+  async delete(dbConnection: DBConnection, member: MinimalMember, itemId: ItemRaw['id']) {
     // check item exists and actor has permission
     const item = await this.basicItemService.get(
       dbConnection,
@@ -64,7 +64,7 @@ export class ItemGeolocationService {
     dbConnection: DBConnection,
     actor: MaybeUser,
     query: {
-      parentItemId?: Item['id'];
+      parentItemId?: ItemRaw['id'];
       lat1?: ItemGeolocationRaw['lat'];
       lat2?: ItemGeolocationRaw['lat'];
       lng1?: ItemGeolocationRaw['lng'];
@@ -72,7 +72,7 @@ export class ItemGeolocationService {
       keywords?: string[];
     },
   ): Promise<PackedItemGeolocation[]> {
-    let parentItem: Item | undefined;
+    let parentItem: ItemRaw | undefined;
     if (query.parentItemId) {
       parentItem = await this.basicItemService.get(dbConnection, actor, query.parentItemId);
     }
@@ -109,6 +109,7 @@ export class ItemGeolocationService {
         const itemIsAtLeastPublicOrInParent = itemId in itemMemberships.data && query.parentItemId;
         // otherwise the actor should have at least read permission on root
         const itemIsAtLeastReadable = itemMemberships.data[itemId];
+
         if (itemIsAtLeastPublicOrInParent || itemIsAtLeastReadable) {
           // and add permission for item packed
           // TODO optimize?
@@ -132,7 +133,7 @@ export class ItemGeolocationService {
   async put(
     dbConnection: DBConnection,
     member: MinimalMember,
-    itemId: Item['id'],
+    itemId: ItemRaw['id'],
     geolocation: Pick<ItemGeolocationRaw, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
   ) {

@@ -37,12 +37,6 @@ describe('DataMember Export', () => {
   //   itemOfRandomUser = await itemTestUtils.saveItem({ actor: randomUser });
   // });
 
-  beforeAll(async () => {
-    await client.connect();
-  });
-  afterAll(() => {
-    client.end();
-  });
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(db);

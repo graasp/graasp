@@ -60,12 +60,11 @@ describe('validatePermission', () => {
       jest
         .spyOn(itemMembershipRepository, 'getInherited')
         .mockImplementation(async (_db, _itemPath, memberId) => {
-          switch (memberId) {
-            case OWNER.id:
-              return ownerMembership;
-            default:
-              return null;
+          if (memberId === OWNER.id) {
+            return ownerMembership;
           }
+
+          return null;
         });
     });
 
@@ -412,12 +411,11 @@ describe('validatePermission', () => {
       jest
         .spyOn(itemMembershipRepository, 'getInherited')
         .mockImplementation(async (_db, _itemPath, memberId) => {
-          switch (memberId) {
-            case OWNER.id:
-              return ownerMembership;
-            default:
-              return null;
+          if (memberId === OWNER.id) {
+            return ownerMembership;
           }
+
+          return null;
         });
     });
     it(PermissionLevel.Read, async () => {
@@ -1089,12 +1087,11 @@ describe('validatePermission', () => {
       jest
         .spyOn(itemMembershipRepository, 'getInherited')
         .mockImplementation(async (_db, _itemPath, memberId) => {
-          switch (memberId) {
-            case OWNER.id:
-              return ownerMembership;
-            default:
-              return null;
+          if (memberId === OWNER.id) {
+            return ownerMembership;
           }
+
+          return null;
         });
     });
 

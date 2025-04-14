@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import { TagFactory } from '@graasp/sdk';
 
-import { client, db } from '../../../../drizzle/db';
+import { db } from '../../../../drizzle/db';
 import {
   ItemPublishedWithItemWithCreator,
   ItemWithCreator,
@@ -42,12 +42,6 @@ const itemTagService = new ItemTagService(
 );
 
 describe('Item Tag create', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-  afterAll(() => {
-    client.end();
-  });
   afterEach(() => {
     jest.clearAllMocks();
   });

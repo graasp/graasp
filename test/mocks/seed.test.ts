@@ -2,15 +2,6 @@ import { client } from '../../src/drizzle/db';
 import { seedFromJson } from './seed';
 
 describe('Seed', () => {
-  beforeAll(async () => {
-    // connect to Database
-    await client.connect();
-  });
-  afterAll(() => {
-    // close connection to db
-    client.end();
-  });
-
   it('Does not create an account', async () => {
     const { actor, items, itemMemberships, memberProfiles } = await seedFromJson({});
     expect(actor).toBeDefined();

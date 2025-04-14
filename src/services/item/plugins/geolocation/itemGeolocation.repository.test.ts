@@ -19,12 +19,7 @@ const getGeolocationByItemPath = async (itemPath) => {
 };
 
 describe('ItemGeolocationRepository', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-
   afterAll(async () => {
-    client.end();
     await clearDatabase(db);
   });
 
