@@ -7,7 +7,7 @@ import { MultipartFile } from '@fastify/multipart';
 import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../../../drizzle/db';
-import { AppSettingRaw, AppSettingWithItem, Item } from '../../../../../../../drizzle/types';
+import { AppSettingRaw, AppSettingWithItem, ItemRaw } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import FileService from '../../../../../../file/file.service';
 import { AppSettingRepository } from '../../appSetting.repository';
@@ -44,7 +44,7 @@ class AppSettingFileService {
     dbConnection: DBConnection,
     member: AuthenticatedUser,
     file: MultipartFile,
-    item: Item,
+    item: ItemRaw,
   ) {
     const { filename, mimetype, fields, file: stream } = file;
     const appSettingId = v4();
@@ -91,7 +91,7 @@ class AppSettingFileService {
   async download(
     dbConnection: DBConnection,
     account: AuthenticatedUser,
-    { item, appSettingId }: { item: Item; appSettingId: UUID },
+    { item, appSettingId }: { item: ItemRaw; appSettingId: UUID },
   ) {
     // get app setting and check it is a file
     const appSetting = await this.appSettingService.get(

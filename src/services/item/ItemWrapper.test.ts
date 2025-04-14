@@ -2,36 +2,16 @@ import { describe } from 'node:test';
 
 import { ItemVisibilityType } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../test/app';
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { DBConnection } from '../../drizzle/db';
-import { items } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMemberForTest } from '../authentication';
-import { AuthorizationService } from '../authorization';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
-import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { ItemWrapper, ItemWrapperService } from './ItemWrapper';
-import { BasicItemService } from './basic.service';
-import { ItemRepository } from './item.repository';
-import { ItemService } from './item.service';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
-
-// const itemThumbnailService = new ItemThumbnailService(
-//   {} as unknown as ItemService,
-//   {} as unknown as ThumbnailService,
-//   MOCK_LOGGER,
-// );
-// const itemPublishedRepository = {} as ItemPublishedRepository;
-
-// const itemWrapperService = new ItemWrapperService(
-//   itemVisibilityRepository,
-//   itemMembershipRepository,
-//   itemThumbnailService,
-// );
 
 describe('ItemWrapper', () => {
   describe('packed', () => {

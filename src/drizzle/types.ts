@@ -93,7 +93,6 @@ export type ItemInsertDTO = typeof itemsRawTable.$inferInsert;
  */
 export type ItemRaw = typeof items.$inferSelect;
 
-// TODO: RENAME
 /**
  * @deprecated use ItemRaw
  */

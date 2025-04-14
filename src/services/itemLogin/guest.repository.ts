@@ -6,17 +6,16 @@ import { UUID } from '@graasp/sdk';
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf } from '../../drizzle/operations';
 import { accountsTable, guestsView, itemLoginSchemasTable } from '../../drizzle/schema';
-import { GuestRaw, GuestWithItemLoginSchema, Item } from '../../drizzle/types';
+import { type GuestRaw, type GuestWithItemLoginSchema, type ItemRaw } from '../../drizzle/types';
 import { AccountType } from '../../types';
 
 @singleton()
 export class GuestRepository {
   async getForItemAndUsername(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     username: string,
   ): Promise<GuestWithItemLoginSchema | undefined> {
-    // TODO: use guestsView
     const res = await dbConnection
       .select()
       .from(guestsView)
@@ -48,11 +47,10 @@ export class GuestRepository {
       .values({ ...guestData, type: AccountType.Guest })
       .returning();
     const guest = res.at(0);
-    if (!res) {
+    if (!guest) {
       throw new Error('Could not find created entitiy');
     }
-    // FIXME: casting is ugly because db table schema allows nullables...
-    return { ...guest, type: AccountType.Guest } as GuestRaw;
+    return guest as GuestRaw;
   }
 
   async refreshLastAuthenticatedAt(dbConnection: DBConnection, id: UUID) {

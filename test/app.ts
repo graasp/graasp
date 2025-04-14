@@ -65,10 +65,6 @@ const build = async () => {
 
   await registerAppPlugins(app);
 
-  // TODO: find out how to clear the DB in drizzle
-  // drop all the database and synchronize schemas
-  // await db.(true);
-
   return { app };
 };
 

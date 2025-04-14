@@ -113,10 +113,7 @@ export class ItemPublishedService {
           })
           .build();
 
-        // TODO: does not seem efficient
-        const memberWithEmail = await this.memberRepository.get(dbConnection, member.id);
-
-        await this.mailerService.send(mail, memberWithEmail.email).catch((err) => {
+        await this.mailerService.send(mail, member.email).catch((err) => {
           this.log.warn(err, `mailerService failed. published link: ${link}`);
         });
       }

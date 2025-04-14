@@ -1,4 +1,3 @@
-import { client } from '../../src/drizzle/db';
 import { seedFromJson } from './seed';
 
 describe('Seed', () => {

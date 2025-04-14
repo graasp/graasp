@@ -6,7 +6,7 @@ import { MultipartFields, MultipartFile } from '@fastify/multipart';
 
 import { ItemGeolocation, ItemType, ItemTypeUnion, isChildOf } from '@graasp/sdk';
 
-import { Item, ItemRaw } from '../../drizzle/types';
+import { ItemRaw } from '../../drizzle/types';
 import { NoFileProvided } from '../../utils/errors';
 import { FolderItem, isItemType } from './discrimination';
 import { validateGeolocation, validateSettings } from './validation';
@@ -76,7 +76,7 @@ export const parseAndValidateField = <T>(
 export const getPostItemPayloadFromFormData = (
   formData: MultipartFile | undefined,
 ): {
-  item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+  item: Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>;
   geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> | undefined;
   thumbnail: Readable;
 } => {
@@ -110,7 +110,7 @@ export const getPostItemPayloadFromFormData = (
   const extraRaw = getFieldFromMultipartForm(formData.fields, 'extra');
 
   // validate nested objects
-  const settings = parseAndValidateField<Item['settings']>(settingsRaw, validateSettings);
+  const settings = parseAndValidateField<ItemRaw['settings']>(settingsRaw, validateSettings);
   // const extra = parseAndValidateField<Item['extra']>(extraRaw);
   // TODO: extra is not validated
   const extra = extraRaw ? JSON.parse(extraRaw) : undefined;

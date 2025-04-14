@@ -12,7 +12,7 @@ import {
   membersView,
   recycledItemDatasTable,
 } from '../../../../drizzle/schema';
-import { Item, ItemRaw } from '../../../../drizzle/types';
+import { ItemRaw } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { MinimalMember } from '../../../../types';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
@@ -34,7 +34,11 @@ export class RecycledItemDataRepository {
   // warning: this call insert in the table
   // but does not soft delete the item
   // should we move to core item?
-  async addMany(dbConnection: DBConnection, items: Item[], creator: MinimalMember): Promise<void> {
+  async addMany(
+    dbConnection: DBConnection,
+    items: ItemRaw[],
+    creator: MinimalMember,
+  ): Promise<void> {
     const recycled = items.map((item) => ({ itemPath: item.path, creatorId: creator.id }));
     await dbConnection.insert(recycledItemDatasTable).values(recycled);
   }
@@ -43,7 +47,7 @@ export class RecycledItemDataRepository {
     dbConnection: DBConnection,
     account: MinimalMember,
     pagination: Pagination,
-  ): Promise<Paginated<Item>> {
+  ): Promise<Paginated<ItemRaw>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
@@ -89,7 +93,10 @@ export class RecycledItemDataRepository {
   // warning: this call removes from the table
   // but does not soft delete the item
   // should we move to core item?
-  async deleteManyByItemPath(dbConnection: DBConnection, itemsPath: Item['path'][]): Promise<void> {
+  async deleteManyByItemPath(
+    dbConnection: DBConnection,
+    itemsPath: ItemRaw['path'][],
+  ): Promise<void> {
     throwsIfParamIsInvalid('itemsPath', itemsPath);
     await dbConnection
       .delete(recycledItemDatasTable)
@@ -103,16 +110,7 @@ export class RecycledItemDataRepository {
    * @param {string[]} [options.types] filter out the items by type. If undefined or empty, all types are returned.
    * @returns {Item[]}
    */
-  async getDeletedDescendants(dbConnection: DBConnection, item: FolderItem): Promise<Item[]> {
-    // TODO: no need with drizzle
-    // need order column to further sort in this function or afterwards
-    // if (ordered || selectOrder) {
-    //   query.addSelect('item.order');
-    // }
-    // if (!ordered) {
-    //   return query.getMany();
-    // }
-
+  async getDeletedDescendants(dbConnection: DBConnection, item: FolderItem): Promise<ItemRaw[]> {
     return await dbConnection
       .select()
       .from(itemsRawTable)
@@ -139,7 +137,7 @@ export class RecycledItemDataRepository {
    * @param db
    * @param ids
    */
-  async getDeletedTreesById(dbConnection: DBConnection, ids: Item['id'][]) {
+  async getDeletedTreesById(dbConnection: DBConnection, ids: ItemRaw['id'][]) {
     const descendants = alias(itemsRawTable, 'descendants');
 
     const trees = await dbConnection

@@ -74,7 +74,7 @@ export const deleteOne = {
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    [StatusCodes.OK]: customType.UUID({ descritpion: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

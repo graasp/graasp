@@ -800,8 +800,8 @@ export const itemsRawTable = pgTable(
   ],
 );
 
-// TODO: materialized?? check
 export const { deletedAt: _deletedAt, ...itemColumns } = getTableColumns(itemsRawTable);
+// TODO: materialized?? check
 export const items = pgView('item_view').as((qb) =>
   qb.select(itemColumns).from(itemsRawTable).where(isNull(itemsRawTable.deletedAt)),
 );

@@ -17,19 +17,19 @@ import { PassportStrategy } from './strategies';
  * Validate authentication. Allows public authentication, can't fail.
  * Will set the user to `request.user.member` if possible.
  */
-export const optionalIsAuthenticated = fastifyPassport.authenticate([
+export const optionalIsAuthenticated = fastifyPassport.authenticate(
   // PassportStrategy.MobileJwt,
   PassportStrategy.Session,
-]);
+);
 
 /**
  * Validate authentication.
  * Will set the user to `request.user.member`.
  */
-export const isAuthenticated = fastifyPassport.authenticate([
+export const isAuthenticated = fastifyPassport.authenticate(
   // PassportStrategy.MobileJwt,
   PassportStrategy.StrictSession,
-]);
+);
 
 //-- Password Strategies --//
 /**

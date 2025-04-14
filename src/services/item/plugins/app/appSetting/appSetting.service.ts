@@ -118,6 +118,8 @@ export class AppSettingService {
     await this.appSettingRepository.deleteOne(dbConnection, appSettingId);
 
     await this.hooks.runPostHooks('delete', member, dbConnection, { appSetting, itemId });
+
+    return appSetting;
   }
 
   async get(dbConnection: DBConnection, actor: MaybeUser, itemId: string, appSettingId: UUID) {
@@ -138,7 +140,7 @@ export class AppSettingService {
   async copyForItem(
     dbConnection: DBConnection,
     actor: MaybeUser,
-    original: Item,
+    original: ItemRaw,
     copyItemId: ItemRaw['id'],
   ) {
     if (!actor) {
@@ -154,11 +156,6 @@ export class AppSettingService {
           itemId: copyItemId,
           creator: { id: actor.id },
         };
-        await this.hooks.runPreHooks('copyMany', actor, dbConnection, {
-          appSettings,
-          originalItemId: original.id,
-          copyItemId: copyItemId,
-        });
         const newSetting = await this.appSettingRepository.addOne(dbConnection, {
           ...copyData,
           itemId: copyItemId,

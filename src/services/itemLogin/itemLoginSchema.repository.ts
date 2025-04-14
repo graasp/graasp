@@ -39,7 +39,7 @@ export class ItemLoginSchemaRepository {
     itemId: ItemId,
   ): Promise<ItemLoginSchemaRaw | undefined> {
     throwsIfParamIsInvalid('item', itemId);
-    // TODO: check this works
+
     const results = await dbConnection
       .select(getTableColumns(itemLoginSchemasTable))
       .from(itemLoginSchemasTable)
@@ -94,15 +94,6 @@ export class ItemLoginSchemaRepository {
         .where(eq(itemLoginSchemasTable.id, itemLoginSchema.id));
     } else {
       await dbConnection.insert(itemLoginSchemasTable).values({ itemPath, type, status });
-      // QUESTION: this does not look efficient if we need to check on path
-      // .onConflictDoUpdate({
-      //   target: itemLoginSchemasTable.itemPath,
-      //   targetWhere: isAncestorOrSelf(itemLoginSchemasTable.itemPath, itemPath),
-      //   set: {
-      //     type,
-      //     status,
-      //   },
-      // });
     }
   }
 

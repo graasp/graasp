@@ -2,13 +2,18 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { PermissionLevel } from '@graasp/sdk';
+
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
 import { asDefined } from '../../../../../utils/assertions';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
+import { AuthorizationService } from '../../../../authorization';
+import { BasicItemService } from '../../../basic.service';
 import { addMemberInAppAction } from '../legacy';
-import { appActionsWsHooks } from '../ws/hooks';
+import { AppActionEvent, appActionsTopic } from '../ws/events';
+import { checkItemIsApp } from '../ws/utils';
 import { create, getForOne } from './appAction.schemas';
 import { AppActionService } from './appAction.service';
 
@@ -17,7 +22,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
-    fastify.register(appActionsWsHooks, { appActionService });
+    const { websockets } = fastify;
+
+    const basicItemService = resolveDependency(BasicItemService);
+    const authorizationService = resolveDependency(AuthorizationService);
+
+    websockets.register(appActionsTopic, async (req) => {
+      const { channel: id, member } = req;
+      const item = await basicItemService.get(db, member, id);
+      await authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
+      checkItemIsApp(item);
+    });
 
     // create app action
     fastify.post(
@@ -25,9 +40,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       { schema: create, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, body }, reply) => {
         const member = asDefined(user?.account);
-        await db.transaction(async (tx) => {
-          addMemberInAppAction(await appActionService.post(tx, member, itemId, body));
-        });
+        await db
+          .transaction(async (tx) => {
+            return addMemberInAppAction(await appActionService.post(tx, member, itemId, body));
+          })
+          .then((appAction) => {
+            websockets.publish(appActionsTopic, itemId, AppActionEvent('post', appAction));
+          });
         reply.status(StatusCodes.NO_CONTENT);
       },
     );

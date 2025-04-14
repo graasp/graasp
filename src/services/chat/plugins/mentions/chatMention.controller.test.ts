@@ -76,7 +76,7 @@ describe('Chat Mention tests', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
 
-    // TODO: public?
+    // TODO: public tests
 
     describe('Signed In', () => {
       it('Get successfully', async () => {

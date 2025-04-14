@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { client, db } from '../../../../drizzle/db';
+import { db } from '../../../../drizzle/db';
 import { itemBookmarksTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';

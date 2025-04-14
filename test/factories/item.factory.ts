@@ -42,7 +42,6 @@ export const ItemFactory = (
     lang: item.lang ?? faker.helpers.arrayElement(['fr', 'en', 'it', 'es', 'ar', 'de']),
     creatorId: null,
     creator: null,
-    // TODO: improve this, not necessary for seed but would be nice to use in other tests not relying on the database
     id,
     path,
     createdAt: new Date().toISOString(),

@@ -76,20 +76,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   };
   appSettingService.hooks.setPostHook('copyMany', hook);
 
-  // prevent patch on app setting file
-  const patchPreHook = async (
-    _actor: MinimalMember,
-    _db: DBConnection,
-    { appSetting }: { appSetting: Partial<AppSettingRaw> },
-  ) => {
-    if (appSetting?.data) {
-      if (appSetting.data[fileService.fileType]) {
-        throw new PreventUpdateAppSettingFile(appSetting);
-      }
-    }
-  };
-  appSettingService.hooks.setPreHook('patch', patchPreHook);
-
   fastify.post(
     '/app-settings/upload',
     {

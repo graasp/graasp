@@ -379,10 +379,9 @@ export class ItemRepository {
   async getDescendants(
     dbConnection: DBConnection,
     item: FolderItem,
-    options?: { ordered?: boolean; types?: ItemTypeUnion[] },
+    options?: { types?: ItemTypeUnion[] },
   ): Promise<ItemWithCreator[]> {
-    // TODO: LEVEL depth
-    const { ordered = true, types } = options ?? {};
+    const { types } = options ?? {};
 
     const whereConditions = [isDescendantOrSelf(items.path, item.path), ne(items.id, item.id)];
     if (types && types.length > 0) {
@@ -676,9 +675,10 @@ export class ItemRepository {
     creator: MinimalMember,
     old2New: Map<string, { copy: MinimalItemForInsert; original: ItemRaw }>,
   ): Promise<void> {
-    const descendants = await this.getDescendants(dbConnection, original, {
-      ordered: true,
-    });
+    const descendants = sortChildrenForTreeWith(
+      await this.getDescendants(dbConnection, original),
+      original,
+    );
     for (const element of descendants) {
       const original = element;
       const { id, path } = original;
@@ -868,28 +868,6 @@ export class ItemRepository {
     }));
   }
 
-  // TODO: remove??
-  async findAndCount(
-    dbConnection: DBConnection,
-    args: { where: { type: ItemTypeEnumKeys }; take: number; skip: number; order: SQL },
-  ): Promise<[ItemRaw[], number]> {
-    const result = await dbConnection
-      .select()
-      .from(items)
-      .where(eq(items.type, args.where.type))
-      .orderBy(args.order)
-      .limit(args.take)
-      .offset(args.skip);
-
-    const totalCount = (
-      await dbConnection
-        .select({ count: count() })
-        .from(items)
-        .where(eq(items.type, args.where.type))
-    )[0].count;
-
-    return [result, totalCount];
-  }
   async delete(dbConnection: DBConnection, args: ItemRaw['id'][]): Promise<void> {
     await dbConnection.delete(itemsRawTable).where(inArray(itemsRawTable.id, args));
   }

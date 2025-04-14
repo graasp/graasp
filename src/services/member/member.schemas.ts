@@ -79,8 +79,6 @@ const compositeCurrentGuestSchema = Type.Composite([
     {
       type: accountTypeGuestRef,
       extra: Type.Object({}, { additionalProperties: true }),
-      // // TODO: following props are added because drizzle returns null?
-      email: Type.Null(),
     },
     { description: 'Current guest information' },
   ),

@@ -210,7 +210,6 @@ export class AuthorizationService {
     }
   }
 
-  // TODO: This is only used here but should probably be put in a better place than the plugin file
   async isItemVisible(dbConnection: DBConnection, actor: MaybeUser, itemPath: ItemRaw['path']) {
     const isHidden = await this.itemVisibilityRepository.getType(
       dbConnection,

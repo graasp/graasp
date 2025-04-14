@@ -100,12 +100,8 @@ export class ItemMembershipService {
     item: ItemRaw,
     memberId: string,
     permission: PermissionLevelOptions,
-    // membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
     const member = await this.memberRepository.get(dbConnection, memberId);
-
-    // TODO: ensure there are not hooks setup and remove it!
-    await this.hooks.runPreHooks('create', account, dbConnection, {});
 
     const result = await this.itemMembershipRepository.addOne(dbConnection, {
       itemPath: item.path,

@@ -695,9 +695,7 @@ export class ItemService {
     // we do not use checkNumberOfDescendants because we use descendants
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await this.itemRepository.getDescendants(dbConnection, item, {
-        ordered: false,
-      });
+      const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(descendants.length);
       }
@@ -933,9 +931,7 @@ export class ItemService {
 
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await this.itemRepository.getDescendants(dbConnection, item, {
-        ordered: false,
-      });
+      const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       items = [...descendants, item];
     }
 

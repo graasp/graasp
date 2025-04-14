@@ -127,7 +127,6 @@ export class MemberRepository {
 
     // update if newData is not empty
     if (Object.keys(newData).length) {
-      // TODO: check member exists
       const res = await dbConnection
         .update(accountsTable)
         .set(newData)

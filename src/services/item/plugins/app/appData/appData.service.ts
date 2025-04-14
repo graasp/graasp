@@ -11,7 +11,7 @@ import {
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
 import { type DBConnection } from '../../../../../drizzle/db';
-import { AppDataRaw, Item, ItemMembershipRaw } from '../../../../../drizzle/types';
+import { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizationService } from '../../../../authorization';
@@ -128,6 +128,7 @@ export class AppDataService {
       itemId,
       actorId: account.id,
     });
+
     // get relations
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
     if (appData) {
@@ -247,7 +248,12 @@ export class AppDataService {
     return appData;
   }
 
-  async get(dbConnection: DBConnection, account: AuthenticatedUser, item: Item, appDataId: UUID) {
+  async get(
+    dbConnection: DBConnection,
+    account: AuthenticatedUser,
+    item: ItemRaw,
+    appDataId: UUID,
+  ) {
     const { itemMembership } = await this.authorizationService.validatePermission(
       dbConnection,
       PermissionLevel.Read,

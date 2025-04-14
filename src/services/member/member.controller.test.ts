@@ -87,8 +87,7 @@ describe('Member routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(m.name).toEqual(guest.name);
       expect(m.id).toEqual(guest.id);
-      // TODO: should this be undefined? It might have changed because of drizzle returning null instead of undefined
-      expect(m.email).toBeNull();
+      expect(m.email).toBeUndefined();
       expect(m.password).toBeUndefined();
     });
     it('Throws if signed out', async () => {

@@ -37,8 +37,6 @@ export class ItemLikeService {
 
   async getForMember(dbConnection: DBConnection, member: MinimalMember) {
     // only own items
-    // TODO: allow to get other's like?
-
     const likes = await this.itemLikeRepository.getByCreator(dbConnection, member.id);
     // filter out items user might not have access to
     // and packed item

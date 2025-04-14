@@ -33,7 +33,6 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
     data: EventMap[Event]['post'],
     log?: FastifyBaseLogger,
   ) {
-    // TODO: allsettled?
     const hooks = this.postHooks.get(event);
     if (hooks) {
       await Promise.all(hooks.map((f) => f(actor, dbConnection, data, log)));
@@ -56,7 +55,6 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
     data: EventMap[Event]['pre'],
     log?: FastifyBaseLogger,
   ) {
-    // TODO: allsettled?
     const hooks = this.preHooks.get(event);
     if (hooks) {
       await Promise.all(hooks.map((f) => f(actor, dbConnection, data, log)));

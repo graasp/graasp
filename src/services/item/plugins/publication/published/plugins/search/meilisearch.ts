@@ -1,4 +1,4 @@
-import { asc } from 'drizzle-orm';
+import { SQL, asc, count, eq } from 'drizzle-orm';
 import {
   EnqueuedTask,
   Index,
@@ -24,8 +24,9 @@ import {
 import { DBConnection, db } from '../../../../../../../drizzle/db';
 import { items } from '../../../../../../../drizzle/schema';
 import {
-  Item,
   ItemPublishedWithItemWithCreator,
+  ItemRaw,
+  ItemTypeEnumKeys,
   ItemWithCreator,
   TagRaw,
 } from '../../../../../../../drizzle/types';
@@ -230,7 +231,7 @@ export class MeiliSearchWrapper {
   }
 
   // Retrieve searchable part inside an item
-  private async getContent(item: Item) {
+  private async getContent(item: ItemRaw) {
     switch (item.type) {
       case ItemType.DOCUMENT:
         return this.removeHTMLTags((item.extra as DocumentItemExtra).document.content); // better way to type extra safely?
@@ -348,12 +349,12 @@ export class MeiliSearchWrapper {
     }
   }
 
-  async deleteOne(dbConnection: DBConnection, item: Item) {
+  async deleteOne(dbConnection: DBConnection, item: ItemRaw) {
     try {
       let itemsToIndex = [item];
       if (isItemType(item, ItemType.FOLDER)) {
         itemsToIndex = itemsToIndex.concat(
-          await this.itemRepository.getDescendants(dbConnection, item, { ordered: false }),
+          await this.itemRepository.getDescendants(dbConnection, item),
         );
       }
 
@@ -373,7 +374,7 @@ export class MeiliSearchWrapper {
     let currentPage = 1;
     // Paginate with 1000 items per page
     while (currentPage === 1 || (currentPage - 1) * 1000 < total) {
-      const [fileItems, totalCount] = await this.itemRepository.findAndCount(dbConnection, {
+      const [fileItems, totalCount] = await this.findAndCountItems(dbConnection, {
         where: { type: ItemType.S3_FILE },
         take: 1000,
         skip: (currentPage - 1) * 1000,
@@ -432,7 +433,7 @@ export class MeiliSearchWrapper {
   /**
    * Update facet settings for active index
    */
-  async updateFacetSettings() {
+  private async updateFacetSettings() {
     // set facetting order to count for tag categories
     await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
       // return max 50 values per facet for facet distribution
@@ -552,5 +553,27 @@ export class MeiliSearchWrapper {
 
   async getHealth() {
     return this.meilisearchClient.health();
+  }
+
+  private async findAndCountItems(
+    dbConnection: DBConnection,
+    args: { where: { type: ItemTypeEnumKeys }; take: number; skip: number; order: SQL },
+  ): Promise<[ItemRaw[], number]> {
+    const result = await dbConnection
+      .select()
+      .from(items)
+      .where(eq(items.type, args.where.type))
+      .orderBy(args.order)
+      .limit(args.take)
+      .offset(args.skip);
+
+    const totalCount = (
+      await dbConnection
+        .select({ count: count() })
+        .from(items)
+        .where(eq(items.type, args.where.type))
+    )[0].count;
+
+    return [result, totalCount];
   }
 }

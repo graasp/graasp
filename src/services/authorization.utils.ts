@@ -29,7 +29,7 @@ const _filterOutItems = async (
     return { items: [], memberships: [] };
   }
 
-  // TODO: optimize with on query
+  // TODO: optimize with one query
   const { data: memberships } = actor
     ? await itemMembershipRepository.getForManyItems(dbConnection, items, {
         accountId: actor.id,

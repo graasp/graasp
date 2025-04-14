@@ -324,7 +324,6 @@ export class ItemMembershipRepository {
       andConditions.push(ilike(items.name, `${startWith}%`));
     }
 
-    // TODO: does this work?
     const result = await dbConnection
       .select({ name: items.name })
       .from(im)
@@ -332,22 +331,6 @@ export class ItemMembershipRepository {
       .innerJoin(accountsTable, eq(items.creatorId, accountsTable.id))
       .where(and(...andConditions));
 
-    // .select('item.name')
-    // .leftJoin('im.item', 'item')
-    // .leftJoin('item.creator', 'creator')
-    // .where('im.account_id = :actorId', { actorId: actor.id })
-    // returns only top most item
-    // .andWhere((qb) => {
-    //   const subQuery = qb;
-    // .subQuery()
-    // .from(ItemMembership, 'im1')
-    // .select('im1.item.path')
-    // .where('im.item_path <@ im1.item_path')
-    // .andWhere('im1.account_id = :actorId', { actorId: actor.id })
-    // .orderBy('im1.item_path', 'ASC')
-    // .limit(1);
-    // return 'item.path =' + subQuery.getQuery();
-    // });
     return result.map(({ name }) => name);
   }
 
@@ -453,28 +436,6 @@ export class ItemMembershipRepository {
       // Keep only closest membership per descendant
       .orderBy(() => [asc(itemsRawTable.id), desc(sql`nlevel(${itemMembershipsTable.itemPath})`)]);
 
-    // const query = this.repository
-    // .createQueryBuilder('item_membership')
-    // Map each membership to the item it can affect
-    // .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
-    // Join for entity result
-    // .leftJoinAndSelect('item_membership.account', 'account')
-    // .leftJoinAndSelect('item_membership.item', 'item')
-    // Only from input
-    // .where('descendant.id in (:...ids)', { ids: ids })
-    // .andWhere('item_membership.account = :id', { id: accountId });
-
-    // Keep only closest membership per descendant
-    // query.addSelect('descendant.id').distinctOn(['descendant.id']);
-    // .orderBy('descendant.id')
-    // .addOrderBy('nlevel(item_membership.item_path)', 'DESC');
-
-    // // map entities by id to avoid iterating on the result multiple times
-    // const entityMap = new Map(memberships.entities.map((e) => [e.id, e]));
-    // const itemIdToMemberships = new Map(
-    //   memberships.raw.map((e) => [e.descendant_id, entityMap.get(e.item_membership_id)]),
-    // ); // unfortunately we lose type safety because of the raw
-
     const result = mapById({
       keys: ids,
       findElement: (id) => memberships.find(({ descendantId }) => descendantId === id),
@@ -517,14 +478,6 @@ export class ItemMembershipRepository {
       ...item_membership,
     }));
 
-    // .createQueryBuilder('item_membership')
-    // .leftJoinAndSelect('item_membership.item', 'item')
-    // .leftJoinAndSelect('item_membership.account', 'account')
-    // .where('item_membership.account = :id', { id: accountId })
-    // .andWhere('item_membership.item_path @> :path', { path: itemPath });
-
-    // const memberships = await query.orderBy('nlevel(item_membership.item_path)', 'DESC').getMany();
-
     // TODO: optimize
     // order by array https://stackoverflow.com/questions/866465/order-by-the-in-value-list
     // order by https://stackoverflow.com/questions/17603907/order-by-enum-field-in-mysql
@@ -546,32 +499,6 @@ export class ItemMembershipRepository {
     return null;
   }
 
-  // async getMany(
-  //   dbConnection: DBConnection,
-  //   ids: string[],
-  //   args: { throwOnError?: boolean } = { throwOnError: false },
-  // ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
-  //   const result = await dbConnection.query.itemMembershipsTable.findMany({
-  //     where: inArray(itemMembershipsTable.id, ids),
-  //     with: {
-  //       account: true,
-  //       item: true,
-  //     },
-  //   });
-
-  //   const mappedMemberships = mapById({
-  //     keys: ids,
-  //     findElement: (id) => result.find(({ id: thisId }) => id === thisId),
-  //     buildError: (id) => new ItemMembershipNotFound({ id }),
-  //   });
-
-  //   if (args.throwOnError && mappedMemberships.errors.length) {
-  //     throw mappedMemberships.errors[0];
-  //   }
-
-  //   return mappedMemberships;
-  // }
-
   async getAdminsForItem(dbConnection: DBConnection, itemPath: string): Promise<MemberRaw[]> {
     return (await dbConnection
       .select(getViewSelectedFields(membersView))
@@ -582,7 +509,7 @@ export class ItemMembershipRepository {
           isAncestorOrSelf(itemMembershipsTable.itemPath, itemPath),
           eq(itemMembershipsTable.permission, PermissionLevel.Admin),
         ),
-      )) as MemberRaw[]; // TODO: fix type
+      )) as MemberRaw[];
   }
 
   async updateOne(

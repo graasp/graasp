@@ -28,9 +28,7 @@ export class AppRepository {
           eq(items.creatorId, memberId),
         ),
       )
-      // TODO: verify
       .groupBy(appsTable.id)
-      // .groupBy((t) => [t.id, t.url, t.name])
       .orderBy(desc(sql.raw('count')));
 
     return data;

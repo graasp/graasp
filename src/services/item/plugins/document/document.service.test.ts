@@ -8,8 +8,8 @@ import {
 } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
-import { client, db } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { db } from '../../../../drizzle/db';
+import { ItemRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
@@ -62,7 +62,7 @@ describe('Document Service', () => {
       const itemServicePostMock = jest
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
-          return {} as Item;
+          return {} as ItemRaw;
         });
 
       await documentService.postWithOptions(db, MOCK_MEMBER, {
@@ -90,7 +90,7 @@ describe('Document Service', () => {
       const itemServicePostMock = jest
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
-          return {} as Item;
+          return {} as ItemRaw;
         });
 
       await documentService.postWithOptions(db, MOCK_MEMBER, {
@@ -118,7 +118,7 @@ describe('Document Service', () => {
       const itemServicePostMock = jest
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
-          return {} as Item;
+          return {} as ItemRaw;
         });
 
       const args = {

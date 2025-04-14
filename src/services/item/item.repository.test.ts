@@ -14,7 +14,7 @@ import {
 
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
-import { client, db } from '../../drizzle/db';
+import { db } from '../../drizzle/db';
 import { items, publishedItemsTable } from '../../drizzle/schema';
 import { ItemRaw } from '../../drizzle/types';
 import { assertIsDefined } from '../../utils/assertions';
@@ -426,28 +426,6 @@ describe('Item Repository', () => {
       const data = await itemRepository.getDescendants(db, parent as FolderItem);
       expect(data).toHaveLength(descendants.length);
       expectManyItems(data, descendants);
-    });
-
-    it('Returns successfully ordered', async () => {
-      const {
-        items: [parent, child1, childOfChild1, anotherChildOfChild1, child2, childOfChild2],
-      } = await seedFromJson({
-        items: [
-          {
-            children: [
-              { name: 'child1', order: 3, children: [{ order: 2 }, { order: 1 }] },
-              { name: 'child2', order: 2, children: [{}] },
-            ],
-          },
-        ],
-      });
-
-      const descendants = [child2, childOfChild2, child1, anotherChildOfChild1, childOfChild1];
-      const data = await itemRepository.getDescendants(db, parent as FolderItem, { ordered: true });
-      expectManyItems(data, descendants);
-      descendants.forEach((v, idx) => {
-        expectItem(data[idx], v);
-      });
     });
 
     it('Returns successfully empty descendants', async () => {

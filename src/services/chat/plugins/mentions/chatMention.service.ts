@@ -86,7 +86,6 @@ export class MentionService {
       item,
     );
 
-    // TODO: optimize ? suppose same item - validate multiple times
     const mentions = await this.chatMentionRepository.postMany(
       dbConnection,
       mentionedMembers,
