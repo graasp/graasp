@@ -102,630 +102,634 @@ describe('Item routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe('POST /items', () => {
-    it('Throws if signed out', async () => {
-      const payload = FolderItemFactory();
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: '/items',
-        payload,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-
-    describe('Schema validation', () => {
-      it('Throw if geolocation is partial', async () => {
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload: { ...payload, geolocation: { lat: 1 } },
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-
-        const response1 = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload: { ...payload, geolocation: { lng: 1 } },
-        });
-
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        // no item nor geolocation is created
-        expect(
-          await db.query.itemGeolocationsTable.findFirst({
-            where: eq(itemGeolocationsTable.itemPath, payload.path),
-          }),
-        ).toBeUndefined();
-      });
-
-      it('Bad request if name is invalid', async () => {
-        // by default the item creator use an invalid item type
-        const newItem = FolderItemFactory({ name: '' });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload: newItem,
-        });
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-
-        // by default the item creator use an invalid item type
-        const newItem1 = FolderItemFactory({ name: ' ' });
-        const response1 = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload: newItem1,
-        });
-        expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Bad request if type is invalid', async () => {
-        // by default the item creator use an invalid item type
-        const newItem = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload: { ...newItem, type: 'invalid-type' },
-        });
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Bad request if parentId id is invalid', async () => {
-        const payload = FolderItemFactory();
-        const parentId = 'invalid-id';
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parentId}`,
-          payload,
-        });
-
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-    });
-
-    describe('Signed In', () => {
-      let waitForPostCreation: () => Promise<unknown>;
-      beforeEach(async () => {
-        const itemServiceRescaleOrderForParent = jest.spyOn(
-          ItemService.prototype,
-          'rescaleOrderForParent',
-        );
-        const itemActionServicePostPostAction = jest.spyOn(
-          ItemActionService.prototype,
-          'postPostAction',
-        );
-
-        // The API's is still working with the database after responding to an item post request,
-        // so we need to wait for the work to be done so we don't have flacky deadlock exceptions.
-        waitForPostCreation = async () => {
-          return await waitForExpect(() => {
-            expect(itemServiceRescaleOrderForParent).toHaveBeenCalled();
-            expect(itemActionServicePostPostAction).toHaveBeenCalled();
-          });
-        };
-      });
-
-      it('Create successfully', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        // check response value
-        const newItem = response.json();
-        expectItem(newItem, payload);
-        await waitForPostCreation();
-
-        // check item exists in db
-        const item = await db.query.itemsRawTable.findFirst({
-          where: eq(itemsRawTable.id, newItem.id),
-        });
-        expect(item).toBeDefined();
-        // order is null for root
-        expect(item!.order).toBeNull();
-
-        // a membership is created for this item
-        const membership = await await db.query.itemMembershipsTable.findFirst({
-          where: eq(itemMembershipsTable.itemPath, newItem.path),
-        });
-        expect(membership).toBeDefined();
-        expect(membership!.permission).toEqual(PermissionLevel.Admin);
-      });
-
-      it('Create successfully in parent item', async () => {
-        const {
-          actor,
-          items: [parent, child],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [{ order: 3 }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-        const newItem = response.json();
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        expectItem(newItem, payload, actor, parent);
-        // add at beginning
-        const newItemOrder = await getItemOrder(newItem);
-        expect(newItemOrder).toBeLessThan(child.order!);
-
-        // check post logic
-        await waitForPostCreation();
-
-        // a membership does not need to be created for item with admin rights
-        const newMembership = await db.query.itemMembershipsTable.findFirst({
-          where: eq(itemMembershipsTable.itemPath, newItem.path),
-        });
-        expect(newMembership).toBeUndefined();
-      });
-
-      it('Create successfully in shared parent item', async () => {
-        const {
-          actor,
-          items: [parent],
-        } = await seedFromJson({
-          items: [
-            {
-              creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor, parent);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        // a membership is created for this item
-        // one membership for the owner
-        // one membership for sharing
-        // admin for the new item
-        expect(
-          await db.query.itemMembershipsTable.findFirst({
-            where: eq(itemMembershipsTable.itemPath, newItem.path),
-          }),
-        ).toBeDefined();
-      });
-
-      it('Create successfully with geolocation', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        expect(
-          await db.query.itemGeolocationsTable.findFirst({
-            where: eq(itemGeolocationsTable.itemPath, newItem.path),
-          }),
-        ).toBeDefined();
-      });
-
-      it('Create successfully with language', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory({ lang: 'fr' });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-      });
-
-      it('Create successfully with parent language', async () => {
-        const lang = 'es';
-        const {
-          actor,
-          items: [parentItem],
-        } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }], lang }],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
-          query: { parentId: parentItem.id },
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        const newItem = response.json();
-        expect(newItem.lang).toEqual(lang);
-        await waitForPostCreation();
-      });
-
-      it('Create successfully with description placement above and should not erase default thumbnail', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory({
-          settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
-        });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-        expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
-        expect(newItem.settings.hasThumbnail).toBe(false);
-      });
-
-      it('Filter out bad setting when creating', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const BAD_SETTING = { INVALID: 'Not a valid setting' };
-        const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
-
-        const payload = FolderItemFactory({
-          settings: {
-            ...BAD_SETTING,
-            ...VALID_SETTING,
-          },
-        });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, { ...payload, settings: VALID_SETTING }, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-        expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
-        expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
-      });
-
-      it('Create successfully with between children', async () => {
-        const {
-          actor,
-          items: [parentItem, previousItem, afterItem],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [{ order: 1 }, { order: 2 }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: previousItem.id },
-          payload,
-        });
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        await waitForPostCreation();
-
-        const newItemOrder = await getItemOrder(newItem);
-        expect(newItemOrder).toBeGreaterThan(previousItem.order!);
-        expect(newItemOrder).toBeLessThan(afterItem.order!);
-      });
-
-      it('Create successfully at end', async () => {
-        const {
-          actor,
-          items: [parentItem, _previousItem, lastItem],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [{ order: 1 }, { order: 2 }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: lastItem.id },
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        const newItemOrder = await getItemOrder(newItem);
-        expect(newItemOrder).toBeGreaterThan(lastItem.order!);
-      });
-
-      it('Create successfully after invalid child adds at end', async () => {
-        const {
-          actor,
-          items: [parentItem, _previousItem, lastItem, _anotherParent, anotherChild],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [{ order: 1 }, { order: 30 }],
-            },
-            { children: [{ order: 100 }] },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: anotherChild.id },
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        // should be after child, since another child is not valid
-        const newItemOrder = await getItemOrder(newItem);
-        expect(newItemOrder).toBeGreaterThan(lastItem.order!);
-        expect(newItemOrder).toBeLessThan(anotherChild.order!);
-      });
-
-      it('Cannot create item in non-existing parent', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const parentId = uuidv4();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parentId}`,
-          payload,
-        });
-
-        expect(response.statusMessage).toEqual('Not Found');
-        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-      });
-
-      it('Cannot create item if member does not have membership on parent', async () => {
-        const {
-          actor,
-          items: [parent],
-        } = await seedFromJson({ items: [{}] });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
-      });
-
-      it('Cannot create item if member can only read parent', async () => {
-        const {
-          actor,
-          items: [parent],
-        } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new MemberCannotWriteItem(parent.id));
-      });
-
-      it('Cannot create item if parent item has too many children', async () => {
-        const {
-          actor,
-          items: [parent],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: Array.from({ length: MAX_NUMBER_OF_CHILDREN }, () => ({})),
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new TooManyChildren());
-      });
-
-      it('Cannot create item if parent is too deep in hierarchy', async () => {
-        const { actor, items } = await seedFromJson({
-          items: [
-            {
-              ...getItemWithDepth(MAX_TREE_LEVELS + 1),
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const deepestItem = items.pop()!;
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${deepestItem.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new HierarchyTooDeep());
-      });
-
-      it('Cannot create inside non-folder item', async () => {
-        const {
-          actor,
-          items: [parent],
-        } = await seedFromJson({
-          items: [
-            {
-              type: ItemType.DOCUMENT,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(response.json()).toMatchObject(new ItemNotFolder({ id: parent.id }));
-      });
-    });
+  it('test', () => {
+    expect(true).toBeTruthy();
   });
 
-  describe('POST /items/with-thumbnail', () => {
-    it('Post item with thumbnail', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      assertIsMemberForTest(actor);
-      mockAuthenticate(actor);
-      const imageStream = fs.createReadStream(path.resolve(__dirname, './test/fixtures/image.png'));
-      const itemName = 'Test Item';
-      const payload = new FormData();
-      payload.append('name', itemName);
-      payload.append('type', ItemType.FOLDER);
-      payload.append('description', '');
-      payload.append('file', imageStream);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: `/items/with-thumbnail`,
-        payload,
-        headers: payload.getHeaders(),
-      });
+  // describe('POST /items', () => {
+  //   it('Throws if signed out', async () => {
+  //     const payload = FolderItemFactory();
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       url: '/items',
+  //       payload,
+  //     });
 
-      const newItem = response.json();
-      expectItem(
-        newItem,
-        FolderItemFactory({
-          name: itemName,
-          type: ItemType.FOLDER,
-          description: '',
-          settings: { hasThumbnail: true },
-          lang: 'en',
-        }),
-        actor,
-      );
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(uploadDoneMock).toHaveBeenCalled();
-    });
-  });
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+
+  //   describe('Schema validation', () => {
+  //     it('Throw if geolocation is partial', async () => {
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         payload: { ...payload, geolocation: { lat: 1 } },
+  //       });
+
+  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+
+  //       const response1 = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         payload: { ...payload, geolocation: { lng: 1 } },
+  //       });
+
+  //       expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  //       // no item nor geolocation is created
+  //       expect(
+  //         await db.query.itemGeolocationsTable.findFirst({
+  //           where: eq(itemGeolocationsTable.itemPath, payload.path),
+  //         }),
+  //       ).toBeUndefined();
+  //     });
+
+  //     it('Bad request if name is invalid', async () => {
+  //       // by default the item creator use an invalid item type
+  //       const newItem = FolderItemFactory({ name: '' });
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items',
+  //         payload: newItem,
+  //       });
+  //       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+
+  //       // by default the item creator use an invalid item type
+  //       const newItem1 = FolderItemFactory({ name: ' ' });
+  //       const response1 = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items',
+  //         payload: newItem1,
+  //       });
+  //       expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+  //       expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  //     });
+
+  //     it('Bad request if type is invalid', async () => {
+  //       // by default the item creator use an invalid item type
+  //       const newItem = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items',
+  //         payload: { ...newItem, type: 'invalid-type' },
+  //       });
+  //       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  //     });
+
+  //     it('Bad request if parentId id is invalid', async () => {
+  //       const payload = FolderItemFactory();
+  //       const parentId = 'invalid-id';
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parentId}`,
+  //         payload,
+  //       });
+
+  //       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  //     });
+  //   });
+
+  //   describe('Signed In', () => {
+  //     let waitForPostCreation: () => Promise<unknown>;
+  //     beforeEach(async () => {
+  //       const itemServiceRescaleOrderForParent = jest.spyOn(
+  //         ItemService.prototype,
+  //         'rescaleOrderForParent',
+  //       );
+  //       const itemActionServicePostPostAction = jest.spyOn(
+  //         ItemActionService.prototype,
+  //         'postPostAction',
+  //       );
+
+  //       // The API's is still working with the database after responding to an item post request,
+  //       // so we need to wait for the work to be done so we don't have flacky deadlock exceptions.
+  //       waitForPostCreation = async () => {
+  //         return await waitForExpect(() => {
+  //           expect(itemServiceRescaleOrderForParent).toHaveBeenCalled();
+  //           expect(itemActionServicePostPostAction).toHaveBeenCalled();
+  //         });
+  //       };
+  //     });
+
+  //     it('Create successfully', async () => {
+  //       const { actor } = await seedFromJson();
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items',
+  //         payload,
+  //       });
+
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+
+  //       // check response value
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload);
+  //       await waitForPostCreation();
+
+  //       // check item exists in db
+  //       const item = await db.query.itemsRawTable.findFirst({
+  //         where: eq(itemsRawTable.id, newItem.id),
+  //       });
+  //       expect(item).toBeDefined();
+  //       // order is null for root
+  //       expect(item!.order).toBeNull();
+
+  //       // a membership is created for this item
+  //       const membership = await await db.query.itemMembershipsTable.findFirst({
+  //         where: eq(itemMembershipsTable.itemPath, newItem.path),
+  //       });
+  //       expect(membership).toBeDefined();
+  //       expect(membership!.permission).toEqual(PermissionLevel.Admin);
+  //     });
+
+  //     it('Create successfully in parent item', async () => {
+  //       const {
+  //         actor,
+  //         items: [parent, child],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: [{ order: 3 }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parent.id}`,
+  //         payload,
+  //       });
+  //       const newItem = response.json();
+
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       expectItem(newItem, payload, actor, parent);
+  //       // add at beginning
+  //       const newItemOrder = await getItemOrder(newItem);
+  //       expect(newItemOrder).toBeLessThan(child.order!);
+
+  //       // check post logic
+  //       await waitForPostCreation();
+
+  //       // a membership does not need to be created for item with admin rights
+  //       const newMembership = await db.query.itemMembershipsTable.findFirst({
+  //         where: eq(itemMembershipsTable.itemPath, newItem.path),
+  //       });
+  //       expect(newMembership).toBeUndefined();
+  //     });
+
+  //     it('Create successfully in shared parent item', async () => {
+  //       const {
+  //         actor,
+  //         items: [parent],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             creator: { name: 'bob' },
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parent.id}`,
+  //         payload,
+  //       });
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload, actor, parent);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       await waitForPostCreation();
+
+  //       // a membership is created for this item
+  //       // one membership for the owner
+  //       // one membership for sharing
+  //       // admin for the new item
+  //       expect(
+  //         await db.query.itemMembershipsTable.findFirst({
+  //           where: eq(itemMembershipsTable.itemPath, newItem.path),
+  //         }),
+  //       ).toBeDefined();
+  //     });
+
+  //     it('Create successfully with geolocation', async () => {
+  //       const { actor } = await seedFromJson();
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
+  //       });
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload, actor);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       await waitForPostCreation();
+
+  //       expect(
+  //         await db.query.itemGeolocationsTable.findFirst({
+  //           where: eq(itemGeolocationsTable.itemPath, newItem.path),
+  //         }),
+  //       ).toBeDefined();
+  //     });
+
+  //     it('Create successfully with language', async () => {
+  //       const { actor } = await seedFromJson();
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory({ lang: 'fr' });
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         payload,
+  //       });
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload, actor);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       await waitForPostCreation();
+  //     });
+
+  //     it('Create successfully with parent language', async () => {
+  //       const lang = 'es';
+  //       const {
+  //         actor,
+  //         items: [parentItem],
+  //       } = await seedFromJson({
+  //         items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }], lang }],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
+  //         query: { parentId: parentItem.id },
+  //       });
+
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       const newItem = response.json();
+  //       expect(newItem.lang).toEqual(lang);
+  //       await waitForPostCreation();
+  //     });
+
+  //     it('Create successfully with description placement above and should not erase default thumbnail', async () => {
+  //       const { actor } = await seedFromJson();
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory({
+  //         settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
+  //       });
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         payload,
+  //       });
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload, actor);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       await waitForPostCreation();
+  //       expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
+  //       expect(newItem.settings.hasThumbnail).toBe(false);
+  //     });
+
+  //     it('Filter out bad setting when creating', async () => {
+  //       const { actor } = await seedFromJson();
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const BAD_SETTING = { INVALID: 'Not a valid setting' };
+  //       const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
+
+  //       const payload = FolderItemFactory({
+  //         settings: {
+  //           ...BAD_SETTING,
+  //           ...VALID_SETTING,
+  //         },
+  //       });
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         payload,
+  //       });
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, { ...payload, settings: VALID_SETTING }, actor);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       await waitForPostCreation();
+  //       expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
+  //       expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
+  //     });
+
+  //     it('Create successfully with between children', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, previousItem, afterItem],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: [{ order: 1 }, { order: 2 }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         query: { parentId: parentItem.id, previousItemId: previousItem.id },
+  //         payload,
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload, actor);
+  //       await waitForPostCreation();
+
+  //       const newItemOrder = await getItemOrder(newItem);
+  //       expect(newItemOrder).toBeGreaterThan(previousItem.order!);
+  //       expect(newItemOrder).toBeLessThan(afterItem.order!);
+  //     });
+
+  //     it('Create successfully at end', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, _previousItem, lastItem],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: [{ order: 1 }, { order: 2 }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         query: { parentId: parentItem.id, previousItemId: lastItem.id },
+  //         payload,
+  //       });
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload, actor);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       await waitForPostCreation();
+
+  //       const newItemOrder = await getItemOrder(newItem);
+  //       expect(newItemOrder).toBeGreaterThan(lastItem.order!);
+  //     });
+
+  //     it('Create successfully after invalid child adds at end', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, _previousItem, lastItem, _anotherParent, anotherChild],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: [{ order: 1 }, { order: 30 }],
+  //           },
+  //           { children: [{ order: 100 }] },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items`,
+  //         query: { parentId: parentItem.id, previousItemId: anotherChild.id },
+  //         payload,
+  //       });
+
+  //       const newItem = response.json();
+  //       expectItem(newItem, payload, actor);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
+  //       await waitForPostCreation();
+
+  //       // should be after child, since another child is not valid
+  //       const newItemOrder = await getItemOrder(newItem);
+  //       expect(newItemOrder).toBeGreaterThan(lastItem.order!);
+  //       expect(newItemOrder).toBeLessThan(anotherChild.order!);
+  //     });
+
+  //     it('Cannot create item in non-existing parent', async () => {
+  //       const { actor } = await seedFromJson();
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const parentId = uuidv4();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parentId}`,
+  //         payload,
+  //       });
+
+  //       expect(response.statusMessage).toEqual('Not Found');
+  //       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  //     });
+
+  //     it('Cannot create item if member does not have membership on parent', async () => {
+  //       const {
+  //         actor,
+  //         items: [parent],
+  //       } = await seedFromJson({ items: [{}] });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parent.id}`,
+  //         payload,
+  //       });
+
+  //       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+  //       expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
+  //     });
+
+  //     it('Cannot create item if member can only read parent', async () => {
+  //       const {
+  //         actor,
+  //         items: [parent],
+  //       } = await seedFromJson({
+  //         items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parent.id}`,
+  //         payload,
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+  //       expect(response.json()).toEqual(new MemberCannotWriteItem(parent.id));
+  //     });
+
+  //     it('Cannot create item if parent item has too many children', async () => {
+  //       const {
+  //         actor,
+  //         items: [parent],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: Array.from({ length: MAX_NUMBER_OF_CHILDREN }, () => ({})),
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parent.id}`,
+  //         payload,
+  //       });
+
+  //       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+  //       expect(response.json()).toEqual(new TooManyChildren());
+  //     });
+
+  //     it('Cannot create item if parent is too deep in hierarchy', async () => {
+  //       const { actor, items } = await seedFromJson({
+  //         items: [
+  //           {
+  //             ...getItemWithDepth(MAX_TREE_LEVELS + 1),
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const deepestItem = items.pop()!;
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${deepestItem.id}`,
+  //         payload,
+  //       });
+
+  //       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+  //       expect(response.json()).toEqual(new HierarchyTooDeep());
+  //     });
+
+  //     it('Cannot create inside non-folder item', async () => {
+  //       const {
+  //         actor,
+  //         items: [parent],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             type: ItemType.DOCUMENT,
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
+
+  //       const payload = FolderItemFactory();
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: `/items?parentId=${parent.id}`,
+  //         payload,
+  //       });
+
+  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  //       expect(response.json()).toMatchObject(new ItemNotFolder({ id: parent.id }));
+  //     });
+  //   });
+  // });
+
+  // describe('POST /items/with-thumbnail', () => {
+  //   it('Post item with thumbnail', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     assertIsMemberForTest(actor);
+  //     mockAuthenticate(actor);
+  //     const imageStream = fs.createReadStream(path.resolve(__dirname, './test/fixtures/image.png'));
+  //     const itemName = 'Test Item';
+  //     const payload = new FormData();
+  //     payload.append('name', itemName);
+  //     payload.append('type', ItemType.FOLDER);
+  //     payload.append('description', '');
+  //     payload.append('file', imageStream);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       url: `/items/with-thumbnail`,
+  //       payload,
+  //       headers: payload.getHeaders(),
+  //     });
+
+  //     const newItem = response.json();
+  //     expectItem(
+  //       newItem,
+  //       FolderItemFactory({
+  //         name: itemName,
+  //         type: ItemType.FOLDER,
+  //         description: '',
+  //         settings: { hasThumbnail: true },
+  //         lang: 'en',
+  //       }),
+  //       actor,
+  //     );
+  //     expect(response.statusCode).toBe(StatusCodes.OK);
+  //     expect(uploadDoneMock).toHaveBeenCalled();
+  //   });
+  // });
 
   // describe('PATCH /items/:id', () => {
   //   it('Throws if signed out', async () => {

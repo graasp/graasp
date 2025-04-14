@@ -22,6 +22,8 @@ import {
 
 const portGen = new PortGenerator(4000);
 
+// jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 test('adding / removing channels', () => {
   const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
   const { channels: server, wss } = createWsChannels(config);
