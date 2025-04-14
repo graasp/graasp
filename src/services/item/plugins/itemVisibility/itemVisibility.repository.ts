@@ -1,4 +1,4 @@
-import { inArray, isNotNull, isNull, or } from 'drizzle-orm';
+import { inArray, isNull, or } from 'drizzle-orm';
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
@@ -255,7 +255,6 @@ export class ItemVisibilityRepository {
   async getForManyItems(
     dbConnection: DBConnection,
     inputItems: Item[],
-    { withDeleted = false }: { withDeleted?: boolean } = {},
   ): Promise<ResultOf<ItemVisibilityWithItem[]>> {
     // should not query when items array is empty
     if (!inputItems.length) {
@@ -265,9 +264,7 @@ export class ItemVisibilityRepository {
     const pathsCondition = or(
       ...inputItems.map(({ path }) => isAncestorOrSelf(itemVisibilitiesTable.itemPath, path)),
     );
-    const deletedCondition = withDeleted
-      ? isNotNull(itemsRawTable.deletedAt)
-      : isNull(itemsRawTable.deletedAt);
+    const deletedCondition = isNull(itemsRawTable.deletedAt);
 
     const visibilities = await dbConnection
       .select()

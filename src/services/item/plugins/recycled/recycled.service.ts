@@ -133,8 +133,6 @@ export class RecycledBinService {
       );
     }
 
-    // since the subtree is currently soft-deleted before recovery, need withDeleted=true
-
     let allDescendants: Item[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('restore', member, dbConnection, { item, isRestoredRoot: true });

@@ -17,7 +17,6 @@ export class ActionRepository {
    * @param action Action to create
    */
   async postMany(dbConnection: DBConnection, actions: ActionInsertDTO[]): Promise<void> {
-    // FIX: this type, investigate why this does not typecheck and if we should use a different input type
     await dbConnection.insert(actionsTable).values(actions);
   }
 
@@ -109,104 +108,5 @@ export class ActionRepository {
     const actions = res.map((r) => ({ ...r.action, item: r.item }));
 
     return actions;
-    // return await dbConnection.query.actions.findMany({
-    //   where: and(...andConditions),
-    //   with: {
-    //     item: { where: (items) => isDescendantOrSelf(items.path, itemPath) },
-    //     account: true,
-    //   },
-    //   orderBy: desc(actionsTable.createdAt),
-    //   limit: size,
-    // });
   }
-
-  // TODO: improve parameters, it seems we can enforce some of them
-  // TODO: improve return value -> avoid string
-  /**
-   * Get aggregation of random actions matching the given itemPath and following the provided aggregate rules.
-   * @param itemPath path of the item whose actions are retrieved
-   * @param filters.sampleSize number of actions to retrieve
-   * @param filters.view get actions only for a given view
-   */
-  // async getAggregationForItem(
-  //   dbConnection: DBConnection,
-  //   itemPath: UUID,
-  //   filters?: {
-  //     sampleSize?: number;
-  //     view?: string;
-  //     types?: string[];
-  //     startDate?: string;
-  //     endDate?: string;
-  //   },
-  //   countGroupBy: CountGroupByOptions[] = [],
-  //   aggregationParams?: {
-  //     aggregateFunction: AggregateFunction;
-  //     aggregateMetric: AggregateMetric;
-  //     aggregateBy?: AggregateBy[];
-  //   },
-  // ) {
-  //   // verify parameters
-  //   validateAggregationParameters({ countGroupBy, aggregationParams });
-
-  //   const { aggregateFunction, aggregateMetric, aggregateBy = [] } = aggregationParams ?? {};
-
-  //   const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
-  //   const view = filters?.view ?? 'Unknown';
-  //   const types = filters?.types;
-  //   const endDate = filters?.endDate ?? formatISO(new Date());
-  //   const startDate = filters?.startDate ?? formatISO(addMonths(endDate, -1));
-
-  //   const countGroupByColumns = Object.fromEntries(
-  //     countGroupBy.map((attribute) => {
-  //       const columnName = aggregateExpressionNames[attribute];
-  //       return [columnName, attribute];
-
-  //       // addGroupBy(columnName);
-  //     }),
-  //   );
-
-  //   // Get the actionCount from the first stage aggregation.
-  //   const andConditions = [
-  //     eq(actionsTable.view, view),
-  //     between(actionsTable.createdAt, startDate, endDate),
-  //   ];
-  //   if (types) {
-  //     andConditions.push(inArray(actionsTable.type, types));
-  //   }
-
-  //   const subquery = db
-  //     .select({
-  //       actionCount: count(),
-  //       ...countGroupByColumns,
-  //     })
-  //     .from(actionsTable)
-  //     .where(and(...andConditions))
-  //     .innerJoin(
-  //       items,
-  //       and(eq(actionsTable.itemId, items.id), isDescendantOrSelf(items.path, itemPath)),
-  //     )
-  //     .groupBy(() => Object.keys(countGroupByColumns))
-  //     .limit(size)
-  //     .as('subquery');
-
-  //   // Second stage aggregation.
-  //   const select: any = [];
-
-  //   if (aggregateFunction && aggregateMetric) {
-  //     select.push({
-  //       aggregateResult: buildAggregateExpression('subquery', aggregateFunction, aggregateMetric),
-  //     });
-  //   }
-  //   const groupByParams: string[] = [];
-  //   const aggregateByParams = aggregateBy.map((attribute) => {
-  //     const expression = `subquery."${attribute}"`;
-  //     // query.addSelect(expression).addGroupBy(expression);
-  //     select[attribute] = expression;
-  //     groupByParams.push(expression);
-  //   });
-
-  //   const query = await dbConnection.select(select).from(subquery).groupBy(groupByParams);
-
-  //   return query;
-  // }
 }

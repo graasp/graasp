@@ -1,6 +1,6 @@
 import { ItemType } from '@graasp/sdk';
 
-import { Item, ItemTypeEnumKeys, ItemWithType } from '../../drizzle/types';
+import { ItemRaw, ItemTypeEnumKeys, ItemWithType } from '../../drizzle/types';
 
 export type AppItem = ItemWithType<typeof ItemType.APP>;
 export type DocumentItem = ItemWithType<typeof ItemType.DOCUMENT>;
@@ -13,7 +13,7 @@ export type S3FileItem = ItemWithType<typeof ItemType.S3_FILE>;
 export type ShortcutItem = ItemWithType<typeof ItemType.SHORTCUT>;
 
 export const isItemType = <T extends ItemTypeEnumKeys>(
-  item: { type: Item['type'] },
+  item: { type: ItemRaw['type'] },
   type: T,
 ): item is ItemWithType<T> => {
   return item.type === type;

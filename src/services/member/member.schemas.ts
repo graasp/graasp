@@ -219,30 +219,6 @@ export const getOne = {
   },
 } as const satisfies FastifySchema;
 
-/**
- * @deprecated
- * Cannot remove yet because of mobile
- */
-export const updateOne = {
-  deprecated: true,
-  params: customType.StrictObject({
-    id: customType.UUID(),
-  }),
-  body: customType.StrictObject(
-    {
-      name: Type.Optional(customType.Username()),
-      enableSaveActions: Type.Optional(Type.Boolean()),
-      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
-    },
-    { minProperties: 1 },
-  ),
-  response: {
-    [StatusCodes.OK]: currentAccountSchemaRef,
-    [StatusCodes.FORBIDDEN]: errorSchemaRef,
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
 export const updateCurrent = {
   operationId: 'updateCurrentAccount',
   tags: ['member', 'guest'],

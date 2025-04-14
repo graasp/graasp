@@ -4,8 +4,8 @@ import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import {
-  Item,
   ItemMembershipRaw,
+  ItemRaw,
   ItemVisibilityRaw,
   ItemWithCreator,
   MemberRaw,
@@ -16,7 +16,7 @@ import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service'
 import { ItemsThumbnails } from './plugins/thumbnail/types';
 
 type GraaspItem = Pick<
-  Item,
+  ItemRaw,
   | 'id'
   | 'name'
   | 'type'
@@ -171,22 +171,16 @@ export class ItemWrapperService {
     dbConnection: DBConnection,
     items: ItemWithCreator[],
     memberships?: ResultOf<ItemMembershipRaw[]>,
-    { withDeleted = false }: { withDeleted?: boolean } = {},
   ): Promise<PackedItem[]> {
     // no items, so nothing to fetch
     if (!items.length) {
       return [];
     }
 
-    const visibilities = await this.itemVisibilityRepository.getForManyItems(dbConnection, items, {
-      withDeleted,
-    });
+    const visibilities = await this.itemVisibilityRepository.getForManyItems(dbConnection, items);
 
     const m =
-      memberships ??
-      (await this.itemMembershipRepository.getForManyItems(dbConnection, items, {
-        withDeleted,
-      }));
+      memberships ?? (await this.itemMembershipRepository.getForManyItems(dbConnection, items));
 
     const itemsThumbnails = await this.itemThumbnailService.getUrlsByItems(items);
 

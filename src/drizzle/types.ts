@@ -59,8 +59,7 @@ export type MinimalAccount = {
 };
 
 // evaluate if it would be enough to specify "minimal account" on items and such
-export type Account = MinimalAccount;
-export type NullableAccount = Account | null;
+export type NullableAccount = MinimalAccount | null;
 
 // HACK: Using inferSelect since this is a PGView and it does not allow to insert on the view
 // HACK: Remove the too wide "type" from the select which allows a union and add over it the more specific single value type of individual
@@ -95,8 +94,11 @@ export type ItemInsertDTO = typeof itemsRawTable.$inferInsert;
 export type ItemRaw = typeof items.$inferSelect;
 
 // TODO: RENAME
+/**
+ * @deprecated use ItemRaw
+ */
 export type Item = ItemRaw;
-export type NullableItem = Item | null;
+export type NullableItem = ItemRaw | null;
 
 /**
  * Item types
@@ -146,7 +148,7 @@ export type ItemWithType<T extends ItemTypeEnumKeys> = Item & {
   settings: ItemSettingsMap[T];
 };
 // note: cannot combine nicely Item and ItemWithCreator when defined with omit
-// export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
+// export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: MinimalAccount };
 export type ItemWithCreator = ItemRaw & { creator: MemberRaw | null };
 
 // item created by the server with necessary properties
@@ -163,7 +165,7 @@ export type MinimalItemForInsert = {
 // --- ItemVisibilities
 export type ItemVisibilityRaw = typeof itemVisibilitiesTable.$inferSelect;
 export type ItemVisibilityWithItem = ItemVisibilityRaw & {
-  item: Item;
+  item: ItemRaw;
 };
 
 // ---- Published items
@@ -171,7 +173,7 @@ export type ItemVisibilityWithItem = ItemVisibilityRaw & {
 export type ItemPublishedRaw = typeof publishedItemsTable.$inferSelect;
 
 export type ItemPublishedWithItem = Omit<typeof publishedItemsTable.$inferSelect, 'itemPath'> & {
-  item: Item;
+  item: ItemRaw;
 };
 export type ItemPublishedWithItemWithCreator = ItemPublishedRaw & {
   item: ItemWithCreator;
@@ -197,7 +199,7 @@ export type ChatMessageWithCreator = ChatMessageRaw & {
   creator: NullableAccount;
 };
 export type ChatMessageWithCreatorAndItem = ChatMessageWithCreator & {
-  item: Item;
+  item: ItemRaw;
 };
 
 // --- ChatMentions
@@ -217,7 +219,7 @@ export type ChatMentionWithMessageWithoutCreator = Omit<ChatMentionRaw, 'message
 export type InvitationInsertDTO = typeof invitationsTable.$inferInsert;
 export type InvitationRaw = typeof invitationsTable.$inferSelect;
 export type InvitationWithItem = InvitationRaw & {
-  item: Item;
+  item: ItemRaw;
 };
 export type InvitationWithItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
   creator: NullableAccount;
@@ -259,10 +261,10 @@ export type AppRaw = typeof appsTable.$inferSelect;
 // --- AppAction
 export type AppActionRaw = typeof appActionsTable.$inferSelect;
 export type AppActionWithItem = AppActionRaw & {
-  item: Item;
+  item: ItemRaw;
 };
 export type AppActionWithItemAndAccount = AppActionRaw & {
-  item: Item;
+  item: ItemRaw;
   account: MinimalAccount;
 };
 
@@ -275,12 +277,12 @@ export type AppSettingWithItem = AppSettingRaw & { item: Item };
 export type AppDataInsertDTO = typeof appDataTable.$inferInsert;
 export type AppDataRaw = typeof appDataTable.$inferSelect;
 export type AppDataWithItem = AppDataRaw & {
-  item: Item;
+  item: ItemRaw;
 };
 export type AppDataWithItemAndAccountAndCreator = AppDataRaw & {
-  item: Item;
-  account: Account;
-  creator: Account | null;
+  item: ItemRaw;
+  account: MinimalAccount;
+  creator: MinimalAccount | null;
 };
 
 // --- ShortLink
@@ -293,7 +295,7 @@ export type ItemLikeRaw = typeof itemLikesTable.$inferSelect;
 export type ItemLikeWithItem = ItemLikeRaw & { item: Item };
 export type ItemLikeWithItemWithCreator = ItemLikeRaw & { item: ItemWithCreator };
 export type ItemLikeWithItemAndAccount = ItemLikeWithItem & {
-  creator: Account;
+  creator: MinimalAccount;
 };
 
 // --- ItemGeolocation
@@ -312,11 +314,11 @@ export type ItemValidationInsertDTO = typeof itemValidationsTable.$inferInsert;
 // --- ItemValidationGroup
 export type ItemValidationGroupRaw = typeof itemValidationGroupsTable.$inferSelect;
 export type ItemValidationGroupWithItemAndValidations = ItemValidationGroupRaw & {
-  item: Item;
+  item: ItemRaw;
   itemValidations: ItemValidationRaw[];
 };
 export type ItemValidationGroupWithItemAndValidationsWithItem = ItemValidationGroupRaw & {
-  item: Item;
+  item: ItemRaw;
   itemValidations: ItemValidationWithItem[];
 };
 export type ItemValidationGroupInsertDTO = typeof itemValidationGroupsTable.$inferInsert;
@@ -331,8 +333,8 @@ export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: Item };
 export type ItemBookmarkRawWithItemWithCreator = ItemBookmarkRaw & { item: ItemWithCreator };
 export type ItemBookmarkInsertDTO = typeof itemBookmarksTable.$inferInsert;
 export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {
-  item: Item;
-  account: Account;
+  item: ItemRaw;
+  account: MinimalAccount;
 };
 
 // --- MemberProfile

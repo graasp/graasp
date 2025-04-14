@@ -53,7 +53,6 @@ import {
   publishedItemsTable,
 } from '../../drizzle/schema';
 import {
-  Item,
   ItemRaw,
   ItemTypeEnumKeys,
   ItemTypeUnion,
@@ -99,16 +98,16 @@ const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
 };
 
 type CreateItemBody = {
-  item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+  item: Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>;
   creator: MinimalMember;
-  parentItem?: Item;
+  parentItem?: FolderItem;
 };
 
 @singleton()
 export class ItemRepository {
   constructor() {}
 
-  checkHierarchyDepth(item: Item, additionalNbLevel = 1): void {
+  checkHierarchyDepth(item: ItemRaw, additionalNbLevel = 1): void {
     // check if hierarchy it too deep
     // adds nb of items to be created
     const itemDepth = item.path.split('.').length;
@@ -119,7 +118,7 @@ export class ItemRepository {
 
   async checkNumberOfDescendants(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     maximum: number,
   ): Promise<void> {
     // check how "big the tree is" below the item
@@ -139,13 +138,13 @@ export class ItemRepository {
    * does not save it
    */
   createOne(args: {
-    name: Item['name'];
-    description?: Item['description'];
-    type?: Item['type'];
-    extra?: Item['extra'];
-    settings?: Item['settings'];
+    name: ItemRaw['name'];
+    description?: ItemRaw['description'];
+    type?: ItemRaw['type'];
+    extra?: ItemRaw['extra'];
+    settings?: ItemRaw['settings'];
     creator: MinimalMember;
-    lang?: Item['lang'];
+    lang?: ItemRaw['lang'];
     parent?: {
       type: ItemRaw['type'];
       id: ItemRaw['id'];
@@ -198,7 +197,6 @@ export class ItemRepository {
     return item;
   }
 
-  // TODO: note: removed , options = { withDeleted: false }
   async getOne(dbConnection: DBConnection, id: string): Promise<ItemWithCreator | null> {
     const results = await dbConnection
       .select()
@@ -218,7 +216,6 @@ export class ItemRepository {
     };
   }
 
-  // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
   async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<ItemWithCreator> {
     const result = await dbConnection
       .select()
@@ -236,8 +233,7 @@ export class ItemRepository {
     };
   }
 
-  // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
-  async getDeletedById(dbConnection: DBConnection, id: string): Promise<Item> {
+  async getDeletedById(dbConnection: DBConnection, id: string): Promise<ItemRaw> {
     const item = await dbConnection
       .select()
       .from(itemsRawTable)
@@ -255,7 +251,7 @@ export class ItemRepository {
    * options.includeCreator {boolean} if true, return full creator
    * options.types {boolean} if defined, filter out the items
    * */
-  async getAncestors(dbConnection: DBConnection, item: Item): Promise<ItemWithCreator[]> {
+  async getAncestors(dbConnection: DBConnection, item: ItemRaw): Promise<ItemWithCreator[]> {
     if (!item.path.includes('.')) {
       return [];
     }
@@ -279,7 +275,7 @@ export class ItemRepository {
    * @param parent
    * @returns
    */
-  async getNonOrderedChildren(dbConnection: DBConnection, parent: Item): Promise<ItemRaw[]> {
+  async getNonOrderedChildren(dbConnection: DBConnection, parent: FolderItem): Promise<ItemRaw[]> {
     if (parent.type !== ItemType.FOLDER) {
       throw new ItemNotFolder({ id: parent.id });
     }
@@ -298,7 +294,7 @@ export class ItemRepository {
   async getChildren(
     dbConnection: DBConnection,
     actor: MaybeUser,
-    parent: Item,
+    parent: ItemRaw,
     params?: ItemChildrenParams,
   ): Promise<ItemWithCreator[]> {
     if (parent.type !== ItemType.FOLDER) {
@@ -357,7 +353,7 @@ export class ItemRepository {
 
   async getChildrenNames(
     dbConnection: DBConnection,
-    parent: Item,
+    parent: FolderItem,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
     const whereConditions = [isDirectChild(items.path, parent.path)];
@@ -393,15 +389,6 @@ export class ItemRepository {
       whereConditions.push(inArray(items.type, types));
     }
 
-    // TODO: no need with drizzle
-    // need order column to further sort in this function or afterwards
-    // if (ordered || selectOrder) {
-    //   query.addSelect('item.order');
-    // }
-    // if (!ordered) {
-    //   return query.getMany();
-    // }
-
     const result = await dbConnection
       .select()
       .from(items)
@@ -417,76 +404,16 @@ export class ItemRepository {
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
 
-  // async getManyDescendants(
-  //   dbConnection: DBConnection,
-  //   items: Item[],
-  //   { withDeleted = false }: { withDeleted?: boolean } = {},
-  // ): Promise<Item[]> {
-  //   // TODO: LEVEL depth
-  //   if (items.length === 0) {
-  //     return [];
-  //   }
-  //   const query = this.repository.createQueryBuilder('item');
-
-  //   if (withDeleted) {
-  //     query.withDeleted();
-  //   }
-
-  //   // query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
-  //   //   ids: items.map(({ id }) => id),
-  //   // });
-
-  //   // query.andWhere(
-  //   //   new Brackets((q) => {
-  //   //     items.forEach((item) => {
-  //   //       const key = `path_${item.path}`;
-  //   //       q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
-  //   //     });
-  //   //   }),
-  //   // );
-
-  //   return query.getMany();
-
-  //   const whereConditions = [isDescendantOrSelf(items.path, item.path), ne(items.id, item.id)];
-
-  //   // TODO: no need with drizzle
-  //   // need order column to further sort in this function or afterwards
-  //   // if (ordered || selectOrder) {
-  //   //   query.addSelect('item.order');
-  //   // }
-  //   // if (!ordered) {
-  //   //   return query.getMany();
-  //   // }
-
-  //   const result = await dbConnection
-  //     .select()
-  //     .from(items)
-  //     .leftJoin(membersView, eq(items.creatorId, membersView.id))
-  //     .where(and(...whereConditions))
-  //     .orderBy(asc(items.path));
-
-  //   const descendants = result.map(({ members_view, item_view }) => ({
-  //     ...item_view,
-  //     creator: members_view as MemberRaw,
-  //   }));
-
-  //   return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
-  // }
-
   async getMany(
     dbConnection: DBConnection,
     ids: string[],
-    args: { throwOnError?: boolean; withDeleted?: boolean } = {},
+    args: { throwOnError?: boolean } = {},
   ): Promise<ResultOf<ItemWithCreator>> {
     if (!ids.length) {
       return { data: {}, errors: [] };
     }
 
     const { throwOnError = false } = args;
-
-    // TODO: needed??
-    // withDeleted: Boolean(args.withDeleted),
-    // order: args.ordered ? { order: 'ASC' } : {},
 
     const result = (
       await dbConnection
@@ -512,25 +439,20 @@ export class ItemRepository {
     return mappedResult;
   }
 
-  async getNumberOfLevelsToFarthestChild(dbConnection: DBConnection, item: Item): Promise<number> {
+  async getNumberOfLevelsToFarthestChild(
+    dbConnection: DBConnection,
+    item: ItemRaw,
+  ): Promise<number> {
     const farthestItem = await dbConnection
       .select({ path: items.path })
       .from(items)
       .where(and(isDescendantOrSelf(items.path, item.path), ne(items.id, item.id)))
       .orderBy(desc(sql`nlevel(path)`))
       .limit(1);
-    // await this.repository
-    //   .createQueryBuilder('item')
-    //   .addSelect(`nlevel(path) - nlevel('${item.path}')`)
-    //   .where('item.path <@ :path', { path: item.path })
-    //   .andWhere('id != :id', { id: item.id })
-    //   .orderBy('nlevel(path)', 'DESC')
-    //   .limit(1)
-    //   .getOne();
     return farthestItem?.[0]?.path?.split('.')?.length ?? 0;
   }
 
-  async getOwn(dbConnection: DBConnection, memberId: string): Promise<Item[]> {
+  async getOwn(dbConnection: DBConnection, memberId: string): Promise<ItemRaw[]> {
     const result = await dbConnection
       .select()
       .from(items)
@@ -552,19 +474,9 @@ export class ItemRepository {
       ...item_view,
       creator: account,
     }));
-
-    // return this.repository
-    //   .createQueryBuilder('item')
-    //   .leftJoinAndSelect('item.creator', 'creator')
-    //   .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-    //   .where('creator.id = :id', { id: memberId })
-    //   .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
-    //   .andWhere('nlevel(item.path) = 1')
-    //   .orderBy('item.updatedAt', 'DESC')
-    //   .getMany();
   }
 
-  async move(dbConnection: DBConnection, item: Item, parentItem?: Item): Promise<Item> {
+  async move(dbConnection: DBConnection, item: ItemRaw, parentItem?: FolderItem): Promise<ItemRaw> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -607,15 +519,13 @@ export class ItemRepository {
       .where(isDescendantOrSelf(itemsRawTable.path, item.path))
       .returning();
     return res[0];
-    // this.repository
-    //   .createQueryBuilder('item')
-    //   .update()
-    //   .set({ path: () => pathSql, order })
-    //   .where('item.path <@ :path', { path: item.path })
-    //   .execute();
   }
 
-  async updateOne(dbConnection: DBConnection, id: string, data: Partial<Item>): Promise<Item> {
+  async updateOne(
+    dbConnection: DBConnection,
+    id: string,
+    data: Partial<ItemRaw>,
+  ): Promise<ItemRaw> {
     // update only if data is not empty
     if (!Object.keys(data).length) {
       throw new IllegalArgumentException("The item's body cannot be empty!");
@@ -668,9 +578,9 @@ export class ItemRepository {
 
   public async addMany(
     dbConnection: DBConnection,
-    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    items: (Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>)[],
     creator: MinimalMember,
-    parent?: Item,
+    parent?: FolderItem,
   ): Promise<ItemRaw[]> {
     const newItems = items.map((item) =>
       this.createOne({
@@ -688,13 +598,13 @@ export class ItemRepository {
   /////// -------- COPY
   async copy(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     creator: MinimalMember,
     siblingsName: string[],
     parentItem?: FolderItem,
   ): Promise<{
-    copyRoot: Item;
-    treeCopyMap: Map<string, { original: Item; copy: MinimalItemForInsert }>;
+    copyRoot: ItemRaw;
+    treeCopyMap: Map<string, { original: ItemRaw; copy: MinimalItemForInsert }>;
   }> {
     // cannot copy inside non folder item
     if (parentItem && parentItem.type !== ItemType.FOLDER) {
@@ -728,12 +638,12 @@ export class ItemRepository {
    */
   private async _copy(
     dbConnection: DBConnection,
-    original: Item,
+    original: ItemRaw,
     creator: MinimalMember,
     siblingsName: string[],
     parentItem?: FolderItem,
   ) {
-    const old2New = new Map<string, { copy: MinimalItemForInsert; original: Item }>();
+    const old2New = new Map<string, { copy: MinimalItemForInsert; original: ItemRaw }>();
 
     // get next order value
     const order = await this.getNextOrderCount(dbConnection, parentItem?.path);
@@ -764,7 +674,7 @@ export class ItemRepository {
     dbConnection: DBConnection,
     original: FolderItem,
     creator: MinimalMember,
-    old2New: Map<string, { copy: MinimalItemForInsert; original: Item }>,
+    old2New: Map<string, { copy: MinimalItemForInsert; original: ItemRaw }>,
   ): Promise<void> {
     const descendants = await this.getDescendants(dbConnection, original, {
       ordered: true,
@@ -906,11 +816,6 @@ export class ItemRepository {
         parentTable,
         sql`${parentTable.path} = subpath(${items.path}, 0, (nlevel(${items.path}) - 1))`,
       )
-      // .leftJoinAndSelect(
-      //   'item',
-      //   'parent',
-      //   'parent.path = subpath(item.path, 0, nlevel(item.path) - 1)',
-      // )
       .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)))
       .offset(skip)
       // order by size
@@ -967,7 +872,7 @@ export class ItemRepository {
   async findAndCount(
     dbConnection: DBConnection,
     args: { where: { type: ItemTypeEnumKeys }; take: number; skip: number; order: SQL },
-  ): Promise<[Item[], number]> {
+  ): Promise<[ItemRaw[], number]> {
     const result = await dbConnection
       .select()
       .from(items)
@@ -985,10 +890,10 @@ export class ItemRepository {
 
     return [result, totalCount];
   }
-  async delete(dbConnection: DBConnection, args: Item['id'][]): Promise<void> {
+  async delete(dbConnection: DBConnection, args: ItemRaw['id'][]): Promise<void> {
     await dbConnection.delete(itemsRawTable).where(inArray(itemsRawTable.id, args));
   }
-  async softRemove(dbConnection: DBConnection, args: Item[]): Promise<void> {
+  async softRemove(dbConnection: DBConnection, args: ItemRaw[]): Promise<void> {
     await dbConnection
       .update(itemsRawTable)
       .set({ deletedAt: new Date().toISOString() })
@@ -999,7 +904,7 @@ export class ItemRepository {
         ),
       );
   }
-  async recover(dbConnection: DBConnection, args: Item[]): Promise<ItemRaw[]> {
+  async recover(dbConnection: DBConnection, args: ItemRaw[]): Promise<ItemRaw[]> {
     return await dbConnection
       .update(itemsRawTable)
       .set({ deletedAt: null })
@@ -1022,8 +927,8 @@ export class ItemRepository {
    */
   async getNextOrderCount(
     dbConnection: DBConnection,
-    parentPath?: Item['path'],
-    previousItemId?: Item['id'],
+    parentPath?: ItemRaw['path'],
+    previousItemId?: ItemRaw['id'],
   ): Promise<number | null> {
     // no order for root
     if (!parentPath) {
@@ -1041,14 +946,6 @@ export class ItemRepository {
         .from(items)
         .where(and(eq(items.id, previousItemId), isDirectChild(items.path, parentPath)))
         .limit(1);
-
-      // const previousItem = await this.repository
-      //   .createQueryBuilder()
-      //   .select(['id', '"order"'])
-      //   .where('id = :previousItemId', { previousItemId })
-      //   // ensure it is a child of parent
-      //   .andWhere('path ~ :path', { path: `${parentPath}.*{1}` })
-      //   .getRawOne();
 
       // if needs to add in between, remove previous elements and order by next value to get the first one
       if (previousItems.length) {
@@ -1071,17 +968,6 @@ export class ItemRepository {
       .orderBy(orderDirection(sql.raw('next')))
       .limit(1);
 
-    // .createQueryBuilder('item')
-    // // default value: self order + "default order value" to increase of one the order
-    // .select(
-    //   '(item.order + (lead(item.order, 1, item.order + (' +
-    //     DEFAULT_ORDER +
-    //     '*2)) OVER (ORDER BY item.order)))/2',
-    //   'next',
-    // )
-    // .where('path <@ :path', { path: parentPath })
-    // .andWhere('path != :path', { path: parentPath });
-
     return result?.[0]?.next ? +result?.[0]?.next : DEFAULT_ORDER;
   }
 
@@ -1094,7 +980,7 @@ export class ItemRepository {
    */
   async getFirstOrderValue(
     dbConnection: DBConnection,
-    parentPath?: Item['path'],
+    parentPath?: ItemRaw['path'],
   ): Promise<number | null> {
     // no order for root
     if (!parentPath) {
@@ -1116,10 +1002,10 @@ export class ItemRepository {
 
   async reorder(
     dbConnection: DBConnection,
-    item: Item,
-    parentPath: Item['path'],
+    item: ItemRaw,
+    parentPath: ItemRaw['path'],
     previousItemId?: string,
-  ): Promise<Item> {
+  ): Promise<ItemRaw> {
     // no defined previous item is set at beginning
     let order;
     if (!previousItemId) {
@@ -1137,7 +1023,7 @@ export class ItemRepository {
   async rescaleOrder(
     dbConnection: DBConnection,
     actor: AuthenticatedUser,
-    parentItem: Item,
+    parentItem: FolderItem,
   ): Promise<void> {
     const children = await this.getChildren(dbConnection, actor, parentItem);
 
@@ -1190,14 +1076,6 @@ export class ItemRepository {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
-
-    //     WITH item_and_ordered_membership AS
-    // (SELECT i.*, row_number() OVER (ORDER BY path) r_nb FROM "item" "i" INNER JOIN "item_membership" "im" ON "i"."path" = "im"."item_path" AND "im"."account_id" = '589efade-b88b-4809-a892-ec39843489e7' WHERE "i"."deleted_at" IS NULL ORDER BY "i"."path" ASC)
-    // SELECT *
-    // FROM item_and_ordered_membership "iom"
-    // WHERE r_nb <= (SELECT r_nb FROM item_and_ordered_membership WHERE item_and_ordered_membership.path @> iom.path order by r_nb limit 1)
-    // order by iom.updated_at desc
-    // ;
 
     const andConditions: (SQL<unknown> | undefined)[] = [isNull(itemsRawTable.deletedAt)];
     if (creatorId) {
@@ -1301,7 +1179,6 @@ export class ItemRepository {
       .offset(skip)
       .limit(limit);
 
-    // TODO: pagination
     return {
       data: result.map(({ item_and_ordered_membership, members_view }) => ({
         ...item_and_ordered_membership,

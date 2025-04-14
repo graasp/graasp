@@ -360,7 +360,7 @@ export class ItemService {
     member: MinimalMember,
     items: (Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>)[],
     inheritedMembership: ItemMembershipRaw | null,
-    parentItem?: Item,
+    parentItem?: FolderItem,
   ) {
     this.log.debug(`create items ${items.map((item) => item.name)}`);
     const createdItems = await this.itemRepository.addMany(dbConnection, items, member, parentItem);
@@ -734,34 +734,6 @@ export class ItemService {
       throw new UnauthorizedMember();
     }
 
-    // check memberships
-    // can get soft deleted items
-    // QUESTION: move to recycle bin and the endpoint can only delete recycled items
-    // const { data: itemsMap } = await this.itemRepository.getMany(dbConnection, itemIds, {
-    //   throwOnError: true,
-    //   withDeleted: true,
-    // });
-    // const allItems = Object.values(itemsMap);
-
-    // // TODO: optimize
-    // const allDescendants = await Promise.all(
-    //   allItems.map(async (item) => {
-    //     await this.authorizationService.validatePermission(dbConnection, PermissionLevel.Admin, actor, item);
-    //     if (!isItemType(item, ItemType.FOLDER)) {
-    //       return [];
-    //     }
-    //     // check how "big the tree is" below the item
-    //     // we do not use checkNumberOfDescendants because we use descendants
-    //     const descendants = await this.itemRepository.getDescendants(dbConnection, item, {
-    //       ordered: false,
-    //     });
-    //     if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
-    //       throw new TooManyDescendants(item.id);
-    //     }
-    //     return descendants;
-    //   }),
-    // );
-
     const items = await this.recycledBinService.getDeletedTreesById(dbConnection, actor, itemIds);
     // do not delete too many items at the same time
     if (items.length > MAX_DESCENDANTS_FOR_DELETE) {
@@ -904,7 +876,12 @@ export class ItemService {
    * * `inserts`' `itemPath`s already have the expected paths for the destination;
    * * `deletes`' `itemPath`s have the path changes after `this.itemService.move()`.
    */
-  async _move(dbConnection: DBConnection, actor: MinimalMember, item: Item, parentItem?: Item) {
+  async _move(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    item: Item,
+    parentItem?: FolderItem,
+  ) {
     // identify all the necessary adjustments to memberships
     // TODO: maybe this whole 'magic' should happen in a db procedure?
     const { inserts, deletes } = await this.itemMembershipRepository.moveHousekeeping(
@@ -1107,10 +1084,18 @@ export class ItemService {
    * @param member
    * @param itemId item whose parent get its children order rescaled if necessary
    */
-  async rescaleOrderForParent(dbConnection: DBConnection, member: AuthenticatedUser, item: Item) {
+  async rescaleOrderForParent(
+    dbConnection: DBConnection,
+    member: AuthenticatedUser,
+    item: ItemRaw,
+  ) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
-      const parentItem = await this.basicItemService.get(dbConnection, member, parentId);
+      const parentItem = (await this.basicItemService.get(
+        dbConnection,
+        member,
+        parentId,
+      )) as FolderItem;
       await this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
     }
   }

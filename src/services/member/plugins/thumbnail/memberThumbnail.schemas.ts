@@ -23,12 +23,6 @@ export const download = {
     id: customType.UUID(),
     size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
   }),
-  querystring: customType.StrictObject({
-    /**
-     * @deprecated we don't use this parameter anymore. This should be removed once the mobile app is deprecated.
-     */
-    replyUrl: Type.Boolean({ default: true, deprecated: true }),
-  }),
   response: {
     [StatusCodes.OK]: Type.String({ description: 'Url string of the avatar' }),
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'No avatar' }),

@@ -6,7 +6,7 @@ import { FastifyRequest } from 'fastify';
 import { ClientManager } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import { Item } from '../../drizzle/types';
+import { ItemRaw } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { AccountType, MaybeUser } from '../../types';
 import { View } from '../item/plugins/action/itemAction.schemas';
@@ -34,7 +34,7 @@ export class ActionService {
     dbConnection: DBConnection,
     actor: MaybeUser,
     request: FastifyRequest,
-    actions: { item?: Item; type: string; extra: unknown }[],
+    actions: { item?: ItemRaw; type: string; extra: unknown }[],
   ): Promise<void> {
     const { headers } = request;
     // expand member to the full account
@@ -43,7 +43,7 @@ export class ActionService {
       actor && actor.type === AccountType.Individual
         ? await this.memberRepository.get(dbConnection, actor.id)
         : null;
-    //TODO: should we assert that the member is a "member" ?
+    // TODO: should we assert that the member is a "member" ?
     // prevent saving if member is defined and has disabled saveActions
     if (member && member.toMemberInfo().enableSaveActions === false) {
       return;

@@ -1,7 +1,7 @@
 import { AccountType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { Account, MemberRaw } from '../../../../drizzle/types';
+import { MemberRaw, MinimalAccount } from '../../../../drizzle/types';
 
 export const expectMember = (
   m: MemberRaw | undefined | null,
@@ -16,10 +16,7 @@ export const expectMember = (
   expect(m.extra).toEqual(expectation.extra ?? { lang: DEFAULT_LANG });
 };
 
-export const expectAccount = (
-  m: Account | undefined | null,
-  validation: Partial<Account> & Pick<Account, 'name' | 'id'>,
-) => {
+export const expectAccount = (m: MinimalAccount | undefined | null, validation: MinimalAccount) => {
   if (!m) {
     throw 'member does not exist';
   }

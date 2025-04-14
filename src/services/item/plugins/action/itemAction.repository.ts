@@ -6,7 +6,7 @@ import { singleton } from 'tsyringe';
 import { DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import { actionsTable, itemsRawTable } from '../../../../drizzle/schema';
-import { Item } from '../../../../drizzle/types';
+import { ItemRaw } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
 
 @singleton()
@@ -18,7 +18,7 @@ export class ItemActionRepository {
 
   async getActionsByHour(
     dbConnection: DBConnection,
-    itemPath: Item['path'],
+    itemPath: ItemRaw['path'],
     actor: MaybeUser,
     params,
   ): Promise<{
@@ -93,7 +93,7 @@ export class ItemActionRepository {
 
   async getActionsByDay(
     dbConnection: DBConnection,
-    itemPath: Item['path'],
+    itemPath: ItemRaw['path'],
     actor: MaybeUser,
     params,
   ): Promise<{
@@ -169,7 +169,7 @@ export class ItemActionRepository {
 
   async getActionsByWeekday(
     dbConnection: DBConnection,
-    itemPath: Item['path'],
+    itemPath: ItemRaw['path'],
     actor: MaybeUser,
     params,
   ): Promise<{

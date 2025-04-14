@@ -5,7 +5,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
-import { Item } from '../../drizzle/types';
+import { ItemRaw } from '../../drizzle/types';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
@@ -55,7 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const item = await itemService.post(tsx, member, {
           // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
           // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
-          item: data as Partial<Item> & Pick<Item, 'name' | 'type'>,
+          item: data as Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>,
           previousItemId,
           parentId,
           geolocation: data.geolocation,

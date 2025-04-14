@@ -9,7 +9,7 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../drizzle/db';
-import { Item, ItemMembershipRaw, ItemVisibilityWithItem } from '../drizzle/types';
+import { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
 import { MaybeUser } from '../types';
 import {
   MemberCannotAccess,
@@ -51,7 +51,7 @@ export class AuthorizationService {
     dbConnection: DBConnection,
     permission: PermissionLevelOptions,
     actor: { id: string } | undefined,
-    items: Item[],
+    items: ItemRaw[],
   ): Promise<{
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
@@ -140,7 +140,7 @@ export class AuthorizationService {
     dbConnection: DBConnection,
     permission: PermissionLevelOptions,
     actor: MaybeUser,
-    item: Item,
+    item: ItemRaw,
   ) {
     try {
       await this.validatePermission(dbConnection, permission, actor, item);
@@ -154,7 +154,7 @@ export class AuthorizationService {
     dbConnection: DBConnection,
     permission: PermissionLevelOptions,
     actor: { id: string } | undefined,
-    item: Item,
+    item: ItemRaw,
   ): Promise<{
     itemMembership: ItemMembershipRaw | null;
     visibilities: ItemVisibilityWithItem[];
@@ -211,7 +211,7 @@ export class AuthorizationService {
   }
 
   // TODO: This is only used here but should probably be put in a better place than the plugin file
-  async isItemVisible(dbConnection: DBConnection, actor: MaybeUser, itemPath: Item['path']) {
+  async isItemVisible(dbConnection: DBConnection, actor: MaybeUser, itemPath: ItemRaw['path']) {
     const isHidden = await this.itemVisibilityRepository.getType(
       dbConnection,
       itemPath,

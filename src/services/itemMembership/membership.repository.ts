@@ -375,10 +375,7 @@ export class ItemMembershipRepository {
   async getForManyItems(
     dbConnection: DBConnection,
     items: Item[],
-    {
-      accountId = undefined,
-      withDeleted = false,
-    }: { accountId?: UUID; withDeleted?: boolean } = {},
+    { accountId = undefined }: { accountId?: UUID } = {},
   ): Promise<ResultOf<ItemMembershipWithItemAndAccount[]>> {
     if (items.length === 0) {
       return { data: {}, errors: [] };
@@ -388,9 +385,7 @@ export class ItemMembershipRepository {
 
     const andConditions: SQL[] = [inArray(itemsRawTable.id, ids)];
 
-    if (!withDeleted) {
-      andConditions.push(isNull(itemsRawTable.deletedAt));
-    }
+    andConditions.push(isNull(itemsRawTable.deletedAt));
 
     if (accountId) {
       andConditions.push(eq(itemMembershipsTable.accountId, accountId));

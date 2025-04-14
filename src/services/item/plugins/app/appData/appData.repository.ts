@@ -12,16 +12,16 @@ import {
 import { DBConnection } from '../../../../../drizzle/db';
 import { appDataTable } from '../../../../../drizzle/schema';
 import {
-  Account,
   AppDataRaw,
   AppDataWithItemAndAccountAndCreator,
+  MinimalAccount,
 } from '../../../../../drizzle/types';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
 // TODO: appData was previously Partial, define what is needed all the time:
 // -- type
-type CreateAppDataBody = { appData: InputAppData; itemId: string; actorId: Account['id'] };
+type CreateAppDataBody = { appData: InputAppData; itemId: string; actorId: MinimalAccount['id'] };
 
 export class AppDataRepository {
   async addOne(
@@ -85,7 +85,7 @@ export class AppDataRepository {
     itemId: string,
     filters: {
       visibility?: AppDataVisibility;
-      accountId?: Account['id'];
+      accountId?: MinimalAccount['id'];
       type?: string;
     } = {},
     permission?: PermissionLevelOptions,

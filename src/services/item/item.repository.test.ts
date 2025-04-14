@@ -15,13 +15,8 @@ import {
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
-import {
-  items,
-  itemsRawTable,
-  publishedItemsTable,
-  recycledItemDatasTable,
-} from '../../drizzle/schema';
-import { Item } from '../../drizzle/types';
+import { items, publishedItemsTable } from '../../drizzle/schema';
+import { ItemRaw } from '../../drizzle/types';
 import { assertIsDefined } from '../../utils/assertions';
 import {
   HierarchyTooDeep,
@@ -40,16 +35,6 @@ import { expectItem, expectManyItems } from './test/fixtures/items';
 
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 
-// TODO: remove when this can be handled by the seed
-async function saveRecycledItem(item: Item, creatorId: string) {
-  await db.insert(recycledItemDatasTable).values({ itemPath: item.path, creatorId });
-  await db
-    .update(itemsRawTable)
-    .set({ deletedAt: new Date().toISOString() })
-    .where(eq(itemsRawTable.id, item.id));
-}
-
-// TODO: remove when this can be handled by the seed
 const saveCollections = async () => {
   const {
     items,
@@ -82,7 +67,7 @@ const saveCollections = async () => {
 };
 
 // TODO: remove when this when we use drizzle
-const getOrderForItemId = async (itemId: Item['id']): Promise<number | null> => {
+const getOrderForItemId = async (itemId: ItemRaw['id']): Promise<number | null> => {
   try {
     const res = await db.select().from(items).where(eq(items.id, itemId));
     return res[0].order;
@@ -400,8 +385,7 @@ describe('Item Repository', () => {
       });
     });
 
-    // FIXME: !!! Need to re-enable the feature in the repo !
-    it.skip('Filter children by keyword', async () => {
+    it('Filter children by keyword', async () => {
       const {
         actor,
         items: [parent, child1, child2, _noise],
@@ -493,64 +477,6 @@ describe('Item Repository', () => {
     });
   });
 
-  // describe('getManyDescendants', () => {
-  // it.skip('return empty for empty ids', async () => {
-  //   const result = await itemRepository.getManyDescendants(db, []);
-  //   expect(result).toHaveLength(0);
-  // });
-  // it('return many descendants', async () => {
-  //   const {
-  //     actor,
-  //     items: [A, A1, A11, B, B1, B11, B12, deleted, _C, _C1],
-  //   } = await seedFromJson({
-  //     items: [
-  //       {
-  //         children: [{ children: [{}] }],
-  //       },
-  //       {
-  //         children: [{ children: [{}, {}, {}] }],
-  //       },
-  //       {
-  //         children: [{}],
-  //       },
-  //     ],
-  //   });
-  //   assertIsDefined(actor);
-  //   assertIsMember(actor);
-  //   // TODO: remove once deleted is part of seed
-  //   await saveRecycledItem(recycledItemRepository, itemRawRepository, deleted, actor.id);
-  //   const result = await itemRepository.getManyDescendants([A, B]);
-  //   expectManyItems(result, [A1, A11, B1, B11, B12]);
-  //   expect(result).not.toContain(deleted);
-  // });
-  // it('return descendants with deleted', async () => {
-  //   const {
-  //     actor,
-  //     items: [A, A1, A11, B, B1, B11, B12, deleted, _C, _C1],
-  //   } = await seedFromJson({
-  //     items: [
-  //       {
-  //         children: [{ children: [{}] }],
-  //       },
-  //       {
-  //         children: [{ children: [{}, {}, {}] }],
-  //       },
-  //       {
-  //         children: [{}],
-  //       },
-  //     ],
-  //   });
-  //   assertIsDefined(actor);
-  //   assertIsMember(actor);
-  //   // TODO: remove once deleted is part of seed
-  //   await saveRecycledItem(recycledItemRepository, itemRawRepository, deleted, actor.id);
-  //   const result = await itemRepository.getManyDescendants([A, B], {
-  //     withDeleted: true,
-  //   });
-  //   expectManyItems(result, [A1, A11, B1, B11, B12, deleted]);
-  // });
-  // });
-
   describe('getMany', () => {
     it('return empty for empty ids', async () => {
       const result = await itemRepository.getMany(db, []);
@@ -569,27 +495,6 @@ describe('Item Repository', () => {
       expect(result.errors).toHaveLength(1);
     });
 
-    // FIXME: withDeleted feature has been removed from the repo
-    it.skip('return result for ids with deleted', async () => {
-      const {
-        actor,
-        items: [item1, item2, item3],
-      } = await seedFromJson({
-        items: [{}, {}, {}],
-      });
-      assertIsDefined(actor);
-      assertIsMember(actor);
-      // TODO: remove once deleted is part of seed
-      await saveRecycledItem(item3, actor.id);
-
-      const result = await itemRepository.getMany(db, [item1.id, item2.id, item3.id, v4()], {
-        withDeleted: true,
-      });
-      expectItem(result.data[item1.id], item1);
-      expectItem(result.data[item2.id], item2);
-      expectItem(result.data[item3.id], item3);
-      expect(result.errors).toHaveLength(1);
-    });
     it('throw for error', async () => {
       await expect(
         itemRepository.getMany(db, [v4()], { throwOnError: true }),
@@ -629,7 +534,7 @@ describe('Item Repository', () => {
       const {
         items: [item1, item2],
       } = await seedFromJson({ actor: null, items: [{}, {}] });
-      const movedItem = await itemRepository.move(db, item1, item2);
+      const movedItem = await itemRepository.move(db, item1, item2 as FolderItem);
       expect(movedItem.id).toEqual(item1.id);
       const newItem = await itemRawRepository.findOneBy({ id: item1.id });
       expect(newItem).toBeDefined();
@@ -640,14 +545,18 @@ describe('Item Repository', () => {
         items: [item1, item2],
       } = await seedFromJson({ actor: null, items: [{}, { type: ItemType.DOCUMENT }] });
 
-      await expect(itemRepository.move(db, item1, item2)).rejects.toBeInstanceOf(ItemNotFolder);
+      await expect(itemRepository.move(db, item1, item2 as FolderItem)).rejects.toBeInstanceOf(
+        ItemNotFolder,
+      );
     });
     it('Fail to move into self', async () => {
       const {
         items: [item],
       } = await seedFromJson({ actor: null, items: [{}] });
 
-      await expect(itemRepository.move(db, item, item)).rejects.toBeInstanceOf(InvalidMoveTarget);
+      await expect(itemRepository.move(db, item, item as FolderItem)).rejects.toBeInstanceOf(
+        InvalidMoveTarget,
+      );
     });
     it('Fail to move in same parent', async () => {
       // root
@@ -663,7 +572,7 @@ describe('Item Repository', () => {
       });
       await expect(itemRepository.move(db, parent)).rejects.toBeInstanceOf(InvalidMoveTarget);
 
-      await expect(itemRepository.move(db, child, parent)).rejects.toBeInstanceOf(
+      await expect(itemRepository.move(db, child, parent as FolderItem)).rejects.toBeInstanceOf(
         InvalidMoveTarget,
       );
     });
@@ -787,7 +696,7 @@ describe('Item Repository', () => {
       await itemRepository.addOne(db, {
         item: data,
         creator: new MemberDTO(member).toMinimal(),
-        parentItem,
+        parentItem: parentItem as FolderItem,
       });
       const newItem = (await db.select().from(items).where(eq(items.name, data.name))).at(0);
 
@@ -803,9 +712,8 @@ describe('Item Repository', () => {
       const {
         members: [member],
       } = await seedFromJson({ actor: null, members: [{}] });
-      const localItems = Array.from(
-        { length: 15 },
-        () => ItemFactory({ type: ItemType.FOLDER, creator: member }) as Item,
+      const localItems = Array.from({ length: 15 }, () =>
+        ItemFactory({ type: ItemType.FOLDER, creator: member }),
       );
 
       const insertedItems = await itemRepository.addMany(
@@ -841,16 +749,15 @@ describe('Item Repository', () => {
         items: [parentItem],
       } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
 
-      const localItems = Array.from(
-        { length: 15 },
-        (_v) => ItemFactory({ type: ItemType.FOLDER, creator: member }) as Item,
+      const localItems = Array.from({ length: 15 }, (_v) =>
+        ItemFactory({ type: ItemType.FOLDER, creator: member }),
       );
 
       const insertedItems = await itemRepository.addMany(
         db,
         localItems,
         new MemberDTO(member).toMinimal(),
-        parentItem,
+        parentItem as FolderItem,
       );
       const insertedItemNames = insertedItems.map((i) => i.name);
       const insertedItemTypes = insertedItems.map((i) => i.type);
@@ -934,7 +841,7 @@ describe('Item Repository', () => {
         db,
         localItems,
         new MemberDTO(actor).toMinimal(),
-        parentItem,
+        parentItem as FolderItem,
       );
       const insertedItemNames = insertedItems.map((i) => i.name);
       const insertedItemTypes = insertedItems.map((i) => i.type);
@@ -1328,7 +1235,11 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
+      await itemRepository.rescaleOrder(
+        db,
+        new MemberDTO(actor).toMinimal(),
+        parentItem as FolderItem,
+      );
 
       expect(await getOrderForItemId(item1.id)).toEqual(20);
       expect(await getOrderForItemId(item2.id)).toEqual(40);
@@ -1354,7 +1265,11 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
+      await itemRepository.rescaleOrder(
+        db,
+        new MemberDTO(actor).toMinimal(),
+        parentItem as FolderItem,
+      );
 
       expect(await getOrderForItemId(item1.id)).toEqual(20);
       // null value is at the end but before item5 because it is the least recent
@@ -1383,7 +1298,11 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
+      await itemRepository.rescaleOrder(
+        db,
+        new MemberDTO(actor).toMinimal(),
+        parentItem as FolderItem,
+      );
 
       expect(await getOrderForItemId(item1.id)).toEqual(60);
       // first among duplicata because is more recent
@@ -1402,7 +1321,11 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
+      await itemRepository.rescaleOrder(
+        db,
+        new MemberDTO(actor).toMinimal(),
+        parentItem as FolderItem,
+      );
 
       expect(await getOrderForItemId(item1.id)).toEqual(11);
       expect(await getOrderForItemId(item2.id)).toEqual(12);

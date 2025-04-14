@@ -9,7 +9,6 @@ import { MemberInfo } from '../../types';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
-  MOBILE_AUTH_URL,
   PUBLIC_URL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
 } from '../../utils/config';
@@ -38,7 +37,7 @@ export class AuthService {
     });
 
     const redirectionUrl = getRedirectionLink(this.log, url);
-    const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
+    const domain = PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set('url', redirectionUrl);
@@ -78,7 +77,7 @@ export class AuthService {
     });
 
     const redirectionUrl = getRedirectionLink(this.log, url);
-    const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
+    const domain = PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set('url', redirectionUrl);

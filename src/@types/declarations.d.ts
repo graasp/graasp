@@ -1,6 +1,6 @@
 import 'fastify';
 
-import { Item } from '../drizzle/types';
+import { ItemRaw } from '../drizzle/types';
 import { WebsocketService } from '../services/websockets/ws-service';
 import { MaybeUser } from '../types';
 
@@ -18,7 +18,7 @@ declare module 'fastify' {
     }; // Used for Email modification
     app?: {
       // Used for App Authentication
-      item: Item;
+      item: ItemRaw;
       key: string;
       origin: string;
     };

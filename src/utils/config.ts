@@ -100,13 +100,6 @@ export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
  */
 export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
 
-export const MOBILE_AUTH_URL = new URL(process.env.MOBILE_AUTH_URL || 'https://mobile.graasp.org');
-
-export const MOBILE_DEEP_LINK_PROTOCOL = new URL(
-  // the domain part below is just an example to check the validity of the URL
-  `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile'}://graasp.org`,
-).protocol; // we only use the protocol anyway
-
 // Graasp constants
 /**
  * Session cookie key

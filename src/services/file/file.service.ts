@@ -1,7 +1,6 @@
 import { Readable } from 'stream';
 
-import { Account } from '@graasp/sdk';
-
+import { MinimalAccount } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { MaybeUser, MinimalMember } from '../../types';
 import { CachingService } from '../caching/service';
@@ -42,13 +41,16 @@ class FileService {
     return this.repository.getFileSize(filepath);
   }
 
-  async upload(account: Account, data: { file: Readable; filepath: string; mimetype?: string }) {
+  async upload(
+    account: MinimalAccount,
+    data: { file: Readable; filepath: string; mimetype?: string },
+  ) {
     const uploadedFiles = await this.uploadMany(account, [data]);
     return uploadedFiles[0];
   }
 
   async uploadMany(
-    account: Account,
+    account: MinimalAccount,
     data: { file: Readable; filepath: string; mimetype?: string }[],
   ) {
     data.forEach((fileInput) => {

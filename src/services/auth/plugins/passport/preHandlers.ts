@@ -18,7 +18,7 @@ import { PassportStrategy } from './strategies';
  * Will set the user to `request.user.member` if possible.
  */
 export const optionalIsAuthenticated = fastifyPassport.authenticate([
-  PassportStrategy.MobileJwt,
+  // PassportStrategy.MobileJwt,
   PassportStrategy.Session,
 ]);
 
@@ -27,7 +27,7 @@ export const optionalIsAuthenticated = fastifyPassport.authenticate([
  * Will set the user to `request.user.member`.
  */
 export const isAuthenticated = fastifyPassport.authenticate([
-  PassportStrategy.MobileJwt,
+  // PassportStrategy.MobileJwt,
   PassportStrategy.StrictSession,
 ]);
 
@@ -41,9 +41,9 @@ export const authenticatePassword = fastifyPassport.authenticate(PassportStrateg
 /**
  * Classic magic link authentication to create a session.
  */
-export const authenticateMobileMagicLink = fastifyPassport.authenticate(
-  PassportStrategy.MobileMagicLink,
-);
+// export const authenticateMobileMagicLink = fastifyPassport.authenticate(
+//   PassportStrategy.MobileMagicLink,
+// );
 
 //-- JWT Strategies --//
 /**
@@ -61,21 +61,21 @@ export const authenticateEmailChange = fastifyPassport.authenticate(PassportStra
   session: false,
 });
 
-/**
- * Refresh Token for mobile authentication
- */
-export const authenticateRefreshToken = fastifyPassport.authenticate(
-  PassportStrategy.RefreshToken,
-  { session: false },
-);
+// /**
+//  * Refresh Token for mobile authentication
+//  */
+// export const authenticateRefreshToken = fastifyPassport.authenticate(
+//   PassportStrategy.RefreshToken,
+//   { session: false },
+// );
 
-/**
- * Mobile Authentication
- */
-export const authenticateJWTChallengeVerifier = fastifyPassport.authenticate(
-  PassportStrategy.JwtChallengeVerifier,
-  { session: false },
-);
+// /**
+//  * Mobile Authentication
+//  */
+// export const authenticateJWTChallengeVerifier = fastifyPassport.authenticate(
+//   PassportStrategy.JwtChallengeVerifier,
+//   { session: false },
+// );
 
 /**
  * Items app authentication

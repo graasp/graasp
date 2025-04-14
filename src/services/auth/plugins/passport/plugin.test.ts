@@ -28,11 +28,8 @@ import { MemberPasswordService } from '../password/password.service';
 import {
   authenticateAppsJWT,
   authenticateEmailChange,
-  authenticateJWTChallengeVerifier,
-  authenticateMobileMagicLink,
   authenticatePassword,
   authenticatePasswordReset,
-  authenticateRefreshToken,
   guestAuthenticateAppsJWT,
   isAuthenticated,
   optionalIsAuthenticated,
@@ -342,50 +339,50 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
   });
-  describe('authenticateMobileMagicLink', () => {
-    beforeEach(async () => {
-      preHandler.mockImplementation(authenticateMobileMagicLink);
-    });
-    it('Unauthenticated', async () => {
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({ path: MOCKED_ROUTE });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Unknown JWT Member', async () => {
-      const token = sign({ sub: v4() }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        path: MOCKED_ROUTE,
-        query: { token },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-    });
-    it('Invalid JWT Member', async () => {
-      const token = sign({ sub: v4() }, 'invalid');
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        path: MOCKED_ROUTE,
-        query: { token },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Valid JWT Member', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      assertIsMemberForTest(actor);
-      const token = sign({ sub: actor.id }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.account.id).toEqual(actor.id));
-      const response = await app.inject({
-        path: MOCKED_ROUTE,
-        query: { token },
-      });
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(response.statusCode).toBe(StatusCodes.OK);
-    });
-  });
+  // describe('authenticateMobileMagicLink', () => {
+  //   beforeEach(async () => {
+  //     preHandler.mockImplementation(authenticateMobileMagicLink);
+  //   });
+  //   it('Unauthenticated', async () => {
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({ path: MOCKED_ROUTE });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Unknown JWT Member', async () => {
+  //     const token = sign({ sub: v4() }, AUTH_TOKEN_JWT_SECRET);
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       path: MOCKED_ROUTE,
+  //       query: { token },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  //   });
+  //   it('Invalid JWT Member', async () => {
+  //     const token = sign({ sub: v4() }, 'invalid');
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       path: MOCKED_ROUTE,
+  //       query: { token },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Valid JWT Member', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     assertIsMemberForTest(actor);
+  //     const token = sign({ sub: actor.id }, AUTH_TOKEN_JWT_SECRET);
+  //     handler.mockImplementation(({ user }) => expect(user.account.id).toEqual(actor.id));
+  //     const response = await app.inject({
+  //       path: MOCKED_ROUTE,
+  //       query: { token },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(1);
+  //     expect(response.statusCode).toBe(StatusCodes.OK);
+  //   });
+  // });
   describe('authenticatePasswordReset', () => {
     let token: string;
     let uuid: string;
@@ -511,178 +508,178 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
   });
-  describe('authenticateRefreshToken', () => {
-    beforeEach(async () => {
-      preHandler.mockImplementation(authenticateRefreshToken);
-    });
-    it('Unauthenticated', async () => {
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({ path: MOCKED_ROUTE });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Unknown JWT Member', async () => {
-      const token = sign({ sub: v4() }, REFRESH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        path: MOCKED_ROUTE,
-        headers: { authorization: `Bearer ${token}` },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Invalid JWT Member', async () => {
-      const token = sign({ sub: v4() }, 'invalid');
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        path: MOCKED_ROUTE,
-        headers: { authorization: `Bearer ${token}` },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Valid JWT Member', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      assertIsMemberForTest(actor);
-      const token = sign({ sub: actor.id }, REFRESH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.account.id).toEqual(actor.id));
-      const response = await app.inject({
-        path: MOCKED_ROUTE,
-        headers: { authorization: `Bearer ${token}` },
-      });
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(response.statusCode).toBe(StatusCodes.OK);
-    });
-  });
-  describe('authenticateJWTChallengeVerifier', () => {
-    let verifier: string;
-    let challenge: string;
-    beforeEach(async () => {
-      preHandler.mockImplementation(authenticateJWTChallengeVerifier);
-      verifier = 'verifier';
-      challenge = crypto.createHash('sha256').update(verifier).digest('hex');
-    });
-    it('Unauthenticated', async () => {
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Unknown JWT Member', async () => {
-      const token = sign({ sub: v4(), challenge }, JWT_SECRET);
-      handler.mockImplementation(shouldNotBeCalled);
+  // describe('authenticateRefreshToken', () => {
+  //   beforeEach(async () => {
+  //     preHandler.mockImplementation(authenticateRefreshToken);
+  //   });
+  //   it('Unauthenticated', async () => {
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({ path: MOCKED_ROUTE });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Unknown JWT Member', async () => {
+  //     const token = sign({ sub: v4() }, REFRESH_TOKEN_JWT_SECRET);
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       path: MOCKED_ROUTE,
+  //       headers: { authorization: `Bearer ${token}` },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Invalid JWT Member', async () => {
+  //     const token = sign({ sub: v4() }, 'invalid');
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       path: MOCKED_ROUTE,
+  //       headers: { authorization: `Bearer ${token}` },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Valid JWT Member', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     assertIsMemberForTest(actor);
+  //     const token = sign({ sub: actor.id }, REFRESH_TOKEN_JWT_SECRET);
+  //     handler.mockImplementation(({ user }) => expect(user.account.id).toEqual(actor.id));
+  //     const response = await app.inject({
+  //       path: MOCKED_ROUTE,
+  //       headers: { authorization: `Bearer ${token}` },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(1);
+  //     expect(response.statusCode).toBe(StatusCodes.OK);
+  //   });
+  // });
+  // describe('authenticateJWTChallengeVerifier', () => {
+  //   let verifier: string;
+  //   let challenge: string;
+  //   beforeEach(async () => {
+  //     preHandler.mockImplementation(authenticateJWTChallengeVerifier);
+  //     verifier = 'verifier';
+  //     challenge = crypto.createHash('sha256').update(verifier).digest('hex');
+  //   });
+  //   it('Unauthenticated', async () => {
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Unknown JWT Member', async () => {
+  //     const token = sign({ sub: v4(), challenge }, JWT_SECRET);
+  //     handler.mockImplementation(shouldNotBeCalled);
 
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-        payload: {
-          t: token,
-          verifier,
-        },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-    });
-    it('Invalid JWT Member', async () => {
-      const token = sign({ sub: v4(), challenge }, 'invalid');
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-        payload: {
-          t: token,
-          verifier,
-        },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Challenge is missing', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      const token = sign({ sub: actor.id }, JWT_SECRET);
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-        payload: {
-          t: token,
-          verifier,
-        },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Invalid challenge', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      const challenge = crypto.createHash('sha256').update('invalid').digest('hex');
-      const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-        payload: {
-          t: token,
-          verifier,
-        },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Verifier is missing', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-        payload: {
-          t: token,
-        },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Invalid verifier', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-        payload: {
-          t: token,
-          verifier: 'invalid',
-        },
-      });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    it('Valid JWT Member', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      assertIsMemberForTest(actor);
-      const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.account.id).toEqual(actor.id));
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        path: MOCKED_ROUTE,
-        payload: {
-          t: token,
-          verifier,
-        },
-      });
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(response.statusCode).toBe(StatusCodes.OK);
-    });
-  });
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //       payload: {
+  //         t: token,
+  //         verifier,
+  //       },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  //   });
+  //   it('Invalid JWT Member', async () => {
+  //     const token = sign({ sub: v4(), challenge }, 'invalid');
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //       payload: {
+  //         t: token,
+  //         verifier,
+  //       },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Challenge is missing', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     const token = sign({ sub: actor.id }, JWT_SECRET);
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //       payload: {
+  //         t: token,
+  //         verifier,
+  //       },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Invalid challenge', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     const challenge = crypto.createHash('sha256').update('invalid').digest('hex');
+  //     const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //       payload: {
+  //         t: token,
+  //         verifier,
+  //       },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Verifier is missing', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //       payload: {
+  //         t: token,
+  //       },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Invalid verifier', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
+  //     handler.mockImplementation(shouldNotBeCalled);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //       payload: {
+  //         t: token,
+  //         verifier: 'invalid',
+  //       },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(0);
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   it('Valid JWT Member', async () => {
+  //     const { actor } = await seedFromJson();
+  //     assertIsDefined(actor);
+  //     assertIsMemberForTest(actor);
+  //     const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
+  //     handler.mockImplementation(({ user }) => expect(user.account.id).toEqual(actor.id));
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       path: MOCKED_ROUTE,
+  //       payload: {
+  //         t: token,
+  //         verifier,
+  //       },
+  //     });
+  //     expect(handler).toHaveBeenCalledTimes(1);
+  //     expect(response.statusCode).toBe(StatusCodes.OK);
+  //   });
+  // });
   describe('authenticateAppsJWT', () => {
     const key = 'key';
     const origin = 'origin';

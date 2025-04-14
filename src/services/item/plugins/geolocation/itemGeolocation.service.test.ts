@@ -304,73 +304,73 @@ describe('ItemGeolocationService', () => {
           },
         ]);
       });
-      // TODO
-      // it('get successfully inside public item', async () => {
-      //   const {
-      //     actor,
-      //     items: [parent, child],
-      //     geolocations,
-      //     itemVisibilities,
-      //   } = await seedFromJson({
-      //     items: [
-      //       {
-      //         isPublic: true,
-      //         geolocation: {
-      //           lat: 1,
-      //           lng: 2,
-      //           country: 'de',
-      //         },
-      //         children: [
-      //           {
-      //             geolocation: {
-      //               lat: 1,
-      //               lng: 2,
-      //               country: 'de',
-      //             },
-      //           },
-      //         ],
-      //       },
-      //     ],
-      //   });
-      //   assertIsDefined(actor);
-      //   assertIsMemberForTest(actor);
 
-      //   jest.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([
-      //     { ...geolocations[0], item: { ...parent, creator: actor } },
-      //     { ...geolocations[1], item: { ...child, creator: actor } },
-      //   ]);
-      //   jest.spyOn(authorizationService, 'validatePermissionMany').mockResolvedValue({
-      //     itemMemberships: {
-      //       data: {},
-      //       errors: [],
-      //     },
-      //     visibilities: {
-      //       data: {
-      //         [parent.id]: [{ ...itemVisibilities[0], item: parent }],
-      //         [child.id]: [{ ...itemVisibilities[0], item: parent }],
-      //       },
-      //       errors: [],
-      //     },
-      //   });
-      //   const res = await service.getIn(db, actor, {
-      //     lat1: 0,
-      //     lat2: 4,
-      //     lng1: 0,
-      //     lng2: 4,
-      //   });
+      it('get successfully inside public item', async () => {
+        const {
+          actor,
+          items: [parent, child],
+          geolocations,
+          itemVisibilities,
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              geolocation: {
+                lat: 1,
+                lng: 2,
+                country: 'de',
+              },
+              children: [
+                {
+                  geolocation: {
+                    lat: 1,
+                    lng: 2,
+                    country: 'de',
+                  },
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
 
-      //   expect(res).toHaveLength(1);
-      //   expectPackedItemGeolocations(res, [
-      //     {
-      //       ...geolocations[1],
-      //       item: { ...parent, creator: actor, permission: null },
-      //     },
-      //     {
-      //       ...geolocations[1],
-      //       item: { ...child, creator: actor, permission: null },
-      //     },
-      //   ]);
-      // });
+        jest.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([
+          { ...geolocations[0], item: { ...parent, creator: actor } },
+          { ...geolocations[1], item: { ...child, creator: actor } },
+        ]);
+        jest.spyOn(authorizationService, 'validatePermissionMany').mockResolvedValue({
+          itemMemberships: {
+            data: {},
+            errors: [],
+          },
+          visibilities: {
+            data: {
+              [parent.id]: [{ ...itemVisibilities[0], item: parent }],
+              [child.id]: [{ ...itemVisibilities[0], item: parent }],
+            },
+            errors: [],
+          },
+        });
+        const res = await service.getIn(db, actor, {
+          lat1: 0,
+          lat2: 4,
+          lng1: 0,
+          lng2: 4,
+        });
+
+        expect(res).toHaveLength(1);
+        expectPackedItemGeolocations(res, [
+          {
+            ...geolocations[1],
+            item: { ...parent, creator: actor, permission: null },
+          },
+          {
+            ...geolocations[1],
+            item: { ...child, creator: actor, permission: null },
+          },
+        ]);
+      });
       //   it('get successfully geolocalized child in public item', async () => {
       //     const member = await saveMember();
       //     const { item: publicItem } = await testUtils.savePublicItem({ member });

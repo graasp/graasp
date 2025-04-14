@@ -2,7 +2,6 @@ import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import magicLinkController from './plugins/magicLink/magicLink.controller';
-import mobileController from './plugins/mobile/mobile.controller';
 import passwordController from './plugins/password/password.controller';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -13,7 +12,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }
     fastify.register(magicLinkController);
     fastify.register(passwordController);
-    fastify.register(mobileController, { prefix: '/m' });
   });
 };
 

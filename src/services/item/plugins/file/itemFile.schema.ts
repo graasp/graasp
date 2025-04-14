@@ -39,12 +39,6 @@ export const download = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  querystring: customType.StrictObject({
-    /**
-     * @deprecated we don't use this parameter anymore. This should be removed app once the mobile is deprecated.
-     */
-    replyUrl: Type.Boolean({ default: true, deprecated: true }),
-  }),
   response: {
     [StatusCodes.OK]: Type.String({ format: 'uri' }),
     '4xx': errorSchemaRef,

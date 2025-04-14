@@ -59,7 +59,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
         },
         { name: 'mention', description: 'Endpoints related to mentions in chat' },
         { name: 'meta', description: 'Endpoints related to system health and monitoring' },
-        { name: 'mobile', description: 'Endpoints related to mobile' },
         {
           name: 'password',
           description: 'Endpoints related to authentication and management of password',

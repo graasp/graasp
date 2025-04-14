@@ -7,7 +7,7 @@ import { MultipartFile } from '@fastify/multipart';
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../../drizzle/db';
-import { AppDataRaw, Item } from '../../../../../../../drizzle/types';
+import { AppDataRaw, ItemRaw } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../../../types';
 import FileService from '../../../../../../file/file.service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
@@ -39,21 +39,11 @@ class AppDataFileService {
     dbConnection: DBConnection,
     account: AuthenticatedUser,
     file: MultipartFile,
-    item: Item,
+    item: ItemRaw,
   ) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename
-
-    // compute body data from file's fields
-    // if (fields) {
-    //   const fileBody = Object.fromEntries(
-    //     Object.keys(fields).map((key) => [
-    //       key,
-    //       (fields[key] as unknown as { value: string })?.value,
-    //     ]),
-    //   );
-    // }
 
     const fileProperties = await this.fileService
       .upload(account, {
@@ -67,12 +57,6 @@ class AppDataFileService {
       .catch((e) => {
         throw e;
       });
-
-    // remove undefined values
-    // const values = { ...fileBody };
-    // Object.keys(values).forEach((key) => values[key] === undefined && delete values[key]);
-
-    // const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
 
     const appData = await this.appDataRepository.addOne(dbConnection, {
       itemId: item.id,
@@ -93,7 +77,7 @@ class AppDataFileService {
   async download(
     dbConnection: DBConnection,
     account: AuthenticatedUser,
-    { item, appDataId }: { item: Item; appDataId: UUID },
+    { item, appDataId }: { item: ItemRaw; appDataId: UUID },
   ) {
     // get app data and check it is a file
     const appData = await this.appDataService.get(dbConnection, account, item, appDataId);
