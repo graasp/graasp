@@ -21,7 +21,7 @@ export const ItemFactory = (
   return {
     type: ItemType.FOLDER,
     order: null,
-    name: faker.word.words(2),
+    name: faker.word.words(4),
     description: faker.lorem.text(),
     extra: { folder: {} },
     settings:

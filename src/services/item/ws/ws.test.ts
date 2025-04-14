@@ -257,8 +257,9 @@ describe('Item websocket hooks', () => {
         channel: actor.id,
       });
 
+      const error = new Error('mock implementation of item copy to throw an error');
       jest.spyOn(ItemRepository.prototype, 'copy').mockImplementation(async () => {
-        throw new Error('mock implementation of item copy to throw an error');
+        throw error;
       });
 
       const response = await app.inject({
@@ -270,10 +271,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
-        expectCopyFeedbackOp(
-          feedbackUpdate,
-          ItemOpFeedbackErrorEvent('copy', [item.id], new Error('mock error')),
-        );
+        expectCopyFeedbackOp(feedbackUpdate, ItemOpFeedbackErrorEvent('copy', [item.id], error));
       });
     });
   });
