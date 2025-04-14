@@ -1,24 +1,15 @@
-import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
-
-import { FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
+import { clearDatabase } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { client, db } from '../../../../drizzle/db';
-import { itemGeolocationsTable, itemsRawTable } from '../../../../drizzle/schema';
-import { BaseLogger } from '../../../../logger';
+import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
-import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
+import { ItemNotFound, MemberCannotWriteItem } from '../../../../utils/errors';
 import { assertIsMemberForTest } from '../../../authentication';
 import { AuthorizationService } from '../../../authorization';
-import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapper } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
-import { ItemService } from '../../item.service';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ItemGeolocationRepository } from './itemGeolocation.repository';
 import { ItemGeolocationService } from './itemGeolocation.service';
@@ -33,6 +24,7 @@ const authorizationService = {
 const itemGeolocationRepository = {
   getUrlsByItems: jest.fn(() => ({ small: 'url' })),
   delete: jest.fn(),
+  put: jest.fn(),
   getByItem: jest.fn(),
   getItemsIn: jest.fn(),
 } as unknown as ItemGeolocationRepository;
@@ -74,7 +66,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(basicItemService, 'get').mockResolvedValue({ ...item, creator: null });
+      jest.spyOn(basicItemService, 'get').mockResolvedValueOnce({ ...item, creator: null });
       const deleteMock = jest.spyOn(itemGeolocationRepository, 'delete');
 
       await service.delete(db, actor, item.id);
@@ -95,7 +87,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(basicItemService, 'get').mockImplementation(() => {
+      jest.spyOn(basicItemService, 'get').mockImplementationOnce(() => {
         throw new MemberCannotWriteItem(expect.anything());
       });
       const deleteMock = jest.spyOn(itemGeolocationRepository, 'delete');
@@ -129,7 +121,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(basicItemService, 'get').mockResolvedValue({ ...item, creator: null });
+      jest.spyOn(basicItemService, 'get').mockResolvedValueOnce({ ...item, creator: null });
       const getByItemMock = jest
         .spyOn(itemGeolocationRepository, 'getByItem')
         .mockResolvedValue({ ...geolocation, item });
@@ -150,7 +142,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(basicItemService, 'get').mockResolvedValue({ ...item, creator: null });
+      jest.spyOn(basicItemService, 'get').mockResolvedValueOnce({ ...item, creator: null });
       jest.spyOn(itemGeolocationRepository, 'getByItem').mockResolvedValue(undefined);
 
       const res = await service.getByItem(db, actor, item.id);
@@ -168,7 +160,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(basicItemService, 'get').mockRejectedValue(new ItemNotFound(item.id));
+      jest.spyOn(basicItemService, 'get').mockRejectedValueOnce(new ItemNotFound(item.id));
 
       await service
         .getByItem(db, actor, v4())
@@ -481,48 +473,63 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(basicItemService, 'get').mockResolvedValue(item);
+      jest.spyOn(basicItemService, 'get').mockResolvedValueOnce({ ...item, creator: null });
+      const putMock = jest.spyOn(itemGeolocationRepository, 'put');
 
       await service.put(db, actor, item.id, { lat: 1, lng: 2 });
-      const geoloc = await db.query.itemGeolocationsTable.findFirst({
-        where: eq(itemGeolocationsTable.itemPath, item.path),
-      });
-      expect(geoloc).toMatchObject({ lat: 1, lng: 2 });
+
+      expect(putMock).toHaveBeenCalledWith(db, item.path, { lat: 1, lng: 2 });
     });
-    //   it('save successfully for write permission', async () => {
-    //     assertIsDefined(actor);
-    //     const member = await saveMember();
-    //     const { item } = await testUtils.saveItemAndMembership({
-    //       member: actor,
-    //       creator: member,
-    //       permission: PermissionLevel.Write,
-    //     });
-    //     await service.put(actor, buildRepositories(), item.id, { lat: 1, lng: 2 });
-    //     const all = await ItemGeolocation.find();
-    //     expect(all).toHaveLength(1);
-    //     expect(all[0]).toMatchObject({ lat: 1, lng: 2 });
-    //   });
-    //   it('throws for read permission', async () => {
-    //     assertIsDefined(actor);
-    //     const member = await saveMember();
-    //     const { item } = await testUtils.saveItemAndMembership({
-    //       member: actor,
-    //       creator: member,
-    //       permission: PermissionLevel.Read,
-    //     });
-    //     await service.put(actor, buildRepositories(), item.id, { lat: 1, lng: 2 }).catch((e) => {
-    //       expect(e).toMatchObject(new MemberCannotWriteItem(expect.anything()));
-    //     });
-    //   });
-    //   it('throws if item not found', async () => {
-    //     assertIsDefined(actor);
-    //     await service
-    //       .put(actor, buildRepositories(), v4(), { lat: 1, lng: 2 })
-    //       .then(() => {
-    //         throw new Error('This should have throw');
-    //       })
-    //       .catch((e) => {
-    //         expect(e).toMatchObject(new ItemNotFound(expect.anything()));
-    //       });
+    it('save successfully for write permission', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      jest.spyOn(basicItemService, 'get').mockResolvedValueOnce({ ...item, creator: null });
+      const putMock = jest.spyOn(itemGeolocationRepository, 'put');
+
+      await service.put(db, actor, item.id, { lat: 1, lng: 2 });
+
+      expect(putMock).toHaveBeenCalledWith(db, item.path, { lat: 1, lng: 2 });
+    });
+    it('throws if basic item service get throws', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      jest.spyOn(basicItemService, 'get').mockImplementationOnce(() => {
+        throw new MemberCannotWriteItem(expect.anything());
+      });
+      const putMock = jest.spyOn(itemGeolocationRepository, 'put');
+
+      await service
+        .put(db, actor, item.id, { lat: 1, lng: 2 })
+        .then(() => {
+          throw new Error('This should have throw');
+        })
+        .catch((e) => {
+          expect(e).toMatchObject(new MemberCannotWriteItem(expect.anything()));
+        });
+
+      expect(putMock).not.toHaveBeenCalled();
+    });
   });
 });

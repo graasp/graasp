@@ -94,7 +94,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: isAuthenticated,
       },
       async ({ query }) => {
-        return itemGeolocationService.getAddressFromCoordinates(db, query);
+        return itemGeolocationService.getAddressFromCoordinates(query);
       },
     );
 
@@ -105,7 +105,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: isAuthenticated,
       },
       async ({ query }) => {
-        return itemGeolocationService.getSuggestionsForQuery(db, query);
+        return itemGeolocationService.getSuggestionsForQuery(query);
       },
     );
   });

@@ -4,7 +4,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item, ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
+import { ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
@@ -51,7 +51,7 @@ export class ItemGeolocationService {
     return this.itemGeolocationRepository.delete(dbConnection, item);
   }
 
-  async getByItem(dbConnection: DBConnection, actor: MaybeUser, itemId: Item['id']) {
+  async getByItem(dbConnection: DBConnection, actor: MaybeUser, itemId: ItemRaw['id']) {
     // check item exists and actor has permission
     const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
@@ -149,7 +149,6 @@ export class ItemGeolocationService {
   }
 
   async getAddressFromCoordinates(
-    dbConnection: DBConnection,
     query: Pick<ItemGeolocationRaw, 'lat' | 'lng'> & { lang?: string },
   ) {
     if (!this.geolocationKey) {
@@ -159,10 +158,7 @@ export class ItemGeolocationService {
     return this.itemGeolocationRepository.getAddressFromCoordinates(query, this.geolocationKey);
   }
 
-  async getSuggestionsForQuery(
-    dbConnection: DBConnection,
-    query: { query: string; lang?: string },
-  ) {
+  async getSuggestionsForQuery(query: { query: string; lang?: string }) {
     if (!this.geolocationKey) {
       throw new MissingGeolocationApiKey();
     }

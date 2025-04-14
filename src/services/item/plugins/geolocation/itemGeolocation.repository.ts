@@ -17,10 +17,10 @@ import {
 } from '../../../../drizzle/operations';
 import { accountsTable, itemGeolocationsTable, items } from '../../../../drizzle/schema';
 import {
-  Item,
   ItemGeolocationRaw,
   ItemGeolocationWithItem,
   ItemGeolocationWithItemWithCreator,
+  ItemRaw,
   MemberRaw,
 } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
@@ -36,8 +36,8 @@ export class ItemGeolocationRepository {
    */
   async copy(
     dbConnection: DBConnection,
-    original: { path: Item['path'] },
-    copy: { path: Item['path'] },
+    original: { path: ItemRaw['path'] },
+    copy: { path: ItemRaw['path'] },
   ): Promise<void> {
     const geoloc = await this.getByItem(dbConnection, original.path);
     if (geoloc) {
@@ -56,7 +56,7 @@ export class ItemGeolocationRepository {
    * Delete a geolocation given an item
    * @param item item to delete
    */
-  async delete(dbConnection: DBConnection, item: Item): Promise<void> {
+  async delete(dbConnection: DBConnection, item: ItemRaw): Promise<void> {
     await dbConnection
       .delete(itemGeolocationsTable)
       .where(eq(itemGeolocationsTable.itemPath, item.path));
@@ -88,7 +88,7 @@ export class ItemGeolocationRepository {
       lng2?: ItemGeolocationRaw['lng'];
       keywords?: string[];
     },
-    parentItem?: Item,
+    parentItem?: ItemRaw,
   ): Promise<ItemGeolocationWithItemWithCreator[]> {
     // should include at least parentItem or all lat/lng
     if (
@@ -168,7 +168,7 @@ export class ItemGeolocationRepository {
    */
   async getByItem(
     dbConnection: DBConnection,
-    itemPath: Item['path'],
+    itemPath: ItemRaw['path'],
   ): Promise<ItemGeolocationWithItem | undefined> {
     const geoloc = await dbConnection.query.itemGeolocationsTable.findFirst({
       where: isAncestorOrSelf(itemGeolocationsTable.itemPath, itemPath),
@@ -187,7 +187,7 @@ export class ItemGeolocationRepository {
    */
   async put(
     dbConnection: DBConnection,
-    itemPath: Item['path'],
+    itemPath: ItemRaw['path'],
     geolocation: Pick<ItemGeolocationRaw, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
   ): Promise<void> {

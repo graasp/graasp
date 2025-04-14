@@ -1,9 +1,12 @@
 import { eq } from 'drizzle-orm/sql';
 
+import { ItemType } from '@graasp/sdk';
+
 import { clearDatabase } from '../../../../../test/app';
-import { seedFromJson } from '../../../../../test/mocks/seed';
-import { client, db } from '../../../../drizzle/db';
+import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
 import { itemGeolocationsTable } from '../../../../drizzle/schema';
+import { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
 import { MissingGeolocationSearchParams } from './errors';
@@ -301,347 +304,373 @@ describe('ItemGeolocationRepository', () => {
       expect(gIds).toContain(geoloc.id);
       expect(gIds).toContain(geolocParent.id);
     });
-    // TODO
-    //     it('return with keywords in english and french', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         item: { name: 'chat chien', lang: 'fr' },
-    //         member: actor,
-    //       });
-    //       const { item } = await testUtils.saveItemAndMembership({
-    //         item: { name: 'poisson', lang: 'fr' },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-    //       await rawRepository.save(geoloc);
-    //       const geolocParent = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const res = await repository.getItemsIn(
-    //         { ...actor, lang: 'fr' },
-    //         {
-    //           lat1: 0,
-    //           lat2: 4,
-    //           lng1: 0,
-    //           lng2: 4,
-    //           keywords: ['chats'],
+    it('return with keywords in english and french', async () => {
+      const {
+        actor,
+        items: [parent, noise],
+        geolocations: [geoloc],
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'chat chien',
+            lang: 'fr',
+            creator: 'actor',
+            memberships: [{ account: 'actor' }],
+            geolocation: {
+              lat: 1,
+              lng: 2,
+              country: 'de',
+              helperLabel: 'helper text',
+              addressLabel: 'address',
+            },
+            children: [
+              {
+                name: 'poisson',
+                lang: 'fr',
+                memberships: [{ account: 'actor' }],
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const res = await repository.getItemsIn(db, { ...actor, lang: 'fr' } as MinimalMember, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['chats'],
+      });
+
+      expect(res.length).toBeGreaterThanOrEqual(1);
+      expect(res.map((i) => i.item.id)).not.toContain(noise.id);
+      const wantedItem = res.find(({ id }) => id === geoloc.id);
+      assertIsDefined(wantedItem);
+      expectItemGeolocations([wantedItem], [{ ...geoloc, item: { ...parent, creator: actor } }]);
+    });
+    it('return with keywords in english and spanish', async () => {
+      const {
+        actor,
+        items: [parent, noise],
+        geolocations: [geoloc],
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'gatos perros',
+            lang: 'es',
+            creator: 'actor',
+            memberships: [{ account: 'actor' }],
+            geolocation: {
+              lat: 1,
+              lng: 2,
+              country: 'de',
+              helperLabel: 'helper text',
+              addressLabel: 'address',
+            },
+            children: [
+              {
+                name: 'poisson',
+                lang: 'fr',
+                memberships: [{ account: 'actor' }],
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const res = await repository.getItemsIn(
+        db,
+        { ...actor, lang: 'fr' },
+        {
+          lat1: 0,
+          lat2: 4,
+          lng1: 0,
+          lng2: 4,
+          // this checked the search_document stemmed correctly gatos
+          keywords: ['gato'],
+        },
+      );
+
+      expect(res.length).toBeGreaterThanOrEqual(1);
+      expect(res.map((i) => i.item.id)).not.toContain(noise.id);
+      const wantedItem = res.find(({ id }) => id === geoloc.id);
+      assertIsDefined(wantedItem);
+      expectItemGeolocations([wantedItem], [{ ...geoloc, item: { ...parent, creator: actor } }]);
+    });
+    it('return only item within keywords in name', async () => {
+      const {
+        actor,
+        items: [parent, child],
+        geolocations: [parentGeoloc, childGeoloc],
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'publics private',
+            creator: 'actor',
+            memberships: [{ account: 'actor' }],
+            geolocation: {
+              lat: 1,
+              lng: 2,
+              country: 'de',
+              helperLabel: 'helper text',
+              addressLabel: 'address',
+            },
+            children: [
+              {
+                name: 'private publication',
+                creator: 'actor',
+                memberships: [{ account: 'actor' }],
+                geolocation: {
+                  lat: 1,
+                  lng: 2,
+                  country: 'de',
+                  helperLabel: 'helper text',
+                  addressLabel: 'address',
+                },
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const res = await repository.getItemsIn(db, actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public', 'private'],
+      });
+
+      expect(res.length).toBeGreaterThanOrEqual(2);
+      const p = res.find(({ id }) => id === parentGeoloc.id);
+      const c = res.find(({ id }) => id === childGeoloc.id);
+      assertIsDefined(p);
+      assertIsDefined(c);
+      expectItemGeolocations(
+        [p, c],
+        [
+          { ...parentGeoloc, item: { ...parent, creator: actor } },
+          { ...childGeoloc, item: { ...child, creator: actor } },
+        ],
+      );
+    });
+    it('return only item within keywords in description', async () => {
+      const {
+        actor,
+        items: [parent, noise],
+        geolocations: [parentGeoloc],
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'public',
+            creator: 'actor',
+            memberships: [{ account: 'actor' }],
+            geolocation: {
+              lat: 1,
+              lng: 2,
+              country: 'de',
+              helperLabel: 'helper text',
+              addressLabel: 'address',
+            },
+            children: [
+              {
+                name: 'private',
+                creator: 'actor',
+                memberships: [{ account: 'actor' }],
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const res = await repository.getItemsIn(db, actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+
+      expect(res.length).toBeGreaterThanOrEqual(1);
+      expect(res.map((i) => i.item.id)).not.toContain(noise.id);
+      const wantedItem = res.find(({ id }) => id === parentGeoloc.id);
+      assertIsDefined(wantedItem);
+      expectItemGeolocations(
+        [wantedItem],
+        [{ ...parentGeoloc, item: { ...parent, creator: actor } }],
+      );
+    });
+    // TODO: enable tag search
+    // it('return only item within keywords in tags', async () => {
+    //   const {
+    //     actor,
+    //     items: [parent],
+    //     geolocations: [parentGeoloc],
+    //   } = await seedFromJson({
+    //     items: [
+    //       {
+    //         settings: { tags: ['public'] },
+    //         creator: 'actor',
+    //         memberships: [{ account: 'actor' }],
+    //         geolocation: {
+    //           lat: 1,
+    //           lng: 2,
+    //           country: 'de',
+    //           helperLabel: 'helper text',
+    //           addressLabel: 'address',
     //         },
-    //       );
-    //       expect(res).toHaveLength(1);
-    //       expectItemGeolocations(res, [geolocParent]);
-    //     });
-    //     it('return with keywords in english and spanish', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         item: { name: 'gatos perros', lang: 'es' },
-    //         member: actor,
-    //       });
-    //       const { item } = await testUtils.saveItemAndMembership({
-    //         item: { name: 'poisson', lang: 'fr' },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       const geoloc = {
-    //         lat: 1,
-    //         lng: 2,
-    //         item,
-    //         country: 'de',
-    //         helperLabel: 'helper',
-    //       };
-    //       await rawRepository.save(geoloc);
-    //       const geolocParent = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const res1 = await repository.getItemsIn(
-    //         { ...actor, lang: 'fr' },
-    //         {
-    //           lat1: 0,
-    //           lat2: 4,
-    //           lng1: 0,
-    //           lng2: 4,
-    //           // this checked the search_document stemmed correctly gatos
-    //           keywords: ['gato'],
-    //         },
-    //       );
-    //       expect(res1).toHaveLength(1);
-    //       expectItemGeolocations(res1, [geolocParent]);
-    //     });
-    //     it('return only item within keywords in name', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         item: { name: 'publics private' },
-    //         member: actor,
-    //       });
-    //       const { item } = await testUtils.saveItemAndMembership({
-    //         item: { name: 'private publication' },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       const geoloc = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item,
-    //         country: 'de',
-    //       });
-    //       const geolocParent = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const res = await repository.getItemsIn(actor, {
-    //         lat1: 0,
-    //         lat2: 4,
-    //         lng1: 0,
-    //         lng2: 4,
-    //         keywords: ['public', 'private'],
-    //       });
-    //       expect(res).toHaveLength(2);
-    //       expectItemGeolocations(res, [geoloc, geolocParent]);
-    //     });
-    //     it('return only item within keywords in description', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         item: { description: 'public' },
-    //         member: actor,
-    //       });
-    //       const { item } = await testUtils.saveItemAndMembership({
-    //         item: { description: 'private' },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
-    //       const geolocParent = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const res = await repository.getItemsIn(actor, {
-    //         lat1: 0,
-    //         lat2: 4,
-    //         lng1: 0,
-    //         lng2: 4,
-    //         keywords: ['public'],
-    //       });
-    //       expect(res).toHaveLength(1);
-    //       expectItemGeolocations(res, [geolocParent]);
-    //     });
-    //     it('return only item within keywords in tags', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         item: { settings: { tags: ['public'] } },
-    //         member: actor,
-    //       });
-    //       const { item } = await testUtils.saveItemAndMembership({
-    //         item: { settings: { tags: ['private'] } },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
-    //       const geolocParent = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const res = await repository.getItemsIn(actor, {
-    //         lat1: 0,
-    //         lat2: 4,
-    //         lng1: 0,
-    //         lng2: 4,
-    //         keywords: ['public'],
-    //       });
-    //       expect(res).toHaveLength(1);
-    //       expectItemGeolocations(res, [geolocParent]);
-    //     });
-    //     it('return only item with keywords in file content', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         member: actor,
-    //       });
-    //       const { item: item1 } = await testUtils.saveItemAndMembership({
-    //         item: {
-    //           type: ItemType.LOCAL_FILE,
-    //           extra: {
-    //             [ItemType.LOCAL_FILE]: {
-    //               content: 'public',
-    //               name: 'name',
-    //               path: 'path',
-    //               mimetype: 'mimetype',
-    //               size: 1,
-    //             },
+    //         children: [
+    //           {
+    //             name: 'private',
+    //             creator: 'actor',
+    //             memberships: [{ account: 'actor' }],
     //           },
-    //         },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       const geoloc = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: item1,
-    //         country: 'de',
-    //       });
-    //       await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const { item: item2 } = await testUtils.saveItemAndMembership({
-    //         item: {
-    //           type: ItemType.LOCAL_FILE,
-    //           extra: {
-    //             [ItemType.LOCAL_FILE]: {
-    //               content: 'private',
-    //               name: 'name',
-    //               path: 'path',
-    //               mimetype: 'mimetype',
-    //               size: 1,
-    //             },
-    //           },
-    //         },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
-    //       const res = await repository.getItemsIn(actor, {
-    //         lat1: 0,
-    //         lat2: 4,
-    //         lng1: 0,
-    //         lng2: 4,
-    //         keywords: ['public'],
-    //       });
-    //       expect(res).toHaveLength(1);
-    //       expectItemGeolocations(res, [geoloc]);
-    //     });
-    //     it('return only item with keywords in s3File content', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         member: actor,
-    //       });
-    //       const { item: item1 } = await testUtils.saveItemAndMembership({
-    //         item: {
-    //           type: ItemType.S3_FILE,
-    //           extra: {
-    //             [ItemType.S3_FILE]: {
-    //               content: 'public',
-    //               name: 'name',
-    //               path: 'path',
-    //               mimetype: 'mimetype',
-    //               size: 1,
-    //             },
-    //           },
-    //         },
-    //         member: actor,
-    //       });
-    //       const geoloc = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: item1,
-    //         country: 'de',
-    //       });
-    //       await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const { item: item2 } = await testUtils.saveItemAndMembership({
-    //         item: {
-    //           type: ItemType.S3_FILE,
-    //           extra: {
-    //             [ItemType.S3_FILE]: {
-    //               content: 'private',
-    //               name: 'name',
-    //               path: 'path',
-    //               mimetype: 'mimetype',
-    //               size: 1,
-    //             },
-    //           },
-    //         },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
-    //       const res = await repository.getItemsIn(actor, {
-    //         lat1: 0,
-    //         lat2: 4,
-    //         lng1: 0,
-    //         lng2: 4,
-    //         keywords: ['public'],
-    //       });
-    //       expect(res).toHaveLength(1);
-    //       expectItemGeolocations(res, [geoloc]);
-    //     });
-    //     it('return only item with keywords in document content', async () => {
-    //       const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //         member: actor,
-    //       });
-    //       const { item: item1 } = await testUtils.saveItemAndMembership({
-    //         item: {
-    //           type: ItemType.DOCUMENT,
-    //           extra: {
-    //             [ItemType.DOCUMENT]: {
-    //               content: 'public',
-    //             },
-    //           },
-    //         },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       const geoloc = await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: item1,
-    //         country: 'de',
-    //         helperLabel: 'helper',
-    //       });
-    //       await rawRepository.save({
-    //         lat: 1,
-    //         lng: 2,
-    //         item: parentItem,
-    //         country: 'de',
-    //       });
-    //       // noise
-    //       await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //       const { item: item2 } = await testUtils.saveItemAndMembership({
-    //         item: {
-    //           type: ItemType.DOCUMENT,
-    //           extra: {
-    //             [ItemType.DOCUMENT]: {
-    //               content: 'private',
-    //             },
-    //           },
-    //         },
-    //         member: actor,
-    //         parentItem,
-    //       });
-    //       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
-    //       const res = await repository.getItemsIn(actor, {
-    //         lat1: 0,
-    //         lat2: 4,
-    //         lng1: 0,
-    //         lng2: 4,
-    //         keywords: ['public'],
-    //       });
-    //       expect(res).toHaveLength(1);
-    //       expectItemGeolocations(res, [geoloc]);
-    //     });
+    //         ],
+    //       },
+    //     ],
+    //   });
+    //   assertIsDefined(actor);
+    //   assertIsMemberForTest(actor);
+
+    // const { item: parentItem } = await testUtils.saveItemAndMembership({
+    //   item: { settings: { tags: ['public'] } },
+    //   member: actor,
+    // });
+    // const { item } = await testUtils.saveItemAndMembership({
+    //   item: { settings: { tags: ['private'] } },
+    //   member: actor,
+    //   parentItem,
+    // });
+    // await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
+    // const geolocParent = await rawRepository.save({
+    //   lat: 1,
+    //   lng: 2,
+    //   item: parentItem,
+    //   country: 'de',
+    // });
+    // // noise
+    // await testUtils.saveItemAndMembership({ member: actor, parentItem });
+    //   const res = await repository.getItemsIn(actor, {
+    //     lat1: 0,
+    //     lat2: 4,
+    //     lng1: 0,
+    //     lng2: 4,
+    //     keywords: ['public'],
+    //   });
+    //   expect(res).toHaveLength(1);
+    //   expectItemGeolocations(res, [geolocParent]);
+    // });
+    it('return only item with keywords in file content', async () => {
+      const {
+        actor,
+        items: [_parent, child],
+        geolocations: [childGeoloc, noise],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor' }],
+            children: [
+              {
+                ...buildFile('actor', { content: 'public' }),
+                geolocation: {
+                  lat: 1,
+                  lng: 2,
+                  country: 'de',
+                  helperLabel: 'helper text',
+                  addressLabel: 'address',
+                },
+              },
+              {
+                ...buildFile('actor', { content: 'private' }),
+                geolocation: {
+                  lat: 1,
+                  lng: 2,
+                  country: 'de',
+                  helperLabel: 'helper text',
+                  addressLabel: 'address',
+                },
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const res = await repository.getItemsIn(db, actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+      expect(res.map((i) => i.id)).not.toContain(noise.id);
+      expect(res.length).toBeGreaterThanOrEqual(1);
+      expectItemGeolocations(res, [{ ...childGeoloc, item: { ...child, creator: actor } }]);
+    });
+    it('return only item with keywords in document content', async () => {
+      const {
+        actor,
+        items: [_parent, child],
+        geolocations: [childGeoloc, noise],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor' }],
+            children: [
+              {
+                type: ItemType.DOCUMENT,
+                creator: 'actor',
+                extra: { [ItemType.DOCUMENT]: { content: 'public' } },
+                geolocation: {
+                  lat: 1,
+                  lng: 2,
+                  country: 'de',
+                  helperLabel: 'my text',
+                },
+              },
+              {
+                type: ItemType.DOCUMENT,
+                extra: { [ItemType.DOCUMENT]: { content: 'private' } },
+                geolocation: {
+                  lat: 1,
+                  lng: 2,
+                  country: 'de',
+                  helperLabel: 'helper text',
+                  addressLabel: 'address',
+                },
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const res = await repository.getItemsIn(db, actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+      expect(res.length).toBeGreaterThanOrEqual(1);
+      expect(res.map((i) => i.id)).not.toContain(noise.id);
+      const wantedItem = res.find(({ id }) => id === childGeoloc.id);
+      assertIsDefined(wantedItem);
+      expectItemGeolocations(
+        [wantedItem],
+        [{ ...childGeoloc, item: { ...child, creator: actor } }],
+      );
+    });
     it('return only non-recycled items in parent', async () => {
       const {
         actor,
