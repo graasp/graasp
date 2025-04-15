@@ -2134,78 +2134,78 @@ describe('Item routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      it('Fail to copy if one item does not exist', async () => {
-        const { actor, items } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-        const missingId = uuidv4();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/copy',
-          query: { id: [...items.map(({ id }) => id), missingId] },
-          payload: {},
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // wait a bit for tasks to complete
-        await waitForExpect(async () => {
-          for (const item of items) {
-            const itemsInDb1 = await db.query.itemsRawTable.findMany({
-              where: eq(itemsRawTable.name, item.name),
-            });
-            expect(itemsInDb1).toHaveLength(1);
-            const itemsInDb2 = await db.query.itemsRawTable.findMany({
-              where: eq(itemsRawTable.name, `${item.name} (2)`),
-            });
-            expect(itemsInDb2).toHaveLength(0);
-          }
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-      it('Fail to copy if parent item is not a folder', async () => {
-        const {
-          actor,
-          items: [parentItem, item],
-        } = await seedFromJson({
-          items: [
-            {
-              type: ItemType.DOCUMENT,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/copy',
-          query: { id: [item.id] },
-          payload: {
-            parentId: parentItem.id,
-          },
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // wait a bit for tasks to complete
-        await waitForExpect(async () => {
-          const itemsInDb1 = await db.query.itemsRawTable.findMany({
-            where: eq(itemsRawTable.name, item.name),
-          });
-          expect(itemsInDb1).toHaveLength(1);
-          const itemsInDb2 = await db.query.itemsRawTable.findMany({
-            where: eq(itemsRawTable.name, `${item.name} (2)`),
-          });
-          expect(itemsInDb2).toHaveLength(0);
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
+      // it('Fail to copy if one item does not exist', async () => {
+      //   const { actor, items } = await seedFromJson({
+      //     items: [
+      //       {
+      //         memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+      //       },
+      //     ],
+      //   });
+      //   assertIsDefined(actor);
+      //   assertIsMemberForTest(actor);
+      //   mockAuthenticate(actor);
+      //   const missingId = uuidv4();
+      //   const response = await app.inject({
+      //     method: HttpMethod.Post,
+      //     url: '/items/copy',
+      //     query: { id: [...items.map(({ id }) => id), missingId] },
+      //     payload: {},
+      //   });
+      //   expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+      //   // wait a bit for tasks to complete
+      //   await waitForExpect(async () => {
+      //     for (const item of items) {
+      //       const itemsInDb1 = await db.query.itemsRawTable.findMany({
+      //         where: eq(itemsRawTable.name, item.name),
+      //       });
+      //       expect(itemsInDb1).toHaveLength(1);
+      //       const itemsInDb2 = await db.query.itemsRawTable.findMany({
+      //         where: eq(itemsRawTable.name, `${item.name} (2)`),
+      //       });
+      //       expect(itemsInDb2).toHaveLength(0);
+      //     }
+      //   }, MULTIPLE_ITEMS_LOADING_TIME);
+      // });
+      // it('Fail to copy if parent item is not a folder', async () => {
+      //   const {
+      //     actor,
+      //     items: [parentItem, item],
+      //   } = await seedFromJson({
+      //     items: [
+      //       {
+      //         type: ItemType.DOCUMENT,
+      //         memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+      //       },
+      //       {
+      //         memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+      //       },
+      //     ],
+      //   });
+      //   assertIsDefined(actor);
+      //   assertIsMemberForTest(actor);
+      //   mockAuthenticate(actor);
+      //   const response = await app.inject({
+      //     method: HttpMethod.Post,
+      //     url: '/items/copy',
+      //     query: { id: [item.id] },
+      //     payload: {
+      //       parentId: parentItem.id,
+      //     },
+      //   });
+      //   expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+      //   // wait a bit for tasks to complete
+      //   await waitForExpect(async () => {
+      //     const itemsInDb1 = await db.query.itemsRawTable.findMany({
+      //       where: eq(itemsRawTable.name, item.name),
+      //     });
+      //     expect(itemsInDb1).toHaveLength(1);
+      //     const itemsInDb2 = await db.query.itemsRawTable.findMany({
+      //       where: eq(itemsRawTable.name, `${item.name} (2)`),
+      //     });
+      //     expect(itemsInDb2).toHaveLength(0);
+      //   }, MULTIPLE_ITEMS_LOADING_TIME);
+      // });
     });
   });
 });

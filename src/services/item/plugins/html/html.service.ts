@@ -13,7 +13,7 @@ import { FastifyBaseLogger } from 'fastify';
 import { FileItemType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { TMP_FOLDER } from '../../../../utils/config';
@@ -100,7 +100,7 @@ export abstract class HtmlService {
    * Util function to get url of the package file given an item
    * This function should not be used outside html services
    */
-  protected async _getUrl(id: Item['id'], packagePath: string) {
+  protected async _getUrl(id: ItemRaw['id'], packagePath: string) {
     return this.fileService.getUrl({
       path: path.join(this.pathPrefix, packagePath),
     });
@@ -165,14 +165,14 @@ export abstract class HtmlService {
       actor: MinimalMember,
       baseName: string,
       contentId: string,
-      parentId?: Item['id'],
-      previousItemId?: Item['id'],
+      parentId?: ItemRaw['id'],
+      previousItemId?: ItemRaw['id'],
       log?: FastifyBaseLogger,
-    ) => Promise<Item>,
-    parentId?: Item['id'],
-    previousItemId?: Item['id'],
+    ) => Promise<ItemRaw>,
+    parentId?: ItemRaw['id'],
+    previousItemId?: ItemRaw['id'],
     log?: FastifyBaseLogger,
-  ): Promise<Item> {
+  ): Promise<ItemRaw> {
     // check member storage limit
     await this.storageService.checkRemainingStorage(dbConnection, actor);
     const contentId = v4();

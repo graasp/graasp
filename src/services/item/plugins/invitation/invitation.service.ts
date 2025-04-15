@@ -251,7 +251,7 @@ export class InvitationService {
     const membershipsToCreate = existingAccounts.map((account) => {
       const permission =
         // get the permission from the data, if it is not found or if it is an empty string, default to read
-        rows.find((r) => r.email === account.email)?.permission || PermissionLevel.Read;
+        rows.find((r) => r.email === account.email)?.permission ?? PermissionLevel.Read;
       return { permission, accountId: account.id };
     });
     this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
@@ -270,7 +270,7 @@ export class InvitationService {
     // generate invitations to create
     const invitationsToCreate = newAccounts.map((email) => {
       // get the permission from the data, if it is not found or if it is an empty string, default to read
-      const permission = rows.find((r) => r.email === email)?.permission || PermissionLevel.Read;
+      const permission = rows.find((r) => r.email === email)?.permission ?? PermissionLevel.Read;
       return { email, permission };
     });
     this.log.debug(`${JSON.stringify(invitationsToCreate)} invitations to create`);

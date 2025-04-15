@@ -48,7 +48,6 @@ const getItemMembershipByPath = async (path: string) =>
   await db.query.itemMembershipsTable.findFirst({
     where: eq(itemMembershipsTable.itemPath, path),
   });
-// TODO: LOCAL FILE TESTS
 
 const deleteObjectsMock = jest.fn(async () => console.debug('deleteObjects'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));

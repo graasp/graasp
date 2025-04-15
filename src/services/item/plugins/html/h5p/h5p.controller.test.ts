@@ -28,10 +28,10 @@ import { expectH5PFiles, injectH5PImport } from './test/helpers';
 
 const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 
-const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX || '');
+const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX ?? '');
 
 async function cleanFiles() {
-  const storage = path.join(H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX || '');
+  const storage = path.join(H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX ?? '');
   await fsp.rm(storage, { recursive: true, force: true });
   await fsp.rm(H5P_TMP_FOLDER, { recursive: true, force: true });
 }
