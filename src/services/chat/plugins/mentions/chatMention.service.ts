@@ -147,7 +147,5 @@ export class MentionService {
 
   async deleteAll(dbConnection: DBConnection, authenticatedUser: AuthenticatedUser) {
     await this.chatMentionRepository.deleteAll(dbConnection, authenticatedUser.id);
-    //     const clearedChat: Chat = { id: this.targetId, messages: [] };
-    //     await this.postHookHandler?.(clearedChat, this.actor, { log, handler });
   }
 }

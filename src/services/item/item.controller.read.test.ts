@@ -340,15 +340,6 @@ describe('Item routes tests', () => {
         );
       });
       it('Returns successfully with thumbnails', async () => {
-        // const items: PackedItem[] = [];
-        // for (let i = 0; i < 3; i++) {
-        //   const { packedItem } = await testUtils.saveItemAndMembership({
-        //     member: actor,
-        //     item: { settings: { hasThumbnail: true } },
-        //   });
-        //   items.push(packedItem);
-        // }
-
         const { actor, items, itemMemberships } = await seedFromJson({
           items: [
             {
@@ -507,231 +498,6 @@ describe('Item routes tests', () => {
       });
     });
   });
-  // describe('GET /items/own', () => {
-  //   it('Throws if signed out', async () => {
-  //     const member = await saveMember();
-  //     await testUtils.saveItemAndMembership({ member });
-
-  //     const response = await app.inject({
-  //       method: HttpMethod.Get,
-  //       url: '/items/own',
-  //     });
-
-  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //   });
-
-  //     describe('Signed In', () => {
-  //       beforeEach(async () => {
-  //         actor = await saveMember();
-  //         mockAuthenticate(actor);
-  //       });
-
-  //       it('Returns successfully', async () => {
-  //         const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
-  //         const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
-  //         const { item: item3 } = await testUtils.saveItemAndMembership({ member: actor });
-  //         const items = [item1, item2, item3];
-
-  //         const response = await app.inject({
-  //           method: HttpMethod.Get,
-  //           url: '/items/own',
-  //         });
-
-  //         expect(response.statusCode).toBe(StatusCodes.OK);
-
-  //         const data = response.json();
-  //         expect(data).toHaveLength(items.length);
-  //         items.forEach(({ id }) => {
-  //           expectItem(
-  //             data.find(({ id: thisId }) => thisId === id),
-  //             items.find(({ id: thisId }) => thisId === id),
-  //           );
-  //         });
-  //       });
-  //     });
-  //   });
-  //   describe('GET /items/shared-with', () => {
-  //     it('Throws if signed out', async () => {
-  //       const member = await saveMember();
-  //       await testUtils.saveItemAndMembership({ member });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.Get,
-  //         url: '/items/own',
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //     });
-
-  //     describe('Signed In', () => {
-  //       let items;
-  //       let member;
-
-  //       beforeEach(async () => {
-  //         actor = await saveMember();
-  //         mockAuthenticate(actor);
-
-  //         member = await saveMember();
-  //         const { item: item1 } = await testUtils.saveItemAndMembership({ member });
-  //         const { item: item2 } = await testUtils.saveItemAndMembership({ member });
-  //         const { item: item3 } = await testUtils.saveItemAndMembership({ member });
-  //         items = [item1, item2, item3];
-  //         await testUtils.saveMembership({ item: item1, account: actor });
-  //         await testUtils.saveMembership({
-  //           item: item2,
-  //           account: actor,
-  //           permission: PermissionLevel.Write,
-  //         });
-  //         await testUtils.saveMembership({
-  //           item: item3,
-  //           account: actor,
-  //           permission: PermissionLevel.Read,
-  //         });
-
-  //         // save own item that should not be returned
-  //         await testUtils.saveItemAndMembership({ member: actor });
-  //       });
-
-  //       it('Returns successfully', async () => {
-  //         const response = await app.inject({
-  //           method: HttpMethod.Get,
-  //           url: '/items/shared-with',
-  //         });
-
-  //         expect(response.statusCode).toBe(StatusCodes.OK);
-  //         const data = response.json();
-  //         expect(data).toHaveLength(items.length);
-  //         items.forEach(({ id }) => {
-  //           expectItem(
-  //             data.find(({ id: thisId }) => thisId === id),
-  //             items.find(({ id: thisId }) => thisId === id),
-  //           );
-  //         });
-  //       });
-
-  //       it('Returns successfully with read permission filter', async () => {
-  //         const response = await app.inject({
-  //           method: HttpMethod.Get,
-  //           url: '/items/shared-with?permission=read',
-  //         });
-  //         const data = response.json();
-  //         expect(data).toHaveLength(items.length);
-  //         items.forEach(({ id }) => {
-  //           expectItem(
-  //             data.find(({ id: thisId }) => thisId === id),
-  //             items.find(({ id: thisId }) => thisId === id),
-  //           );
-  //         });
-  //         expect(response.statusCode).toBe(StatusCodes.OK);
-  //       });
-
-  //       it('Returns successfully with write permission filter', async () => {
-  //         const validItems = items.slice(0, 2);
-  //         const response = await app.inject({
-  //           method: HttpMethod.Get,
-  //           url: '/items/shared-with?permission=write',
-  //         });
-  //         const data = response.json();
-  //         expect(data).toHaveLength(validItems.length);
-
-  //         validItems.forEach(({ id }) => {
-  //           expectItem(
-  //             data.find(({ id: thisId }) => thisId === id),
-  //             validItems.find(({ id: thisId }) => thisId === id),
-  //           );
-  //         });
-  //         expect(response.statusCode).toBe(StatusCodes.OK);
-  //       });
-
-  //       it('Returns successfully with admin permission filter', async () => {
-  //         const validItems = items.slice(0, 1);
-  //         const response = await app.inject({
-  //           method: HttpMethod.Get,
-  //           url: '/items/shared-with?permission=admin',
-  //         });
-  //         const data = response.json();
-  //         expect(data).toHaveLength(validItems.length);
-
-  //         validItems.forEach(({ id }) => {
-  //           expectItem(
-  //             data.find(({ id: thisId }) => thisId === id),
-  //             validItems.find(({ id: thisId }) => thisId === id),
-  //           );
-  //         });
-  //         expect(response.statusCode).toBe(StatusCodes.OK);
-  //       });
-
-  //       it('Returns successfully shared siblings', async () => {
-  //         // create siblings
-  //         const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
-  //         const { item: item1 } = await testUtils.saveItemAndMembership({ member, parentItem });
-  //         const { item: item2 } = await testUtils.saveItemAndMembership({ member, parentItem });
-  //         items = [item1, item2];
-  //         await testUtils.saveMembership({
-  //           item: item1,
-  //           account: actor,
-  //           permission: PermissionLevel.Read,
-  //         });
-  //         await testUtils.saveMembership({
-  //           item: item2,
-  //           account: actor,
-  //           permission: PermissionLevel.Write,
-  //         });
-
-  //         const response = await app.inject({
-  //           method: HttpMethod.Get,
-  //           url: '/items/shared-with',
-  //         });
-
-  //         expect(response.statusCode).toBe(StatusCodes.OK);
-  //         const data = response.json();
-  //         // should at least contain both siblings
-  //         items.forEach(({ id }) => {
-  //           expectItem(
-  //             data.find(({ id: thisId }) => thisId === id),
-  //             items.find(({ id: thisId }) => thisId === id),
-  //           );
-  //         });
-  //       });
-
-  //       it('Should return only parent if parent and siblings are shared', async () => {
-  //         // create siblings
-  //         const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
-  //         const { item: item1 } = await testUtils.saveItemAndMembership({ member, parentItem });
-  //         const { item: item2 } = await testUtils.saveItemAndMembership({ member, parentItem });
-  //         await testUtils.saveMembership({
-  //           item: parentItem,
-  //           account: actor,
-  //           permission: PermissionLevel.Read,
-  //         });
-  //         await testUtils.saveMembership({
-  //           item: item1,
-  //           account: actor,
-  //           permission: PermissionLevel.Read,
-  //         });
-  //         await testUtils.saveMembership({
-  //           item: item2,
-  //           account: actor,
-  //           permission: PermissionLevel.Write,
-  //         });
-
-  //         const response = await app.inject({
-  //           method: HttpMethod.Get,
-  //           url: '/items/shared-with',
-  //         });
-
-  //         expect(response.statusCode).toBe(StatusCodes.OK);
-  //         const data = response.json();
-  //         // should contain parent but not children
-  //         expectItem(
-  //           data.find(({ id: thisId }) => thisId === parentItem.id),
-  //           parentItem,
-  //         );
-  //         expect(data.find(({ id: thisId }) => thisId === item1.id)).toBeFalsy();
-  //         expect(data.find(({ id: thisId }) => thisId === item2.id)).toBeFalsy();
-  //       });
-  //     });
-  //   });
   describe('GET /items/accessible', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
@@ -1041,42 +807,52 @@ describe('Item routes tests', () => {
         packedItems.forEach((i, idx) => expect(data[idx].id).toEqual(i.id));
       });
 
-      // TODO
-      //       it('Returns successfully items for search', async () => {
-      //         const { packedItem: item1 } = await testUtils.saveItemAndMembership({
-      //           member: actor,
-      //           item: { name: 'dog' },
-      //         });
-      //         const { packedItem: item2 } = await testUtils.saveItemAndMembership({
-      //           member: actor,
-      //           item: { name: 'dog' },
-      //         });
-      //         await testUtils.saveItemAndMembership({
-      //           member: actor,
-      //           item: { name: 'cat' },
-      //         });
-      //         // noise
-      //         const member = await saveMember();
-      //         await testUtils.saveItemAndMembership({
-      //           member,
-      //           item: { name: 'dog' },
-      //         });
+      it('Returns successfully items for search', async () => {
+        const {
+          actor,
+          items: [item1, item2],
+        } = await seedFromJson({
+          items: [
+            {
+              name: 'dog',
+              creator: { name: 'bob' },
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              name: 'dog',
+              creator: { name: 'anna' },
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              name: 'cat',
+              creator: { name: 'cedric' },
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              name: 'dog',
+              creator: { name: 'cedric' },
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-      //         const items = [item1, item2];
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/accessible`,
+          query: { keywords: ['dogs'] },
+        });
 
-      //         const response = await app.inject({
-      //           method: HttpMethod.Get,
-      //           url: `/items/accessible`,
-      //           query: { keywords: ['dogs'] },
-      //         });
+        expect(response.statusCode).toBe(StatusCodes.OK);
 
-      //         expect(response.statusCode).toBe(StatusCodes.OK);
-
-      //         const { data, totalCount } = response.json();
-      //         expect(totalCount).toEqual(items.length);
-      //         expect(data).toHaveLength(items.length);
-      //         expectManyPackedItems(data, items);
-      //       });
+        const { data } = response.json();
+        expect(data).toHaveLength(2);
+        expectManyPackedItems(
+          data,
+          [item1, item2].map((i) => ({ ...i, permission: PermissionLevel.Admin })),
+        );
+      });
 
       it('Returns successfully items by read', async () => {
         const {
@@ -1396,8 +1172,6 @@ describe('Item routes tests', () => {
         const children = [child1, child2].map((i) =>
           new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
         );
-        // create child of child
-        // await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1482,49 +1256,57 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
-      // TODO
-      //       it('Returns successfully children with search', async () => {
-      //         const member = await saveMember();
-      //         const { item: parent } = await testUtils.saveItemAndMembership({
-      //           member: actor,
-      //           creator: member,
-      //           permission: PermissionLevel.Read,
-      //         });
-      //         const { packedItem: item1 } = await testUtils.saveItemAndMembership({
-      //           member: actor,
-      //           item: { name: 'dog' },
-      //           parentItem: parent,
-      //         });
-      //         const { packedItem: item2 } = await testUtils.saveItemAndMembership({
-      //           member: actor,
-      //           item: { name: 'dog' },
-      //           parentItem: parent,
-      //         });
-      //         await testUtils.saveItemAndMembership({
-      //           member: actor,
-      //           item: { name: 'cat' },
-      //           parentItem: parent,
-      //         });
-      //         // noise
-      //         await testUtils.saveItemAndMembership({
-      //           member,
-      //           item: { name: 'dog' },
-      //         });
+      it('Returns successfully children with search', async () => {
+        const {
+          actor,
+          items: [parent, item1, item2],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              children: [
+                {
+                  name: 'dog',
+                  creator: { name: 'bob' },
+                },
+                {
+                  name: 'dog',
+                  creator: { name: 'anna' },
+                },
+                {
+                  name: 'cat',
+                  creator: { name: 'cedric' },
+                },
+              ],
+            },
+            {
+              name: 'dog',
+              creator: { name: 'cedric' },
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-      //         const items = [item1, item2];
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${parent.id}/children`,
+          query: { keywords: ['dogs'] },
+        });
 
-      //         const response = await app.inject({
-      //           method: HttpMethod.Get,
-      //           url: `/items/${parent.id}/children`,
-      //           query: { keywords: ['dogs'] },
-      //         });
+        expect(response.statusCode).toBe(StatusCodes.OK);
 
-      //         expect(response.statusCode).toBe(StatusCodes.OK);
-
-      //         const data = response.json();
-      //         expect(data).toHaveLength(items.length);
-      //         expectManyPackedItems(data, items);
-      //       });
+        const data = response.json();
+        expect(data).toHaveLength(2);
+        expectManyPackedItems(
+          data,
+          [item1, item2].map((i) => ({ ...i, permission: PermissionLevel.Admin })),
+        );
+      });
 
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
