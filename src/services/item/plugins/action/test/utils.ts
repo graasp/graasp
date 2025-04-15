@@ -1,6 +1,6 @@
 import { ItemOpFeedbackEvent } from '@graasp/sdk';
 
-import { Item } from '../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../drizzle/types';
 import { MembershipEvent } from '../../../../itemMembership/ws/events';
 import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 
@@ -24,8 +24,8 @@ export const expectExportFeedbackOp = <
 };
 
 export const expectCopyFeedbackOp = (
-  result: ItemOpFeedbackEvent<Item, 'copy'>,
-  expected: ItemOpFeedbackEvent<Item, 'copy'>,
+  result: ItemOpFeedbackEvent<ItemRaw, 'copy'>,
+  expected: ItemOpFeedbackEvent<ItemRaw, 'copy'>,
 ) => {
   expect(result.kind).toEqual(expected.kind);
   expect(result.op).toEqual(expected.op);
@@ -39,8 +39,8 @@ export const expectCopyFeedbackOp = (
 };
 
 export const expectMoveFeedbackOp = (
-  result: ItemOpFeedbackEvent<Item, 'move'>,
-  expected: ItemOpFeedbackEvent<Item, 'move'>,
+  result: ItemOpFeedbackEvent<ItemRaw, 'move'>,
+  expected: ItemOpFeedbackEvent<ItemRaw, 'move'>,
 ) => {
   expect(result.kind).toEqual(expected.kind);
   expect(result.op).toEqual(expected.op);
@@ -54,8 +54,8 @@ export const expectMoveFeedbackOp = (
 };
 
 export const expectDeleteFeedbackOp = (
-  result: ItemOpFeedbackEvent<Item, 'delete'>,
-  expected: ItemOpFeedbackEvent<Item, 'delete'>,
+  result: ItemOpFeedbackEvent<ItemRaw, 'delete'>,
+  expected: ItemOpFeedbackEvent<ItemRaw, 'delete'>,
 ) => {
   expect(result.kind).toEqual(expected.kind);
   expect(result.op).toEqual(expected.op);

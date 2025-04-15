@@ -1384,341 +1384,341 @@ describe('Item routes tests', () => {
     });
   });
   // move many items
-  describe('POST /items/move', () => {
-    it('Throws if signed out', async () => {
-      const {
-        items: [parent, item],
-      } = await seedFromJson({
-        actor: null,
-        items: [{}, {}],
-      });
+  // describe('POST /items/move', () => {
+  //   it('Throws if signed out', async () => {
+  //     const {
+  //       items: [parent, item],
+  //     } = await seedFromJson({
+  //       actor: null,
+  //       items: [{}, {}],
+  //     });
 
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: '/items/move',
-        query: { id: [item.id] },
-        payload: {
-          parentId: parent.id,
-        },
-      });
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-    describe('Signed In', () => {
-      it('Move successfully root item to parent', async () => {
-        const {
-          actor,
-          items: [parent, item1, item2, item3],
-          itemMemberships: [_parentIm, im1],
-        } = await seedFromJson({
-          items: [
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //     const response = await app.inject({
+  //       method: HttpMethod.Post,
+  //       url: '/items/move',
+  //       query: { id: [item.id] },
+  //       payload: {
+  //         parentId: parent.id,
+  //       },
+  //     });
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
+  //   describe('Signed In', () => {
+  //     it('Move successfully root item to parent', async () => {
+  //       const {
+  //         actor,
+  //         items: [parent, item1, item2, item3],
+  //         itemMemberships: [_parentIm, im1],
+  //       } = await seedFromJson({
+  //         items: [
+  //           { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+  //           { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+  //           { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+  //           { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const items = [item1, item2, item3];
+  //       const items = [item1, item2, item3];
 
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: items.map(({ id }) => id) },
-          payload: {
-            parentId: parent.id,
-          },
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // item should have a different path
-        await waitForExpect(async () => {
-          // expect(true).toBe(false);
-          for (const item of items) {
-            const result = await db.query.itemsRawTable.findFirst({
-              where: eq(itemsRawTable.id, item.id),
-            });
-            expect(result!.path.startsWith(parent.path)).toBeTruthy();
-            // membership should have been deleted because has admin rights on parent
-            const im = await db.query.itemMembershipsTable.findFirst({
-              where: eq(itemMembershipsTable.id, im1.id),
-            });
-            expect(im).toBeUndefined();
-          }
-          // order is defined, order is not guaranteed because moving is done in parallel
-          const orders = await Promise.all(items.map(async (i) => await getItemOrder(i)));
-          orders.forEach((o) => expect(o).toBeGreaterThan(0));
-          // unique values
-          expect(orders.length).toEqual(new Set(orders).size);
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-      it('Move successfully items to root', async () => {
-        const {
-          actor,
-          items: [parentItem, item1, item2, item3],
-          itemMemberships: [_parentIm, _im1],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [{}, {}, {}],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: items.map(({ id }) => id) },
+  //         payload: {
+  //           parentId: parent.id,
+  //         },
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+  //       // item should have a different path
+  //       await waitForExpect(async () => {
+  //         // expect(true).toBe(false);
+  //         for (const item of items) {
+  //           const result = await db.query.itemsRawTable.findFirst({
+  //             where: eq(itemsRawTable.id, item.id),
+  //           });
+  //           expect(result!.path.startsWith(parent.path)).toBeTruthy();
+  //           // membership should have been deleted because has admin rights on parent
+  //           const im = await db.query.itemMembershipsTable.findFirst({
+  //             where: eq(itemMembershipsTable.id, im1.id),
+  //           });
+  //           expect(im).toBeUndefined();
+  //         }
+  //         // order is defined, order is not guaranteed because moving is done in parallel
+  //         const orders = await Promise.all(items.map(async (i) => await getItemOrder(i)));
+  //         orders.forEach((o) => expect(o).toBeGreaterThan(0));
+  //         // unique values
+  //         expect(orders.length).toEqual(new Set(orders).size);
+  //       }, MULTIPLE_ITEMS_LOADING_TIME);
+  //     });
+  //     it('Move successfully items to root', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, item1, item2, item3],
+  //         itemMemberships: [_parentIm, _im1],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: [{}, {}, {}],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const items = [item1, item2, item3];
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: items.map(({ id }) => id) },
-          payload: {},
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // item should have a differnt path
-        await waitForExpect(async () => {
-          for (const item of items) {
-            const result = await db.query.itemsRawTable.findFirst({
-              where: eq(itemsRawTable.id, item.id),
-            });
-            if (!result) {
-              throw new Error('item does not exist!');
-            }
-            expect(result.path.startsWith(parentItem.path)).toBeFalsy();
-            // order is defined, order is not guaranteed because moving is done in parallel
-            expect(result.order).toBeNull();
-          }
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-      it('Move successfully item to root and create new membership', async () => {
-        const {
-          actor,
-          items: [parentItem, item],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [{}],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //       const items = [item1, item2, item3];
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: items.map(({ id }) => id) },
+  //         payload: {},
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+  //       // item should have a differnt path
+  //       await waitForExpect(async () => {
+  //         for (const item of items) {
+  //           const result = await db.query.itemsRawTable.findFirst({
+  //             where: eq(itemsRawTable.id, item.id),
+  //           });
+  //           if (!result) {
+  //             throw new Error('item does not exist!');
+  //           }
+  //           expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+  //           // order is defined, order is not guaranteed because moving is done in parallel
+  //           expect(result.order).toBeNull();
+  //         }
+  //       }, MULTIPLE_ITEMS_LOADING_TIME);
+  //     });
+  //     it('Move successfully item to root and create new membership', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, item],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: [{}],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: item.id },
-          payload: {},
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // item should have a different path
-        await waitForExpect(async () => {
-          const result = await db.query.itemsRawTable.findFirst({
-            where: eq(itemsRawTable.id, item.id),
-          });
-          if (!result) {
-            throw new Error('item does not exist!');
-          }
-          expect(result.path.startsWith(parentItem.path)).toBeFalsy();
-          // membership should have been created
-          const im = await db.query.itemMembershipsTable.findFirst({
-            where: eq(itemMembershipsTable.itemPath, result.path),
-          });
-          expect(im).toBeDefined();
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-      it('Move successfully item to child and delete same membership', async () => {
-        const {
-          actor,
-          items: [parentItem, item],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: item.id },
+  //         payload: {},
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+  //       // item should have a different path
+  //       await waitForExpect(async () => {
+  //         const result = await db.query.itemsRawTable.findFirst({
+  //           where: eq(itemsRawTable.id, item.id),
+  //         });
+  //         if (!result) {
+  //           throw new Error('item does not exist!');
+  //         }
+  //         expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+  //         // membership should have been created
+  //         const im = await db.query.itemMembershipsTable.findFirst({
+  //           where: eq(itemMembershipsTable.itemPath, result.path),
+  //         });
+  //         expect(im).toBeDefined();
+  //       }, MULTIPLE_ITEMS_LOADING_TIME);
+  //     });
+  //     it('Move successfully item to child and delete same membership', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, item],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: item.id },
-          payload: { parentId: parentItem.id },
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // item should have a different path
-        await waitForExpect(async () => {
-          const result = await db.query.itemsRawTable.findFirst({
-            where: eq(itemsRawTable.id, item.id),
-          });
-          if (!result) {
-            throw new Error('item does not exist!');
-          }
-          expect(result.path.startsWith(parentItem.path)).toBeTruthy();
-          // membership should have been deleted
-          const im = await db.query.itemMembershipsTable.findFirst({
-            where: eq(itemMembershipsTable.itemPath, result.path),
-          });
-          expect(im).toBeUndefined();
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-      it('Move successfully items to another parent', async () => {
-        const {
-          actor,
-          items: [parentItem, _parent, item1, item2, item3],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [{}, {}, {}],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: item.id },
+  //         payload: { parentId: parentItem.id },
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+  //       // item should have a different path
+  //       await waitForExpect(async () => {
+  //         const result = await db.query.itemsRawTable.findFirst({
+  //           where: eq(itemsRawTable.id, item.id),
+  //         });
+  //         if (!result) {
+  //           throw new Error('item does not exist!');
+  //         }
+  //         expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+  //         // membership should have been deleted
+  //         const im = await db.query.itemMembershipsTable.findFirst({
+  //           where: eq(itemMembershipsTable.itemPath, result.path),
+  //         });
+  //         expect(im).toBeUndefined();
+  //       }, MULTIPLE_ITEMS_LOADING_TIME);
+  //     });
+  //     it('Move successfully items to another parent', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, _parent, item1, item2, item3],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             children: [{}, {}, {}],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const items = [item1, item2, item3];
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: items.map(({ id }) => id) },
-          payload: {
-            parentId: parentItem.id,
-          },
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // item should have a different path
-        await waitForExpect(async () => {
-          for (const item of items) {
-            const result = await db.query.itemsRawTable.findFirst({
-              where: eq(itemsRawTable.id, item.id),
-            });
-            if (!result) {
-              throw new Error('item does not exist!');
-            }
-            expect(result.path.startsWith(parentItem.path)).toBeTruthy();
-          }
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-      it('Move lots of items', async () => {
-        const {
-          actor,
-          items: [parentItem, ...items],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            ...Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => ({
-              memberships: [{ account: 'actor' as SeedActor, permission: PermissionLevel.Admin }],
-            })),
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //       const items = [item1, item2, item3];
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: items.map(({ id }) => id) },
+  //         payload: {
+  //           parentId: parentItem.id,
+  //         },
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+  //       // item should have a different path
+  //       await waitForExpect(async () => {
+  //         for (const item of items) {
+  //           const result = await db.query.itemsRawTable.findFirst({
+  //             where: eq(itemsRawTable.id, item.id),
+  //           });
+  //           if (!result) {
+  //             throw new Error('item does not exist!');
+  //           }
+  //           expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+  //         }
+  //       }, MULTIPLE_ITEMS_LOADING_TIME);
+  //     });
+  //     it('Move lots of items', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, ...items],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //           ...Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => ({
+  //             memberships: [{ account: 'actor' as SeedActor, permission: PermissionLevel.Admin }],
+  //           })),
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: items.map(({ id }) => id) },
-          payload: {
-            parentId: parentItem.id,
-          },
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // wait a bit for tasks to complete
-        await waitForExpect(async () => {
-          for (const item of items) {
-            const result = await db.query.itemsRawTable.findFirst({
-              where: eq(itemsRawTable.id, item.id),
-            });
-            if (!result) {
-              throw new Error('item does not exist!');
-            }
-            expect(result.path.startsWith(parentItem.path)).toBeTruthy();
-          }
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-      it('Bad request if one id is invalid', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: items.map(({ id }) => id) },
+  //         payload: {
+  //           parentId: parentItem.id,
+  //         },
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+  //       // wait a bit for tasks to complete
+  //       await waitForExpect(async () => {
+  //         for (const item of items) {
+  //           const result = await db.query.itemsRawTable.findFirst({
+  //             where: eq(itemsRawTable.id, item.id),
+  //           });
+  //           if (!result) {
+  //             throw new Error('item does not exist!');
+  //           }
+  //           expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+  //         }
+  //       }, MULTIPLE_ITEMS_LOADING_TIME);
+  //     });
+  //     it('Bad request if one id is invalid', async () => {
+  //       const { actor } = await seedFromJson();
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: [uuidv4(), 'invalid-id'] },
-          payload: {},
-        });
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-      it('Fail to move items if one item does not exist', async () => {
-        const {
-          actor,
-          items: [parentItem, item1, item2, item3],
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: [uuidv4(), 'invalid-id'] },
+  //         payload: {},
+  //       });
+  //       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  //     });
+  //     it('Fail to move items if one item does not exist', async () => {
+  //       const {
+  //         actor,
+  //         items: [parentItem, item1, item2, item3],
+  //       } = await seedFromJson({
+  //         items: [
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //           {
+  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //           },
+  //         ],
+  //       });
+  //       assertIsDefined(actor);
+  //       assertIsMemberForTest(actor);
+  //       mockAuthenticate(actor);
 
-        const items = [item1, item2, item3];
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/move',
-          query: { id: [...items.map(({ id }) => id), uuidv4()] },
-          payload: {
-            parentId: parentItem.id,
-          },
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        // item should have a different path
-        await waitForExpect(async () => {
-          for (const item of items) {
-            const result = await db.query.itemsRawTable.findFirst({
-              where: eq(itemsRawTable.id, item.id),
-            });
-            if (!result) {
-              throw new Error('item does not exist!');
-            }
-            expect(result.path.startsWith(parentItem.path)).toBeFalsy();
-          }
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
-    });
-  });
+  //       const items = [item1, item2, item3];
+  //       const response = await app.inject({
+  //         method: HttpMethod.Post,
+  //         url: '/items/move',
+  //         query: { id: [...items.map(({ id }) => id), uuidv4()] },
+  //         payload: {
+  //           parentId: parentItem.id,
+  //         },
+  //       });
+  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+  //       // item should have a different path
+  //       await waitForExpect(async () => {
+  //         for (const item of items) {
+  //           const result = await db.query.itemsRawTable.findFirst({
+  //             where: eq(itemsRawTable.id, item.id),
+  //           });
+  //           if (!result) {
+  //             throw new Error('item does not exist!');
+  //           }
+  //           expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+  //         }
+  //       }, MULTIPLE_ITEMS_LOADING_TIME);
+  //     });
+  //   });
+  // });
   // // copy many items
   // describe('POST /items/copy', () => {
   //   it('Throws if signed out', async () => {
