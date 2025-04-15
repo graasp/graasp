@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
@@ -43,7 +43,7 @@ export class MembershipRequestService {
     return await this.membershipRequestRepository.post(dbConnection, memberId, itemId);
   }
 
-  async notifyAdmins(dbConnection: DBConnection, member: MinimalMember, item: Item) {
+  async notifyAdmins(dbConnection: DBConnection, member: MinimalMember, item: ItemRaw) {
     const admins = await this.itemMembershipRepository.getAdminsForItem(dbConnection, item.path);
 
     const link = ClientManager.getInstance().getLinkByContext(

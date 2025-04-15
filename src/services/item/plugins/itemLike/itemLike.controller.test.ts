@@ -166,7 +166,7 @@ describe('Item Like', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         // get item like from repository with item (not returned in request)
         const fullItemLike = await getFullItemLike(res.json()[0].id);
-        expectItemLike(fullItemLike!, likes[0]);
+        expectItemLike(fullItemLike, likes[0]);
       });
 
       it('Get like entries for public item in the trash', async () => {
@@ -263,7 +263,7 @@ describe('Item Like', () => {
 
         // get item like from repository with item (not returned in request)
         const fullItemLike = await getFullItemLike(res.json()[0].id);
-        expectItemLike(fullItemLike!, likes[0]);
+        expectItemLike(fullItemLike, likes[0]);
       });
     });
 
@@ -322,7 +322,7 @@ describe('Item Like', () => {
         // since we don't have full item, deduce from saved value
         const savedLikes = await getItemLikesByItem(item.id);
         expect(savedLikes).toHaveLength(2);
-        expect(savedLikes[1]!.creatorId).toEqual(actor.id);
+        expect(savedLikes[1].creatorId).toEqual(actor.id);
       });
 
       it('Cannot like item if does not have rights', async () => {

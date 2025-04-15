@@ -20,9 +20,8 @@ let originalStrictSessionStrategy;
 export function mockAuthenticate<T extends { id: string; name: string; type: string }>(
   account: T | undefined,
 ) {
-  if (!originalStrictSessionStrategy) {
-    originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
-  }
+  originalStrictSessionStrategy ??= fastifyPassport.strategy(PassportStrategy.StrictSession);
+
   // If an account is provided, use a custom strategy that always validate the request.
   // This will override the original session strategy to a custom one
   const strategy = new CustomStrategy((_req, done) => done(null, { account }));

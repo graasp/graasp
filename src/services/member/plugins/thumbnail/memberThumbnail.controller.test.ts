@@ -176,7 +176,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${guest!.id}/avatar/${size}`,
+          url: `members/${guest.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);

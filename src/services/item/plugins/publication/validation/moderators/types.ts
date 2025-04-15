@@ -1,6 +1,6 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { Item } from '../../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../../drizzle/types';
 
 export type ValidationProcessResult = {
   status: ItemValidationStatus;
@@ -13,6 +13,6 @@ export type StrategyExecutor = {
 };
 
 export interface ValidationStrategy {
-  validate(item: Item): Promise<ValidationProcessResult>;
+  validate(item: ItemRaw): Promise<ValidationProcessResult>;
   process: ItemValidationProcess;
 }

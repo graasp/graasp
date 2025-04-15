@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemType, Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { ItemNotFound } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
@@ -30,12 +30,12 @@ export class RecycledBinService {
 
   readonly hooks = new HookManager<{
     recycle: {
-      pre: { item: Item; isRecycledRoot: boolean };
-      post: { item: Item; isRecycledRoot: boolean };
+      pre: { item: ItemRaw; isRecycledRoot: boolean };
+      post: { item: ItemRaw; isRecycledRoot: boolean };
     };
     restore: {
-      pre: { item: Item; isRestoredRoot: boolean };
-      post: { item: Item; isRestoredRoot: boolean };
+      pre: { item: ItemRaw; isRestoredRoot: boolean };
+      post: { item: ItemRaw; isRestoredRoot: boolean };
     };
   }>();
 
@@ -43,11 +43,15 @@ export class RecycledBinService {
     dbConnection: DBConnection,
     member: MinimalMember,
     pagination: Pagination,
-  ): Promise<Paginated<Item>> {
+  ): Promise<Paginated<ItemRaw>> {
     return await this.recycledItemRepository.getOwnRecycledItems(dbConnection, member, pagination);
   }
 
-  async getDeletedTreesById(dbConnection: DBConnection, member: MinimalMember, ids: Item['id'][]) {
+  async getDeletedTreesById(
+    dbConnection: DBConnection,
+    member: MinimalMember,
+    ids: ItemRaw['id'][],
+  ) {
     const items = await this.recycledItemRepository.getDeletedTreesById(dbConnection, ids);
 
     // validate permission on parents
@@ -66,7 +70,7 @@ export class RecycledBinService {
     dbConnection: DBConnection,
     member: MinimalMember,
     pagination: Pagination,
-  ): Promise<Paginated<Item>> {
+  ): Promise<Paginated<ItemRaw>> {
     return await this.recycledItemRepository.getOwnRecycledItems(dbConnection, member, pagination);
   }
 
@@ -87,7 +91,7 @@ export class RecycledBinService {
       );
     }
 
-    let allDescendants: Item[] = [];
+    let allDescendants: ItemRaw[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('recycle', actor, dbConnection, { item, isRecycledRoot: true });
       if (isItemType(item, ItemType.FOLDER)) {
@@ -133,7 +137,7 @@ export class RecycledBinService {
       );
     }
 
-    let allDescendants: Item[] = [];
+    let allDescendants: ItemRaw[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('restore', member, dbConnection, { item, isRestoredRoot: true });
       if (isItemType(item, ItemType.FOLDER)) {

@@ -12,7 +12,7 @@ import {
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../../../test/app';
 import { seedFromJson } from '../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../drizzle/db';
-import { Item } from '../../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { TestWsClient } from '../../../../../websockets/test/test-websocket-client';
@@ -56,7 +56,7 @@ describe('asynchronous feedback', () => {
     mockAuthenticate(actor);
     ws = new TestWsClient(address);
 
-    const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'validate'>>({
+    const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'validate'>>({
       topic: memberItemsTopic,
       channel: actor.id,
     });
@@ -88,7 +88,7 @@ describe('asynchronous feedback', () => {
     mockAuthenticate(actor);
     ws = new TestWsClient(address);
 
-    const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'validate'>>({
+    const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'validate'>>({
       topic: memberItemsTopic,
       channel: actor.id,
     });

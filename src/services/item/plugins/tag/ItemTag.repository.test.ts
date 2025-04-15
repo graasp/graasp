@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { FolderItemFactory, TagCategory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { client, db } from '../../../../drizzle/db';
+import { db } from '../../../../drizzle/db';
 import { itemTagsTable, itemsRawTable, tagsTable } from '../../../../drizzle/schema';
 import { ItemInsertDTO } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';

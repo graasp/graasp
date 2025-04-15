@@ -4,7 +4,7 @@ import { delay, inject, injectable } from 'tsyringe';
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
@@ -112,8 +112,8 @@ export class ItemThumbnailService {
    * @returns An object whose keys are the item id and whose values are the URLs stored by size.
    * */
   async getUrlsByItems(
-    items: (Pick<Item, 'id'> & {
-      settings: Pick<Item['settings'], 'hasThumbnail'>;
+    items: (Pick<ItemRaw, 'id'> & {
+      settings: Pick<ItemRaw['settings'], 'hasThumbnail'>;
     })[],
     sizes: ItemThumbnailSize[] = DEFAULT_ITEM_THUMBNAIL_SIZES,
   ) {

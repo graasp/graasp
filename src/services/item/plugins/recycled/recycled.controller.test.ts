@@ -586,7 +586,7 @@ describe('Recycle Bin Tests', () => {
         where: and(eq(itemsRawTable.id, childItem.id), isNull(itemsRawTable.deletedAt)),
       });
       // the recycle/restore operation changed the updatedAt value, but we can't know when from the outside
-      expectItem(restoredChild!, childItem);
+      expectItem(restoredChild, childItem);
     });
   });
 });

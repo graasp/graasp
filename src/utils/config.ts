@@ -183,7 +183,7 @@ export const MAILER_CONFIG_SMTP_USE_SSL = process.env.MAILER_CONFIG_SMTP_USE_SSL
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
 export const MAILER_CONFIG_FROM_EMAIL =
-  process.env.MAILER_CONFIG_FROM_EMAIL || 'no-reply@graasp.org';
+  process.env.MAILER_CONFIG_FROM_EMAIL ?? 'no-reply@graasp.org';
 
 // Graasp file item
 // TODO: should this be here?

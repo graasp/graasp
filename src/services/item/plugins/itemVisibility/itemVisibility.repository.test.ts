@@ -1,7 +1,7 @@
 import { ItemVisibilityOptionsType, ItemVisibilityType } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { client, db } from '../../../../drizzle/db';
+import { db } from '../../../../drizzle/db';
 import { itemVisibilitiesTable } from '../../../../drizzle/schema';
 import { expectItem } from '../../test/fixtures/items';
 import { ItemVisibilityRepository } from './itemVisibility.repository';

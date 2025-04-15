@@ -16,7 +16,7 @@ import build, {
 import { seedFromJson } from '../../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../../drizzle/db';
 import { itemsRawTable } from '../../../../../../../drizzle/schema';
-import { Item } from '../../../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
 import { MeiliSearchWrapper } from './meilisearch';
@@ -25,7 +25,7 @@ jest.mock('./meilisearch');
 
 const MOCK_INDEX = 'mock-index';
 
-const moveDone = (id: string, dest: Item) => async () => {
+const moveDone = (id: string, dest: ItemRaw) => async () => {
   const result = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, id) });
   if (!result) {
     throw new Error('item does not exist!');

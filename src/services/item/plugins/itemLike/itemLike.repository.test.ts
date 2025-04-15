@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { FolderItemFactory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { client, db } from '../../../../drizzle/db';
+import { db } from '../../../../drizzle/db';
 import { itemLikesTable } from '../../../../drizzle/schema';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { ItemLikeRepository } from './itemLike.repository';
