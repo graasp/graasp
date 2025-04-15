@@ -31,7 +31,7 @@ import {
   TXT_EXTENSION,
   URL_PREFIX,
 } from './constants';
-import { GraaspExportInvalidFileError, UnexpectedExportError } from './errors';
+import { GraaspExportInvalidFileError, GraaspItemZipError, UnexpectedExportError } from './errors';
 import { buildTextContent, getFilenameFromItem } from './utils';
 
 /**
@@ -232,7 +232,7 @@ export class ImportExportService {
     }
   }
 
-  private async importGraaspFile(
+  private async readAndImportGraaspFile(
     actor: Member,
     repositories: Repositories,
     args: {
@@ -250,10 +250,10 @@ export class ImportExportService {
 
     const items = JSON.parse(graaspManifestFile) as GraaspExportItem[];
 
-    return this.importManifestFiles(actor, repositories, { items, folderPath, parent });
+    return this.importManifestItems(actor, repositories, { items, folderPath, parent });
   }
 
-  private async importManifestFiles(
+  private async importManifestItems(
     actor: Member,
     repositories: Repositories,
     args: {
@@ -320,7 +320,7 @@ export class ImportExportService {
         const children = items[i].children;
         if (children) {
           const createdFolderItem = uploadedItems[i];
-          await this.importManifestFiles(actor, repositories, {
+          await this.importManifestItems(actor, repositories, {
             items: children,
             folderPath,
             parent: createdFolderItem,
@@ -510,6 +510,73 @@ export class ImportExportService {
     return archive;
   }
 
+  private async importGraaspFile(
+    actor: Member,
+    { parent, folderPath }: { parent: Item; folderPath: string },
+  ) {
+    try {
+      await this.db.transaction(async (manager) => {
+        return this.readAndImportGraaspFile(actor, buildRepositories(manager), {
+          folderPath,
+          parent,
+        });
+      });
+    } catch (e) {
+      this.log.error(e);
+      throw e;
+    }
+  }
+
+  private async importFiles(
+    actor: Member,
+    repositories: Repositories,
+    { parent, folderPath }: { parent?: Item; folderPath: string },
+  ) {
+    const filenames = fs.readdirSync(folderPath);
+
+    const items: Item[] = [];
+    for (const filename of filenames) {
+      // import item from file excluding descriptions
+      // descriptions are handled alongside the corresponding file
+      if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
+        try {
+          // transaction is necessary since we are adding data
+          // we don't add it at the very top to allow partial zip to be updated
+          await this.db.transaction(async (manager) => {
+            const item = await this._saveItemFromFilename(actor, buildRepositories(manager), {
+              filename,
+              folderPath,
+              parent,
+            });
+            if (item) {
+              items.push(item);
+            }
+          });
+        } catch (e) {
+          if (e instanceof UploadEmptyFileError) {
+            // ignore empty files
+            this.log.debug(`ignore ${filename} because it is empty`);
+          } else {
+            // improvement: return a list of failed imports
+            this.log.error(e);
+            throw e;
+          }
+        }
+      }
+    }
+
+    // recursively create children in folders
+    for (const newItem of items) {
+      const { type, name } = newItem;
+      if (type === ItemType.FOLDER) {
+        await this.importFiles(actor, repositories, {
+          folderPath: path.join(folderPath, name),
+          parent: newItem,
+        });
+      }
+    }
+  }
+
   /**
    * Util recursive function that create graasp item given folder content
    * @param actor
@@ -524,60 +591,14 @@ export class ImportExportService {
   ) {
     const filenames = fs.readdirSync(folderPath);
 
-    if (filenames.includes(GRAASP_MANIFEST_FILENAME) && parent) {
-      try {
-        await this.db.transaction(async (manager) => {
-          await this.importGraaspFile(actor, buildRepositories(manager), {
-            folderPath,
-            parent,
-          });
-        });
-      } catch (e) {
-        this.log.error(e);
-        throw e;
-      }
-    } else {
-      const items: Item[] = [];
-      for (const filename of filenames) {
-        // import item from file excluding descriptions
-        // descriptions are handled alongside the corresponding file
-        if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
-          try {
-            // transaction is necessary since we are adding data
-            // we don't add it at the very top to allow partial zip to be updated
-            await this.db.transaction(async (manager) => {
-              const item = await this._saveItemFromFilename(actor, buildRepositories(manager), {
-                filename,
-                folderPath,
-                parent,
-              });
-              if (item) {
-                items.push(item);
-              }
-            });
-          } catch (e) {
-            if (e instanceof UploadEmptyFileError) {
-              // ignore empty files
-              this.log.debug(`ignore ${filename} because it is empty`);
-            } else {
-              // improvement: return a list of failed imports
-              this.log.error(e);
-              throw e;
-            }
-          }
-        }
+    if (filenames.includes(GRAASP_MANIFEST_FILENAME)) {
+      if (!parent) {
+        throw new Error('The graasp import needs a parent item');
       }
 
-      // recursively create children in folders
-      for (const newItem of items) {
-        const { type, name } = newItem;
-        if (type === ItemType.FOLDER) {
-          await this._import(actor, repositories, {
-            folderPath: path.join(folderPath, name),
-            parent: newItem,
-          });
-        }
-      }
+      await this.importGraaspFile(actor, { parent, folderPath });
+    } else {
+      await this.importFiles(actor, repositories, { parent, folderPath });
     }
   }
 
