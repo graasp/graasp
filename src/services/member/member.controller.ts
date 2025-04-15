@@ -147,18 +147,21 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, body: { email } }, reply) => {
       const account = asDefined(user?.account);
       assertIsMember(account);
-      reply.status(StatusCodes.NO_CONTENT);
+
       // check if there is a member that already has the new email
       if (await memberService.getByEmail(db, email)) {
         // Email adress is already taken, throw an error
         throw new EmailAlreadyTaken();
       }
+
       // HACK: re-fetch the member from the repo to have it in full (so the types match)
       const member = await memberService.get(db, account.id);
       assertIsDefined(member);
       const memberInfo = member.toMemberInfo();
       const token = memberService.createEmailChangeRequest(memberInfo, email);
       memberService.sendEmailChangeRequest(email, token, memberInfo.lang);
+
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
   fastify.patch(
