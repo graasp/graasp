@@ -1,10 +1,11 @@
 import { v4 } from 'uuid';
 
-import { AppItemFactory, ItemType } from '@graasp/sdk';
+import { AppItemFactory } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
+import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { db } from '../../../../drizzle/db';
-import { Item, ItemWithCreator } from '../../../../drizzle/types';
+import { ItemWithCreator } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
@@ -35,7 +36,7 @@ const folderService = new FolderItemService(
   {} as RecycledBinService,
   MOCK_LOGGER,
 );
-const MOCK_ITEM = { id: v4(), type: ItemType.FOLDER } as Item;
+const MOCK_ITEM = ItemFactory();
 
 const MOCK_MEMBER = {} as MinimalMember;
 const itemRepository = {

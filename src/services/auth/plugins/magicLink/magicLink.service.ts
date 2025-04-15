@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberInfo } from '../../../../types';
 import { MemberNotSignedUp } from '../../../../utils/errors';

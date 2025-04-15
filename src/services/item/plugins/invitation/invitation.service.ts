@@ -5,7 +5,7 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import {
   InvitationInsertDTO,
   InvitationRaw,

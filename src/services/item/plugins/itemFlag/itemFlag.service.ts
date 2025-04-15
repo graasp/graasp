@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { FlagType } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../types';
 import { BasicItemService } from '../../basic.service';
 import { ItemFlagRepository } from './itemFlag.repository';

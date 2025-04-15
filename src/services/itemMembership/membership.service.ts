@@ -4,7 +4,6 @@ import { ClientManager, Context, PermissionLevel, PermissionLevelOptions, UUID }
 
 import { DBConnection } from '../../drizzle/db';
 import {
-  Item,
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
@@ -56,7 +55,7 @@ export class ItemMembershipService {
     this.membershipRequestRepository = membershipRequestRepository;
   }
 
-  async _notifyMember(account: { name: string }, member: MemberInfo, item: Item): Promise<void> {
+  async _notifyMember(account: { name: string }, member: MemberInfo, item: ItemRaw): Promise<void> {
     const link = ClientManager.getInstance().getItemLink(Context.Player, item.id);
 
     const mail = new MailBuilder({
@@ -87,7 +86,7 @@ export class ItemMembershipService {
     return await this.itemMembershipRepository.hasMembershipOnItem(dbConnection, accountId, itemId);
   }
 
-  async getForItem(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: Item['id']) {
+  async getForItem(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: ItemRaw['id']) {
     const item = await this.basicItemService.get(dbConnection, maybeUser, itemId);
     const result = await this.itemMembershipRepository.getForItem(dbConnection, item);
 

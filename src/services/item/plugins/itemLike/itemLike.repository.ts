@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { itemLikesTable } from '../../../../drizzle/schema';
 import {
   ItemLikeRaw,

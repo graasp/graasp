@@ -11,7 +11,7 @@ import { ZipFile } from 'yazl';
 
 import { ItemSettings, ItemType, ItemTypeUnion, getMimetype } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';

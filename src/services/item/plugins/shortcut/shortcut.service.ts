@@ -2,11 +2,11 @@ import { singleton } from 'tsyringe';
 
 import { ItemType } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type DBConnection } from '../../../../drizzle/db';
+import { type ItemRaw } from '../../../../drizzle/types';
 import i18next from '../../../../i18n';
 import { BaseLogger } from '../../../../logger';
-import { MinimalMember } from '../../../../types';
+import { type MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
@@ -61,10 +61,10 @@ export class ShortcutItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     args: {
-      item: Partial<Pick<Item, 'description' | 'name'>>;
-      target: Item['id'];
+      item: Partial<Pick<ItemRaw, 'description' | 'name'>>;
+      target: ItemRaw['id'];
       parentId?: string;
-      previousItemId?: Item['id'];
+      previousItemId?: ItemRaw['id'];
     },
   ): Promise<ShortcutItem> {
     const { target, item, ...properties } = args;
@@ -91,8 +91,8 @@ export class ShortcutItemService extends ItemService {
   async patch(
     dbConnection: DBConnection,
     member: MinimalMember,
-    itemId: Item['id'],
-    body: Partial<Pick<Item, 'name' | 'description'>>,
+    itemId: ItemRaw['id'],
+    body: Partial<Pick<ItemRaw, 'name' | 'description'>>,
   ): Promise<ShortcutItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 

@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { ItemType, Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { ItemNotFound } from '../../../../utils/errors';

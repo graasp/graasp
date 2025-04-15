@@ -1,7 +1,7 @@
 import { and, desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { itemBookmarksTable, items, membersView } from '../../../../drizzle/schema';
 import {
   ItemBookmarkInsertDTO,

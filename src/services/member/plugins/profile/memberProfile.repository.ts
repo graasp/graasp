@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { memberProfilesTable } from '../../../../drizzle/schema';
 import { MemberNotFound } from '../../../../utils/errors';
 import { MemberProfileCreationError, MemberProfilePropertiesEmpty } from './errors';

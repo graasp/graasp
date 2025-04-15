@@ -16,7 +16,7 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
@@ -104,7 +104,7 @@ class FileItemService extends ItemService {
       filename: string;
       mimetype: string;
       stream: Readable;
-      previousItemId?: Item['id'];
+      previousItemId?: ItemRaw['id'];
     },
   ) {
     const filepath = this.buildFilePath(getFileExtension(filename)); // parentId, filename
@@ -283,13 +283,13 @@ class FileItemService extends ItemService {
   async update(
     dbConnection: DBConnection,
     member: MinimalMember,
-    itemId: Item['id'],
-    body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
+    itemId: ItemRaw['id'],
+    body: Partial<Pick<ItemRaw, 'name' | 'description' | 'settings' | 'lang'>>,
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is file
-    if (!([ItemType.LOCAL_FILE, ItemType.S3_FILE] as Item['type'][]).includes(item.type)) {
+    if (!([ItemType.LOCAL_FILE, ItemType.S3_FILE] as ItemRaw['type'][]).includes(item.type)) {
       throw new WrongItemTypeError(item.type);
     }
 

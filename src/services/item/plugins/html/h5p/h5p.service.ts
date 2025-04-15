@@ -8,7 +8,7 @@ import { FastifyBaseLogger } from 'fastify';
 import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { Item, ItemWithType } from '../../../../../drizzle/types';
+import { type ItemRaw, ItemWithType } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import { MinimalMember } from '../../../../../types';
 import {
@@ -125,8 +125,8 @@ export class H5PService extends HtmlService {
     actor: MinimalMember,
     filename: string,
     stream: Readable,
-    parentId?: Item['id'],
-    previousItemId?: Item['id'],
+    parentId?: ItemRaw['id'],
+    previousItemId?: ItemRaw['id'],
     log?: FastifyBaseLogger,
   ): Promise<H5PItem> {
     const item = await super.createItem(
@@ -161,7 +161,7 @@ export class H5PService extends HtmlService {
     contentId: string,
     parentId?: string,
     previousItemId?: string,
-  ): Promise<Item> => {
+  ): Promise<ItemRaw> => {
     const metadata = {
       name: this.buildH5PPath('', filename),
       type: ItemType.H5P,

@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import {

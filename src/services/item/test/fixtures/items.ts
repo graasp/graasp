@@ -1,14 +1,14 @@
 import { ItemVisibilityType, ThumbnailSize, buildPathFromIds } from '@graasp/sdk';
 
-import { Item, ItemVisibilityRaw } from '../../../../drizzle/types';
+import { type ItemRaw, ItemVisibilityRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { PackedItem } from '../../ItemWrapper';
 
 export const expectItem = (
-  newItem: Partial<Item> | undefined | null,
-  correctItem: Partial<Omit<Item, 'createdAt' | 'updatedAt' | 'creator'>> | undefined | null,
+  newItem: Partial<ItemRaw> | undefined | null,
+  correctItem: Partial<Omit<ItemRaw, 'createdAt' | 'updatedAt' | 'creator'>> | undefined | null,
   creator?: MinimalMember,
-  parent?: Item,
+  parent?: ItemRaw,
 ) => {
   if (!newItem || !newItem.id) {
     throw new Error('expectItem.newItem is not defined ' + JSON.stringify(newItem));
@@ -47,7 +47,7 @@ export const expectPackedItem = (
     | undefined
     | null,
   creator?: MinimalMember,
-  parent?: Item,
+  parent?: ItemRaw,
   visibilities?: Pick<ItemVisibilityRaw, 'id' | 'type' | 'itemPath'>[],
 ) => {
   expectItem(newItem, correctItem, creator, parent);
@@ -69,12 +69,12 @@ export const expectPackedItem = (
 };
 
 export const expectManyItems = (
-  items: Item[],
+  items: ItemRaw[],
   correctItems: Partial<
-    Pick<Item, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
+    Pick<ItemRaw, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
   >[],
   creator?: MinimalMember,
-  parent?: Item,
+  parent?: ItemRaw,
 ) => {
   expect(items).toHaveLength(correctItems.length);
 
@@ -92,7 +92,7 @@ export const expectManyPackedItems = (
   > &
     Pick<PackedItem, 'permission'>)[],
   creator?: MinimalMember,
-  parent?: Item,
+  parent?: ItemRaw,
   visibilities?: ItemVisibilityRaw[],
 ) => {
   expect(items).toHaveLength(correctItems.length);

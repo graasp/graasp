@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
 import { ChatMentionRaw, ChatMentionWithMessageAndCreator } from '../../../../drizzle/types';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';

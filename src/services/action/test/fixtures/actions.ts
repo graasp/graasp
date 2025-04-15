@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
 import {
   ActionRaw,

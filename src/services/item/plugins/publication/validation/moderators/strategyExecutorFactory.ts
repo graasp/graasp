@@ -35,7 +35,7 @@ export class StrategyExecutorFactory {
     this.thumbnailValidationStrategy = thumbnailValidationStrategy;
   }
 
-  private isSameTypeAsFileService(item: Item) {
+  private isSameTypeAsFileService(item: ItemRaw) {
     return item.type === this.fileService.fileType;
   }
 

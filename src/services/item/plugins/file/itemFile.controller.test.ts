@@ -26,7 +26,7 @@ import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
-import { Item, ItemRaw } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX, S3_FILE_ITEM_PLUGIN } from '../../../../utils/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
@@ -138,7 +138,7 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
           // check response value
-          const [newItem] = Object.values(response.json().data) as Item[];
+          const [newItem] = Object.values(response.json().data) as ItemRaw[];
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
@@ -173,7 +173,7 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
           // check response value
-          const [newItem] = Object.values(response.json().data) as Item[];
+          const [newItem] = Object.values(response.json().data) as ItemRaw[];
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
@@ -203,7 +203,7 @@ describe('File Item routes tests', () => {
           });
 
           // check response value
-          const items = Object.values(response.json().data) as Item[];
+          const items = Object.values(response.json().data) as ItemRaw[];
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
@@ -256,7 +256,7 @@ describe('File Item routes tests', () => {
           });
 
           // check response value
-          const [newItem] = Object.values(response.json().data) as Item[];
+          const [newItem] = Object.values(response.json().data) as ItemRaw[];
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
@@ -300,7 +300,7 @@ describe('File Item routes tests', () => {
 
           // check the response value
           expect(response.statusCode).toBe(StatusCodes.OK);
-          const newItems = Object.values(response.json().data) as Item[];
+          const newItems = Object.values(response.json().data) as ItemRaw[];
           expect(newItems.length).toBe(2);
 
           // check that both items exist in db and that their types are correctly interpreted

@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 
 import { UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { itemTagsTable, tagsTable } from '../../../../drizzle/schema';
 import { Item, TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';

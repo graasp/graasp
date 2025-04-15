@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';

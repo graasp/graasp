@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel, TagCategory, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { TagRepository } from '../../../tag/tag.repository';
 import { BasicItemService } from '../../basic.service';

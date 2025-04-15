@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { ItemBookmarkRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';

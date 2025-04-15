@@ -2,7 +2,7 @@ import { or } from 'drizzle-orm';
 import { desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import {
   actionsTable,
   appActionsTable,
@@ -22,9 +22,9 @@ import {
   AppSettingRaw,
   ChatMentionWithMessageWithoutCreator,
   ChatMessageRaw,
-  Item,
   ItemLikeWithItem,
   ItemMembershipRaw,
+  type ItemRaw,
 } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
@@ -42,7 +42,7 @@ export class ExportDataRepository {
    * @param memberId The creator of the items.
    * @returns an array of items created by the actor.
    */
-  async getItems(dbConnection: DBConnection, memberId: string): Promise<Item[]> {
+  async getItems(dbConnection: DBConnection, memberId: string): Promise<ItemRaw[]> {
     if (!memberId) {
       throw new MemberIdentifierNotFound();
     }

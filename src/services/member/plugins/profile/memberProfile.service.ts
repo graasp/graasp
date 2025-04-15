@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
 import { MemberProfileRepository } from './memberProfile.repository';
 import { IMemberProfile } from './types';

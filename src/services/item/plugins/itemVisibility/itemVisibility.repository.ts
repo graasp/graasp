@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 
 import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import { itemVisibilitiesTable, items, itemsRawTable } from '../../../../drizzle/schema';
 import { type ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';

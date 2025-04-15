@@ -31,11 +31,11 @@ import {
   membersView,
 } from '../../drizzle/schema';
 import {
-  Item,
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
   ItemMembershipWithItemAndCompleteAccount,
+  type ItemRaw,
   MemberRaw,
 } from '../../drizzle/types';
 import { AuthenticatedUser, MinimalMember } from '../../types';
@@ -50,7 +50,7 @@ import {
 import { mapById } from '../utils';
 import { PermissionType, getPermissionsAtItemSql } from './utils';
 
-type ItemPath = Item['path'];
+type ItemPath = ItemRaw['path'];
 type AccountId = string;
 type CreatorId = string;
 
@@ -336,7 +336,7 @@ export class ItemMembershipRepository {
 
   async getForItem(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
   ): Promise<ItemMembershipWithItemAndCompleteAccount[]> {
     const andConditions: SQL[] = [eq(itemsRawTable.id, item.id)];
 
@@ -357,7 +357,7 @@ export class ItemMembershipRepository {
 
   async getForManyItems(
     dbConnection: DBConnection,
-    items: Item[],
+    items: ItemRaw[],
     { accountId = undefined }: { accountId?: UUID } = {},
   ): Promise<ResultOf<ItemMembershipWithItemAndAccount[]>> {
     if (items.length === 0) {
@@ -402,7 +402,7 @@ export class ItemMembershipRepository {
 
   async getInheritedMany(
     dbConnection: DBConnection,
-    inputItems: Item[],
+    inputItems: ItemRaw[],
     accountId: AccountId,
     considerLocal = false,
   ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
@@ -651,7 +651,11 @@ export class ItemMembershipRepository {
    * @param account Member used as `creator` for any new memberships
    * @returns Object with `inserts` and `deletes` arrays of memberships to create and delete after moving the item to the root. `deletes` will always be empty.
    */
-  async detachedMoveHousekeeping(dbConnection: DBConnection, item: Item, account: MinimalMember) {
+  async detachedMoveHousekeeping(
+    dbConnection: DBConnection,
+    item: ItemRaw,
+    account: MinimalMember,
+  ) {
     // Get the Id of the item when it will be moved to the root
     const index = item.path.lastIndexOf('.');
     const itemIdAsPath = item.path.slice(index + 1);
@@ -661,7 +665,7 @@ export class ItemMembershipRepository {
     const rows = await dbConnection
       .select({
         accountId: itemMembershipsTable.accountId,
-        itemPath: sql<Item['path']>`'max(item_path::text)::ltree'`,
+        itemPath: sql<ItemRaw['path']>`'max(item_path::text)::ltree'`,
         permission: sql<PermissionLevelOptions>`max(permission)`,
       })
       .from(itemMembershipsTable)
@@ -713,9 +717,9 @@ export class ItemMembershipRepository {
    */
   async moveHousekeeping(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     account: MinimalMember,
-    newParentItem?: Item,
+    newParentItem?: ItemRaw,
   ) {
     if (!newParentItem) {
       // Moving to the root

@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import {
   isAncestorOrSelf,
   isDescendantOrSelf,

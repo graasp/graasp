@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';

@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { ItemRaw } from '../../../../drizzle/types';
 import { MemberInfo, MinimalMember } from '../../../../types';
 import { ExportDataRepository } from './memberExportData.repository';

@@ -3,7 +3,7 @@ import { count, desc, getTableColumns, gte, inArray, lte, sql } from 'drizzle-or
 import { and } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import { actionsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { ItemRaw } from '../../../../drizzle/types';

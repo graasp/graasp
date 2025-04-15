@@ -15,7 +15,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { membershipRequestsTable } from '../../../../drizzle/schema';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
@@ -23,7 +23,7 @@ import { assertIsMemberForTest } from '../../../authentication';
 function expectMemberRequestToBe(
   membershipRequest,
   member?: { id: string; email: string },
-  item?: Item,
+  item?: ItemRaw,
 ) {
   // There is no use to this Id since we should use the Item Id and the Member Id. This assertion check that AJV is doing his job by removing it.
   expect(membershipRequest.id).toBeUndefined();

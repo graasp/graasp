@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
 import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from './itemVisibility.repository';

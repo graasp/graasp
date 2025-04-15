@@ -3,7 +3,7 @@ import { delay, inject, injectable } from 'tsyringe';
 
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';

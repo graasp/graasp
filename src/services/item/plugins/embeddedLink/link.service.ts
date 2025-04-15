@@ -14,7 +14,7 @@ import {
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
@@ -223,14 +223,14 @@ export class EmbeddedLinkItemService extends ItemService {
   async postWithOptions(
     dbConnection: DBConnection,
     member: MinimalMember,
-    args: Partial<Pick<Item, 'description' | 'lang'>> &
-      Pick<Item, 'name'> & {
+    args: Partial<Pick<ItemRaw, 'description' | 'lang'>> &
+      Pick<ItemRaw, 'name'> & {
         url: string;
         showLinkIframe?: boolean;
         showLinkButton?: boolean;
         parentId?: string;
         geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
-        previousItemId?: Item['id'];
+        previousItemId?: ItemRaw['id'];
       },
   ): Promise<EmbeddedLinkItem> {
     const { name, description, lang, url, showLinkIframe, showLinkButton, ...options } = args;
@@ -252,7 +252,7 @@ export class EmbeddedLinkItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-    args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>> & {
+    args: Partial<Pick<ItemRaw, 'name' | 'description' | 'lang' | 'settings'>> & {
       url?: string;
       showLinkIframe?: boolean;
       showLinkButton?: boolean;

@@ -3,8 +3,8 @@ import { singleton } from 'tsyringe';
 
 import { ItemGeolocation, ItemType, PermissionLevelOptions, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type DBConnection } from '../../../../drizzle/db';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
@@ -60,7 +60,7 @@ export class FolderItemService extends ItemService {
   async getFolder(
     dbConnection: DBConnection,
     member: MaybeUser,
-    itemId: Item['id'],
+    itemId: ItemRaw['id'],
     permission?: PermissionLevelOptions,
   ): Promise<FolderItem> {
     const item = await this.basicItemService.get(dbConnection, member, itemId, permission);
@@ -74,11 +74,11 @@ export class FolderItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     args: {
-      item: Partial<Pick<Item, 'description' | 'settings' | 'lang'>> & Pick<Item, 'name'>;
+      item: Partial<Pick<ItemRaw, 'description' | 'settings' | 'lang'>> & Pick<ItemRaw, 'name'>;
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
       thumbnail?: Readable;
-      previousItemId?: Item['id'];
+      previousItemId?: ItemRaw['id'];
     },
   ): Promise<FolderItem> {
     return (await super.post(dbConnection, member, {
@@ -91,7 +91,7 @@ export class FolderItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-    body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
+    body: Partial<Pick<ItemRaw, 'name' | 'description' | 'settings' | 'lang'>>,
   ): Promise<FolderItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 

@@ -4,7 +4,7 @@ import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
 
 import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import {
   itemMembershipsTable,
