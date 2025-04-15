@@ -15,6 +15,9 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
 
+// tag are global in whole database and can collide
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 describe('Item Tag Endpoints', () => {
   let app: FastifyInstance;
 

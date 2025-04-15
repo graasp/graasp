@@ -13,6 +13,9 @@ import { ItemTagRepository } from './ItemTag.repository';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 
+// tag are global in whole database and can collide
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 const repository = new ItemTagRepository();
 
 async function saveTag(t: { name?: string; category: TagCategory }) {
