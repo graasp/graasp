@@ -178,29 +178,29 @@ describe('Member Storage Controller', () => {
       expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
-    // it('Invalid JWT', async () => {
-    //   const { actor } = await seedFromJson();
-    //   assertIsDefined(actor);
-    //   assertIsMember(actor);
-    //   mockAuthenticate(actor);
-    //   const token = jwtSign(
-    //     { uuid: actor.id, oldEmail: actor.email, newEmail: faker.internet.email().toLowerCase() },
-    //     'invalid',
-    //   );
+    it('Invalid JWT', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+      const token = jwtSign(
+        { uuid: actor.id, oldEmail: actor.email, newEmail: faker.internet.email().toLowerCase() },
+        'invalid',
+      );
 
-    //   const response = await app.inject({
-    //     method: HttpMethod.Patch,
-    //     url: '/members/current/email/change',
-    //     headers: { Authorization: `Bearer ${token}` },
-    //   });
-    //   expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    //   // Email didn't changed
-    //   const rawMember = await db.query.accountsTable.findFirst({
-    //     where: eq(accountsTable.id, actor.id),
-    //   });
-    //   expect(rawMember?.email).toEqual(actor.email);
-    //   expect(mockSendEmail).not.toHaveBeenCalled();
-    // });
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: '/members/current/email/change',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      // Email didn't changed
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(actor.email);
+      expect(mockSendEmail).not.toHaveBeenCalled();
+    });
     // it('Already taken email', async () => {
     //   const {
     //     actor,
