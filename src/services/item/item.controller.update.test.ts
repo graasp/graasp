@@ -2178,10 +2178,12 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
+              creator: 'actor',
               type: ItemType.DOCUMENT,
               memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
             },
             {
+              creator: 'actor',
               memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
             },
           ],
@@ -2201,11 +2203,14 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           const itemsInDb1 = await db.query.itemsRawTable.findMany({
-            where: eq(itemsRawTable.name, item.name),
+            where: and(eq(itemsRawTable.name, item.name), eq(itemsRawTable.creatorId, actor.id)),
           });
           expect(itemsInDb1).toHaveLength(1);
           const itemsInDb2 = await db.query.itemsRawTable.findMany({
-            where: eq(itemsRawTable.name, `${item.name} (2)`),
+            where: and(
+              eq(itemsRawTable.name, `${item.name} (2)`),
+              eq(itemsRawTable.creatorId, actor.id),
+            ),
           });
           expect(itemsInDb2).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);

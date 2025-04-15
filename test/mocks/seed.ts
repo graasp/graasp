@@ -1197,7 +1197,7 @@ export async function seedFromJson(data: DataType = {}) {
     return (
       shortLinks?.map((s) => ({
         platform: ShortLinkPlatform.Builder,
-        alias: faker.word.sample({ length: { min: 6, max: 40 } }),
+        alias: faker.word.words(4).split(' ').join('-'),
         ...s,
         itemId: id,
       })) ?? []

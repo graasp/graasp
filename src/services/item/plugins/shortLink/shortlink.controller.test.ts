@@ -31,6 +31,9 @@ function expectException(response, ex) {
   expect(response.json().message).toBe(ex.message);
 }
 
+// since shortlink are unique on the whole database, mock values can collide
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 describe('Short links routes tests', () => {
   let app: FastifyInstance;
 
