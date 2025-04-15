@@ -10,8 +10,8 @@ import {
   InvitationInsertDTO,
   InvitationRaw,
   InvitationWithItem,
-  Item,
   ItemMembershipRaw,
+  ItemRaw,
 } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
@@ -239,7 +239,7 @@ export class InvitationService {
     dbConnection: DBConnection,
     actor: AuthenticatedUser,
     rows: CSVInvite[],
-    itemId: Item['id'],
+    itemId: ItemRaw['id'],
   ) {
     // partition between emails that are already accounts and emails without accounts
     const { existingAccounts, newAccounts } = await this._partitionExistingUsersAndNewUsers(
@@ -293,7 +293,7 @@ export class InvitationService {
   async shareItem(
     dbConnection: DBConnection,
     actor: AuthenticatedUser,
-    itemId: Item['id'],
+    itemId: ItemRaw['id'],
     invitations: NonEmptyArray<Pick<InvitationRaw, 'email' | 'permission'>>,
   ): Promise<{
     memberships: ItemMembershipRaw[];
@@ -312,7 +312,7 @@ export class InvitationService {
   async importUsersWithCSV(
     dbConnection: DBConnection,
     actor: MinimalMember,
-    itemId: Item['id'],
+    itemId: ItemRaw['id'],
     file: MultipartFile,
   ): Promise<{ memberships: ItemMembershipRaw[]; invitations: InvitationRaw[] }> {
     // verify file is CSV

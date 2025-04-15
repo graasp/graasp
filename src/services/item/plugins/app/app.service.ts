@@ -5,7 +5,7 @@ import { singleton } from 'tsyringe';
 import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item, MinimalAccount } from '../../../../drizzle/types';
+import { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { AuthorizationService } from '../../../authorization';
@@ -114,7 +114,7 @@ export class AppService {
   async getTreeMembers(
     dbConnection: DBConnection,
     actor: AuthenticatedUser,
-    item: Item,
+    item: ItemRaw,
   ): Promise<MinimalAccount[]> {
     const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
     // get members only without duplicate

@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
@@ -59,12 +59,12 @@ export class AppItemService extends ItemService {
   async postWithOptions(
     dbConnection: DBConnection,
     member: MinimalMember,
-    args: Partial<Pick<Item, 'description' | 'lang'>> &
-      Pick<Item, 'name'> & {
+    args: Partial<Pick<ItemRaw, 'description' | 'lang'>> &
+      Pick<ItemRaw, 'name'> & {
         url: string;
         parentId?: string;
         geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
-        previousItemId?: Item['id'];
+        previousItemId?: ItemRaw['id'];
       },
   ): Promise<AppItem> {
     const { name, description, lang, url, ...options } = args;
@@ -86,7 +86,7 @@ export class AppItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-    args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>>,
+    args: Partial<Pick<ItemRaw, 'name' | 'description' | 'lang' | 'settings'>>,
   ): Promise<AppItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 

@@ -5,7 +5,7 @@ import { singleton } from 'tsyringe';
 import { ItemValidationStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { Item } from '../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
@@ -54,7 +54,7 @@ export class ItemValidationService {
   async getLastItemValidationGroupForItem(
     dbConnection: DBConnection,
     member: MinimalMember,
-    item: Item,
+    item: ItemRaw,
   ) {
     const group = await this.itemValidationGroupRepository.getLastForItem(dbConnection, item.id);
 

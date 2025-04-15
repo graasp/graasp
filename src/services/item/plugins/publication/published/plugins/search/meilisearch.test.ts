@@ -24,9 +24,9 @@ import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import { ItemFactory } from '../../../../../../../../test/factories/item.factory';
 import { DBConnection, db } from '../../../../../../../drizzle/db';
 import {
-  Item,
   ItemPublishedWithItem,
   ItemPublishedWithItemWithCreator,
+  ItemRaw,
   ItemVisibilityWithItem,
 } from '../../../../../../../drizzle/types';
 import FileService from '../../../../../../file/file.service';
@@ -183,7 +183,7 @@ describe('MeilisearchWrapper', () => {
       jest.spyOn(itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([
         {
           type: ItemVisibilityType.Hidden,
-          item: { id: descendant.id, path: descendant.path } as Item,
+          item: { id: descendant.id, path: descendant.path } as ItemRaw,
         } as ItemVisibilityWithItem,
       ]);
 
@@ -238,7 +238,7 @@ describe('MeilisearchWrapper', () => {
       const descendants = {
         [item.id]: [descendant, descendant2],
         [item2.id]: [descendant3],
-      } satisfies Record<string, Item[]>;
+      } satisfies Record<string, ItemRaw[]>;
 
       // Given
       jest

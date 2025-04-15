@@ -1,7 +1,7 @@
 import { ItemVisibilityType, PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
 
 import { DBConnection } from '../drizzle/db';
-import { Item, ItemWithCreator } from '../drizzle/types';
+import { ItemRaw, ItemWithCreator } from '../drizzle/types';
 import { MaybeUser } from '../types';
 import { ItemWrapper, type PackedItem } from './item/ItemWrapper';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
@@ -21,7 +21,7 @@ const _filterOutItems = async (
     itemMembershipRepository: ItemMembershipRepository;
     itemVisibilityRepository: ItemVisibilityRepository;
   },
-  items: Item[],
+  items: ItemRaw[],
   options?: { showHidden?: boolean },
 ) => {
   const showHidden = options?.showHidden ?? true;
@@ -70,8 +70,8 @@ export const filterOutItems = async (
     itemMembershipRepository: ItemMembershipRepository;
     itemVisibilityRepository: ItemVisibilityRepository;
   },
-  items: Item[],
-): Promise<Item[]> => {
+  items: ItemRaw[],
+): Promise<ItemRaw[]> => {
   return (
     await _filterOutItems(
       dbConnection,
@@ -85,7 +85,7 @@ export const filterOutItems = async (
 /**
  * Filtering function that takes out limited items (eg. hidden children) and return packed items
  *  */
-export const filterOutPackedItems = async <T extends Item = Item>(
+export const filterOutPackedItems = async <T extends ItemRaw = ItemRaw>(
   dbConnection: DBConnection,
   actor: MaybeUser,
   {
@@ -134,7 +134,7 @@ export const filterOutPackedDescendants = async (
   dbConnection: DBConnection,
   actor: MaybeUser,
   { itemMembershipRepository, itemVisibilityRepository },
-  item: Item,
+  item: ItemRaw,
   descendants: ItemWithCreator[],
   itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },
@@ -195,7 +195,7 @@ export const filterOutPackedDescendants = async (
 export const filterOutHiddenItems = async (
   dbConnection: DBConnection,
   { itemVisibilityRepository },
-  items: Item[],
+  items: ItemRaw[],
 ) => {
   if (!items.length) {
     return [];

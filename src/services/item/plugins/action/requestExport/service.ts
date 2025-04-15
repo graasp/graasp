@@ -10,7 +10,7 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { ActionRequestExportRaw, Item } from '../../../../../drizzle/types';
+import { ActionRequestExportRaw, type ItemRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
@@ -123,7 +123,7 @@ export class ActionRequestExportService {
 
   async _sendExportLinkInMail(
     member: MemberInfo,
-    item: Item,
+    item: ItemRaw,
     archiveDate: string,
     format: ExportActionsFormatting,
   ) {

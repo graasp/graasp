@@ -5,9 +5,9 @@ import { DBConnection } from '../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../drizzle/operations';
 import { items, membersView, publishedItemsTable } from '../../../../../drizzle/schema';
 import {
-  Item,
   ItemPublishedRaw,
   ItemPublishedWithItemWithCreator,
+  type ItemRaw,
   MemberRaw,
 } from '../../../../../drizzle/types';
 import { MinimalMember } from '../../../../../types';
@@ -22,7 +22,7 @@ export class ItemPublishedRepository {
    */
   async getForItem(
     dbConnection: DBConnection,
-    itemPath: Item['path'],
+    itemPath: ItemRaw['path'],
   ): Promise<ItemPublishedWithItemWithCreator | null> {
     const res = await dbConnection
       .select()
@@ -53,7 +53,7 @@ export class ItemPublishedRepository {
 
   async getForItems(
     dbConnection: DBConnection,
-    itemPaths: Item['path'][],
+    itemPaths: ItemRaw['path'][],
   ): Promise<ItemPublishedWithItemWithCreator[]> {
     const result = await dbConnection
       .select()
@@ -92,14 +92,14 @@ export class ItemPublishedRepository {
     return [mappedResults, total];
   }
 
-  async post(dbConnection: DBConnection, creator: MinimalMember, item: Item): Promise<void> {
+  async post(dbConnection: DBConnection, creator: MinimalMember, item: ItemRaw): Promise<void> {
     await dbConnection.insert(publishedItemsTable).values({
       itemPath: item.path,
       creatorId: creator.id,
     });
   }
 
-  async deleteForItem(dbConnection: DBConnection, item: Item): Promise<ItemPublishedRaw> {
+  async deleteForItem(dbConnection: DBConnection, item: ItemRaw): Promise<ItemPublishedRaw> {
     const entry = await this.getForItem(dbConnection, item.path);
 
     if (!entry) {
@@ -110,7 +110,7 @@ export class ItemPublishedRepository {
     return entry;
   }
 
-  async getRecentItems(dbConnection: DBConnection, limit: number = 10): Promise<Item[]> {
+  async getRecentItems(dbConnection: DBConnection, limit: number = 10): Promise<ItemRaw[]> {
     const publishedInfos = await dbConnection.query.publishedItemsTable.findMany({
       with: { item: true, account: true },
       orderBy: desc(items.createdAt),
@@ -120,7 +120,7 @@ export class ItemPublishedRepository {
     return publishedInfos.map(({ item }) => item);
   }
 
-  async touchUpdatedAt(dbConnection: DBConnection, path: Item['path']): Promise<string | null> {
+  async touchUpdatedAt(dbConnection: DBConnection, path: ItemRaw['path']): Promise<string | null> {
     const updatedAt = new Date().toISOString();
 
     const result = await dbConnection

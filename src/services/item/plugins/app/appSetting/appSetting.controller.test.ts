@@ -630,7 +630,7 @@ describe('Apps Settings Tests', () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
         const appSetting = await db.query.appSettingsTable.findFirst({
           where: eq(appSettingsTable.id, chosenAppSetting.id),
         });

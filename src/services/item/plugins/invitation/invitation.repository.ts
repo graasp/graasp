@@ -8,44 +8,19 @@ import {
   InvitationInsertDTO,
   InvitationRaw,
   InvitationWithItem,
-  Item,
+  ItemRaw,
 } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { AuthenticatedUser } from '../../../../types';
 
-type ItemPath = Item['path'];
+type ItemPath = ItemRaw['path'];
 type Email = InvitationRaw['email'];
-
-// type CreateInvitationBody = {
-//   partialInvitations: Partial<Invitation>[];
-//   itemPath: ItemPath;
-//   creatorId: CreatorId;
-// };
 
 /**
  * Database's first layer of abstraction for Invitations
  */
 @singleton()
 export class InvitationRepository {
-  // async addOne(
-  //   dbConnection: DBConnection,
-  //   { partialInvitations, itemPath, creatorId }: CreateInvitationBody,
-  // ) {
-  //   throwsIfParamIsInvalid('itemPath', itemPath);
-  //   throwsIfParamIsInvalid('creatorId', creatorId);
-
-  //   return await dbConnection
-  //     .insert(invitations)
-  //     .values(
-  //       partialInvitations.map((inv) => ({
-  //         ...inv,
-  //         itemPath,
-  //         creatorId,
-  //       })),
-  //     )
-  //     .returning();
-  // }
-
   async getOne(dbConnection: DBConnection, id: string): Promise<InvitationWithItem | null> {
     throwsIfParamIsInvalid('id', id);
     const entity = await dbConnection

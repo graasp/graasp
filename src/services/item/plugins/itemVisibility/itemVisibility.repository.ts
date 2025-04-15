@@ -7,7 +7,7 @@ import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/s
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import { itemVisibilitiesTable, items, itemsRawTable } from '../../../../drizzle/schema';
-import { Item, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
+import { type ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { mapById } from '../../../utils';
 import {
@@ -23,7 +23,7 @@ export class ItemVisibilityRepository {
 
   async getType(
     dbConnection: DBConnection,
-    itemPath: Item['path'],
+    itemPath: ItemRaw['path'],
     visibilityType: ItemVisibilityOptionsType,
     { shouldThrow = false } = {},
   ): Promise<ItemVisibilityWithItem> {
@@ -54,7 +54,7 @@ export class ItemVisibilityRepository {
    */
   async hasMany(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ResultOf<boolean>> {
     const hasVisibilities = await dbConnection.query.itemVisibilitiesTable.findMany({
@@ -74,7 +74,7 @@ export class ItemVisibilityRepository {
 
   private async getManyVisibilitiesForTypes(
     dbConnection: DBConnection,
-    items: Item[],
+    items: ItemRaw[],
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ItemVisibilityWithItem[]> {
     // we expect to query visibilities for defined items, if the items array is empty we will return an empty array.
@@ -94,7 +94,7 @@ export class ItemVisibilityRepository {
 
   async getManyForMany(
     dbConnection: DBConnection,
-    items: Item[],
+    items: ItemRaw[],
     visibilityTypes: ItemVisibilityOptionsType[],
   ) {
     const visibilities = await this.getManyVisibilitiesForTypes(
@@ -125,7 +125,7 @@ export class ItemVisibilityRepository {
    */
   async getManyBelowAndSelf(
     dbConnection: DBConnection,
-    parent: Item,
+    parent: ItemRaw,
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ItemVisibilityWithItem[]> {
     return await dbConnection.query.itemVisibilitiesTable.findMany({
@@ -139,7 +139,7 @@ export class ItemVisibilityRepository {
 
   async hasForMany(
     dbConnection: DBConnection,
-    items: Item[],
+    items: ItemRaw[],
     visibilityType: ItemVisibilityOptionsType,
   ): Promise<ResultOf<boolean>> {
     const pathsCondition = items.map(({ path }) => {
@@ -200,7 +200,7 @@ export class ItemVisibilityRepository {
    */
   async deleteOne(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     type: ItemVisibilityOptionsType,
   ): Promise<void> {
     // delete from parent only
@@ -222,7 +222,7 @@ export class ItemVisibilityRepository {
 
   async isNotInherited(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     type: ItemVisibilityOptionsType,
     { shouldThrow = true } = {},
   ): Promise<void> {
@@ -250,11 +250,11 @@ export class ItemVisibilityRepository {
   /**
    * Get all visibilities for given items
    * @throws when item array is empty, as this is considered an invalid use of the function
-   * @param  {Item[]} items
+   * @param  {ItemRaw[]} items
    */
   async getForManyItems(
     dbConnection: DBConnection,
-    inputItems: Item[],
+    inputItems: ItemRaw[],
   ): Promise<ResultOf<ItemVisibilityWithItem[]>> {
     // should not query when items array is empty
     if (!inputItems.length) {
@@ -293,15 +293,15 @@ export class ItemVisibilityRepository {
   /**
    * Copy all item visibilities from original to copy
    * @param  {Member} creator
-   * @param  {Item} original
-   * @param  {Item} copy
+   * @param  {ItemRaw} original
+   * @param  {ItemRaw} copy
    * @param  {ItemVisibilityOptionsType[] | undefined} excludeTypes
    */
   async copyAll(
     dbConnection: DBConnection,
     creator: MinimalMember,
-    original: Item,
-    copyPath: Item['path'],
+    original: ItemRaw,
+    copyPath: ItemRaw['path'],
     excludeTypes?: ItemVisibilityOptionsType[],
   ): Promise<void> {
     const originalVisibilities = await this.getByItemPath(dbConnection, original.path);

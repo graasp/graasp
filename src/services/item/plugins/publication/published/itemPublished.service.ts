@@ -10,7 +10,7 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { Item, ItemPublishedRaw } from '../../../../../drizzle/types';
+import { ItemPublishedRaw, type ItemRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
@@ -50,10 +50,10 @@ export class ItemPublishedService {
 
   hooks = new HookManager<{
     create: {
-      pre: { item: Item };
-      post: { published: ItemPublishedRaw; item: Item };
+      pre: { item: ItemRaw };
+      post: { published: ItemPublishedRaw; item: ItemRaw };
     };
-    delete: { pre: { item: Item }; post: { item: Item } };
+    delete: { pre: { item: ItemRaw }; post: { item: ItemRaw } };
   }>();
 
   constructor(
@@ -85,7 +85,7 @@ export class ItemPublishedService {
   async _notifyContributors(
     dbConnection: DBConnection,
     actor: MinimalMember,
-    item: Item,
+    item: ItemRaw,
   ): Promise<void> {
     // send email to contributors except yourself
     const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
@@ -175,7 +175,7 @@ export class ItemPublishedService {
     });
   }
 
-  private checkPublicationStatus({ id, type }: Item, publicationStatus: PublicationStatus) {
+  private checkPublicationStatus({ id, type }: ItemRaw, publicationStatus: PublicationStatus) {
     switch (publicationStatus) {
       case PublicationStatus.ReadyToPublish:
         return true;
@@ -196,7 +196,7 @@ export class ItemPublishedService {
   async post(
     dbConnection: DBConnection,
     member: MinimalMember,
-    item: Item,
+    item: ItemRaw,
     publicationStatus: PublicationStatus,
     { canBePrivate }: { canBePrivate?: boolean } = {},
   ) {
@@ -256,7 +256,10 @@ export class ItemPublishedService {
     return result;
   }
 
-  async touchUpdatedAt(dbConnection: DBConnection, item: { id: Item['id']; path: Item['path'] }) {
+  async touchUpdatedAt(
+    dbConnection: DBConnection,
+    item: { id: ItemRaw['id']; path: ItemRaw['path'] },
+  ) {
     const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(dbConnection, item.path);
 
     if (updatedAt) {

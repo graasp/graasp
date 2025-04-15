@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { Item } from '../../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../../drizzle/types';
 import FileService from '../../../../../file/file.service';
 import { isImage } from '../utils';
 import { ImageValidationStrategy } from './imageValidationStrategy';
@@ -10,7 +10,7 @@ import { StrategyExecutor, ValidationStrategy } from './types';
 
 export const buildStrategyExecutor = (
   strategy: ValidationStrategy,
-  item: Item,
+  item: ItemRaw,
 ): StrategyExecutor => ({
   process: strategy.process,
   validate: () => strategy.validate(item),
@@ -44,7 +44,7 @@ export class StrategyExecutorFactory {
    * @param item The item to validate.
    * @returns StrategyExecutor[] An array of validation strategies to apply on the given item.
    */
-  public createStrategyExecutors(item: Item) {
+  public createStrategyExecutors(item: ItemRaw) {
     // always validate the item's text
     const validationStrategies: StrategyExecutor[] = [
       buildStrategyExecutor(this.textValidationStrategy, item),

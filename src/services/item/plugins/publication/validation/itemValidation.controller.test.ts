@@ -16,7 +16,7 @@ import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { itemValidationsTable } from '../../../../../drizzle/schema';
 import {
-  Item,
+  ItemRaw,
   ItemValidationGroupRaw,
   ItemValidationGroupWithItemAndValidations,
   ItemValidationRaw,
@@ -355,7 +355,7 @@ describe('Item Validation Tests', () => {
         // stub the item moderator
         const stubValidate: ItemModeratorValidate = async (
           _db,
-          itemToValidate: Item,
+          itemToValidate: ItemRaw,
           _itemValidationGroupId,
         ) => {
           const isChildItem = itemToValidate.id === child.id;

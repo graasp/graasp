@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemValidationReviewStatus, ItemValidationStatus } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../drizzle/db';
-import { Item, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
+import { type ItemRaw, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
 import { ProcessExecutionError } from '../errors';
 import { ItemValidationRepository } from '../itemValidation.repository';
 import { ItemValidationReviewRepository } from '../itemValidationReview.repository';
@@ -28,7 +28,7 @@ export class ItemValidationModerator {
 
   async validate(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     itemValidationGroupId: ItemValidationGroupRaw['id'],
   ): Promise<ItemValidationStatus[]> {
     // execute each process on item
@@ -54,7 +54,7 @@ export class ItemValidationModerator {
 
   private async executeValidationProcess(
     dbConnection: DBConnection,
-    item: Item,
+    item: ItemRaw,
     groupId: string,
     { process, validate }: StrategyExecutor,
   ): Promise<ItemValidationStatus> {

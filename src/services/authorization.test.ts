@@ -1,8 +1,9 @@
 import { ItemVisibilityType, PermissionLevel, PermissionLevelOptions } from '@graasp/sdk';
 
+import { ItemFactory } from '../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../test/factories/itemVisibility.factory';
 import { DBConnection } from '../drizzle/db';
-import { Item, ItemMembershipWithItemAndAccount } from '../drizzle/types';
+import { ItemMembershipWithItemAndAccount, ItemRaw } from '../drizzle/types';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { AuthorizationService } from './authorization';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
@@ -13,7 +14,7 @@ const MOCK_DB = {} as unknown as DBConnection;
 const OWNER = { id: 'owner', name: 'owner' };
 const SHARED_MEMBER = { id: 'shared', name: 'shared' };
 const OTHER_MEMBER = { id: 'other', name: 'other' };
-const ITEM = { id: 'item' } as Item;
+const ITEM = ItemFactory({ id: 'item' });
 
 const ownerMembership = {
   account: OWNER,
@@ -21,7 +22,7 @@ const ownerMembership = {
   item: ITEM,
 } as unknown as ItemMembershipWithItemAndAccount;
 
-const buildSharedMembership = (permission: PermissionLevelOptions, item: Item = ITEM) =>
+const buildSharedMembership = (permission: PermissionLevelOptions, item: ItemRaw = ITEM) =>
   ({ account: SHARED_MEMBER, permission, item }) as ItemMembershipWithItemAndAccount;
 
 const itemMembershipRepository = new ItemMembershipRepository();
@@ -3191,8 +3192,8 @@ describe('validatePermissionMany for one item', () => {
 });
 
 describe('validatePermissionMany for many items', () => {
-  const SHARED_ITEM = { id: 'shared-item' } as Item;
-  const PUBLIC_ITEM = { id: 'public-item' } as Item;
+  const SHARED_ITEM = ItemFactory({ id: 'shared-item' });
+  const PUBLIC_ITEM = ItemFactory({ id: 'public-item' });
 
   afterEach(() => {
     jest.restoreAllMocks();

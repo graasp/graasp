@@ -4,10 +4,10 @@ import { singleton } from 'tsyringe';
 import { DBConnection } from '../../../../drizzle/db';
 import { itemBookmarksTable, items, membersView } from '../../../../drizzle/schema';
 import {
-  Item,
   ItemBookmarkInsertDTO,
   ItemBookmarkRawWithItemAndAccount,
   ItemBookmarkRawWithItemWithCreator,
+  ItemRaw,
   MemberRaw,
 } from '../../../../drizzle/types';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
@@ -103,7 +103,7 @@ export class ItemBookmarkRepository {
     dbConnection: DBConnection,
     itemId: string,
     memberId: string,
-  ): Promise<Item['id']> {
+  ): Promise<ItemRaw['id']> {
     await dbConnection
       .delete(itemBookmarksTable)
       .where(and(eq(itemBookmarksTable.itemId, itemId), eq(itemBookmarksTable.memberId, memberId)));
