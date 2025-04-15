@@ -50,114 +50,114 @@ describe('Member Storage Controller', () => {
     expect(true).toBeTruthy();
   });
 
-  // describe('POST /members/current/email/change', () => {
-  //   it('Unauthenticated', async () => {
-  //     const { actor } = await seedFromJson();
-  //     assertIsDefined(actor);
-  //     assertIsMember(actor);
-  //     const response = await app.inject({
-  //       method: 'POST',
-  //       url: '/members/current/email/change',
-  //       body: { email: faker.internet.email() },
-  //     });
-  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //     expect(mockSendEmail).not.toHaveBeenCalled();
-  //     // Email didn't changed
-  //     const rawMember = await db.query.accountsTable.findFirst({
-  //       where: eq(accountsTable.id, actor.id),
-  //     });
-  //     expect(rawMember?.email).toEqual(actor.email);
-  //   });
+  describe('POST /members/current/email/change', () => {
+    it('Unauthenticated', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      const response = await app.inject({
+        method: 'POST',
+        url: '/members/current/email/change',
+        body: { email: faker.internet.email() },
+      });
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(mockSendEmail).not.toHaveBeenCalled();
+      // Email didn't changed
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(actor.email);
+    });
 
-  //   it('No email provided', async () => {
-  //     const { actor } = await seedFromJson();
-  //     assertIsDefined(actor);
-  //     assertIsMember(actor);
-  //     mockAuthenticate(actor);
+    it('No email provided', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
 
-  //     const response = await app.inject({
-  //       method: 'POST',
-  //       url: '/members/current/email/change',
-  //     });
-  //     expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //     expect(mockSendEmail).not.toHaveBeenCalled();
-  //     // Email didn't changed
-  //     const rawMember = await db.query.accountsTable.findFirst({
-  //       where: eq(accountsTable.id, actor.id),
-  //     });
-  //     expect(rawMember?.email).toEqual(actor.email);
-  //   });
-  //   it('Invalid email provided', async () => {
-  //     const { actor } = await seedFromJson();
-  //     assertIsDefined(actor);
-  //     assertIsMember(actor);
-  //     mockAuthenticate(actor);
+      const response = await app.inject({
+        method: 'POST',
+        url: '/members/current/email/change',
+      });
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      expect(mockSendEmail).not.toHaveBeenCalled();
+      // Email didn't changed
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(actor.email);
+    });
+    it('Invalid email provided', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
 
-  //     const response = await app.inject({
-  //       method: 'POST',
-  //       url: '/members/current/email/change',
-  //       body: { email: 'abc' },
-  //     });
-  //     expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //     expect(mockSendEmail).not.toHaveBeenCalled();
-  //     // Email didn't changed
-  //     const rawMember = await db.query.accountsTable.findFirst({
-  //       where: eq(accountsTable.id, actor.id),
-  //     });
-  //     expect(rawMember?.email).toEqual(actor.email);
-  //   });
+      const response = await app.inject({
+        method: 'POST',
+        url: '/members/current/email/change',
+        body: { email: 'abc' },
+      });
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      expect(mockSendEmail).not.toHaveBeenCalled();
+      // Email didn't changed
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(actor.email);
+    });
 
-  //   it('Already taken email', async () => {
-  //     const email = faker.internet.email().toLowerCase();
-  //     const {
-  //       actor,
-  //       members: [member],
-  //     } = await seedFromJson({ members: [{ email }] });
-  //     assertIsDefined(actor);
-  //     assertIsMember(actor);
-  //     mockAuthenticate(actor);
+    it('Already taken email', async () => {
+      const email = faker.internet.email().toLowerCase();
+      const {
+        actor,
+        members: [member],
+      } = await seedFromJson({ members: [{ email }] });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
 
-  //     const response = await app.inject({
-  //       method: 'POST',
-  //       url: '/members/current/email/change',
-  //       body: { email: member.email },
-  //     });
+      const response = await app.inject({
+        method: 'POST',
+        url: '/members/current/email/change',
+        body: { email: member.email },
+      });
 
-  //     expect(response.statusCode).toBe(StatusCodes.CONFLICT);
-  //     expect(mockSendEmail).not.toHaveBeenCalled();
-  //     // Email didn't change
-  //     const rawMember = await db.query.accountsTable.findFirst({
-  //       where: eq(accountsTable.id, actor.id),
-  //     });
-  //     expect(rawMember?.email).toEqual(actor.email);
-  //   });
+      expect(response.statusCode).toBe(StatusCodes.CONFLICT);
+      expect(mockSendEmail).not.toHaveBeenCalled();
+      // Email didn't change
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(actor.email);
+    });
 
-  //   it('Change email', async () => {
-  //     const { actor } = await seedFromJson();
-  //     assertIsDefined(actor);
-  //     assertIsMember(actor);
-  //     mockAuthenticate(actor);
+    it('Change email', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
 
-  //     const email = faker.internet.email();
-  //     const response = await app.inject({
-  //       method: 'POST',
-  //       url: '/members/current/email/change',
-  //       body: { email },
-  //     });
-  //     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-  //     waitForExpect(() => {
-  //       expect(mockSendEmail).toHaveBeenCalledTimes(1);
-  //       expect(mockSendEmail.mock.calls[0][1]).toBe(email);
-  //       expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
-  //     });
+      const email = faker.internet.email();
+      const response = await app.inject({
+        method: 'POST',
+        url: '/members/current/email/change',
+        body: { email },
+      });
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(email);
+        expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
+      });
 
-  //     // Email didn't change
-  //     const rawMember = await db.query.accountsTable.findFirst({
-  //       where: eq(accountsTable.id, actor.id),
-  //     });
-  //     expect(rawMember?.email).toEqual(actor.email);
-  //   });
-  // });
+      // Email didn't change
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(actor.email);
+    });
+  });
 
   // describe('PATCH /members/current/email/change', () => {
   //   // let newEmail: string;
