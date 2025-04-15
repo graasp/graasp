@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import crypto from 'crypto';
 import { StatusCodes } from 'http-status-codes';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';

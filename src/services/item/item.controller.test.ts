@@ -12,6 +12,7 @@ import { assertIsMemberForTest } from '../authentication';
 
 describe('Item controller', () => {
   let app: FastifyInstance;
+
   beforeAll(async () => {
     ({ app } = await build());
   });

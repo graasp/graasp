@@ -79,7 +79,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       // Example: If the schema defines a `user` object with `$id` = `user`, it will result in
       // $ref: "#/components/schemas/user" instead of "#/components/schemas/def-1"
       buildLocalReference(json, baseUri, fragment, i) {
-        return json.$id?.toString() || `my-fragment-${i}`;
+        return json.$id?.toString() ?? `my-fragment-${i}`;
       },
     },
   });

@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { MentionStatus } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { client, db } from '../../../../drizzle/db';
+import { db } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';

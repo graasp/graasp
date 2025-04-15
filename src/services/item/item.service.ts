@@ -22,10 +22,9 @@ import {
 
 import { type DBConnection } from '../../drizzle/db';
 import {
-  Item,
   ItemGeolocationRaw,
   ItemMembershipRaw,
-  ItemRaw,
+  type ItemRaw,
   ItemTypeUnion,
   ItemWithCreator,
   MinimalItemForInsert,
@@ -80,24 +79,24 @@ export class ItemService {
   public readonly recycledBinService: RecycledBinService;
 
   hooks = new HookManager<{
-    create: { pre: { item: Partial<Item> }; post: { item: Item } };
-    update: { pre: { item: Item }; post: { item: Item } };
-    delete: { pre: { item: Item }; post: { item: Item } };
-    copy: { pre: { original: Item }; post: { original: Item; copy: MinimalItemForInsert } };
+    create: { pre: { item: Partial<ItemRaw> }; post: { item: ItemRaw } };
+    update: { pre: { item: ItemRaw }; post: { item: ItemRaw } };
+    delete: { pre: { item: ItemRaw }; post: { item: ItemRaw } };
+    copy: { pre: { original: ItemRaw }; post: { original: ItemRaw; copy: MinimalItemForInsert } };
     move: {
       pre: {
         /** the item to be moved itself */
-        source: Item;
+        source: ItemRaw;
         /** the parent item where the item will be moved */
-        destinationParent?: Item;
+        destinationParent?: ItemRaw;
       };
       post: {
         /** the item before it was moved */
-        source: Item;
+        source: ItemRaw;
         /** id of the previous parent */
         sourceParentId?: UUID;
         /** the item itself once moved */
-        destination: Item;
+        destination: ItemRaw;
       };
     };
   }>();
@@ -144,9 +143,9 @@ export class ItemService {
       parentId?: string;
       geolocation?: Pick<ItemGeolocationRaw, 'lat' | 'lng'>;
       thumbnail?: Readable;
-      previousItemId?: Item['id'];
+      previousItemId?: ItemRaw['id'];
     },
-  ): Promise<Item> {
+  ): Promise<ItemRaw> {
     const { item, parentId, previousItemId, geolocation, thumbnail } = args;
 
     // item
@@ -177,13 +176,13 @@ export class ItemService {
     member: MinimalMember,
     args: {
       items: {
-        item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+        item: Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>;
         geolocation?: Pick<ItemGeolocationRaw, 'lat' | 'lng'>;
         thumbnail?: Readable;
       }[];
       parentId: string;
     },
-  ): Promise<Item[]> {
+  ): Promise<ItemRaw[]> {
     const { items: inputItems, parentId } = args;
 
     // create items
@@ -197,11 +196,11 @@ export class ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     inputItems: {
-      item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+      item: Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>;
       thumbnail?: Readable;
       geolocation?: Pick<ItemGeolocationRaw, 'lat' | 'lng'>;
     }[],
-    createdItems: Item[],
+    createdItems: ItemRaw[],
   ) {
     const insertedItems = await this.itemRepository.getMany(
       dbConnection,
@@ -249,7 +248,7 @@ export class ItemService {
   private async createItems(
     dbConnection: DBConnection,
     member: MinimalMember,
-    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    items: (Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>)[],
     parentId?: string,
     previousItemId?: string,
   ) {
@@ -260,7 +259,7 @@ export class ItemService {
       }
     }
 
-    let createdItems: Item[];
+    let createdItems: ItemRaw[];
     if (parentId) {
       createdItems = await this.createItemsWithParent(
         dbConnection,
@@ -413,9 +412,9 @@ export class ItemService {
   private async uploadThumbnails(
     dbConnection: DBConnection,
     member: MinimalMember,
-    createdItems: Item[],
+    createdItems: ItemRaw[],
     thumbnails: { [key: string]: Readable },
-  ): Promise<Item[]> {
+  ): Promise<ItemRaw[]> {
     return Promise.all(
       createdItems.map(async (item) => {
         const thumbnail = thumbnails[item.id];
@@ -434,7 +433,7 @@ export class ItemService {
   /**
    * Index items for meilisearch.
    */
-  private async indexItemsForSearch(dbConnection: DBConnection, items: Item[]) {
+  private async indexItemsForSearch(dbConnection: DBConnection, items: ItemRaw[]) {
     try {
       // Check if the item is published (or has published parent)
       const publishedInfo = await this.itemPublishedRepository.getForItems(
@@ -646,8 +645,8 @@ export class ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-    body: Partial<Item>,
-  ): Promise<Item> {
+    body: Partial<ItemRaw>,
+  ): Promise<ItemRaw> {
     // check memberships
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
@@ -763,12 +762,7 @@ export class ItemService {
     itemId: UUID,
     parentItem?: FolderItem,
   ) {
-    let item;
-    try {
-      item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    } catch (e) {
-      throw e;
-    }
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     await this.authorizationService.validatePermission(
       dbConnection,
@@ -878,7 +872,7 @@ export class ItemService {
   async _move(
     dbConnection: DBConnection,
     actor: MinimalMember,
-    item: Item,
+    item: ItemRaw,
     parentItem?: FolderItem,
   ) {
     // identify all the necessary adjustments to memberships

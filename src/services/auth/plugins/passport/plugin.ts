@@ -6,7 +6,6 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
-  AUTH_TOKEN_JWT_SECRET,
   COOKIE_DOMAIN,
   JWT_SECRET,
   MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS,
@@ -20,7 +19,7 @@ import { AccountRepository } from '../../../account/account.repository';
 import { ItemRepository } from '../../../item/item.repository';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberPasswordService } from '../password/password.service';
-import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';
+import { SHORT_TOKEN_PARAM } from './constants';
 import { PassportStrategy } from './strategies';
 import emailChangeStrategy from './strategies/emailChange';
 import jwtStrategy from './strategies/jwt';

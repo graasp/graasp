@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { ChatMessageRaw, Item } from '../../../../drizzle/types';
+import { type ChatMessageRaw, type ItemRaw } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
@@ -41,7 +41,7 @@ export class MentionService {
     member,
     creator,
   }: {
-    item: Item;
+    item: ItemRaw;
     member: { email: string; lang: string };
     creator: { name: string };
   }) {
