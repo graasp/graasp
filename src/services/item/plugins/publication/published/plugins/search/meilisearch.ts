@@ -555,7 +555,7 @@ export class MeiliSearchWrapper {
     return this.meilisearchClient.health();
   }
 
-  private async findAndCountItems(
+  async findAndCountItems(
     dbConnection: DBConnection,
     args: { where: { type: ItemTypeEnumKeys }; take: number; skip: number; order: SQL },
   ): Promise<[ItemRaw[], number]> {

@@ -462,7 +462,7 @@ describe('MeilisearchWrapper', () => {
         return mockItemPublished({ id: index.toString(), path: index.toString() });
       });
       // prevent finding any PDFs to store because this part is temporary
-      jest.spyOn(itemRepository, 'findAndCount').mockResolvedValue([[], 0]);
+      jest.spyOn(meilisearch, 'findAndCountItems').mockResolvedValue([[], 0]);
       // fake pagination
       jest
         .spyOn(itemPublishedRepository, 'getPaginatedItems')
