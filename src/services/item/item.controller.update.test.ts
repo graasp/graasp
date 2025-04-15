@@ -24,6 +24,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../test/constants';
 import { SeedActor, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
+import { isDirectChild } from '../../drizzle/operations';
 import { itemGeolocationsTable, itemMembershipsTable, itemsRawTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
 import {
@@ -35,6 +36,7 @@ import {
   TooManyChildren,
 } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
+import { WebsocketService } from '../websockets/ws-service';
 import { ItemService } from './item.service';
 import { ItemActionService } from './plugins/action/itemAction.service';
 import { expectItem } from './test/fixtures/items';
@@ -2135,40 +2137,43 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Fail to copy if one item does not exist', async () => {
-        const { actor, items } = await seedFromJson({
+        const {
+          actor,
+          items: [item, target],
+        } = await seedFromJson({
           items: [
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
               creator: 'actor',
             },
+            {},
           ],
         });
         assertIsDefined(actor);
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
+
         const missingId = uuidv4();
+        const websocketMock = jest.spyOn(WebsocketService.prototype, 'publish');
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/copy',
-          query: { id: [...items.map(({ id }) => id), missingId] },
-          payload: {},
+          query: { id: [item.id, missingId] },
+          payload: { parentId: target.id },
         });
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          for (const item of items) {
-            const itemsInDb1 = await db.query.itemsRawTable.findMany({
-              where: and(eq(itemsRawTable.name, item.name), eq(itemsRawTable.creatorId, actor.id)),
-            });
-            expect(itemsInDb1).toHaveLength(1);
-            const itemsInDb2 = await db.query.itemsRawTable.findMany({
-              where: and(
-                eq(itemsRawTable.name, `${item.name} (2)`),
-                eq(itemsRawTable.creatorId, actor.id),
-              ),
-            });
-            expect(itemsInDb2).toHaveLength(0);
-          }
+          // expect copy to have finished
+          expect(websocketMock).toHaveBeenCalled();
+
+          const itemsInDb = await db.query.itemsRawTable.findMany({
+            where: and(
+              eq(itemsRawTable.name, item.name),
+              isDirectChild(itemsRawTable.path, target.path),
+            ),
+          });
+          expect(itemsInDb).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Fail to copy if parent item is not a folder', async () => {
@@ -2191,6 +2196,8 @@ describe('Item routes tests', () => {
         assertIsDefined(actor);
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
+
+        const websocketMock = jest.spyOn(WebsocketService.prototype, 'publish');
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/copy',
@@ -2199,20 +2206,20 @@ describe('Item routes tests', () => {
             parentId: parentItem.id,
           },
         });
+
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          const itemsInDb1 = await db.query.itemsRawTable.findMany({
-            where: and(eq(itemsRawTable.name, item.name), eq(itemsRawTable.creatorId, actor.id)),
-          });
-          expect(itemsInDb1).toHaveLength(1);
-          const itemsInDb2 = await db.query.itemsRawTable.findMany({
+          // expect copy to have finished
+          expect(websocketMock).toHaveBeenCalled();
+
+          const itemsInDb = await db.query.itemsRawTable.findMany({
             where: and(
-              eq(itemsRawTable.name, `${item.name} (2)`),
-              eq(itemsRawTable.creatorId, actor.id),
+              eq(itemsRawTable.name, item.name),
+              isDirectChild(itemsRawTable.path, parentItem.path),
             ),
           });
-          expect(itemsInDb2).toHaveLength(0);
+          expect(itemsInDb).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
     });
