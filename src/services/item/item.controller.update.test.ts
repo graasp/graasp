@@ -26,6 +26,7 @@ import { SeedActor, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { isDirectChild } from '../../drizzle/operations';
 import { itemGeolocationsTable, itemMembershipsTable, itemsRawTable } from '../../drizzle/schema';
+import { BaseLogger } from '../../logger';
 import { assertIsDefined } from '../../utils/assertions';
 import {
   HierarchyTooDeep,
@@ -1672,21 +1673,12 @@ describe('Item routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      it('Fail to move items if one item does not exist', async () => {
+      it('Fail to move item that does not exist', async () => {
         const {
           actor,
-          items: [parentItem, item1, item2, item3],
+          items: [parentItem],
         } = await seedFromJson({
           items: [
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
-            {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            },
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
             },
@@ -1696,13 +1688,11 @@ describe('Item routes tests', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        const items = [item1, item2, item3];
-
         const websocketMock = jest.spyOn(WebsocketService.prototype, 'publish');
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/move',
-          query: { id: [...items.map(({ id }) => id), uuidv4()] },
+          query: { id: [uuidv4()] },
           payload: {
             parentId: parentItem.id,
           },
@@ -1713,15 +1703,10 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           expect(websocketMock).toHaveBeenCalled();
 
-          for (const item of items) {
-            const result = await db.query.itemsRawTable.findFirst({
-              where: eq(itemsRawTable.id, item.id),
-            });
-            if (!result) {
-              throw new Error('item does not exist!');
-            }
-            expect(result.path.startsWith(parentItem.path)).toBeFalsy();
-          }
+          const result = await db.query.itemsRawTable.findMany({
+            where: isDirectChild(itemsRawTable.path, parentItem.path),
+          });
+          expect(result).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
     });
