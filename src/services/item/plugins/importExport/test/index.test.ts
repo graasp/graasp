@@ -18,7 +18,7 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { isDescendantOrSelf } from '../../../../../drizzle/operations';
+import { isDescendantOrSelf, isDirectChild } from '../../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { LocalFileRepository } from '../../../../file/repositories/local';
@@ -306,9 +306,14 @@ describe('ZIP routes tests', () => {
           }
         }
 
-        const child = await getItemByName(ARCHIVE_CONTENT.childContent.name);
         const folderItem = await getItemByName(ARCHIVE_CONTENT.folder.name);
-        expect(child!.path).toContain(folderItem!.path);
+        const child = await db.query.itemsRawTable.findFirst({
+          where: and(
+            eq(itemsRawTable.name, ARCHIVE_CONTENT.childContent.name),
+            isDirectChild(itemsRawTable.path, folderItem!.path),
+          ),
+        });
+        expect(child).toBeDefined();
       }, 5000);
     });
     it('Import archive in folder with empty folder', async () => {

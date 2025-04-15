@@ -17,6 +17,7 @@ module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/test/mockSetup.ts'],
   globalTeardown: '<rootDir>/test/teardown.ts',
+  globalTeardown: '<rootDir>/test/setup.ts',
   // added for jest to look for the dependencies
   modulePaths: ['src/'],
   cacheDirectory: '.jest-cache',

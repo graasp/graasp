@@ -2139,6 +2139,7 @@ describe('Item routes tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              creator: 'actor',
             },
           ],
         });
@@ -2157,11 +2158,14 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           for (const item of items) {
             const itemsInDb1 = await db.query.itemsRawTable.findMany({
-              where: eq(itemsRawTable.name, item.name),
+              where: and(eq(itemsRawTable.name, item.name), eq(itemsRawTable.creatorId, actor.id)),
             });
             expect(itemsInDb1).toHaveLength(1);
             const itemsInDb2 = await db.query.itemsRawTable.findMany({
-              where: eq(itemsRawTable.name, `${item.name} (2)`),
+              where: and(
+                eq(itemsRawTable.name, `${item.name} (2)`),
+                eq(itemsRawTable.creatorId, actor.id),
+              ),
             });
             expect(itemsInDb2).toHaveLength(0);
           }
