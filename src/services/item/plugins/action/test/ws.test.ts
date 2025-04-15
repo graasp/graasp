@@ -8,7 +8,7 @@ import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@gra
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { Item } from '../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
@@ -90,7 +90,7 @@ describe('asynchronous feedback', () => {
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
     await waitForExpect(() => {
-      const [feedbackUpdate] = memberUpdates as ItemOpFeedbackEventType<Item, 'export'>[];
+      const [feedbackUpdate] = memberUpdates as ItemOpFeedbackEventType<ItemRaw, 'export'>[];
       const expected = ItemOpFeedbackEvent('export', [item.id], { [item.id]: item });
       expectExportFeedbackOp(feedbackUpdate, expected);
     });

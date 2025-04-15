@@ -18,7 +18,6 @@ import {
 } from '../../../../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
 import type { AppSettingService } from '../../appSetting.service';
-import { PreventUpdateAppSettingFile } from '../../errors';
 import { download, upload } from './appSetting.file.schema';
 import AppSettingFileService from './appSetting.file.service';
 

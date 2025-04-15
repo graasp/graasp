@@ -1720,492 +1720,492 @@ describe('Item routes tests', () => {
   //   });
   // });
   // // copy many items
-  // describe('POST /items/copy', () => {
-  //   it('Throws if signed out', async () => {
-  //     const {
-  //       items: [item],
-  //     } = await seedFromJson({ items: [{}] });
-  //     const response = await app.inject({
-  //       method: HttpMethod.Post,
-  //       url: '/items/copy',
-  //       query: { id: [item.id] },
-  //       payload: {},
-  //     });
-  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //   });
-  //   describe('Signed In', () => {
-  //     it('Copy successfully from root to root', async () => {
-  //       const settings = { hasThumbnail: false, isResizable: true, isCollapsible: true };
-  //       const { actor, items } = await seedFromJson({
-  //         items: [
-  //           {
-  //             creator: { name: 'bob' },
-  //             lang: 'fr',
-  //             settings,
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             creator: { name: 'bob' },
-  //             lang: 'fr',
-  //             settings,
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             creator: { name: 'bob' },
-  //             lang: 'fr',
-  //             settings,
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
+  describe('POST /items/copy', () => {
+    it('Throws if signed out', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/copy',
+        query: { id: [item.id] },
+        payload: {},
+      });
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+    describe('Signed In', () => {
+      it('Copy successfully from root to root', async () => {
+        const settings = { hasThumbnail: false, isResizable: true, isCollapsible: true };
+        const { actor, items } = await seedFromJson({
+          items: [
+            {
+              creator: { name: 'bob' },
+              lang: 'fr',
+              settings,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              creator: { name: 'bob' },
+              lang: 'fr',
+              settings,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              creator: { name: 'bob' },
+              lang: 'fr',
+              settings,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: items.map(({ id }) => id) },
-  //         payload: {},
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         for (const { name, creatorId } of items) {
-  //           const itemsInDb1 = await db.query.itemsRawTable.findMany({
-  //             where: eq(itemsRawTable.name, name),
-  //           });
-  //           const itemsInDb2 = await db.query.itemsRawTable.findMany({
-  //             where: eq(itemsRawTable.name, `${name} (2)`),
-  //           });
-  //           expect(itemsInDb1).toHaveLength(1);
-  //           expect(itemsInDb2).toHaveLength(1);
-  //           const itemsInDb = [...itemsInDb1, ...itemsInDb2];
-  //           expect(itemsInDb).toHaveLength(2);
-  //           // expect copied data
-  //           expect(itemsInDb[0].type).toEqual(itemsInDb[1].type);
-  //           expect(itemsInDb[0].description).toEqual(itemsInDb[1].description);
-  //           expect(itemsInDb[0].settings).toEqual(settings);
-  //           expect(itemsInDb[1].settings).toEqual(settings);
-  //           expect(itemsInDb[0].lang).toEqual(itemsInDb[1].lang);
-  //           // copy's creator is actor
-  //           expect(itemsInDb[0].creatorId).toEqual(creatorId);
-  //           expect(itemsInDb[1].creatorId).toEqual(actor.id);
-  //           // id and path are different
-  //           expect(itemsInDb[0].id).not.toEqual(itemsInDb[1].id);
-  //           expect(itemsInDb[0].path).not.toEqual(itemsInDb[1].path);
-  //           expect(itemsInDb2[0].order).toBeNull();
-  //           // check it created a new membership per item
-  //           const m1 = await db.query.itemMembershipsTable.findFirst({
-  //             where: eq(itemMembershipsTable.itemPath, itemsInDb1[0].path),
-  //           });
-  //           expect(m1).toBeDefined();
-  //           const m2 = await db.query.itemMembershipsTable.findFirst({
-  //             where: eq(itemMembershipsTable.itemPath, itemsInDb2[0].path),
-  //           });
-  //           expect(m2).toBeDefined();
-  //         }
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Copy successfully from root to item with admin rights', async () => {
-  //       const {
-  //         actor,
-  //         items: [targetItem, ...items],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: items.map(({ id }) => id) },
+          payload: {},
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          for (const { name, creatorId } of items) {
+            const itemsInDb1 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, name),
+            });
+            const itemsInDb2 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, `${name} (2)`),
+            });
+            expect(itemsInDb1).toHaveLength(1);
+            expect(itemsInDb2).toHaveLength(1);
+            const itemsInDb = [...itemsInDb1, ...itemsInDb2];
+            expect(itemsInDb).toHaveLength(2);
+            // expect copied data
+            expect(itemsInDb[0].type).toEqual(itemsInDb[1].type);
+            expect(itemsInDb[0].description).toEqual(itemsInDb[1].description);
+            expect(itemsInDb[0].settings).toEqual(settings);
+            expect(itemsInDb[1].settings).toEqual(settings);
+            expect(itemsInDb[0].lang).toEqual(itemsInDb[1].lang);
+            // copy's creator is actor
+            expect(itemsInDb[0].creatorId).toEqual(creatorId);
+            expect(itemsInDb[1].creatorId).toEqual(actor.id);
+            // id and path are different
+            expect(itemsInDb[0].id).not.toEqual(itemsInDb[1].id);
+            expect(itemsInDb[0].path).not.toEqual(itemsInDb[1].path);
+            expect(itemsInDb2[0].order).toBeNull();
+            // check it created a new membership per item
+            const m1 = await db.query.itemMembershipsTable.findFirst({
+              where: eq(itemMembershipsTable.itemPath, itemsInDb1[0].path),
+            });
+            expect(m1).toBeDefined();
+            const m2 = await db.query.itemMembershipsTable.findFirst({
+              where: eq(itemMembershipsTable.itemPath, itemsInDb2[0].path),
+            });
+            expect(m2).toBeDefined();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Copy successfully from root to item with admin rights', async () => {
+        const {
+          actor,
+          items: [targetItem, ...items],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: items.map(({ id }) => id) },
-  //         payload: {
-  //           parentId: targetItem.id,
-  //         },
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         // contains twice the items (and the target item)
-  //         const orders: (number | null)[] = [];
-  //         for (const { id, name } of items) {
-  //           const itemsInDb = await db.query.itemsRawTable.findMany({
-  //             where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
-  //           });
-  //           expect(itemsInDb).toHaveLength(1);
-  //           const copiedItemInDb = await db.query.itemsRawTable.findMany({
-  //             where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
-  //           });
-  //           expect(copiedItemInDb).toHaveLength(1);
-  //           orders.push(copiedItemInDb[0].order);
-  //           // check it did not create a new membership because user is admin of parent
-  //           const newCountMembership = await db.query.itemMembershipsTable.findMany({
-  //             where: inArray(itemMembershipsTable.itemPath, [
-  //               itemsInDb[0].path,
-  //               copiedItemInDb[0].path,
-  //             ]),
-  //           });
-  //           expect(newCountMembership).toHaveLength(1);
-  //         }
-  //         // order is defined, order is not guaranteed because moving is done in parallel
-  //         orders.forEach((o) => expect(o).toBeGreaterThan(0));
-  //         // unique values
-  //         expect(orders.length).toEqual(new Set(orders).size);
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Copy successfully from root to item with write rights', async () => {
-  //       const {
-  //         actor,
-  //         items: [targetItem, ...items],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: items.map(({ id }) => id) },
+          payload: {
+            parentId: targetItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const orders: (number | null)[] = [];
+          for (const { id, name } of items) {
+            const itemsInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
+            });
+            expect(itemsInDb).toHaveLength(1);
+            const copiedItemInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
+            });
+            expect(copiedItemInDb).toHaveLength(1);
+            orders.push(copiedItemInDb[0].order);
+            // check it did not create a new membership because user is admin of parent
+            const newCountMembership = await db.query.itemMembershipsTable.findMany({
+              where: inArray(itemMembershipsTable.itemPath, [
+                itemsInDb[0].path,
+                copiedItemInDb[0].path,
+              ]),
+            });
+            expect(newCountMembership).toHaveLength(1);
+          }
+          // order is defined, order is not guaranteed because moving is done in parallel
+          orders.forEach((o) => expect(o).toBeGreaterThan(0));
+          // unique values
+          expect(orders.length).toEqual(new Set(orders).size);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Copy successfully from root to item with write rights', async () => {
+        const {
+          actor,
+          items: [targetItem, ...items],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: items.map(({ id }) => id) },
-  //         payload: {
-  //           parentId: targetItem.id,
-  //         },
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         // contains twice the items (and the target item)
-  //         for (const { id, name } of items) {
-  //           const itemsInDb = await db.query.itemsRawTable.findMany({
-  //             where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
-  //           });
-  //           expect(itemsInDb).toHaveLength(1);
-  //           const copiedItemInDb = await db.query.itemsRawTable.findMany({
-  //             where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
-  //           });
-  //           expect(copiedItemInDb).toHaveLength(1);
-  //           // check it created a new membership because user is writer of parent
-  //           const newCountMembership = await db.query.itemMembershipsTable.findMany({
-  //             where: inArray(itemMembershipsTable.itemPath, [
-  //               itemsInDb[0].path,
-  //               copiedItemInDb[0].path,
-  //             ]),
-  //           });
-  //           expect(newCountMembership).toHaveLength(2);
-  //         }
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Copy successfully shared root item to home', async () => {
-  //       const commonName = faker.word.sample(2);
-  //       const {
-  //         actor,
-  //         items: [_sharedParent, item],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             name: commonName,
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           {
-  //             creator: { name: 'bob' },
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //             children: [
-  //               {
-  //                 name: commonName,
-  //                 memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //               },
-  //             ],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: items.map(({ id }) => id) },
+          payload: {
+            parentId: targetItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          for (const { id, name } of items) {
+            const itemsInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
+            });
+            expect(itemsInDb).toHaveLength(1);
+            const copiedItemInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
+            });
+            expect(copiedItemInDb).toHaveLength(1);
+            // check it created a new membership because user is writer of parent
+            const newCountMembership = await db.query.itemMembershipsTable.findMany({
+              where: inArray(itemMembershipsTable.itemPath, [
+                itemsInDb[0].path,
+                copiedItemInDb[0].path,
+              ]),
+            });
+            expect(newCountMembership).toHaveLength(2);
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Copy successfully shared root item to home', async () => {
+        const commonName = faker.word.sample(2);
+        const {
+          actor,
+          items: [_sharedParent, item],
+        } = await seedFromJson({
+          items: [
+            {
+              name: commonName,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              creator: { name: 'bob' },
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              children: [
+                {
+                  name: commonName,
+                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: item.id },
-  //         payload: {},
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         // contains twice the items (and the target item)
-  //         const itemsInDb1 = await db.query.itemsRawTable.findMany({
-  //           where: eq(itemsRawTable.name, item.name),
-  //         });
-  //         // 2 is added because there is already an item with the same name in the root
-  //         const itemsInDb2 = await db.query.itemsRawTable.findMany({
-  //           where: eq(itemsRawTable.name, `${item.name} (2)`),
-  //         });
-  //         expect(itemsInDb1).toHaveLength(1);
-  //         expect(itemsInDb2).toHaveLength(1);
-  //         // check it created a new membership because user is writer of parent
-  //         const newCountMembership = await db.query.itemMembershipsTable.findMany({
-  //           where: inArray(itemMembershipsTable.itemPath, [itemsInDb1[0].path, itemsInDb2[0].path]),
-  //         });
-  //         expect(newCountMembership).toHaveLength(2);
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Copy successfully from item to root', async () => {
-  //       const {
-  //         actor,
-  //         items: [_sharedParent, ...items],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //             children: [
-  //               {
-  //                 memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //               },
-  //               {
-  //                 memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //               },
-  //             ],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: item.id },
+          payload: {},
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const itemsInDb1 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, item.name),
+          });
+          // 2 is added because there is already an item with the same name in the root
+          const itemsInDb2 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, `${item.name} (2)`),
+          });
+          expect(itemsInDb1).toHaveLength(1);
+          expect(itemsInDb2).toHaveLength(1);
+          // check it created a new membership because user is writer of parent
+          const newCountMembership = await db.query.itemMembershipsTable.findMany({
+            where: inArray(itemMembershipsTable.itemPath, [itemsInDb1[0].path, itemsInDb2[0].path]),
+          });
+          expect(newCountMembership).toHaveLength(2);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Copy successfully from item to root', async () => {
+        const {
+          actor,
+          items: [_sharedParent, ...items],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              children: [
+                {
+                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                },
+                {
+                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: items.map(({ id }) => id) },
-  //         payload: {},
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         // contains twice the items (and the target item)
-  //         for (const { id, name } of items) {
-  //           const itemsInDb = await db.query.itemsRawTable.findMany({
-  //             where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
-  //           });
-  //           expect(itemsInDb).toHaveLength(1);
-  //           const copiedItemInDb = await db.query.itemsRawTable.findMany({
-  //             where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
-  //           });
-  //           expect(copiedItemInDb).toHaveLength(1);
-  //           const newCountMembership = await db.query.itemMembershipsTable.findMany({
-  //             where: inArray(itemMembershipsTable.itemPath, [
-  //               itemsInDb[0].path,
-  //               copiedItemInDb[0].path,
-  //             ]),
-  //           });
-  //           expect(newCountMembership).toHaveLength(2);
-  //           expect(copiedItemInDb[0].order).toBeNull();
-  //         }
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Copy lots of items', async () => {
-  //       const {
-  //         actor,
-  //         items: [parentItem, ...items],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-  //           },
-  //           ...Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => ({
-  //             memberships: [{ account: 'actor' as SeedActor, permission: PermissionLevel.Admin }],
-  //           })),
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: items.map(({ id }) => id) },
+          payload: {},
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          for (const { id, name } of items) {
+            const itemsInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
+            });
+            expect(itemsInDb).toHaveLength(1);
+            const copiedItemInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
+            });
+            expect(copiedItemInDb).toHaveLength(1);
+            const newCountMembership = await db.query.itemMembershipsTable.findMany({
+              where: inArray(itemMembershipsTable.itemPath, [
+                itemsInDb[0].path,
+                copiedItemInDb[0].path,
+              ]),
+            });
+            expect(newCountMembership).toHaveLength(2);
+            expect(copiedItemInDb[0].order).toBeNull();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Copy lots of items', async () => {
+        const {
+          actor,
+          items: [parentItem, ...items],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            ...Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => ({
+              memberships: [{ account: 'actor' as SeedActor, permission: PermissionLevel.Admin }],
+            })),
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: items.map(({ id }) => id) },
-  //         payload: {
-  //           parentId: parentItem.id,
-  //         },
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         for (const item of items) {
-  //           const results = await db.query.itemsRawTable.findMany({
-  //             where: and(eq(itemsRawTable.name, item.name), ne(itemsRawTable.id, item.id)),
-  //           });
-  //           expect(results).toHaveLength(1);
-  //           expect(results[0].path.startsWith(parentItem.path)).toBeTruthy();
-  //         }
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Copy attached geolocation', async () => {
-  //       const {
-  //         actor,
-  //         items: [parentItem, item],
-  //         geolocations: [geoloc],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //             geolocation: { lat: 1, lng: 22 },
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: items.map(({ id }) => id) },
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const results = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, item.name), ne(itemsRawTable.id, item.id)),
+            });
+            expect(results).toHaveLength(1);
+            expect(results[0].path.startsWith(parentItem.path)).toBeTruthy();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Copy attached geolocation', async () => {
+        const {
+          actor,
+          items: [parentItem, item],
+          geolocations: [geoloc],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              geolocation: { lat: 1, lng: 22 },
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: [item.id] },
-  //         payload: {
-  //           parentId: parentItem.id,
-  //         },
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         const itemsInDb = await db.query.itemsRawTable.findMany({
-  //           where: eq(itemsRawTable.name, item.name),
-  //         });
-  //         expect(itemsInDb).toHaveLength(2);
-  //         for (const i of itemsInDb) {
-  //           const ig = await db.query.itemGeolocationsTable.findMany({
-  //             where: eq(itemGeolocationsTable.itemPath, i.path),
-  //           });
-  //           expect(ig).toHaveLength(1);
-  //           expect(ig[0].lat).toEqual(geoloc.lat);
-  //           expect(ig[0].lng).toEqual(geoloc.lng);
-  //         }
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Bad request if one id is invalid', async () => {
-  //       const { actor, items } = await seedFromJson({
-  //         items: [
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: [...items.map(({ id }) => id), 'invalid-id'] },
-  //         payload: {},
-  //       });
-  //       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //     });
-  //     it('Fail to copy if one item does not exist', async () => {
-  //       const { actor, items } = await seedFromJson({
-  //         items: [
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
-  //       const missingId = uuidv4();
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: [...items.map(({ id }) => id), missingId] },
-  //         payload: {},
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         for (const item of items) {
-  //           const itemsInDb1 = await db.query.itemsRawTable.findMany({
-  //             where: eq(itemsRawTable.name, item.name),
-  //           });
-  //           expect(itemsInDb1).toHaveLength(1);
-  //           const itemsInDb2 = await db.query.itemsRawTable.findMany({
-  //             where: eq(itemsRawTable.name, `${item.name} (2)`),
-  //           });
-  //           expect(itemsInDb2).toHaveLength(0);
-  //         }
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //     it('Fail to copy if parent item is not a folder', async () => {
-  //       const {
-  //         actor,
-  //         items: [parentItem, item],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             type: ItemType.DOCUMENT,
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //           },
-  //           {
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       assertIsMemberForTest(actor);
-  //       mockAuthenticate(actor);
-  //       const response = await app.inject({
-  //         method: HttpMethod.Post,
-  //         url: '/items/copy',
-  //         query: { id: [item.id] },
-  //         payload: {
-  //           parentId: parentItem.id,
-  //         },
-  //       });
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-  //       // wait a bit for tasks to complete
-  //       await waitForExpect(async () => {
-  //         const itemsInDb1 = await db.query.itemsRawTable.findMany({
-  //           where: eq(itemsRawTable.name, item.name),
-  //         });
-  //         expect(itemsInDb1).toHaveLength(1);
-  //         const itemsInDb2 = await db.query.itemsRawTable.findMany({
-  //           where: eq(itemsRawTable.name, `${item.name} (2)`),
-  //         });
-  //         expect(itemsInDb2).toHaveLength(0);
-  //       }, MULTIPLE_ITEMS_LOADING_TIME);
-  //     });
-  //   });
-  // });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: [item.id] },
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          const itemsInDb = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, item.name),
+          });
+          expect(itemsInDb).toHaveLength(2);
+          for (const i of itemsInDb) {
+            const ig = await db.query.itemGeolocationsTable.findMany({
+              where: eq(itemGeolocationsTable.itemPath, i.path),
+            });
+            expect(ig).toHaveLength(1);
+            expect(ig[0].lat).toEqual(geoloc.lat);
+            expect(ig[0].lng).toEqual(geoloc.lng);
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Bad request if one id is invalid', async () => {
+        const { actor, items } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: [...items.map(({ id }) => id), 'invalid-id'] },
+          payload: {},
+        });
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+      it('Fail to copy if one item does not exist', async () => {
+        const { actor, items } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const missingId = uuidv4();
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: [...items.map(({ id }) => id), missingId] },
+          payload: {},
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const itemsInDb1 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, item.name),
+            });
+            expect(itemsInDb1).toHaveLength(1);
+            const itemsInDb2 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, `${item.name} (2)`),
+            });
+            expect(itemsInDb2).toHaveLength(0);
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Fail to copy if parent item is not a folder', async () => {
+        const {
+          actor,
+          items: [parentItem, item],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.DOCUMENT,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: [item.id] },
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          const itemsInDb1 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, item.name),
+          });
+          expect(itemsInDb1).toHaveLength(1);
+          const itemsInDb2 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, `${item.name} (2)`),
+          });
+          expect(itemsInDb2).toHaveLength(0);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+    });
+  });
 });

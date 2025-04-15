@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { AppSettingInsertDTO, AppSettingRaw, Item, ItemRaw } from '../../../../../drizzle/types';
+import { AppSettingInsertDTO, AppSettingRaw, type ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';

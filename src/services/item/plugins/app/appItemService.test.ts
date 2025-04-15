@@ -5,7 +5,7 @@ import { AppItemFactory, FolderItemFactory, ItemType } from '@graasp/sdk';
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
@@ -60,7 +60,7 @@ describe('App Service', () => {
       const itemServicePostMock = jest
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
-          return {} as Item;
+          return {} as ItemRaw;
         });
 
       await appService.postWithOptions(db, MOCK_MEMBER, {
@@ -88,7 +88,7 @@ describe('App Service', () => {
       const itemServicePostMock = jest
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
-          return {} as Item;
+          return {} as ItemRaw;
         });
 
       const args = {
