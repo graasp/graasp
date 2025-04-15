@@ -227,45 +227,45 @@ describe('Member Storage Controller', () => {
     //   expect(rawMember?.email).toEqual(actor.email);
     //   expect(mockSendEmail).not.toHaveBeenCalled();
     // });
-    // it('Change email', async () => {
-    //   const { actor } = await seedFromJson();
-    //   assertIsDefined(actor);
-    //   assertIsMember(actor);
-    //   mockAuthenticate(actor);
+    it('Change email', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
 
-    //   const newEmail = faker.internet.email().toLowerCase();
-    //   const token = jwtSign(
-    //     { uuid: actor.id, oldEmail: actor.email, newEmail },
-    //     EMAIL_CHANGE_JWT_SECRET,
-    //   );
+      const newEmail = faker.internet.email().toLowerCase();
+      const token = jwtSign(
+        { uuid: actor.id, oldEmail: actor.email, newEmail },
+        EMAIL_CHANGE_JWT_SECRET,
+      );
 
-    //   const response = await app.inject({
-    //     method: HttpMethod.Patch,
-    //     url: '/members/current/email/change',
-    //     headers: { Authorization: `Bearer ${token}` },
-    //   });
-    //   expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-    //   // Email changed
-    //   const rawMember = await db.query.accountsTable.findFirst({
-    //     where: eq(accountsTable.id, actor.id),
-    //   });
-    //   expect(rawMember?.email).toEqual(newEmail);
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: '/members/current/email/change',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      // Email changed
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(newEmail);
 
-    //   waitForExpect(() => {
-    //     expect(mockSendEmail).toHaveBeenCalledTimes(1);
-    //     expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
-    //   });
+      waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
+      });
 
-    //   // JWT is invalidated
-    //   const response2 = await app.inject({
-    //     method: HttpMethod.Patch,
-    //     url: '/members/current/email/change',
-    //     headers: { Authorization: `Bearer ${token}` },
-    //   });
-    //   expect(response2.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    //   // mock send email only sent once, before
-    //   expect(mockSendEmail).toHaveBeenCalledTimes(1);
-    // });
+      // JWT is invalidated
+      const response2 = await app.inject({
+        method: HttpMethod.Patch,
+        url: '/members/current/email/change',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      expect(response2.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      // mock send email only sent once, before
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+    });
   });
   describe('GET /members/current/storage/files', () => {
     it('returns ok', async () => {
