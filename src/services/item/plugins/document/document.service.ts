@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { DocumentItemExtraProperties, ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
@@ -97,13 +97,13 @@ export class DocumentItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     args: {
-      name: Item['name'];
+      name: ItemRaw['name'];
       content: DocumentItemExtraProperties['content'];
-      description?: Item['description'];
-      lang?: Item['lang'];
+      description?: ItemRaw['description'];
+      lang?: ItemRaw['lang'];
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
-      previousItemId?: Item['id'];
+      previousItemId?: ItemRaw['id'];
     } & Partial<DocumentItemExtraProperties>,
   ): Promise<DocumentItem> {
     const { name, description, lang, content, isRaw, flavor, ...options } = args;
@@ -126,7 +126,7 @@ export class DocumentItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-    args: Partial<Pick<Item, 'name' | 'description' | 'lang'>> &
+    args: Partial<Pick<ItemRaw, 'name' | 'description' | 'lang'>> &
       Partial<DocumentItemExtraProperties>,
   ): Promise<DocumentItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);

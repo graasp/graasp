@@ -73,16 +73,6 @@ export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
   isValidated: boolean;
 };
 
-export type ItemLoginSchemaRaw = typeof itemLoginSchemasTable.$inferSelect;
-export type ItemLoginSchemaWithItem = ItemLoginSchemaRaw & { item: Item };
-export type GuestInsertDTO = typeof accountsTable.$inferInsert;
-export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
-  type: 'guest';
-};
-export type GuestWithItemLoginSchema = GuestRaw & {
-  itemLoginSchema: ItemLoginSchemaRaw | null;
-};
-
 /**
  * Raw insert type used when creating an item
  */
@@ -93,11 +83,17 @@ export type ItemInsertDTO = typeof itemsRawTable.$inferInsert;
  */
 export type ItemRaw = typeof items.$inferSelect;
 
-/**
- * @deprecated use ItemRaw
- */
-export type Item = ItemRaw;
 export type NullableItem = ItemRaw | null;
+
+export type ItemLoginSchemaRaw = typeof itemLoginSchemasTable.$inferSelect;
+export type ItemLoginSchemaWithItem = ItemLoginSchemaRaw & { item: ItemRaw };
+export type GuestInsertDTO = typeof accountsTable.$inferInsert;
+export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
+  type: 'guest';
+};
+export type GuestWithItemLoginSchema = GuestRaw & {
+  itemLoginSchema: ItemLoginSchemaRaw | null;
+};
 
 /**
  * Item types
@@ -142,7 +138,7 @@ export type ItemSettingsMap = {
 // local type alias to simplify the notation
 export type ItemTypeEnumKeys = keyof ItemExtraMap;
 
-export type ItemWithType<T extends ItemTypeEnumKeys> = Item & {
+export type ItemWithType<T extends ItemTypeEnumKeys> = ItemRaw & {
   extra: ItemExtraMap[T];
   settings: ItemSettingsMap[T];
 };
@@ -193,7 +189,7 @@ export type ActionWithItemAndAccount = ActionWithItem & {
 // --- ChatMessage
 export type ChatMessageInsertDTO = typeof chatMessagesTable.$inferInsert;
 export type ChatMessageRaw = typeof chatMessagesTable.$inferSelect;
-export type ChatMessageWithItem = ChatMessageRaw & { item: Item };
+export type ChatMessageWithItem = ChatMessageRaw & { item: ItemRaw };
 export type ChatMessageWithCreator = ChatMessageRaw & {
   creator: NullableAccount;
 };
@@ -270,7 +266,7 @@ export type AppActionWithItemAndAccount = AppActionRaw & {
 // --- AppSetting
 export type AppSettingInsertDTO = typeof appSettingsTable.$inferInsert;
 export type AppSettingRaw = typeof appSettingsTable.$inferSelect;
-export type AppSettingWithItem = AppSettingRaw & { item: Item };
+export type AppSettingWithItem = AppSettingRaw & { item: ItemRaw };
 
 // --- AppData
 export type AppDataInsertDTO = typeof appDataTable.$inferInsert;
@@ -287,11 +283,11 @@ export type AppDataWithItemAndAccountAndCreator = AppDataRaw & {
 // --- ShortLink
 export type ShortLinkRaw = typeof shortLinksTable.$inferSelect;
 export type ShortLinkInsertDTO = typeof shortLinksTable.$inferInsert;
-export type ShortLinkWithItem = ShortLinkRaw & { item: Item };
+export type ShortLinkWithItem = ShortLinkRaw & { item: ItemRaw };
 
 // --- ItemLike
 export type ItemLikeRaw = typeof itemLikesTable.$inferSelect;
-export type ItemLikeWithItem = ItemLikeRaw & { item: Item };
+export type ItemLikeWithItem = ItemLikeRaw & { item: ItemRaw };
 export type ItemLikeWithItemWithCreator = ItemLikeRaw & { item: ItemWithCreator };
 export type ItemLikeWithItemAndAccount = ItemLikeWithItem & {
   creator: MinimalAccount;
@@ -300,14 +296,14 @@ export type ItemLikeWithItemAndAccount = ItemLikeWithItem & {
 // --- ItemGeolocation
 export type ItemGeolocationRaw = typeof itemGeolocationsTable.$inferSelect;
 export type ItemGeolocationInsertDTO = typeof itemGeolocationsTable.$inferInsert;
-export type ItemGeolocationWithItem = ItemGeolocationRaw & { item: Item };
+export type ItemGeolocationWithItem = ItemGeolocationRaw & { item: ItemRaw };
 export type ItemGeolocationWithItemWithCreator = ItemGeolocationRaw & {
   item: ItemWithCreator;
 };
 
 // --- ItemValidation
 export type ItemValidationRaw = typeof itemValidationsTable.$inferSelect;
-export type ItemValidationWithItem = ItemValidationRaw & { item: Item };
+export type ItemValidationWithItem = ItemValidationRaw & { item: ItemRaw };
 export type ItemValidationInsertDTO = typeof itemValidationsTable.$inferInsert;
 
 // --- ItemValidationGroup
@@ -328,7 +324,7 @@ export type ItemValidationReviewInsertDTO = typeof itemValidationReviewsTable.$i
 
 // --- ItemBookmark
 export type ItemBookmarkRaw = typeof itemBookmarksTable.$inferSelect;
-export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: Item };
+export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: ItemRaw };
 export type ItemBookmarkRawWithItemWithCreator = ItemBookmarkRaw & { item: ItemWithCreator };
 export type ItemBookmarkInsertDTO = typeof itemBookmarksTable.$inferInsert;
 export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {

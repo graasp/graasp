@@ -12,12 +12,12 @@ import { ZipFile } from 'yazl';
 import { ItemSettings, ItemType, ItemTypeUnion, getMimetype } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { BasicItemService } from '../../basic.service';
-import { isItemType } from '../../discrimination';
+import { FolderItem, isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
@@ -101,9 +101,9 @@ export class ImportExportService {
     options: {
       filename: string;
       folderPath: string;
-      parent?: Item;
+      parent?: FolderItem;
     },
-  ): Promise<Item | null> {
+  ): Promise<ItemRaw | null> {
     const { filename, folderPath, parent } = options;
 
     this.log.debug(`handling '${filename}'`);
@@ -309,7 +309,7 @@ export class ImportExportService {
     dbConnection: DBConnection,
     actor: MaybeUser,
     args: {
-      item: Item;
+      item: ItemRaw;
       archiveRootPath: string;
       archive: ZipFile;
     },
@@ -361,7 +361,7 @@ export class ImportExportService {
     dbConnection: DBConnection,
     actor: MaybeUser,
     args: {
-      item: Item;
+      item: ItemRaw;
       archive: ZipFile;
       itemManifest: GraaspExportItem[];
     },
@@ -421,7 +421,7 @@ export class ImportExportService {
    * @param item The root item
    * @returns A zip file promise
    */
-  async exportRaw(dbConnection: DBConnection, actor: MaybeUser, item: Item) {
+  async exportRaw(dbConnection: DBConnection, actor: MaybeUser, item: ItemRaw) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -448,7 +448,7 @@ export class ImportExportService {
    * @param item The root item
    * @returns A zip file promise
    */
-  async exportGraasp(dbConnection: DBConnection, actor: MaybeUser, item: Item) {
+  async exportGraasp(dbConnection: DBConnection, actor: MaybeUser, item: ItemRaw) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -483,11 +483,11 @@ export class ImportExportService {
   async _import(
     dbConnection: DBConnection,
     actor: MinimalMember,
-    { parent, folderPath }: { parent?: Item; folderPath: string },
+    { parent, folderPath }: { parent?: FolderItem; folderPath: string },
   ) {
     const filenames = fs.readdirSync(folderPath);
 
-    const items: Item[] = [];
+    const items: ItemRaw[] = [];
     for (const filename of filenames) {
       // import item from file excluding descriptions
       // descriptions are handled alongside the corresponding file
@@ -520,10 +520,9 @@ export class ImportExportService {
 
     // recursively create children in folders
     for (const newItem of items) {
-      const { type, name } = newItem;
-      if (type === ItemType.FOLDER) {
+      if (isItemType(newItem, ItemType.FOLDER)) {
         await this._import(dbConnection, actor, {
-          folderPath: path.join(folderPath, name),
+          folderPath: path.join(folderPath, newItem.name),
           parent: newItem,
         });
       }
@@ -539,10 +538,10 @@ export class ImportExportService {
       parentId,
     }: { folderPath: string; targetFolder: string; parentId?: string },
   ): Promise<void> {
-    let parent: Item | undefined;
+    let parent: FolderItem | undefined;
     if (parentId) {
       // check item permission
-      parent = await this.basicItemService.get(dbConnection, actor, parentId);
+      parent = (await this.basicItemService.get(dbConnection, actor, parentId)) as FolderItem;
     }
 
     await this._import(dbConnection, actor, { parent, folderPath });

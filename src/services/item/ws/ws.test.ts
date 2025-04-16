@@ -2,7 +2,7 @@ import { and, eq, ne } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
 
 import {
   HttpMethod,
@@ -14,7 +14,7 @@ import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../..
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { db } from '../../../drizzle/db';
 import { itemsRawTable } from '../../../drizzle/schema';
-import { Item } from '../../../drizzle/types';
+import { type ItemRaw } from '../../../drizzle/types';
 import { assertIsDefined } from '../../../utils/assertions';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
@@ -58,7 +58,7 @@ describe('Item websocket hooks', () => {
       mockAuthenticate(actor);
       ws = new TestWsClient(address);
 
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'delete'>>({
+      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'delete'>>({
         topic: memberItemsTopic,
         channel: actor.id,
       });
@@ -95,7 +95,7 @@ describe('Item websocket hooks', () => {
       mockAuthenticate(actor);
       ws = new TestWsClient(address);
 
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'delete'>>({
+      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'delete'>>({
         topic: memberItemsTopic,
         channel: actor.id,
       });
@@ -133,7 +133,7 @@ describe('Item websocket hooks', () => {
       mockAuthenticate(actor);
       ws = new TestWsClient(address);
 
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'move'>>({
+      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'move'>>({
         topic: memberItemsTopic,
         channel: actor.id,
       });
@@ -174,7 +174,7 @@ describe('Item websocket hooks', () => {
       mockAuthenticate(actor);
       ws = new TestWsClient(address);
 
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'move'>>({
+      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'move'>>({
         topic: memberItemsTopic,
         channel: actor.id,
       });
@@ -213,7 +213,7 @@ describe('Item websocket hooks', () => {
       mockAuthenticate(actor);
       ws = new TestWsClient(address);
 
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'copy'>>({
+      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'copy'>>({
         topic: memberItemsTopic,
         channel: actor.id,
       });
@@ -252,7 +252,7 @@ describe('Item websocket hooks', () => {
       mockAuthenticate(actor);
       ws = new TestWsClient(address);
 
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'copy'>>({
+      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<ItemRaw, 'copy'>>({
         topic: memberItemsTopic,
         channel: actor.id,
       });

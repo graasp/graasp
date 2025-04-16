@@ -6,7 +6,7 @@ import { UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { itemTagsTable, tagsTable } from '../../../../drizzle/schema';
-import { Item, TagRaw } from '../../../../drizzle/types';
+import { type ItemRaw, type TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { TagCategoryOptions, TagCount } from '../../../tag/tag.schemas';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
@@ -69,7 +69,11 @@ export class ItemTagRepository {
     }
   }
 
-  async delete(dbConnection: DBConnection, itemId: Item['id'], tagId: TagRaw['id']): Promise<void> {
+  async delete(
+    dbConnection: DBConnection,
+    itemId: ItemRaw['id'],
+    tagId: TagRaw['id'],
+  ): Promise<void> {
     if (!itemId || !tagId) {
       throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
     }

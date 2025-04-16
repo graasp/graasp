@@ -3,7 +3,7 @@ import { inject, injectWithTransform, singleton } from 'tsyringe';
 import { ItemValidationProcess, ItemValidationStatus, ThumbnailSize } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
-import { Item } from '../../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../../drizzle/types';
 import {
   ITEM_THUMBNAIL_PREFIX,
   ThumbnailService,
@@ -28,7 +28,7 @@ export class ThumbnailValidationStrategy implements ValidationStrategy {
     this.imageClassifierApi = imageClassifierApi;
   }
 
-  async validate(item: Item): Promise<ValidationProcessResult> {
+  async validate(item: ItemRaw): Promise<ValidationProcessResult> {
     if (!this.imageClassifierApi) {
       throw new Error('imageClassifierApi is not defined');
     }

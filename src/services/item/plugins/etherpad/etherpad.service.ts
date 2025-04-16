@@ -13,7 +13,7 @@ import {
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import { Item, MinimalAccount } from '../../../../drizzle/types';
+import { type ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
@@ -148,8 +148,8 @@ export class EtherpadItemService {
   public async patchWithOptions(
     dbConnection: DBConnection,
     member: MinimalMember,
-    itemId: Item['id'],
-    body: Partial<Pick<Item, 'settings' | 'name' | 'lang'>> & {
+    itemId: ItemRaw['id'],
+    body: Partial<Pick<ItemRaw, 'settings' | 'name' | 'lang'>> & {
       readerPermission?: EtherpadPermissionType;
     },
   ) {
@@ -393,7 +393,7 @@ export class EtherpadItemService {
   /**
    * Deletes an Etherpad associated to an item
    */
-  public async deleteEtherpadForItem(item: Item) {
+  public async deleteEtherpadForItem(item: ItemRaw) {
     if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
     }
@@ -412,7 +412,7 @@ export class EtherpadItemService {
   /**
    * Copies an Etherpad for an associated copied mutable item
    */
-  public async copyEtherpadInMutableItem(item: Item) {
+  public async copyEtherpadInMutableItem(item: ItemRaw) {
     if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
     }
