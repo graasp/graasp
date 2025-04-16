@@ -73,12 +73,7 @@ export class AppActionRepository {
       ),
       with: { item: true, account: true },
     });
-    // todo: should use something like:
-    // but this does not work. Maybe related to the placement of the IN ?
-    // const appActions = await this.createQueryBuilder('actions')
-    //   .innerJoinAndSelect('actions.item', 'item', 'actions.item IN (:...itemIds)', { itemIds })
-    //   .innerJoinAndSelect('actions.member', 'member', 'actions.member = :memberId', { memberId })
-    //   .getMany();
+
     return mapById({
       keys: itemIds,
       findElement: (id) => result.filter(({ item }) => item.id === id),

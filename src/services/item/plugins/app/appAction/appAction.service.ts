@@ -130,7 +130,6 @@ export class AppActionService {
       }
     }
 
-    // TODO: get only memberId or with visibility
     return this.appActionRepository.getForManyItems(dbConnection, itemIds, filters);
   }
 }

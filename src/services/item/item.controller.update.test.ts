@@ -1437,7 +1437,6 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // item should have a different path
         await waitForExpect(async () => {
-          // expect(true).toBe(false);
           for (const item of items) {
             const result = await db.query.itemsRawTable.findFirst({
               where: eq(itemsRawTable.id, item.id),

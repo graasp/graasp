@@ -4,7 +4,6 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../types';
-import HookManager from '../../utils/hook';
 import { BasicItemService } from '../item/basic.service';
 import { ChatMessageRepository } from './chatMessage.repository';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
@@ -12,7 +11,6 @@ import { MentionService } from './plugins/mentions/chatMention.service';
 
 @singleton()
 export class ChatMessageService {
-  hooks = new HookManager();
   private readonly mentionService: MentionService;
   private readonly basicItemService: BasicItemService;
   private readonly chatMessageRepository: ChatMessageRepository;
@@ -55,9 +53,6 @@ export class ChatMessageService {
     }
 
     const messageWithCreator = { ...message, creator: actor };
-    await this.hooks.runPostHooks('publish', actor, dbConnection, {
-      message: messageWithCreator,
-    });
 
     return messageWithCreator;
   }
@@ -89,9 +84,6 @@ export class ChatMessageService {
     });
     // assumes update can only be done by the author of the message
     const updatedMessageWithCreator = { ...updatedMessage, creator: authenticatedUser };
-    await this.hooks.runPostHooks('update', authenticatedUser, dbConnection, {
-      message: updatedMessageWithCreator,
-    });
 
     return updatedMessageWithCreator;
   }
@@ -114,14 +106,7 @@ export class ChatMessageService {
       throw new MemberCannotDeleteMessage({ id: messageId });
     }
 
-    // TODO: get associated mentions to push the update in the websockets
-    // await mentionRepository.getMany()
-
     await this.chatMessageRepository.deleteOne(dbConnection, messageId);
-
-    await this.hooks.runPostHooks('delete', authenticatedUser, dbConnection, {
-      message: messageContent,
-    });
 
     return messageContent;
   }
@@ -130,8 +115,6 @@ export class ChatMessageService {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
     await this.basicItemService.get(dbConnection, authenticatedUser, itemId, PermissionLevel.Admin);
-
-    await this.hooks.runPostHooks('clear', authenticatedUser, dbConnection, { itemId });
 
     await this.chatMessageRepository.deleteByItem(dbConnection, itemId);
   }
