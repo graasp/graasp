@@ -48,28 +48,28 @@
 //   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
 // );
 
-// const MOCK_URL = 'https://example.com';
-// const THUMBNAIL_HREF = `${MOCK_URL}/24.png`;
-// const ICON_HREF = `${MOCK_URL}/icon`;
-// const HTML = 'html';
+const MOCK_URL = 'https://example.com';
+const THUMBNAIL_HREF = `${MOCK_URL}/24.png`;
+const ICON_HREF = `${MOCK_URL}/icon`;
+const HTML = 'html';
 
-// export const FETCH_RESULT = {
-//   meta: {
-//     title: 'title',
-//     description: 'description',
-//   },
-//   html: HTML,
-//   links: [
-//     {
-//       rel: ['thumbnail'],
-//       href: THUMBNAIL_HREF,
-//     },
-//     {
-//       rel: ['icon'],
-//       href: ICON_HREF,
-//     },
-//   ],
-// };
+export const FETCH_RESULT = {
+  meta: {
+    title: 'title',
+    description: 'description',
+  },
+  html: HTML,
+  links: [
+    {
+      rel: ['thumbnail'],
+      href: THUMBNAIL_HREF,
+    },
+    {
+      rel: ['icon'],
+      href: ICON_HREF,
+    },
+  ],
+};
 
 // export const mockResponse = (response: object) => {
 //   return jest.spyOn(fetch, 'default').mockImplementation(

@@ -19,8 +19,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemLikeService = resolveDependency(ItemLikeService);
   const actionService = resolveDependency(ActionService);
 
-  //get liked entry for member
-  // BUG: hide item you dont have membership (you liked then lose membership)
+  // get liked entries for member
   fastify.get(
     '/liked',
     {

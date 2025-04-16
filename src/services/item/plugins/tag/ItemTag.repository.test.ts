@@ -85,23 +85,6 @@ describe('ItemTag Repository', () => {
       expect(tags.find(({ name }) => tag1.name === name)!.count).toEqual(2);
     });
 
-    // FIXME: we do not allow searching witout category
-    it.skip('get count for tags given search without category', async () => {
-      // const tag = await saveTag({category:TagCategory.Discipline});
-      // const item = await saveItem(FolderItemFactory({ creator: null }));
-      // await saveItemTag({ itemId: item.id, tagId: tag.id });
-      // const tag1 = await saveTag({ name: tag.name + ' second' });
-      // const item1 = await saveItem(FolderItemFactory({ creator: null }));
-      // await saveItemTag({ itemId: item1.id, tagId: tag1.id });
-      // await saveItemTag({ itemId: item.id, tagId: tag1.id });
-      // const tags = await repository.getCountBy(db, {
-      //   search: tag.name,
-      // });
-      // expect(tags).toHaveLength(2);
-      // expect(tags.find(({ name }) => tag.name === name)!.count).toEqual(1);
-      // expect(tags.find(({ name }) => tag1.name === name)!.count).toEqual(2);
-    });
-
     it(`get max ${TAG_COUNT_MAX_RESULTS} counts for tags`, async () => {
       const category = TagCategory.Discipline;
       // create more tags and association than limit
