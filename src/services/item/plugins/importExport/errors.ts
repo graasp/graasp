@@ -65,7 +65,7 @@ export class GraaspExportInvalidFileError extends GraaspItemZipError {
       {
         code: 'GPIZERR005',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.GRAASP_EXPORT_INCORRECT_FILE,
+        message: FAILURE_MESSAGES.GRAASP_EXPORT_FILE_ERROR,
       },
       data,
     );
