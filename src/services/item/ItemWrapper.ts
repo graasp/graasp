@@ -29,8 +29,6 @@ type GraaspItem = Pick<
   | 'lang'
 > & {
   creator: MemberRaw | null;
-  // TODO: purposely remove geolocation -> lets create a new endpoint
-  // geolocation: string
 };
 
 export type PackedItem = GraaspItem & {

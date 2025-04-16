@@ -327,7 +327,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            // TODO: Fix content
             ItemOpFeedbackEvent('move', ids, { items, moved }),
           );
         })

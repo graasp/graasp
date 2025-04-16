@@ -66,7 +66,6 @@ const saveCollections = async () => {
   return { items, member };
 };
 
-// TODO: remove when this when we use drizzle
 const getOrderForItemId = async (itemId: ItemRaw['id']): Promise<number | null> => {
   try {
     const res = await db.select().from(items).where(eq(items.id, itemId));
@@ -1042,7 +1041,6 @@ describe('Item Repository', () => {
   });
   describe('getPublishedItemsForMember', () => {
     it('get published items for member', async () => {
-      // TODO: update when seed handle published items
       const { items, member } = await saveCollections();
       // noise
       await saveCollections();

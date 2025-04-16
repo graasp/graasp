@@ -1,4 +1,4 @@
-import { isNull, or } from 'drizzle-orm';
+import { getViewSelectedFields, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
   SQL,
@@ -45,7 +45,6 @@ import {
 } from '../../drizzle/operations';
 import {
   accountsTable,
-  itemColumns,
   itemMembershipsTable,
   items,
   itemsRawTable,
@@ -529,7 +528,6 @@ export class ItemRepository {
       throw new IllegalArgumentException("The item's body cannot be empty!");
     }
 
-    // TODO: extra + settings
     const item = await this.getOneOrThrow(dbConnection, id);
 
     // only allow for item type specific changes in extra
@@ -1054,15 +1052,15 @@ export class ItemRepository {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
-    const andConditions: (SQL<unknown> | undefined)[] = [isNull(itemsRawTable.deletedAt)];
+    const andConditions: (SQL<unknown> | undefined)[] = [];
     if (creatorId) {
-      andConditions.push(eq(itemsRawTable.creatorId, creatorId));
+      andConditions.push(eq(items.creatorId, creatorId));
     }
     if (permissions?.length) {
       andConditions.push(inArray(itemMembershipsTable.permission, permissions));
     }
     if (types?.length) {
-      andConditions.push(inArray(itemsRawTable.type, types));
+      andConditions.push(inArray(items.type, types));
     }
 
     // keyword search
@@ -1072,39 +1070,34 @@ export class ItemRepository {
 
       // gather distinct involved languages, from actor
       const memberLang = account.lang ?? DEFAULT_LANG;
-      const langs = [
-        'simple',
-        getSearchLang(memberLang),
-        transformLangToReconfigLang(itemsRawTable.lang),
-      ];
+      const langs = ['simple', getSearchLang(memberLang), transformLangToReconfigLang(items.lang)];
 
       andConditions.push(
         or(
           // search with involved languages
-          ...langs.map((l) => itemFullTextSearch(itemsRawTable, l, keywordsString)),
+          ...langs.map((l) => itemFullTextSearch(items, l, keywordsString)),
           // raw words search
-          ...keywordSearch(itemsRawTable.name, allKeywords),
+          ...keywordSearch(items.name, allKeywords),
         ),
       );
     }
 
     // for account, get all direct items that have permissions, ordered by path
-    // TODO: use (getViewSelectedFields(items)); to use item view
     const itemAndOrderedMemberships = dbConnection
       .select({
-        ...itemColumns,
+        ...getViewSelectedFields(items),
         rNb: sql`row_number() OVER (ORDER BY path)`.as('row_number'),
       })
-      .from(itemsRawTable)
+      .from(items)
       .innerJoin(
         itemMembershipsTable,
         and(
-          eq(itemMembershipsTable.itemPath, itemsRawTable.path),
+          eq(itemMembershipsTable.itemPath, items.path),
           eq(itemMembershipsTable.accountId, account.id),
         ),
       )
       .where(and(...andConditions))
-      .orderBy(asc(itemsRawTable.path));
+      .orderBy(asc(items.path));
 
     const iom = itemAndOrderedMemberships.as('item_and_ordered_membership');
     const join = itemAndOrderedMemberships.as('join');

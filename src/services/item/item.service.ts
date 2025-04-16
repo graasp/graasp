@@ -209,7 +209,6 @@ export class ItemService {
 
     // order items from the db
     // to get them in the same order as the input item array
-    // TODO: CHECK!!
     const orderedItems = Object.values(insertedItems.data);
     orderedItems.sort((a, b) => {
       const aIdx = inputItems.findIndex((i) => i.item.id === a.id);
