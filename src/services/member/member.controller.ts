@@ -179,10 +179,14 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
           // Email adress is already taken, throw an error
           throw new EmailAlreadyTaken();
         }
-        const newMember = await memberService.patch(tx, account.id, {
+        // get old info for member
+        const memberInfo = (await memberService.get(db, account.id)).toCurrent();
+
+        await memberService.patch(tx, account.id, {
           email: emailModification.newEmail,
         });
-        const memberInfo = newMember.toMemberInfo();
+
+        // send confirmation email to old email
         // we send the email asynchronously without awaiting
         memberService.mailConfirmEmailChangeRequest(
           memberInfo.email,
@@ -191,7 +195,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
         );
       });
       // this needs to be outside the transaction
-      return reply.status(StatusCodes.NO_CONTENT).send();
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

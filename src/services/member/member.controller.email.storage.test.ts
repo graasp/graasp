@@ -11,7 +11,6 @@ import { HttpMethod, S3FileItemExtra } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
-import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
 import { ItemRaw } from '../../drizzle/types';
@@ -35,7 +34,7 @@ describe('Member Storage Controller', () => {
     ({ app } = await build());
   });
   beforeEach(async () => {
-    mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
+    mockSendEmail = jest.spyOn(MailerService.prototype, 'sendRaw');
   });
   afterEach(async () => {
     unmockAuthenticate();
@@ -44,10 +43,6 @@ describe('Member Storage Controller', () => {
   afterAll(async () => {
     await clearDatabase(db);
     app.close();
-  });
-
-  it('test', () => {
-    expect(true).toBeTruthy();
   });
 
   describe('POST /members/current/email/change', () => {
@@ -251,8 +246,10 @@ describe('Member Storage Controller', () => {
       });
       expect(rawMember?.email).toEqual(newEmail);
 
+      // send confirmation email to old email
       await waitForExpect(() => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        // send to old mail
         expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
       });
 
