@@ -1,6 +1,9 @@
-import { SQL, ilike } from 'drizzle-orm';
+import { SQL, and, eq, exists, ilike } from 'drizzle-orm';
 import { PgColumn } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm/sql';
+
+import { type DBConnection } from './db';
+import { itemTagsTable, tagsTable } from './schema';
 
 export function isAncestorOrSelf(column: PgColumn, path: string | PgColumn): SQL {
   return sql`${column} @> ${path}`;
@@ -62,4 +65,31 @@ export function transformLangToReconfigLang(column: PgColumn) {
             when 'es' then 'spanish'::regconfig 
             else 'english'::regconfig 
             end`;
+}
+
+/**
+ * Perform subquery to find related tags to the given item
+ * @param dbConnection current connection to the database
+ * @param itemId id string or column referencing the item id
+ * @param keywords keywords to look for in tags
+ * @returns
+ */
+export function tagSearch(
+  dbConnection: DBConnection,
+  itemId: PgColumn | string,
+  keywords: string[],
+) {
+  return exists(
+    dbConnection
+      .select({ id: tagsTable.id })
+      .from(tagsTable)
+      .innerJoin(
+        itemTagsTable,
+        and(
+          ...keywords.map((k) => ilike(tagsTable.name, `%${k}%`)),
+          eq(itemTagsTable.itemId, itemId),
+        ),
+      )
+      .limit(1),
+  );
 }

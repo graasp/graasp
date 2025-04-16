@@ -7,7 +7,7 @@ import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/s
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';
@@ -124,7 +124,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       // upload file one by one
       // TODO: CHUNK FOR PERFORMANCE
       const files = request.files();
-      const items: Item[] = [];
+      const items: ItemRaw[] = [];
       const errors: Error[] = [];
 
       for await (const fileObject of files) {
@@ -136,7 +136,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           try {
             // if the file is an H5P file, we treat it appropriately
             // othwerwise, we save it as a generic file
-            let item: Item;
+            let item: ItemRaw;
             if (getFileExtension(filename) === H5P_FILE_EXTENSION) {
               item = await h5pService.createH5PItem(
                 tx,

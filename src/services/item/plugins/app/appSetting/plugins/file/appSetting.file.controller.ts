@@ -85,9 +85,8 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       const { user } = request;
       const account = asDefined(user?.account);
       const app = asDefined(user?.app);
-      // TODO: if one file fails, keep other files??? APPLY ROLLBACK
-      // THEN WE SHOULD MOVE THE TRANSACTION
-      return db
+
+      return await db
         .transaction(async (tx) => {
           // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends

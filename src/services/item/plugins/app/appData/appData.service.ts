@@ -172,7 +172,6 @@ export class AppDataService {
 
     // patch own or is admin
     const isValid = await this.validateAppDataPermission(
-      dbConnection,
       account,
       currentAppData,
       PermissionLevel.Write,
@@ -226,7 +225,6 @@ export class AppDataService {
 
     // patch own or is admin
     await this.validateAppDataPermission(
-      dbConnection,
       account,
       appData,
       PermissionLevel.Admin,
@@ -267,15 +265,7 @@ export class AppDataService {
       throw new AppDataNotFound(appDataId);
     }
 
-    if (
-      !this.validateAppDataPermission(
-        dbConnection,
-        account,
-        appData,
-        PermissionLevel.Read,
-        itemMembership,
-      )
-    ) {
+    if (!this.validateAppDataPermission(account, appData, PermissionLevel.Read, itemMembership)) {
       throw new AppDataNotAccessible({ appDataId, accountId: account.id });
     }
 
@@ -302,9 +292,7 @@ export class AppDataService {
     );
   }
 
-  // TODO: check
   private validateAppDataPermission(
-    dbConnection: DBConnection,
     actor: MaybeUser,
     appData: AppDataRaw,
     permission: PermissionLevelOptions,

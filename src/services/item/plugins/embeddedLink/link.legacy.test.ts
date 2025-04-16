@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 
@@ -13,6 +14,7 @@ import build, {
 import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
+import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 
 jest.mock('node-fetch');
@@ -28,8 +30,6 @@ const iframelyResult = {
   icons: [],
   thumbnails: [],
 };
-
-// TODO: test iframely
 
 describe('Link Item tests', () => {
   let app: FastifyInstance;
@@ -107,7 +107,12 @@ describe('Link Item tests', () => {
 
         expect(response.statusMessage).toEqual(ReasonPhrases.OK);
         expect(response.statusCode).toBe(StatusCodes.OK);
-        // TODO: check that the title and description have been updated for the new link
+        // check db update
+        const itemInDb = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, item.id),
+        });
+        assertIsDefined(itemInDb);
+        expect(itemInDb.name).toEqual(payload.name);
       });
 
       it('Disallow editing html in extra', async () => {

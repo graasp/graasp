@@ -10,6 +10,7 @@ import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
+import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { AppRepository } from './app.repository';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
@@ -61,7 +62,7 @@ export class AppService {
     // check item is app
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
     if (item.type !== ItemType.APP) {
-      throw new Error('item is not app'); // TODO
+      throw new WrongItemTypeError(ItemType.APP);
     }
 
     // check actor has access to item

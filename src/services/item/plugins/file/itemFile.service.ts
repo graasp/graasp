@@ -263,9 +263,6 @@ class FileItemService extends ItemService {
 
     // check member storage limit in pre copy because all items are pretested
 
-    // DON'T use task runner for copy file task: this would generate a new transaction
-    // which is useless since the file copy task should not touch the DB at all
-    // TODO: replace when the file plugin has been refactored into a proper file service
     const filepath = await this.fileService.copy(member, data);
 
     // update item copy's 'extra'

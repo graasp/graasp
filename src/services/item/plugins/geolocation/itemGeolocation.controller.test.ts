@@ -400,46 +400,51 @@ describe('Item Geolocation', () => {
         expectThumbnails(results[0].item, MOCK_SIGNED_URL, true);
       });
 
-      // TODO
-      //     it('Get item geolocations with search strings', async () => {
-      //       const { packedItem: item1 } = await testUtils.saveItemAndMembership({
-      //         item: { name: 'hello bye' },
-      //         member: actor,
-      //       });
-      //       const { packed: geoloc1 } = await saveGeolocation({
-      //         item: item1,
-      //         lat: 1,
-      //         lng: 2,
-      //         country: 'de',
-      //       });
-      //       const { packedItem: item2 } = await testUtils.saveItemAndMembership({
-      //         item: { description: 'hello bye' },
-      //         member: actor,
-      //       });
-      //       const { packed: geoloc2 } = await saveGeolocation({
-      //         item: item2,
-      //         lat: 1,
-      //         lng: 2,
-      //         country: 'de',
-      //       });
-      //       const { packedItem: item3 } = await testUtils.saveItemAndMembership({
-      //         item: { name: 'bye hello' },
-      //         member: actor,
-      //       });
-      //       const { packed: geoloc3 } = await saveGeolocation({
-      //         item: item3,
-      //         lat: 1,
-      //         lng: 2,
-      //         country: 'de',
-      //       });
-      //       const res = await app.inject({
-      //         method: HttpMethod.Get,
-      //         url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2&keywords=hello&keywords=bye`,
-      //       });
-      //       expect(res.statusCode).toBe(StatusCodes.OK);
-      //       expect(res.json()).toHaveLength(3);
-      //       expectPackedItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
-      //     });
+      it('Get item geolocations with search strings', async () => {
+        const {
+          actor,
+          geolocations: [geoloc1, geoloc2, geoloc3],
+          items: [item1, item2, item3],
+        } = await seedFromJson({
+          items: [
+            {
+              name: 'hello bye',
+              memberships: [{ account: 'actor' }],
+              settings: { hasThumbnail: true },
+              geolocation: { lat: 1, lng: 2, country: 'de' },
+            },
+            {
+              description: 'hello bye',
+              memberships: [{ account: 'actor' }],
+              geolocation: { lat: 1, lng: 2, country: 'de' },
+            },
+            {
+              name: 'bye hello',
+              memberships: [{ account: 'actor' }],
+              geolocation: { lat: 1, lng: 2, country: 'de' },
+            },
+            {
+              name: 'noise',
+              memberships: [{ account: 'actor' }],
+              geolocation: { lat: 1, lng: 2, country: 'de' },
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2&keywords=hello&keywords=bye`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toHaveLength(3);
+        expectPackedItemGeolocations(res.json(), [
+          { ...geoloc1, item: { ...item1, creator: null, permission: PermissionLevel.Admin } },
+          { ...geoloc2, item: { ...item2, creator: null, permission: PermissionLevel.Admin } },
+          { ...geoloc3, item: { ...item3, creator: null, permission: PermissionLevel.Admin } },
+        ]);
+      });
       it('Get item geolocations within parent item', async () => {
         const {
           actor,

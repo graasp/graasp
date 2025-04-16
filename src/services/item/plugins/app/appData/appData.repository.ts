@@ -19,8 +19,6 @@ import {
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
-// TODO: appData was previously Partial, define what is needed all the time:
-// -- type
 type CreateAppDataBody = { appData: InputAppData; itemId: string; actorId: MinimalAccount['id'] };
 
 export class AppDataRepository {

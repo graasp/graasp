@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { eq } from 'drizzle-orm/sql';
 
 import { ItemType } from '@graasp/sdk';
@@ -9,6 +10,7 @@ import { itemGeolocationsTable } from '../../../../drizzle/schema';
 import { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
+import { TagCategory } from '../../../tag/tag.schemas';
 import { MissingGeolocationSearchParams } from './errors';
 import { ItemGeolocationRepository } from './itemGeolocation.repository';
 import { expectItemGeolocations } from './test/utils';
@@ -508,66 +510,57 @@ describe('ItemGeolocationRepository', () => {
         [{ ...parentGeoloc, item: { ...parent, creator: actor } }],
       );
     });
-    // TODO: enable tag search
-    // it('return only item within keywords in tags', async () => {
-    //   const {
-    //     actor,
-    //     items: [parent],
-    //     geolocations: [parentGeoloc],
-    //   } = await seedFromJson({
-    //     items: [
-    //       {
-    //         settings: { tags: ['public'] },
-    //         creator: 'actor',
-    //         memberships: [{ account: 'actor' }],
-    //         geolocation: {
-    //           lat: 1,
-    //           lng: 2,
-    //           country: 'de',
-    //           helperLabel: 'helper text',
-    //           addressLabel: 'address',
-    //         },
-    //         children: [
-    //           {
-    //             name: 'private',
-    //             creator: 'actor',
-    //             memberships: [{ account: 'actor' }],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //   });
-    //   assertIsDefined(actor);
-    //   assertIsMemberForTest(actor);
+    it('return only item within keywords in tags', async () => {
+      const tagName = faker.word.words();
+      const tagName1 = faker.word.words();
+      const {
+        actor,
+        items: [parent],
+        geolocations: [geolocParent, childGeoloc],
+      } = await seedFromJson({
+        items: [
+          {
+            tags: [{ name: tagName, category: TagCategory.Discipline }],
+            creator: 'actor',
+            memberships: [{ account: 'actor' }],
+            geolocation: {
+              lat: 1,
+              lng: 2,
+              country: 'de',
+              helperLabel: 'helper text',
+              addressLabel: 'address',
+            },
+            children: [
+              {
+                tags: [{ name: tagName1, category: TagCategory.Discipline }],
+                creator: 'actor',
+                memberships: [{ account: 'actor' }],
+                geolocation: {
+                  lat: 1,
+                  lng: 2,
+                  country: 'de',
+                  helperLabel: 'helper text',
+                  addressLabel: 'address',
+                },
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
 
-    // const { item: parentItem } = await testUtils.saveItemAndMembership({
-    //   item: { settings: { tags: ['public'] } },
-    //   member: actor,
-    // });
-    // const { item } = await testUtils.saveItemAndMembership({
-    //   item: { settings: { tags: ['private'] } },
-    //   member: actor,
-    //   parentItem,
-    // });
-    // await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
-    // const geolocParent = await rawRepository.save({
-    //   lat: 1,
-    //   lng: 2,
-    //   item: parentItem,
-    //   country: 'de',
-    // });
-    // // noise
-    // await testUtils.saveItemAndMembership({ member: actor, parentItem });
-    //   const res = await repository.getItemsIn(actor, {
-    //     lat1: 0,
-    //     lat2: 4,
-    //     lng1: 0,
-    //     lng2: 4,
-    //     keywords: ['public'],
-    //   });
-    //   expect(res).toHaveLength(1);
-    //   expectItemGeolocations(res, [geolocParent]);
-    // });
+      const res = await repository.getItemsIn(db, actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: [tagName],
+      });
+      expect(res.length).toBeGreaterThanOrEqual(1);
+      expectItemGeolocations(res, [{ ...geolocParent, item: { ...parent, creator: actor } }]);
+      expect(res.map((r) => r.id)).not.toContain(childGeoloc);
+    });
     it('return only item with keywords in file content', async () => {
       const {
         actor,
