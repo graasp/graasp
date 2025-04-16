@@ -239,11 +239,11 @@ export type ItemMembershipWithItem = ItemMembershipRaw & {
   item: ItemRaw;
 };
 export type ItemMembershipWithItemAndAccount = ItemMembershipWithItem & {
-  // TODO: special type for get memberships - needs email
+  // special type for get memberships - needs email
   account: AccountRaw;
 };
 export type ItemMembershipWithItemAndCompleteAccount = ItemMembershipWithItem & {
-  // TODO: special type for get memberships - needs email
+  // special type for get memberships - needs email
   account: MinimalGuest | (MinimalMember & { email: string });
 };
 export type ItemMembershipWithItemAndAccountAndCreator = Omit<

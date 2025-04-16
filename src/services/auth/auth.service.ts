@@ -54,11 +54,6 @@ export class AuthService {
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
-    // HACK: member should always have ane mail set, but the db is not strict enough yet.
-    if (!member.email) {
-      return;
-    }
-
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, member.email)
@@ -91,11 +86,6 @@ export class AuthService {
       .addButton(TRANSLATIONS.SIGN_IN_BUTTON_TEXT, link)
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
-
-    // HACK: member should always have ane mail set, but the db is not strict enough yet.
-    if (!member.email) {
-      return;
-    }
 
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService

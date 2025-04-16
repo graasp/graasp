@@ -93,8 +93,6 @@ describe('Chat Message tests', () => {
 
         // check response value
         expectChatMessages(response.json(), chatMessages);
-
-        // TODO: check schema of return values
       });
 
       it('Throws if item id is incorrect', async () => {
@@ -176,8 +174,6 @@ describe('Chat Message tests', () => {
 
         // check response value
         expectChatMessages(response.json(), chatMessages);
-
-        // TODO: check schema of return values
       });
     });
   });

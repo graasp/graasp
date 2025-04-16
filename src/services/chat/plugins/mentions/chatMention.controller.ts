@@ -18,8 +18,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes
   const mentionService = resolveDependency(MentionService);
 
-  // TODO: MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
-
   // mentions
   fastify.get(
     '/mentions',

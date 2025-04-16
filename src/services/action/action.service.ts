@@ -43,7 +43,6 @@ export class ActionService {
       actor && actor.type === AccountType.Individual
         ? await this.memberRepository.get(dbConnection, actor.id)
         : null;
-    // TODO: should we assert that the member is a "member" ?
     // prevent saving if member is defined and has disabled saveActions
     if (member && member.toMemberInfo().enableSaveActions === false) {
       return;

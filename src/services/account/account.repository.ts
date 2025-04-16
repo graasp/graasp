@@ -7,27 +7,6 @@ import { DBConnection } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
 import { AccountRaw } from '../../drizzle/types';
 import { AccountType, MaybeUser } from '../../types';
-import { CurrentMember } from '../member/types';
-
-// used by /current endpoint
-export type CurrentUser =
-  | {
-      id: string;
-      name: string;
-      email: null;
-      type: 'guest';
-      isValidated: boolean;
-      lang: string;
-      createdAt: string;
-      updatedAt: string;
-      lastAuthenticatedAt: string | null;
-      userAgreementsDate: string | null;
-      // TODO: fix
-      extra: object;
-      enableSaveActions: boolean;
-      // add any necessary properties here
-    }
-  | CurrentMember;
 
 export class AccountDTO {
   private readonly account: AccountRaw | undefined;
@@ -89,7 +68,6 @@ export class AccountDTO {
       lastAuthenticatedAt: this.account.lastAuthenticatedAt,
       userAgreementsDate: this.account.userAgreementsDate,
       extra: this.account.extra,
-      // TODO: what should be the default for this ? Why could it be null ? can we enforce a value ??
       enableSaveActions: this.account.enableSaveActions ?? true,
     };
   }

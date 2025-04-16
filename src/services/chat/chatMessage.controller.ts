@@ -1,6 +1,4 @@
 /**
- * graasp-plugin-chatbox
- *
  * Fastify plugin for graasp-chatbox
  *
  * Implements back-end functionalities for chatboxes
@@ -10,6 +8,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
+
+import { PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
@@ -29,7 +29,7 @@ import {
 import { ChatMessageService } from './chatMessage.service';
 import { ActionChatService } from './plugins/action/chatAction.service';
 import mentionPlugin from './plugins/mentions/chatMention.controller';
-import { registerChatWsHooks } from './ws/hooks';
+import { ItemChatEvent, itemChatTopic } from './ws/events';
 
 /**
  * Type definition for plugin options
@@ -41,8 +41,6 @@ export interface GraaspChatPluginOptions {
 const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastify) => {
   await fastify.register(fp(mentionPlugin));
 
-  const { websockets } = fastify;
-
   const itemService = resolveDependency(ItemService);
   const chatService = resolveDependency(ChatMessageService);
   const actionChatService = resolveDependency(ActionChatService);
@@ -50,10 +48,13 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
   // isolate plugin content using fastify.register to ensure that the hooks will not be called when other routes match
   // routes associated with mentions should not trigger the action hook
   fastify.register(async (fastify: FastifyInstanceTypebox) => {
-    // register websocket behaviours for chats
-    if (websockets) {
-      registerChatWsHooks(db, websockets, chatService, itemService);
-    }
+    // register websockets
+    const { websockets } = fastify;
+    websockets.register(itemChatTopic, async (req) => {
+      const { channel: itemId, member } = req;
+      // item must exist with read permission, else exception is thrown
+      await itemService.basicItemService.get(db, member, itemId, PermissionLevel.Read);
+    });
 
     fastify.get(
       '/:itemId/chat',
@@ -76,13 +77,20 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           body,
         } = request;
         const account = asDefined(user?.account);
-        return await db.transaction(async (tx) => {
+        const message = await db.transaction(async (tx) => {
           const message = await chatService.postOne(tx, account, itemId, body);
           await actionChatService.postPostMessageAction(tx, request, message);
           return message;
         });
-        // TODO: move websockets here so it stays consitent when the transaction fails for example.
-        // it will also allow to remove the need for a post-hook and make it explicit after the business has been done.
+
+        // websocket message
+        try {
+          websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('publish', message));
+        } catch (e) {
+          fastify.log.error(e);
+        }
+
+        return message;
       },
     );
 
@@ -102,12 +110,21 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           params: { itemId, messageId },
           body,
         } = request;
-        return await db.transaction(async (tx) => {
+        const message = await db.transaction(async (tx) => {
           const member = asDefined(user?.account);
           const message = await chatService.patchOne(tx, member, itemId, messageId, body);
           await actionChatService.postPatchMessageAction(tx, request, message);
           return message;
         });
+
+        // websocket message
+        try {
+          websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('update', message));
+        } catch (e) {
+          fastify.log.error(e);
+        }
+
+        return message;
       },
     );
 
@@ -124,11 +141,20 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           params: { itemId, messageId },
         } = request;
         const member = asDefined(user?.account);
-        return await db.transaction(async (tx) => {
+        const message = await db.transaction(async (tx) => {
           const message = await chatService.deleteOne(tx, member, itemId, messageId);
           await actionChatService.postDeleteMessageAction(tx, request, message);
           return message;
         });
+
+        // websocket message
+        try {
+          websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('delete', message));
+        } catch (e) {
+          fastify.log.error(e);
+        }
+
+        return message;
       },
     );
 
@@ -150,6 +176,13 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           await actionChatService.postClearMessageAction(tx, request, itemId);
         });
         reply.status(StatusCodes.NO_CONTENT);
+
+        // websocket message
+        try {
+          websockets.publish(itemChatTopic, itemId, ItemChatEvent('clear'));
+        } catch (e) {
+          fastify.log.error(e);
+        }
       },
     );
   });

@@ -801,7 +801,6 @@ export const itemsRawTable = pgTable(
 );
 
 export const { deletedAt: _deletedAt, ...itemColumns } = getTableColumns(itemsRawTable);
-// TODO: materialized?? check
 export const items = pgView('item_view').as((qb) =>
   qb.select(itemColumns).from(itemsRawTable).where(isNull(itemsRawTable.deletedAt)),
 );
@@ -835,8 +834,6 @@ export const accountsTable = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 100 }).notNull(),
     email: varchar({ length: 150 }),
-    // TODO: notNull added - check for migrations, and db status
-    //, '{}', true
     extra: jsonb().$type<CompleteMember['extra']>().default({}).notNull(),
     type: accountTypeEnum().default('individual').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
