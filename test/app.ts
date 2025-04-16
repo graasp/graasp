@@ -68,7 +68,6 @@ const build = async () => {
 };
 
 export const clearDatabase = async (_dbConnection: DBConnection) => {
-  // TODO: ?
   // const entities = db.entityMetadatas;
   // for (const entity of entities) {
   //   const repository = db.getRepository(entity.name);

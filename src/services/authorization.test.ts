@@ -33,7 +33,6 @@ const authorizationService = new AuthorizationService(
   itemVisibilityRepository,
 );
 
-// TODO: Update suite to test the Authorization service which was added to convert the single functions we had previously
 describe('validatePermission', () => {
   afterEach(() => {
     jest.restoreAllMocks();

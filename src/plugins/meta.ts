@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get('/status', async (_, reply) => {
     const searchService = resolveDependency(SearchService);
     const api = new HealthyStatus().format();
-    const database = (await getDBStatusCheck(db)).format();
+    const database = (await getDBStatusCheck()).format();
     const etherpad = (await getEtherpadStatusCheck()).format();
     const meilisearch = (await getSearchStatusCheck(searchService)).format();
     const iframely = (await getIframelyStatusCheck()).format();
@@ -106,7 +106,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 };
 
-const getDBStatusCheck = async (dbConnection: DBConnection): Promise<ServiceStatus> => {
+const getDBStatusCheck = async (): Promise<ServiceStatus> => {
   try {
     // this just checks that we can execute queries on the database.
     // if tables are locked it will still execute fine as long as the connection is working

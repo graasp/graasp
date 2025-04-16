@@ -400,17 +400,14 @@ const generateIdAndPathForItems = (
  * @returns flat map of all memberships of the tree
  */
 const processItemMemberships = (items: DataType['items'] = []) => {
-  return (
-    items
-      // TODO: fix
-      ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: i.path })) ?? [])
-      ?.map((im) => ({
-        permission: PermissionLevel.Admin,
-        accountId: (im.account as any).id,
-        creatorId: im.creator ? (im.creator as any).id : null,
-        ...im,
-      })) as ItemMembershipRaw[]
-  );
+  return items
+    ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: i.path })) ?? [])
+    ?.map((im) => ({
+      permission: PermissionLevel.Admin,
+      accountId: (im.account as any).id,
+      creatorId: im.creator ? (im.creator as any).id : null,
+      ...im,
+    })) as ItemMembershipRaw[];
 };
 
 const getAllAccountsFromItems = (items: SeedItem[] = []) => {
@@ -624,7 +621,6 @@ async function createItemPublisheds(items: (SeedItem & { id: string; path: strin
       return acc;
     }, []),
   );
-  // TODO: reverse array to keep highest entry?
   if (groupNameToId.size) {
     // generate item validation and set correct validation group id
     const itemValidationEntities = items.reduce<

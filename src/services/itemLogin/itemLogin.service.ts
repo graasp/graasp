@@ -64,7 +64,6 @@ export class ItemLoginService {
   ): Promise<MinimalAccount> {
     const { username, password } = credentials;
 
-    // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
     if (!username) {
       throw new Error('It is currently not supported to login without a username');
     }

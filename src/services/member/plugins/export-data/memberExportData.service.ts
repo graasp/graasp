@@ -27,7 +27,6 @@ export class ExportMemberDataService {
   }
 
   async getAllData(dbConnection: DBConnection, actor: MinimalMember) {
-    // TODO: export more data
     const actions = await this.getActions(dbConnection, actor);
     const appActions = await this.getAppActions(dbConnection, actor);
     const appData = await this.getAppData(dbConnection, actor);
@@ -53,27 +52,23 @@ export class ExportMemberDataService {
       itemMemberShips,
     };
   }
-  // TODO: do we need to filter again? filtering happened in repository already
+
   async getActions(dbConnection: DBConnection, actor: MinimalMember) {
     return await this.exportDataRepository.getActions(dbConnection, actor.id);
-    // return getFilteredData(results, actionArraySchema);
   }
 
   async getAppActions(dbConnection: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getAppActions(dbConnection, actor.id);
-    // return getFilteredData(results, appActionArraySchema);
     return results;
   }
 
   async getAppData(dbConnection: DBConnection, actor: MinimalMember) {
     const appData = await this.exportDataRepository.getAppData(dbConnection, actor.id);
-    // return getFilteredData(appData, appDataArraySchema);
     return appData;
   }
 
   async getAppSettings(dbConnection: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getAppSettings(dbConnection, actor.id);
-    // return getFilteredData(results, appSettingArraySchema);
     return results;
   }
 
@@ -92,7 +87,6 @@ export class ExportMemberDataService {
       results,
       exportingActorId: actor.id,
     });
-    // return getFilteredData(anonymized, messageArraySchema);
     return anonymized;
   }
 
@@ -101,7 +95,6 @@ export class ExportMemberDataService {
       dbConnection,
       actor.id,
     );
-    // return getFilteredData(itemMemberShips, itemMembershipArraySchema);
     return itemMemberShips;
   }
 
@@ -111,13 +104,11 @@ export class ExportMemberDataService {
 
   async getItems(dbConnection: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getItems(dbConnection, actor.id);
-    // return getFilteredData(results, itemArraySchema);
     return results;
   }
 
   async getItemBookmarks(dbConnection: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getItemBookmarks(dbConnection, actor.id);
-    // return getFilteredData(results, itemFavoriteArraySchema);
     return results;
   }
 
@@ -126,7 +117,6 @@ export class ExportMemberDataService {
     // In this case, don't forget to anonymize the id of the other actor ?
     // Or should we put the username of the other actor who liked the item ?
     const results = await this.exportDataRepository.getByCreatorToExport(dbConnection, actor.id);
-    // return getFilteredData(results, itemLikeArraySchema);
     return results;
   }
 }

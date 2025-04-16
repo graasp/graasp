@@ -343,3 +343,4 @@ export type MemberProfileInsertDTO = typeof memberProfilesTable.$inferInsert;
 export type ActionRequestExportRaw = typeof actionRequestExportsTable.$inferSelect;
 
 export type MembershipRequestRaw = typeof membershipRequestsTable.$inferSelect;
+export type MembershipRequestWithMember = MembershipRequestRaw & { member: MemberRaw };

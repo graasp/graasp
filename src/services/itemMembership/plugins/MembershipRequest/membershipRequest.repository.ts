@@ -3,6 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { membershipRequestsTable } from '../../../../drizzle/schema';
+import { MembershipRequestWithMember } from '../../../../drizzle/types';
 import { ItemNotFound, MemberNotFound } from '../../../../utils/errors';
 import { AccountNotFound } from '../../../account/errors';
 
@@ -43,7 +44,10 @@ export class MembershipRequestRepository {
       .returning();
   }
 
-  async getAllByItem(dbConnection: DBConnection, itemId: string) {
+  async getAllByItem(
+    dbConnection: DBConnection,
+    itemId: string,
+  ): Promise<MembershipRequestWithMember[]> {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
@@ -51,11 +55,7 @@ export class MembershipRequestRepository {
       where: eq(membershipRequestsTable.itemId, itemId),
       with: { member: true },
     });
-    return res.map((r) => ({
-      ...r,
-      // HACK: to ensure email is defined
-      member: { ...r.member, email: r.member.email! },
-    }));
+    return res as MembershipRequestWithMember[];
   }
 
   async deleteOne(dbConnection: DBConnection, memberId: string, itemId: string) {
