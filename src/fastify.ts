@@ -3,6 +3,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from './app';
+import { client } from './drizzle/db';
 import ajvFormats from './schemas/ajvFormats';
 import { initSentry } from './sentry';
 import {
@@ -40,6 +41,11 @@ export const instance = fastify({
     plugins: [ajvFormats],
   },
 }).withTypeProvider<TypeBoxTypeProvider>();
+
+// On close, close database connection
+instance.addHook('onClose', async (instance) => {
+  await client.end();
+});
 
 const start = async () => {
   const { Sentry } = initSentry(instance);

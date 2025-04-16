@@ -14,7 +14,6 @@ import {
   SENTRY_TRACES_SAMPLE_RATE,
 } from './utils/config';
 
-// todo: use graasp-sdk?
 declare module 'fastify' {
   interface FastifyRequest {
     /**

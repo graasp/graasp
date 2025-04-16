@@ -60,5 +60,3 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(tagPlugin);
   });
 }
-
-// TODO: set fastify 'on close' handler, and disconnect from services there: db, ...

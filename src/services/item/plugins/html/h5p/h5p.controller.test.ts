@@ -301,9 +301,10 @@ describe('Service plugin', () => {
       expect(res.json()).toEqual(new H5PInvalidManifestError('Missing h5p.json manifest file'));
     });
     it('returns error and deletes extracted files on item creation failure', async () => {
+      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
       const createItem = jest.spyOn(resolveDependency(ItemService), 'post');
       createItem.mockImplementationOnce(() => {
-        throw new Error('mock error');
+        throw new Error('mock error on create item');
       });
 
       const {
@@ -319,17 +320,27 @@ describe('Service plugin', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
+      // count initial number of files
+      const initExtractionDirContents = await fsp.readdir(H5P_TMP_FOLDER);
+      const initStorageDirContents = await fsp.readdir(
+        path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),
+      );
+      const initExtractionNb = initExtractionDirContents.length;
+      const initStorageNb = initStorageDirContents.length;
+
+      // import h5p
       const res = await injectH5PImport(app, { parentId: parent.id });
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toEqual(new HtmlImportError());
-      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
+
+      // should not contain the files for this request anymore
       await waitForExpect(async () => {
         const extractionDirContents = await fsp.readdir(H5P_TMP_FOLDER);
         const storageDirContents = await fsp.readdir(
           path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),
         );
-        expect(extractionDirContents.length).toEqual(0);
-        expect(storageDirContents.length).toEqual(0);
+        expect(extractionDirContents.length).toEqual(initExtractionNb);
+        expect(storageDirContents.length).toEqual(initStorageNb);
       }, 5000);
     });
     it('skips invalid file extensions', async () => {
