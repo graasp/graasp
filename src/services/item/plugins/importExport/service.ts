@@ -31,7 +31,7 @@ import {
   TXT_EXTENSION,
   URL_PREFIX,
 } from './constants';
-import { GraaspExportInvalidFileError, GraaspItemZipError, UnexpectedExportError } from './errors';
+import { GraaspExportInvalidFileError, UnexpectedExportError } from './errors';
 import { buildTextContent, getFilenameFromItem } from './utils';
 
 /**
