@@ -145,7 +145,7 @@ describe('Member Storage Controller', () => {
         body: { email },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      waitForExpect(() => {
+      await waitForExpect(() => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
         expect(mockSendEmail.mock.calls[0][1]).toBe(email);
         expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
@@ -201,32 +201,32 @@ describe('Member Storage Controller', () => {
       expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
-    // it('Already taken email', async () => {
-    //   const {
-    //     actor,
-    //     members: [anotherMember],
-    //   } = await seedFromJson({ members: [{}] });
-    //   assertIsDefined(actor);
-    //   assertIsMember(actor);
-    //   mockAuthenticate(actor);
-    //   const token = jwtSign(
-    //     { uuid: actor.id, oldEmail: actor.email, newEmail: anotherMember.email },
-    //     EMAIL_CHANGE_JWT_SECRET,
-    //   );
+    it('Already taken email', async () => {
+      const {
+        actor,
+        members: [anotherMember],
+      } = await seedFromJson({ members: [{}] });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+      const token = jwtSign(
+        { uuid: actor.id, oldEmail: actor.email, newEmail: anotherMember.email },
+        EMAIL_CHANGE_JWT_SECRET,
+      );
 
-    //   const response = await app.inject({
-    //     method: HttpMethod.Patch,
-    //     url: '/members/current/email/change',
-    //     headers: { Authorization: `Bearer ${token}` },
-    //   });
-    //   expect(response.statusCode).toBe(StatusCodes.CONFLICT);
-    //   // Email didn't changed
-    //   const rawMember = await db.query.accountsTable.findFirst({
-    //     where: eq(accountsTable.id, actor.id),
-    //   });
-    //   expect(rawMember?.email).toEqual(actor.email);
-    //   expect(mockSendEmail).not.toHaveBeenCalled();
-    // });
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: '/members/current/email/change',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      expect(response.statusCode).toBe(StatusCodes.CONFLICT);
+      // Email didn't changed
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(actor.email);
+      expect(mockSendEmail).not.toHaveBeenCalled();
+    });
     it('Change email', async () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
@@ -251,7 +251,7 @@ describe('Member Storage Controller', () => {
       });
       expect(rawMember?.email).toEqual(newEmail);
 
-      waitForExpect(() => {
+      await waitForExpect(() => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
         expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
       });

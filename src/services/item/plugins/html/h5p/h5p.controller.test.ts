@@ -323,7 +323,7 @@ describe('Service plugin', () => {
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toEqual(new HtmlImportError());
       const { storageRootPath } = H5P_LOCAL_CONFIG.local;
-      waitForExpect(async () => {
+      await waitForExpect(async () => {
         const extractionDirContents = await fsp.readdir(H5P_TMP_FOLDER);
         const storageDirContents = await fsp.readdir(
           path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),
