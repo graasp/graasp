@@ -165,6 +165,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
     ImportExportService,
     new ImportExportService(
       db,
+      resolveDependency(FileService),
       resolveDependency(FileItemService),
       resolveDependency(ItemService),
       resolveDependency(H5PService),

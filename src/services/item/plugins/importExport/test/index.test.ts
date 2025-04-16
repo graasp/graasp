@@ -8,7 +8,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { FileItemProperties, HttpMethod, ItemType, MimeTypes } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -18,6 +18,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { LocalFileRepository } from '../../../../file/repositories/local';
 import { saveMember } from '../../../../member/test/fixtures/members';
+import { FolderItem } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { GRAASP_MANIFEST_FILENAME } from '../constants';
 import { GraaspExportItem } from '../service';
@@ -393,6 +394,77 @@ describe('ZIP routes tests', () => {
         headers: form.getHeaders(),
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('Import a Graasp archive successfully', async () => {
+      // Set the variables that can be found in the manifest.json file of the graasp-archive.zip fixture
+      const folderDescription = '<p>A Graasp export folder</p>';
+      const documentContent = '<p>Hello.</p>';
+      const pdfName = 'output.pdf';
+      const pdfSize = 10024;
+      const pdfContent = 'This is a real document.';
+
+      // Create the actor and the parent item
+      const { actor, items } = await seedFromJson({
+        actor: {},
+        items: [
+          {
+            type: ItemType.FOLDER,
+            memberships: [{ account: `actor` }],
+          },
+        ],
+      });
+      const parentItem = items[0];
+      mockAuthenticate(actor);
+
+      // Import the graasp export file
+      const form = createFormData('graasp-archive.zip');
+      const importResponse = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/zip-import',
+        payload: form,
+        headers: form.getHeaders(),
+        query: { parentId: parentItem.id },
+      });
+      expect(importResponse.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        // Check that all the uploaded items found in the manifest are in place
+        const itemsInDB = await testUtils.itemRepository.getDescendants(parentItem as FolderItem, {
+          ordered: true,
+        });
+        const folderItem = itemsInDB[0];
+        const documentItem = itemsInDB[1];
+        const fileItem = itemsInDB[2];
+
+        // Check that all the items have been imported and that their order is correct
+        expect(itemsInDB.length).toEqual(3);
+        expect(folderItem.type).toEqual(ItemType.FOLDER);
+        expect(documentItem.type).toEqual(ItemType.DOCUMENT);
+        expect(fileItem.type).toEqual(ItemType.S3_FILE);
+        expect(Number(itemsInDB[1].order)).toBeLessThan(Number(itemsInDB[2].order));
+
+        // Check that all the item properties have been assigned for the document type
+        expect(folderItem.description).toEqual(folderDescription);
+
+        // Check that all the item properties have been assigned for the document type
+        expect(documentItem.extra[ItemType.DOCUMENT]).toBeDefined();
+        expect(documentItem.extra[ItemType.DOCUMENT].content).toEqual(documentContent);
+
+        // Check that all the item properties have been assigned for the file type
+        let fileItemProperties: FileItemProperties;
+        if (fileItem.extra[ItemType.S3_FILE]) {
+          fileItemProperties = fileItem.extra[ItemType.S3_FILE] as FileItemProperties;
+        } else {
+          fileItemProperties = fileItem.extra[ItemType.LOCAL_FILE] as FileItemProperties;
+        }
+        expect(fileItemProperties).toBeDefined();
+        expect(fileItemProperties.name).toEqual(pdfName);
+        expect(fileItemProperties.path).toBeDefined();
+        expect(fileItemProperties.mimetype).toEqual(MimeTypes.PDF);
+        expect(fileItemProperties.size).toEqual(pdfSize);
+        expect(fileItemProperties.content).toEqual(pdfContent);
+      }, 1000);
     });
   });
 

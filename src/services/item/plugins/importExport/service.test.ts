@@ -13,6 +13,7 @@ import build, {
 import { resolveDependency } from '../../../../di/utils';
 import { BaseLogger } from '../../../../logger';
 import { buildRepositories } from '../../../../utils/repositories';
+import FileService from '../../../file/service';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
@@ -62,6 +63,7 @@ describe('ZIP routes tests', () => {
 
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {} as unknown as H5PService,
@@ -104,6 +106,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {
           getUrl: jest.fn(),
         } as unknown as FileItemService,
@@ -130,6 +133,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {} as unknown as H5PService,
@@ -154,6 +158,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {} as unknown as H5PService,
@@ -178,6 +183,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {} as unknown as H5PService,
@@ -208,6 +214,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {} as unknown as H5PService,
@@ -239,6 +246,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {
@@ -272,6 +280,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {
@@ -297,6 +306,7 @@ describe('ZIP routes tests', () => {
       });
       const importExportService = new ImportExportService(
         app.db,
+        {} as unknown as FileService,
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {
