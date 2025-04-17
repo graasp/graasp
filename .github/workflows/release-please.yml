@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build images
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
         uses: ./.github/actions/build-images
         with:
           tag: ${{ steps.release.outputs.tag_name }}
