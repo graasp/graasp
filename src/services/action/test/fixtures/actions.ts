@@ -1,36 +1,44 @@
-import { Repository } from 'typeorm';
+import { eq } from 'drizzle-orm';
 
-import { ActionFactory, Action as GraaspAction } from '@graasp/sdk';
+import { type DBConnection } from '../../../../drizzle/db';
+import { actionsTable } from '../../../../drizzle/schema';
+import {
+  ActionRaw,
+  ActionWithItem,
+  ActionWithItemAndAccount,
+  MinimalAccount,
+} from '../../../../drizzle/types';
 
-import { Account } from '../../../account/entities/account';
-import { Action } from '../../entities/action';
-
-export const saveActions = async (
-  rawRepository: Repository<Action>,
-  actions: Partial<GraaspAction>[],
-): Promise<Action[]> => {
-  const data = actions.map((d) => ActionFactory(d)) as unknown as Action[];
-
-  return rawRepository.save(data);
-};
+type ActionToTest = ActionRaw | ActionWithItem | ActionWithItemAndAccount;
 
 export const getMemberActions = async (
-  rawRepository: Repository<Action>,
-  memberId: Account['id'],
-): Promise<Action[]> => {
-  return rawRepository.findBy({ account: { id: memberId } });
+  dbConnection: DBConnection,
+  memberId: MinimalAccount['id'],
+): Promise<ActionWithItem[]> => {
+  const res = await dbConnection.query.actionsTable.findMany({
+    where: eq(actionsTable.accountId, memberId),
+    with: { item: true },
+  });
+  return res;
 };
 
-export const expectAction = (action: Action, correctAction: Action) => {
+export const expectAction = <T extends ActionToTest>(action: T, correctAction: T) => {
   expect(action.extra).toMatchObject(correctAction.extra);
   expect(action.view).toEqual(correctAction.view);
   expect(action.createdAt).toEqual(correctAction.createdAt);
   expect(action.id).toEqual(correctAction.id);
-  expect(action.item!.id).toEqual(correctAction.item!.id);
+  if ('item' in correctAction) {
+    expect(action).toHaveProperty('item');
+    if ('item' in action) {
+      expect(action.item?.id).toEqual(correctAction.item?.id);
+    } else {
+      throw new Error('expected item prop to exist on action under test. The property is missing.');
+    }
+  }
   expect(action.type).toEqual(correctAction.type);
 };
 
-export const expectActions = (actions: Action[], correctActions: Action[]) => {
+export const expectActions = <T extends ActionToTest>(actions: T[], correctActions: T[]) => {
   expect(actions).toHaveLength(correctActions.length);
 
   for (const action of correctActions) {

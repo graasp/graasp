@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws';
 
-import { Websocket, parseStringToDate } from '@graasp/sdk';
+import { Websocket } from '@graasp/sdk';
 
 /**
  * A helper class to mock a purely WS client for the Graasp protocol
@@ -65,7 +65,7 @@ export class TestWsClient {
         update.channel === channel &&
         update.topic === topic
       ) {
-        updates.push(parseStringToDate(update.body) as UpdatesType);
+        updates.push(update.body);
       }
     });
 

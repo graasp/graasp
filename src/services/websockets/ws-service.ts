@@ -4,8 +4,7 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket as GraaspWS } from '@graasp/sdk';
 
-import { Account } from '../account/entities/account';
-import { Actor } from '../member/entities/member';
+import { MaybeUser } from '../../types';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,
@@ -22,7 +21,7 @@ export interface SubscriptionRequest {
   /**
    * Member requesting a subscription
    */
-  member: Account;
+  member: MaybeUser;
 }
 
 type ValidationFn = (request: SubscriptionRequest) => Promise<void>;
@@ -74,7 +73,7 @@ export class WebsocketService {
    */
   private async handleSubscribe(
     request: GraaspWS.ClientSubscribe | GraaspWS.ClientSubscribeOnly,
-    member: Actor,
+    member: MaybeUser,
     client: WebSocket,
     subscribeFn: (client: WebSocket, channelName: string) => boolean,
   ) {
@@ -140,13 +139,12 @@ export class WebsocketService {
    * @param member member performing the request
    * @param socket client socket
    */
-  handleRequest(data: Data, member: Actor, client: WebSocket): void {
+  handleRequest(data: Data, actor: MaybeUser, client: WebSocket): void {
     const request = this.parse(typeof data === 'string' ? data : data?.toString());
-
     // validation error, send bad request
     if (request === undefined) {
       this.logger.info(
-        `graasp-plugin-websockets: Bad client request (memberID: ${member?.id} with message`,
+        `graasp-plugin-websockets: Bad client request (memberID: ${actor?.id} with message`,
         data?.toString(),
       );
       const err = new GraaspWS.BadRequestError();
@@ -161,13 +159,13 @@ export class WebsocketService {
         break;
       }
       case GraaspWS.ClientActions.Subscribe: {
-        this.handleSubscribe(request, member, client, (client, channel) =>
+        this.handleSubscribe(request, actor, client, (client, channel) =>
           this.wsChannels.clientSubscribe(client, channel),
         );
         break;
       }
       case GraaspWS.ClientActions.SubscribeOnly: {
-        this.handleSubscribe(request, member, client, (client, channel) =>
+        this.handleSubscribe(request, actor, client, (client, channel) =>
           this.wsChannels.clientSubscribeOnly(client, channel),
         );
         break;

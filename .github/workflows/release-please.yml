@@ -24,6 +24,14 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - name: Build images
+        uses: ./.github/actions/build-images
+        with:
+          tag: ${{ steps.release.outputs.tag_name }}
+          aws-ecr-uri: ${{ vars.GRAASP_PUBLIC_ECR }}
+          aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
+
+      # ------ Legacy behavior ---
       # put created tag in an env variable to be sent to the dispatch
       - name: Set tag
         if: ${{ steps.release.outputs.releases_created == 'true' }}
@@ -42,7 +50,7 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: graasp/graasp-deploy
           event-type: update-staging-version
-          client-payload: ${{steps.set-tag.outputs.json}}
+          client-payload: ${{ steps.set-tag.outputs.json }}
 
       - name: Auto Tag
         uses: graasp/graasp-deploy/.github/actions/auto-tag-after-release@v1

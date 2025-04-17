@@ -6,10 +6,6 @@ import path from 'path';
 import { ExportActionsFormatting } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../utils/config';
-import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { AppAction } from '../../item/plugins/app/appAction/appAction';
-import { AppData } from '../../item/plugins/app/appData/appData';
-import { AppSetting } from '../../item/plugins/app/appSetting/appSettings';
 import { CannotWriteFileError } from './errors';
 
 export const buildItemTmpFolder = (itemId: string): string =>
@@ -17,9 +13,8 @@ export const buildItemTmpFolder = (itemId: string): string =>
 export const buildActionFileName = (name: string, datetime: string, format: string): string =>
   `${name}_${datetime}.${format}`;
 
-export const buildActionFilePath = (itemId: string, datetime: Date): string =>
-  // TODO: ISO??
-  `actions/${itemId}/${datetime.toISOString()}`;
+export const buildActionFilePath = (itemId: string, datetime: string): string =>
+  `actions/${itemId}/${datetime}`;
 
 export const buildArchiveDateAsName = (timestamp: Date): string => timestamp.toISOString();
 
@@ -77,7 +72,7 @@ export const writeFileForFormat = <T extends object>(
 export const exportActionsInArchive = async (args: {
   views: string[];
   storageFolder: string;
-  baseAnalytics: BaseAnalytics;
+  baseAnalytics: any;
   format: ExportActionsFormatting;
 }): Promise<ExportActionsInArchiveOutput> => {
   const { baseAnalytics, storageFolder, views, format } = args;
@@ -85,7 +80,8 @@ export const exportActionsInArchive = async (args: {
   // timestamp and datetime are used to build folder name and human readable filename
   const timestamp = new Date();
   const archiveDate = buildArchiveDateAsName(timestamp);
-  const fileName = `${baseAnalytics.item.name}_${archiveDate}`;
+  // TODO: use item name for title
+  const fileName = `actions_${archiveDate}`;
 
   // create tmp dir
   const outputPath = path.join(storageFolder, `${fileName}.zip`);
@@ -94,7 +90,6 @@ export const exportActionsInArchive = async (args: {
   archive.pipe(outputStream);
 
   archive.directory(fileName, false);
-
   try {
     const fileFolderPath = path.join(storageFolder, archiveDate);
     mkdirSync(fileFolderPath);
@@ -141,19 +136,20 @@ export const exportActionsInArchive = async (args: {
     writeFileForFormat(chatPath, format, baseAnalytics.chatMessages);
 
     // merge together actions, data and settings from all app_items
-    const { appActions, appData, appSettings } = Object.entries(baseAnalytics.apps).reduce<{
-      appActions: AppAction[];
-      appData: AppData[];
-      appSettings: AppSetting[];
-    }>(
-      (acc, [_appID, { actions, data, settings }]) => {
-        acc.appActions.push(...actions);
-        acc.appData.push(...data);
-        acc.appSettings.push(...settings);
-        return acc;
-      },
-      { appActions: [], appData: [], appSettings: [] },
-    );
+    const { appActions = [], appData = [], appSettings = [] } = {};
+    // const { appActions, appData, appSettings } = Object.entries(baseAnalytics.apps).reduce<{
+    //   appActions: AppActionRaw[];
+    //   appData: AppDataRaw[];
+    //   appSettings: AppSettingRaw[];
+    // }>(
+    //   (acc, [_appID, { actions, data, settings }]) => {
+    //     acc.appActions.push(...actions);
+    //     acc.appData.push(...data);
+    //     acc.appSettings.push(...settings);
+    //     return acc;
+    //   },
+    //   { appActions: [], appData: [], appSettings: [] },
+    // );
 
     switch (format) {
       // For JSON format only output a single file
@@ -163,7 +159,11 @@ export const exportActionsInArchive = async (args: {
           fileFolderPath,
           buildActionFileName('apps', archiveDate, format),
         );
-        writeFileForFormat(appsPath, format, { appActions, appData, appSettings });
+        writeFileForFormat(appsPath, format, {
+          appActions,
+          appData,
+          appSettings,
+        });
         break;
       }
       // For CSV format there will be one file for actions, one for data and one for settings

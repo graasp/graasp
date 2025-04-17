@@ -2,16 +2,15 @@ import { Strategy } from 'passport-local';
 
 import { Authenticator } from '@fastify/passport';
 
+import { db } from '../../../../../drizzle/db';
 import { UnauthorizedMember } from '../../../../../utils/errors';
-import { Repositories } from '../../../../../utils/repositories';
-import { MemberPasswordService } from '../../password/service';
+import { MemberPasswordService } from '../../password/password.service';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions } from '../types';
 
 export default (
   passport: Authenticator,
   memberPasswordService: MemberPasswordService,
-  repositories: Repositories,
   options?: CustomStrategyOptions,
 ) => {
   passport.use(
@@ -22,7 +21,7 @@ export default (
       },
       async (email, password, done) => {
         try {
-          const member = await memberPasswordService.authenticate(repositories, email, password);
+          const member = await memberPasswordService.authenticate(db, email, password);
           if (member) {
             // Token has been validated
             return done(null, { account: member });

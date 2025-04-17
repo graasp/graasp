@@ -9,7 +9,7 @@ import {
   S3FileItemFactory,
 } from '@graasp/sdk';
 
-import { Item } from '../../entities/Item';
+import { type ItemRaw } from '../../../../drizzle/types';
 import { getFilenameFromItem } from './utils';
 
 describe('File name', () => {
@@ -28,7 +28,7 @@ describe('File name', () => {
               mimetype: 'image/png',
             },
           },
-        }) as unknown as Item,
+        }) as unknown as ItemRaw,
       ),
     ).toEqual('myfile.png');
 
@@ -46,7 +46,7 @@ describe('File name', () => {
               content: '',
             },
           },
-        }) as unknown as Item,
+        }) as unknown as ItemRaw,
       ),
     ).toEqual('myfile.png');
 
@@ -64,7 +64,7 @@ describe('File name', () => {
               content: '',
             },
           },
-        }) as unknown as Item,
+        }) as unknown as ItemRaw,
       ),
     ).toEqual('myfile.jpeg');
   });
@@ -82,7 +82,7 @@ describe('File name', () => {
             content: '',
           },
         },
-      } as unknown as Item),
+      } as unknown as ItemRaw),
     ).toEqual('myfile.png');
 
     expect(
@@ -99,7 +99,7 @@ describe('File name', () => {
               content: '',
             },
           },
-        }) as unknown as Item,
+        }) as unknown as ItemRaw,
       ),
     ).toEqual('myfile.png');
 
@@ -117,54 +117,54 @@ describe('File name', () => {
               content: '',
             },
           },
-        }) as unknown as Item,
+        }) as unknown as ItemRaw,
       ),
     ).toEqual('myfile.jpeg');
   });
   it('get file name from h5p item', () => {
     const item = H5PItemFactory({
       name: 'myh5p',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item)).toEqual('myh5p.h5p');
     const item1 = H5PItemFactory({
       name: 'myh5p.h5p',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item1)).toEqual('myh5p.h5p');
   });
   it('get file name from app item', () => {
     const item = AppItemFactory({
       name: 'myapp',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item)).toEqual('myapp.app');
     const item1 = AppItemFactory({
       name: 'myapp.app',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item1)).toEqual('myapp.app');
   });
   it('get file name from link item', () => {
     const item = LinkItemFactory({
       name: 'mylink',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item)).toEqual('mylink.url');
     const item1 = LinkItemFactory({
       name: 'mylink.url',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item1)).toEqual('mylink.url');
   });
   it('get file name from folder item', () => {
     const item = FolderItemFactory({
       name: 'myfolder',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item)).toEqual('myfolder.zip');
   });
   it('get file name from document item', () => {
     const item = DocumentItemFactory({
       name: 'mydoc',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item)).toEqual('mydoc.graasp');
     const item1 = DocumentItemFactory({
       name: 'mydoc.graasp',
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item1)).toEqual('mydoc.graasp');
   });
   it('get file name from raw document item', () => {
@@ -176,7 +176,7 @@ describe('File name', () => {
           content: 'mycontent',
         },
       },
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item)).toEqual('mydoc.html');
     const item1 = DocumentItemFactory({
       name: 'mydoc.html',
@@ -186,7 +186,7 @@ describe('File name', () => {
           content: 'mycontent',
         },
       },
-    }) as unknown as Item;
+    }) as unknown as ItemRaw;
     expect(getFilenameFromItem(item1)).toEqual('mydoc.html');
   });
 });

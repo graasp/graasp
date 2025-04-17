@@ -29,7 +29,6 @@ const expectEquality = <T extends object & { id: string }>(
   schema: object,
 ) => {
   expect(results.length).toEqual(expectations.length);
-
   const stringify = fastJson(schema);
   results.forEach((res) => {
     const expectation = expectations.find((e) => e.id === res.id);

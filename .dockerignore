@@ -3,11 +3,15 @@ coverage
 dist
 docs
 node_modules
-**/test/**
-*.test.*
+.pnpm-store
+test
+tmp
+**/test
+**/*.test.ts
 types
 docker
 API Collections
+**/.DS_Store
 
 # We need this script file to prevent husky running in production.
 !.husky/install.mjs

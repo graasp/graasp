@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { createError } from '@fastify/error';
+
 import { ErrorFactory } from '@graasp/sdk';
 
 const PLUGIN_NAME = 'graasp-plugin-chatbox';
@@ -62,28 +64,14 @@ export class MemberCannotAccessMention extends GraaspChatboxError {
   }
 }
 
-export class ChatMentionNotFound extends GraaspChatboxError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GICERR006',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'Chat mention not found',
-      },
-      data,
-    );
-  }
-}
+export const ChatMentionNotFound = createError(
+  'GICERR006',
+  'Chat mention not found',
+  StatusCodes.NOT_FOUND,
+);
 
-export class NoChatMentionForMember extends GraaspChatboxError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GICERR007',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'This member cannot have chat mention',
-      },
-      data,
-    );
-  }
-}
+export const NoChatMentionForMember = createError(
+  'GICERR007',
+  'This member cannot have chat mention',
+  StatusCodes.BAD_REQUEST,
+);

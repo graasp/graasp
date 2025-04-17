@@ -1,6 +1,6 @@
-import { ItemType, PermissionLevel, UnionOfConst } from '@graasp/sdk';
+import { ItemType, PermissionLevelOptions, UnionOfConst } from '@graasp/sdk';
 
-import { Member } from '../member/entities/member';
+import { MinimalAccount } from '../../drizzle/types';
 
 export enum SortBy {
   ItemType = 'item.type',
@@ -29,16 +29,15 @@ export function orderingToUpperCase(ordering: Ordering): Ordering.ASC | Ordering
 }
 
 export type ItemSearchParams = {
-  creatorId?: Member['id'];
+  creatorId?: MinimalAccount['id'];
   keywords?: string[];
   sortBy?: SortBy;
   ordering?: Ordering;
-  permissions?: PermissionLevel[];
+  permissions?: PermissionLevelOptions[];
   types?: UnionOfConst<typeof ItemType>[];
 };
 
 export type ItemChildrenParams = {
-  ordered?: boolean;
   types?: UnionOfConst<typeof ItemType>[];
   keywords?: string[];
 };

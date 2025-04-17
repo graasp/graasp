@@ -1,9 +1,10 @@
+import { v4 } from 'uuid';
+
 import { FastifyRequest } from 'fastify';
 
 import { AccountType } from '@graasp/sdk';
 
-import { Guest } from '../../itemLogin/entities/guest';
-import { Member } from '../entities/member';
+import { GuestFactory, MemberFactory } from '../../../../test/factories/member.factory';
 import { validatedMemberAccountRole } from './validatedMemberAccountRole';
 
 describe('Validated Member', () => {
@@ -14,7 +15,7 @@ describe('Validated Member', () => {
     req.user = { account: undefined };
     expect(validatedMemberAccountRole.test(req)).toBe(false);
 
-    const member = new Member();
+    const member = MemberFactory({ id: v4() });
     member.type = AccountType.Individual;
     member.isValidated = false;
     req.user.account = member;
@@ -23,7 +24,7 @@ describe('Validated Member', () => {
     member.isValidated = true;
     expect(validatedMemberAccountRole.test(req)).toBe(true);
 
-    const guest = new Guest();
+    const guest = GuestFactory({ itemLoginSchemaId: v4() });
     guest.type = AccountType.Guest;
     req.user.account = guest;
     expect(validatedMemberAccountRole.test(req)).toBe(false);

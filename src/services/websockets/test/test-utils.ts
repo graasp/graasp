@@ -12,7 +12,7 @@ import { Websocket as GraaspWebsocket } from '@graasp/sdk';
 
 import { REDIS_HOST } from '../../../utils/config';
 import { AjvMessageSerializer } from '../message-serializer';
-import graaspWebSockets, { WebsocketsPluginOptions } from '../service-api';
+import graaspWebSockets, { WebsocketsPluginOptions } from '../websocket.controller';
 import { WebSocketChannels } from '../ws-channels';
 import { mockSessionPreHandler } from './mocks';
 

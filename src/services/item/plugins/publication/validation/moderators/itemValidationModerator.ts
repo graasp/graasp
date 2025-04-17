@@ -2,25 +2,34 @@ import { singleton } from 'tsyringe';
 
 import { ItemValidationReviewStatus, ItemValidationStatus } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../../utils/repositories';
-import { Item } from '../../../../entities/Item';
-import { ItemValidationGroup } from '../entities/ItemValidationGroup';
+import { DBConnection } from '../../../../../../drizzle/db';
+import { type ItemRaw, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
 import { ProcessExecutionError } from '../errors';
+import { ItemValidationRepository } from '../itemValidation.repository';
+import { ItemValidationReviewRepository } from '../itemValidationReview.repository';
 import { StrategyExecutorFactory } from './strategyExecutorFactory';
 import { StrategyExecutor } from './types';
 
 @singleton()
 export class ItemValidationModerator {
   private readonly strategyExecutorFactory: StrategyExecutorFactory;
+  private readonly itemValidationRepository: ItemValidationRepository;
+  private readonly itemValidationReviewRepository: ItemValidationReviewRepository;
 
-  constructor(strategyExecutorFactory: StrategyExecutorFactory) {
+  constructor(
+    strategyExecutorFactory: StrategyExecutorFactory,
+    itemValidationRepository: ItemValidationRepository,
+    itemValidationReviewRepository: ItemValidationReviewRepository,
+  ) {
     this.strategyExecutorFactory = strategyExecutorFactory;
+    this.itemValidationRepository = itemValidationRepository;
+    this.itemValidationReviewRepository = itemValidationReviewRepository;
   }
 
   async validate(
-    repositories: Repositories,
-    item: Item,
-    itemValidationGroup: ItemValidationGroup,
+    dbConnection: DBConnection,
+    item: ItemRaw,
+    itemValidationGroupId: ItemValidationGroupRaw['id'],
   ): Promise<ItemValidationStatus[]> {
     // execute each process on item
     const results = (
@@ -28,9 +37,9 @@ export class ItemValidationModerator {
         this.strategyExecutorFactory.createStrategyExecutors(item).map(async (strategyExecutor) => {
           try {
             return await this.executeValidationProcess(
-              repositories,
+              dbConnection,
               item,
-              itemValidationGroup.id,
+              itemValidationGroupId,
               strategyExecutor,
             );
           } catch (error) {
@@ -44,15 +53,18 @@ export class ItemValidationModerator {
   }
 
   private async executeValidationProcess(
-    repositories: Repositories,
-    item: Item,
+    dbConnection: DBConnection,
+    item: ItemRaw,
     groupId: string,
     { process, validate }: StrategyExecutor,
   ): Promise<ItemValidationStatus> {
-    const { itemValidationReviewRepository, itemValidationRepository } = repositories;
-
     // create pending validation
-    const itemValidation = await itemValidationRepository.post(item?.id, groupId, process);
+    const itemValidation = await this.itemValidationRepository.post(
+      dbConnection,
+      item?.id,
+      groupId,
+      process,
+    );
 
     let status: ItemValidationStatus;
     let result: string | undefined = undefined;
@@ -69,14 +81,15 @@ export class ItemValidationModerator {
 
     // create review entry if validation failed
     if (status === ItemValidationStatus.Failure) {
-      await itemValidationReviewRepository.post(
+      await this.itemValidationReviewRepository.post(
+        dbConnection,
         itemValidation.id,
         ItemValidationReviewStatus.Pending,
       );
     }
 
     // update item validation
-    await itemValidationRepository.patch(itemValidation.id, { result, status });
+    await this.itemValidationRepository.patch(dbConnection, itemValidation.id, { result, status });
 
     return status;
   }

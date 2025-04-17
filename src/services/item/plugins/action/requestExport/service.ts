@@ -9,55 +9,71 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { type DBConnection } from '../../../../../drizzle/db';
+import { ActionRequestExportRaw, type ItemRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../../plugins/mailer/service';
-import { Repositories } from '../../../../../utils/repositories';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service';
+import { MemberInfo, MinimalMember } from '../../../../../types';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
 import {
   buildActionFilePath,
   buildItemTmpFolder,
   exportActionsInArchive,
 } from '../../../../action/utils/export';
-import { validatePermission } from '../../../../authorization';
-import FileService from '../../../../file/service';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemService } from '../../../service';
-import { ActionItemService } from '../service';
-import { ActionRequestExport } from './requestExport';
+import { AuthorizationService } from '../../../../authorization';
+import FileService from '../../../../file/file.service';
+import { MemberService } from '../../../../member/member.service';
+import { BasicItemService } from '../../../basic.service';
+import { ItemActionService } from '../itemAction.service';
+import { ActionRequestExportRepository } from './repository';
 
 @singleton()
 export class ActionRequestExportService {
   private readonly fileService: FileService;
-  private readonly actionItemService: ActionItemService;
-  private readonly itemService: ItemService;
+  private readonly itemActionService: ItemActionService;
+  private readonly basicItemService: BasicItemService;
+  private readonly authorizationService: AuthorizationService;
   private readonly mailerService: MailerService;
+  private readonly memberService: MemberService;
+  private readonly actionRequestExportRepository: ActionRequestExportRepository;
 
   constructor(
-    actionItemService: ActionItemService,
-    itemService: ItemService,
+    itemActionService: ItemActionService,
+    authorizationService: AuthorizationService,
+    basicItemService: BasicItemService,
     fileService: FileService,
     mailerService: MailerService,
+    memberService: MemberService,
+    actionRequestExportRepository: ActionRequestExportRepository,
   ) {
-    this.actionItemService = actionItemService;
-    this.itemService = itemService;
+    this.itemActionService = itemActionService;
+    this.basicItemService = basicItemService;
+    this.authorizationService = authorizationService;
     this.fileService = fileService;
     this.mailerService = mailerService;
+    this.memberService = memberService;
+    this.actionRequestExportRepository = actionRequestExportRepository;
   }
 
   async request(
-    member: Member,
-    repositories: Repositories,
+    dbConnection: DBConnection,
+    minimalMember: MinimalMember,
     itemId: UUID,
     format: ExportActionsFormatting,
   ) {
     // check member has admin access to the item
-    const item = await this.itemService.get(member, repositories, itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, member, item);
+    const member = await this.memberService.get(dbConnection, minimalMember.id);
+    const item = await this.basicItemService.get(dbConnection, minimalMember, itemId);
+    await this.authorizationService.validatePermission(
+      dbConnection,
+      PermissionLevel.Admin,
+      minimalMember,
+      item,
+    );
 
     // get last export entry within interval
-    const lastRequestExport = await repositories.actionRequestExportRepository.getLast({
+    const lastRequestExport = await this.actionRequestExportRepository.getLast(dbConnection, {
       memberId: member?.id,
       itemPath: item.path,
       format,
@@ -65,7 +81,12 @@ export class ActionRequestExportService {
 
     // check if a previous request already created the file and send it back
     if (lastRequestExport) {
-      await this._sendExportLinkInMail(member, item, lastRequestExport.createdAt, format);
+      await this._sendExportLinkInMail(
+        member.toMemberInfo(),
+        item,
+        lastRequestExport.createdAt,
+        format,
+      );
       return;
       // the previous exported data does not exist or
       // is outdated and a new version should be uploaded
@@ -77,8 +98,8 @@ export class ActionRequestExportService {
     fs.mkdirSync(tmpFolder, { recursive: true });
 
     const requestExport = await this._createAndUploadArchive(
-      member,
-      repositories,
+      dbConnection,
+      minimalMember,
       itemId,
       tmpFolder,
       format,
@@ -95,15 +116,15 @@ export class ActionRequestExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    await this._sendExportLinkInMail(member, item, requestExport.createdAt, format);
+    await this._sendExportLinkInMail(member.toMemberInfo(), item, requestExport.createdAt, format);
 
     return item;
   }
 
   async _sendExportLinkInMail(
-    actor: Member,
-    item: Item,
-    archiveDate: Date,
+    member: MemberInfo,
+    item: ItemRaw,
+    archiveDate: string,
     format: ExportActionsFormatting,
   ) {
     const filepath = buildActionFilePath(item.id, archiveDate);
@@ -119,7 +140,7 @@ export class ActionRequestExportService {
           itemName: item.name,
         },
       },
-      lang: actor.lang,
+      lang: member.lang,
     })
       .addText(TRANSLATIONS.EXPORT_ACTIONS_TEXT, {
         itemName: item.name,
@@ -129,29 +150,28 @@ export class ActionRequestExportService {
       .addButton(TRANSLATIONS.EXPORT_ACTIONS_BUTTON_TEXT, link)
       .build();
 
-    this.mailerService.send(mail, actor.email).catch((err) => {
+    this.mailerService.send(mail, member.email).catch((err) => {
       console.debug(err, `mailer failed. export zip link: ${link}`);
     });
   }
 
   async _createAndUploadArchive(
-    actor: Member,
-    repositories: Repositories,
+    dbConnection,
+    actor: MinimalMember,
     itemId: UUID,
     storageFolder: string,
     format: ExportActionsFormatting,
-  ): Promise<ActionRequestExport> {
+  ): Promise<ActionRequestExportRaw> {
     // get actions and more data
-    const baseAnalytics = await this.actionItemService.getBaseAnalyticsForItem(
+    const baseAnalytics = await this.itemActionService.getBaseAnalyticsForItem(
+      dbConnection,
       actor,
-      repositories,
       {
         itemId,
       },
     );
 
     // create archive given base analytics
-
     const archive = await exportActionsInArchive({
       storageFolder,
       baseAnalytics,
@@ -163,15 +183,15 @@ export class ActionRequestExportService {
     // upload file
     await this.fileService.upload(actor, {
       file: fs.createReadStream(archive.filepath),
-      filepath: buildActionFilePath(itemId, archive.timestamp),
+      filepath: buildActionFilePath(itemId, archive.timestamp.toISOString()),
       mimetype: ZIP_MIMETYPE,
     });
 
     // create request row
-    const requestExport = await repositories.actionRequestExportRepository.addOne({
-      item: baseAnalytics.item,
-      member: actor,
-      createdAt: new Date(archive.timestamp.getTime()),
+    const requestExport = await this.actionRequestExportRepository.addOne(dbConnection, {
+      itemPath: baseAnalytics.item.path,
+      memberId: actor.id,
+      createdAt: archive.timestamp.toISOString(),
       format,
     });
 

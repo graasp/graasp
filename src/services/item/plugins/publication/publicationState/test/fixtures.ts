@@ -8,7 +8,7 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
+import { ItemVisibilityRaw } from '../../../../../../drizzle/types';
 import { ItemMetadata, ItemValidationGroupStatus } from '../types';
 
 export const ItemMetadataFactory = (
@@ -18,10 +18,10 @@ export const ItemMetadataFactory = (
   const path = item?.path ?? v4();
 
   return {
-    updatedAt: item?.updatedAt ?? new Date(),
+    updatedAt: item?.updatedAt ?? new Date().toISOString(),
     path: item?.parentItem ? buildPathFromIds[(item.parentItem.path, path)] : path,
     type: item?.type ?? ItemType.FOLDER,
-    public: isPublic ? ({ type: ItemVisibilityType.Public } as ItemVisibility) : undefined,
+    public: isPublic ? ({ type: ItemVisibilityType.Public } as ItemVisibilityRaw) : undefined,
   };
 };
 
@@ -46,7 +46,7 @@ export const ItemValidationGroupStatusFactory = (
   });
 
   return {
-    createdAt: validationDate,
+    createdAt: validationDate.toISOString(),
     itemValidations: [
       ivFactory(ItemValidationProcess.BadWordsDetection),
       ivFactory(ItemValidationProcess.ImageChecking),

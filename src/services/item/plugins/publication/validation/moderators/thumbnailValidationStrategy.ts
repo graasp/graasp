@@ -3,12 +3,12 @@ import { inject, injectWithTransform, singleton } from 'tsyringe';
 import { ItemValidationProcess, ItemValidationStatus, ThumbnailSize } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
+import { type ItemRaw } from '../../../../../../drizzle/types';
 import {
   ITEM_THUMBNAIL_PREFIX,
   ThumbnailService,
   ThumbnailServiceTransformer,
-} from '../../../../../thumbnail/service';
-import { Item } from '../../../../entities/Item';
+} from '../../../../../thumbnail/thumbnail.service';
 import { classifyImage } from '../processes/imageClassification';
 import { ValidationProcessResult, ValidationStrategy } from './types';
 
@@ -28,7 +28,7 @@ export class ThumbnailValidationStrategy implements ValidationStrategy {
     this.imageClassifierApi = imageClassifierApi;
   }
 
-  async validate(item: Item): Promise<ValidationProcessResult> {
+  async validate(item: ItemRaw): Promise<ValidationProcessResult> {
     if (!this.imageClassifierApi) {
       throw new Error('imageClassifierApi is not defined');
     }

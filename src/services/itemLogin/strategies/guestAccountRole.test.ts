@@ -1,9 +1,10 @@
+import { v4 } from 'uuid';
+
 import { FastifyRequest } from 'fastify';
 
 import { AccountType } from '@graasp/sdk';
 
-import { Member } from '../../member/entities/member';
-import { Guest } from '../entities/guest';
+import { GuestFactory, MemberFactory } from '../../../../test/factories/member.factory';
 import { guestAccountRole } from './guestAccountRole';
 
 describe('Member Account Role', () => {
@@ -14,12 +15,12 @@ describe('Member Account Role', () => {
     req.user = { account: undefined };
     expect(guestAccountRole.test(req)).toBe(false);
 
-    const member = new Member();
+    const member = MemberFactory();
     member.type = AccountType.Individual;
     req.user.account = member;
     expect(guestAccountRole.test(req)).toBe(false);
 
-    const guest = new Guest();
+    const guest = GuestFactory({ itemLoginSchemaId: v4() });
     guest.type = AccountType.Guest;
     req.user.account = guest;
     expect(guestAccountRole.test(req)).toBe(true);

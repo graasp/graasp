@@ -15,7 +15,7 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
-import { serverMessageSchema } from './schemas';
+import { serverMessageSchema } from './schemas/message';
 import { WebSocketChannels } from './ws-channels';
 
 /**

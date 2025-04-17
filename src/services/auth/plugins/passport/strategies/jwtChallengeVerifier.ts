@@ -3,9 +3,10 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { db } from '../../../../../drizzle/db';
 import { JWT_SECRET } from '../../../../../utils/config';
 import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { AccountRepository } from '../../../../account/repository';
+import { AccountRepository } from '../../../../account/account.repository';
 import { SHORT_TOKEN_PARAM } from '../constants';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
@@ -44,10 +45,10 @@ export default (
 
         //-- Fetch Member Data --//
         try {
-          const account = await accountRepository.get(sub);
-          if (account) {
+          const account = await accountRepository.get(db, sub);
+          if (account.exists()) {
             // Token has been validated
-            return done(null, { account }, { emailValidation });
+            return done(null, { account: account.toMaybeUser() }, { emailValidation });
           } else {
             // Authentication refused
             return done(

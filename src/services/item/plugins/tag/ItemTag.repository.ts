@@ -1,88 +1,85 @@
-import { EntityManager } from 'typeorm';
+import { getTableColumns } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
-import { TagCategory, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
+import { type DBConnection } from '../../../../drizzle/db';
+import { itemTagsTable, tagsTable } from '../../../../drizzle/schema';
+import { type ItemRaw, type TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
-import { assertIsError } from '../../../../utils/assertions';
-import { isDuplicateEntryError } from '../../../../utils/typeormError';
-import { Tag } from '../../../tag/Tag.entity';
-import { TagCount } from '../../../tag/schemas';
-import { Item } from '../../entities/Item';
-import { ItemTag } from './ItemTag.entity';
+import { TagCategoryOptions, TagCount } from '../../../tag/tag.schemas';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 
-export class ItemTagRepository extends AbstractRepository<ItemTag> {
-  constructor(manager?: EntityManager) {
-    super(ItemTag, manager);
-  }
-
-  async getByItemId(itemId: UUID): Promise<Tag[]> {
+@singleton()
+export class ItemTagRepository {
+  async getByItemId(dbConnection: DBConnection, itemId: UUID): Promise<TagRaw[]> {
     if (!itemId) {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
 
-    const itemTags = await this.repository.find({
-      where: { itemId },
-      relations: { tag: true },
-      order: { tag: { category: 'ASC', name: 'ASC' } },
-    });
-    return itemTags.map(({ tag }) => tag);
-  }
-
-  async getCountBy({
-    search,
-    category,
-  }: {
-    search: string;
-    category?: TagCategory;
-  }): Promise<TagCount[]> {
-    if (!search) {
-      throw new IllegalArgumentException(`search is invalid: "${search}"`);
-    }
-
-    const q = this.repository
-      .createQueryBuilder('itemTag')
-      .select([
-        't.id AS id',
-        't.name AS name',
-        't.category AS category',
-        'count(t.id)::integer as count',
-      ])
-      .innerJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
-        search: `%${search}%`,
-      });
-
-    if (category) {
-      q.where('category = :category', { category });
-    }
-
-    const result = await q
-      .groupBy('t.id')
-      .orderBy('count', 'DESC')
-      .limit(TAG_COUNT_MAX_RESULTS)
-      .getRawMany<TagCount>();
+    const result = await dbConnection
+      .select(
+        // only take the tags columns
+        getTableColumns(tagsTable),
+      )
+      .from(tagsTable)
+      .leftJoin(itemTagsTable, eq(tagsTable.id, itemTagsTable.tagId))
+      .where(eq(itemTagsTable.itemId, itemId))
+      .orderBy(asc(tagsTable.category), asc(tagsTable.name));
 
     return result;
   }
 
-  async create(itemId: UUID, tagId: Tag['id']): Promise<void> {
+  async getCountBy(
+    dbConnection: DBConnection,
+    {
+      search,
+      category,
+    }: {
+      search: string;
+      category: TagCategoryOptions;
+    },
+  ): Promise<TagCount[]> {
+    if (!search) {
+      throw new IllegalArgumentException(`search is invalid: "${search}"`);
+    }
+    const selectCols = {
+      id: tagsTable.id,
+      name: tagsTable.name,
+      category: tagsTable.category,
+      count: dbConnection.$count(itemTagsTable, eq(itemTagsTable.tagId, tagsTable.id)),
+    };
+    const res = await dbConnection
+      .select(selectCols)
+      .from(tagsTable)
+      .where(and(ilike(tagsTable.name, `%${search}%`), eq(tagsTable.category, category)))
+      .orderBy(desc(selectCols.count))
+      .limit(TAG_COUNT_MAX_RESULTS);
+
+    return res;
+  }
+
+  async create(dbConnection: DBConnection, itemId: UUID, tagId: TagRaw['id']): Promise<void> {
     try {
-      await this.repository.insert({ itemId, tagId });
+      await dbConnection.insert(itemTagsTable).values({ itemId, tagId });
     } catch (e) {
-      assertIsError(e);
-      if (isDuplicateEntryError(e)) {
-        throw new ItemTagAlreadyExists({ itemId, tagId });
-      }
-      throw e;
+      throw new ItemTagAlreadyExists({ itemId, tagId });
     }
   }
 
-  async delete(itemId: Item['id'], tagId: Tag['id']): Promise<void> {
+  async delete(
+    dbConnection: DBConnection,
+    itemId: ItemRaw['id'],
+    tagId: TagRaw['id'],
+  ): Promise<void> {
     if (!itemId || !tagId) {
       throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
     }
-    await this.repository.delete({ itemId, tagId });
+    // remove association between item and tag in tag association table
+    await dbConnection
+      .delete(itemTagsTable)
+      .where(and(eq(itemTagsTable.tagId, tagId), eq(itemTagsTable.itemId, itemId)));
   }
 }

@@ -5,7 +5,7 @@ export enum PassportStrategy {
   StrictSession = 'strict-session',
 
   //-- Magic Link Strategies (JWT) --//
-  MobileMagicLink = 'mobile-magic-link',
+  // MobileMagicLink = 'mobile-magic-link',
   WebMagicLink = 'web-magic-link',
 
   //-- From JWT --//
@@ -13,7 +13,7 @@ export enum PassportStrategy {
   EmailChange = 'email-change-jwt',
   DeprecatedEmailChange = 'deprecated-email-change-jwt',
   JwtChallengeVerifier = 'jwt-challenge-verifier',
-  MobileJwt = 'mobile-jwt',
+  // MobileJwt = 'mobile-jwt',
   RefreshToken = 'refresh-token',
   AppsJwt = 'apps-jwt',
   OptionalAppsJwt = 'optional-apps-jwt',

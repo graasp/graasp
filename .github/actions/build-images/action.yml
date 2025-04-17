@@ -1,0 +1,26 @@
+name: Build backend and migration images
+description: Build, package and distribute server and migration images via docker container images pushed to a registry
+
+inputs:
+  tag:
+    description: 'Image tag'
+    required: true
+  aws-ecr-uri:
+    description: "AWS ECR URI, similar to 'public.ecr.aws/ecr-default-alias'"
+    required: true
+  aws-role-arn:
+    description: 'AWS Role to assume'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-assume-role: ${{ inputs.aws-role-arn }}
+        aws-region: us-east-1
+
+    - name: Build and push the images
+      run: bash ./docker/build.sh
+      shell: bash

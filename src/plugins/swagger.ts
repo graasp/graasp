@@ -59,7 +59,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
         },
         { name: 'mention', description: 'Endpoints related to mentions in chat' },
         { name: 'meta', description: 'Endpoints related to system health and monitoring' },
-        { name: 'mobile', description: 'Endpoints related to mobile' },
         {
           name: 'password',
           description: 'Endpoints related to authentication and management of password',
@@ -80,7 +79,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       // Example: If the schema defines a `user` object with `$id` = `user`, it will result in
       // $ref: "#/components/schemas/user" instead of "#/components/schemas/def-1"
       buildLocalReference(json, baseUri, fragment, i) {
-        return json.$id?.toString() || `my-fragment-${i}`;
+        return json.$id?.toString() ?? `my-fragment-${i}`;
       },
     },
   });

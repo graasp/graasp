@@ -7,24 +7,14 @@ import Etherpad from '@graasp/etherpad-api';
 
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
-import { MailerService } from '../plugins/mailer/service';
+import { MailerService } from '../plugins/mailer/mailer.service';
 import { CachingService } from '../services/caching/service';
-import FileService from '../services/file/service';
+import FileService from '../services/file/file.service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
-import {
-  EtherpadItemService,
-  RandomPadNameFactory,
-} from '../services/item/plugins/etherpad/service';
+import { RandomPadNameFactory } from '../services/item/plugins/etherpad/etherpad.service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
-import FileItemService from '../services/item/plugins/file/service';
-import { H5PService } from '../services/item/plugins/html/h5p/service';
-import { ImportExportService } from '../services/item/plugins/importExport/service';
-import { PublicationService } from '../services/item/plugins/publication/publicationState/service';
-import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
-import { ValidationQueue } from '../services/item/plugins/publication/validation/validationQueue';
-import { ItemService } from '../services/item/service';
+import { SearchService } from '../services/item/plugins/publication/published/plugins/search/search.service';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -45,7 +35,6 @@ import {
   REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
-import { buildRepositories } from '../utils/repositories';
 import {
   ETHERPAD_NAME_FACTORY_DI_KEY,
   FASTIFY_LOGGER_DI_KEY,
@@ -58,7 +47,7 @@ import {
 import { registerValue, resolveDependency } from './utils';
 
 export const registerDependencies = (instance: FastifyInstance) => {
-  const { log, db } = instance;
+  const { log } = instance;
 
   // register FastifyBasLogger as a value to allow BaseLogger to be injected automatically.
   registerValue(FASTIFY_LOGGER_DI_KEY, log);
@@ -82,18 +71,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
       port: REDIS_PORT,
       username: REDIS_USERNAME,
       password: REDIS_PASSWORD,
-    }),
-  );
-
-  registerValue(
-    MailerService,
-    new MailerService({
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
     }),
   );
 
@@ -124,16 +101,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
       apiKey: MEILISEARCH_MASTER_KEY,
     }),
   );
-  // Will be registered automatically when db will be injectable.
-  registerValue(
-    MeiliSearchWrapper,
-    new MeiliSearchWrapper(
-      db,
-      resolveDependency(MeiliSearch),
-      resolveDependency(FileService),
-      resolveDependency(BaseLogger),
-    ),
-  );
 
   // Launch Job workers
   const jobServiceBuilder = new JobServiceBuilder(resolveDependency(BaseLogger));
@@ -162,28 +129,22 @@ export const registerDependencies = (instance: FastifyInstance) => {
   registerValue(ETHERPAD_NAME_FACTORY_DI_KEY, new RandomPadNameFactory());
 
   registerValue(
-    ImportExportService,
-    new ImportExportService(
-      db,
-      resolveDependency(FileItemService),
-      resolveDependency(ItemService),
-      resolveDependency(H5PService),
-      resolveDependency(EtherpadItemService),
-      resolveDependency(BaseLogger),
-    ),
+    MailerService,
+    new MailerService({
+      host: MAILER_CONFIG_SMTP_HOST,
+      port: MAILER_CONFIG_SMTP_PORT,
+      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+      username: MAILER_CONFIG_USERNAME,
+      password: MAILER_CONFIG_PASSWORD,
+      fromEmail: MAILER_CONFIG_FROM_EMAIL,
+    }),
   );
-
-  // This code will be improved when we will be able to inject the repositories.
-  const { itemVisibilityRepository, itemValidationGroupRepository, itemPublishedRepository } =
-    buildRepositories();
-  registerValue(
-    PublicationService,
-    new PublicationService(
-      resolveDependency(ItemService),
-      itemVisibilityRepository,
-      itemValidationGroupRepository,
-      itemPublishedRepository,
-      resolveDependency(ValidationQueue),
-    ),
-  );
+  // registerValue('MAIL_KEY', {
+  //   host: MAILER_CONFIG_SMTP_HOST,
+  //   port: MAILER_CONFIG_SMTP_PORT,
+  //   useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+  //   username: MAILER_CONFIG_USERNAME,
+  //   password: MAILER_CONFIG_PASSWORD,
+  //   fromEmail: MAILER_CONFIG_FROM_EMAIL,
+  // });
 };

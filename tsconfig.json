@@ -10,11 +10,9 @@
     "moduleResolution": "node16",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-
-    // required for typeorm
+    "noImplicitAny": false, // TODO: enable
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     "strictNullChecks": true,
     "strictPropertyInitialization": false, // disable because of entities,

@@ -1,13 +1,9 @@
 import { compare, hash } from 'bcrypt';
 
 import { SALT_ROUNDS } from '../../../../utils/config';
-import { AbstractPassword } from './entities/abstractPassword';
 import { PasswordNotDefined } from './errors';
 
-export async function verifyCurrentPassword(
-  passwordEntity: AbstractPassword | null,
-  password: string,
-) {
+export async function verifyCurrentPassword(savedPassword: string, password: string) {
   /* verified: stores the output of bcrypt.compare().
   bcrypt.compare() allows to compare the provided password with a stored hash.
   It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
@@ -15,11 +11,11 @@ export async function verifyCurrentPassword(
   if they do not match, verified is false
   */
   // if the member already has a password set: return verified
-  if (passwordEntity?.password) {
+  if (savedPassword) {
     if (!password) {
       throw new PasswordNotDefined();
     }
-    const verified = compare(password, passwordEntity.password)
+    const verified = compare(password, savedPassword)
       .then((res) => res)
       .catch((err) => console.error(err.message));
     return verified;

@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import os from 'os';
 
 import { ClientManager, Context, FileItemType, GPTVersion, ItemType } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import {
   LocalFileConfiguration,
@@ -58,6 +59,10 @@ ClientManager.getInstance().setHost(CLIENT_HOST).addHost(Context.Library, LIBRAR
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
+/**
+ * Host address the server listen on, default to 0.0.0.0 to bind to all addresses.
+ */
+export const HOST_LISTEN_ADDRESS = process.env.HOST_LISTEN_ADDRESS || '0.0.0.0';
 
 export const PORT = process.env.PORT ? +process.env.PORT : 3000;
 export const HOST = `${PROTOCOL}://${HOSTNAME}:${PORT}`;
@@ -99,15 +104,6 @@ export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
  */
 export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
 
-export const MOBILE_AUTH_URL = new URL(process.env.MOBILE_AUTH_URL || 'https://mobile.graasp.org');
-
-export const MOBILE_DEEP_LINK_PROTOCOL = new URL(
-  // the domain part below is just an example to check the validity of the URL
-  `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile'}://graasp.org`,
-).protocol; // we only use the protocol anyway
-
-export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
-
 // Graasp constants
 /**
  * Session cookie key
@@ -133,7 +129,6 @@ export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
 export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
 
 // Token based auth
-export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 if (!process.env.AUTH_TOKEN_JWT_SECRET) {
   throw new Error('process.env.AUTH_TOKEN_JWT_SECRET should be defined');
 }
@@ -191,7 +186,7 @@ export const MAILER_CONFIG_SMTP_USE_SSL = process.env.MAILER_CONFIG_SMTP_USE_SSL
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
 export const MAILER_CONFIG_FROM_EMAIL =
-  process.env.MAILER_CONFIG_FROM_EMAIL || 'no-reply@graasp.org';
+  process.env.MAILER_CONFIG_FROM_EMAIL ?? 'no-reply@graasp.org';
 
 // Graasp file item
 // TODO: should this be here?
@@ -381,6 +376,9 @@ export const ALLOWED_SEARCH_LANGS = {
   fr: 'french',
   it: 'italian',
 };
+export function getSearchLang(lang: string) {
+  return ALLOWED_SEARCH_LANGS[lang] ?? ALLOWED_SEARCH_LANGS[DEFAULT_LANG];
+}
 
 // Geolocation API Key
 export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY ?? '';
@@ -405,9 +403,9 @@ export const JEST_WORKER_ID: number = +process.env.JEST_WORKER_ID! || 1;
 export const CI: boolean = process.env.CI === 'true';
 export const AUTO_RUN_MIGRATIONS: boolean = (process.env.AUTO_RUN_MIGRATIONS ?? 'true') === 'true';
 
-//////////////////////////////////////
-// Database Environements Variables //
-//////////////////////////////////////
+/////////////////////////////////////
+// Database Environement Variables //
+/////////////////////////////////////
 export const DEFAULT_DB_PORT = 5432;
 // Can be undefined, so tests can run without setting it. In production, TypeORM will throw an exception if not defined.
 export const DB_HOST: string | undefined = process.env.DB_HOST;

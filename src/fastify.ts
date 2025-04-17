@@ -3,6 +3,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from './app';
+import { client } from './drizzle/db';
 import ajvFormats from './schemas/ajvFormats';
 import { initSentry } from './sentry';
 import {
@@ -10,7 +11,7 @@ import {
   CORS_ORIGIN_REGEX,
   DEV,
   ENVIRONMENT,
-  HOSTNAME,
+  HOST_LISTEN_ADDRESS,
   PORT,
   PROD,
 } from './utils/config';
@@ -41,6 +42,11 @@ export const instance = fastify({
   },
 }).withTypeProvider<TypeBoxTypeProvider>();
 
+// On close, close database connection
+instance.addHook('onClose', async (instance) => {
+  await client.end();
+});
+
 const start = async () => {
   const { Sentry } = initSentry(instance);
 
@@ -57,7 +63,7 @@ const start = async () => {
   await registerAppPlugins(instance);
 
   try {
-    await instance.listen({ port: PORT, host: HOSTNAME });
+    await instance.listen({ port: PORT, host: HOST_LISTEN_ADDRESS });
     instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);
     if (DEV) {
       // greet the world

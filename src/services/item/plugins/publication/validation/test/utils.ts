@@ -1,51 +1,34 @@
-import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
+import { ItemValidationStatus } from '@graasp/sdk';
 
 import { registerValue } from '../../../../../../di/utils';
-import { AppDataSource } from '../../../../../../plugins/datasource';
-import { Repositories } from '../../../../../../utils/repositories';
-import { Item } from '../../../../entities/Item';
-import { ItemValidation } from '../entities/ItemValidation';
-import { ItemValidationGroup } from '../entities/ItemValidationGroup';
+import { DBConnection } from '../../../../../../drizzle/db';
+import { ItemRaw, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
+import { ItemValidationRepository } from '../itemValidation.repository';
+import { ItemValidationReviewRepository } from '../itemValidationReview.repository';
 import { ItemValidationModerator } from '../moderators/itemValidationModerator';
 import { StrategyExecutorFactory } from '../moderators/strategyExecutorFactory';
 
-export const saveItemValidation = async ({ item }: { item: Item }) => {
-  const itemValidationGroupRawRepository = AppDataSource.getRepository(ItemValidationGroup);
-  const itemValidationRawRepository = AppDataSource.getRepository(ItemValidation);
-  const group = await itemValidationGroupRawRepository.save({ item });
-  const itemValidation = await itemValidationRawRepository.save({
-    item,
-    process: ItemValidationProcess.BadWordsDetection,
-    status: ItemValidationStatus.Success,
-    result: '',
-    itemValidationGroup: group,
-  });
-
-  // get full item validation group, since save does not include itemvalidation
-  const fullItemValidationGroup = await itemValidationGroupRawRepository.findOne({
-    where: { id: group.id },
-    relations: { itemValidations: true, item: true },
-  });
-  return { itemValidationGroup: fullItemValidationGroup, itemValidation };
-};
-
 export type ItemModeratorValidate = (
-  _repositories: Repositories,
-  itemToValidate: Item,
-  _itemValidationGroup: ItemValidationGroup,
+  dbConnection: DBConnection,
+  itemToValidate: ItemRaw,
+  itemValidationGroupId: ItemValidationGroupRaw['id'],
 ) => Promise<ItemValidationStatus[]>;
 
 class StubItemModerator extends ItemValidationModerator {
   constructor(private readonly validateImpl: ItemModeratorValidate) {
-    super({} as StrategyExecutorFactory);
+    super(
+      {} as StrategyExecutorFactory,
+      {} as ItemValidationRepository,
+      {} as ItemValidationReviewRepository,
+    );
   }
 
   async validate(
-    repositories: Repositories,
-    itemToValidate: Item,
-    itemValidationGroup: ItemValidationGroup,
+    dbConnection: DBConnection,
+    itemToValidate: ItemRaw,
+    itemValidationGroupId: ItemValidationGroupRaw['id'],
   ) {
-    return await this.validateImpl(repositories, itemToValidate, itemValidationGroup);
+    return await this.validateImpl(dbConnection, itemToValidate, itemValidationGroupId);
   }
 }
 

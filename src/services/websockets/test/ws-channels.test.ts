@@ -3,9 +3,7 @@
  *
  * Tests for {@link WebSocketChannels}
  */
-
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import waitForExpect from 'wait-for-expect';
 import { CLOSED, OPEN, WebSocket } from 'ws';
@@ -21,6 +19,8 @@ import {
 } from './test-utils';
 
 const portGen = new PortGenerator(4000);
+
+// jest.retryTimes(3, { logErrorsBeforeRetry: true });
 
 test('adding / removing channels', () => {
   const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
