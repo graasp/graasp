@@ -15,14 +15,13 @@ export const client = new Pool({
 export const primaryDb = drizzle({
   client,
   schema: { ...schema, ...relations },
-  logger: true,
+  logger: process.env.DATABASE_LOGS === 'true',
 });
 
-const readReplicas = DB_READ_REPLICA_HOSTS.map(
-  (host) =>
-    drizzle({
+const readReplica = DB_READ_REPLICA_HOSTS[0]
+  ? drizzle({
       client: new Pool({
-        host,
+        host: DB_READ_REPLICA_HOSTS[0],
         port: Number(process.env.DB_PORT),
         user: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
@@ -30,11 +29,10 @@ const readReplicas = DB_READ_REPLICA_HOSTS.map(
         max: DB_CONNECTION_POOL_SIZE,
       }),
       schema: { ...schema, ...relations },
-      logger: true,
-    }),
-  // TODO: type does not work well
-) as any;
+      logger: process.env.DATABASE_LOGS === 'true',
+    })
+  : undefined;
 
-export const db = readReplicas.length ? withReplicas(primaryDb, readReplicas) : primaryDb;
+export const db = readReplica ? withReplicas(primaryDb, [readReplica]) : primaryDb;
 
 export type DBConnection = Omit<typeof db, '$client'>;

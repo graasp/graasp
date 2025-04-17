@@ -10,7 +10,7 @@ export default defineConfig({
     url: process.env.DB_CONNECTION!,
   },
   // Print all statements
-  verbose: true,
+  verbose: process.env.DATABASE_LOGS === 'true',
   // Always ask for confirmation
   strict: true,
 });
