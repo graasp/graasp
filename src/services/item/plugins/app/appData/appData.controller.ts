@@ -52,11 +52,13 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return await appDataService.post(tx, member, itemId, body);
         });
 
-        if (appData && appData.visibility === AppDataVisibility.Item) {
-          websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
+        if (appData) {
+          const completeAppData = addMemberInAppData(appData);
+          if (appData.visibility === AppDataVisibility.Item) {
+            websockets.publish(appDataTopic, itemId, AppDataEvent('post', completeAppData));
+          }
+          return completeAppData;
         }
-
-        return appData;
       },
     );
 
@@ -69,10 +71,13 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const appData = await db.transaction(async (tx) => {
           return await appDataService.patch(tx, member, itemId, appDataId, body);
         });
-        if (appData && appData.visibility === AppDataVisibility.Item) {
-          websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
+        if (appData) {
+          const completeAppData = addMemberInAppData(appData);
+          if (appData.visibility === AppDataVisibility.Item) {
+            websockets.publish(appDataTopic, itemId, AppDataEvent('patch', completeAppData));
+          }
+          return completeAppData;
         }
-        return appData;
       },
     );
 

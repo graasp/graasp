@@ -76,4 +76,76 @@ describe('App Data Tests - Legacy', () => {
       });
     });
   });
+  describe('POST /:itemId/app-data', () => {
+    it('Post app data to some memberId, and return member', async () => {
+      const { apps } = await seedFromJson({ apps: [{}] });
+      const {
+        actor,
+        items: [item],
+        members: [bob],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            type: ItemType.APP,
+            appData: [{ account: { name: 'bob' }, creator: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
+      const chosenApp = apps[0];
+
+      const token = await getAccessToken(app, item, chosenApp);
+      const payload = { data: { some: 'data' }, type: 'some-type', memberId: bob.id };
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        payload,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      const newAppData = response.json();
+
+      expect(newAppData.member.id).toEqual(bob.id);
+    });
+  });
+
+  describe('PATCH /:itemId/app-data/:appDataId', () => {
+    it('Return member in patched app data', async () => {
+      const { apps } = await seedFromJson({ apps: [{}] });
+      const {
+        actor,
+        items: [item],
+        appData: [chosenAppData],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            type: ItemType.APP,
+            appData: [{ account: 'actor', creator: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
+      const chosenApp = apps[0];
+
+      const token = await getAccessToken(app, item, chosenApp);
+      const updatedData = { data: { myData: 'value' } };
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        payload: { data: updatedData.data },
+      });
+      expect(response.json().member.id).toBeDefined();
+    });
+  });
 });

@@ -350,202 +350,201 @@ describe('App Data Tests', () => {
         expect(response.json()).toHaveLength(appData.length);
       });
     });
-    // });
+  });
 
-    // TODO test different payload
-    describe('POST /:itemId/app-data', () => {
-      describe('Sign Out', () => {
-        it('Post app data without member and token throws', async () => {
-          const response = await app.inject({
-            method: HttpMethod.Post,
-            url: `${APP_ITEMS_PREFIX}/${v4()}/app-data`,
-            payload: { data: { some: 'data' }, type: 'some-type' },
-          });
-          expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+  // TODO test different payload
+  describe('POST /:itemId/app-data', () => {
+    describe('Sign Out', () => {
+      it('Post app data without member and token throws', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${v4()}/app-data`,
+          payload: { data: { some: 'data' }, type: 'some-type' },
         });
-
-        it('Post app data without type throws', async () => {
-          const { apps } = await seedFromJson({ apps: [{}] });
-          const {
-            items: [item],
-          } = await seedFromJson({
-            actor: null,
-            items: [
-              {
-                type: ItemType.APP,
-              },
-            ],
-          });
-          const chosenApp = apps[0];
-
-          const token = await getAccessToken(app, item, chosenApp);
-
-          const response = await app.inject({
-            method: HttpMethod.Post,
-            url: `${APP_ITEMS_PREFIX}/${v4()}/app-data`,
-            payload: { data: { some: 'data' } },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        });
+        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       });
 
-      describe('Sign In', () => {
-        it('Post app data successfully', async () => {
-          const { apps } = await seedFromJson({ apps: [{}] });
-          const {
-            actor,
-            items: [item],
-          } = await seedFromJson({
-            items: [
-              {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-                type: ItemType.APP,
-              },
-            ],
-          });
-          assertIsDefined(actor);
-          assertIsMemberForTest(actor);
-          mockAuthenticate(actor);
-          const chosenApp = apps[0];
-
-          const token = await getAccessToken(app, item, chosenApp);
-          const payload = { data: { some: 'data' }, type: faker.word.sample() };
-          const response = await app.inject({
-            method: HttpMethod.Post,
-            url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
-            headers: {
-              Authorization: `Bearer ${token}`,
+      it('Post app data without type throws', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+        } = await seedFromJson({
+          actor: null,
+          items: [
+            {
+              type: ItemType.APP,
             },
-            payload,
-          });
-          expect(response.statusCode).toEqual(StatusCodes.OK);
-          const savedAppData = await db.query.appDataTable.findFirst({
-            where: eq(appDataTable.type, payload.type),
-          });
-          assertIsDefined(savedAppData);
-          expect(savedAppData.data).toEqual(payload.data);
-          expect(savedAppData.itemId).toEqual(item.id);
-          expectAppDatas([response.json()], [savedAppData]);
+          ],
         });
-        // note: This test is flacky
-        it('Post app data to some member', async () => {
-          const { apps } = await seedFromJson({ apps: [{}] });
-          const {
-            actor,
-            items: [item],
-            members: [bob],
-          } = await seedFromJson({
-            items: [
-              {
-                memberships: [
-                  { account: 'actor', permission: PermissionLevel.Admin },
-                  { account: { name: 'bob' }, permission: PermissionLevel.Read },
-                ],
-                type: ItemType.APP,
-              },
-            ],
-          });
-          assertIsDefined(actor);
-          assertIsMemberForTest(actor);
-          mockAuthenticate(actor);
-          const chosenApp = apps[0];
+        const chosenApp = apps[0];
 
-          const token = await getAccessToken(app, item, chosenApp);
-          const payload = { data: { some: 'data' }, type: faker.word.sample() };
-          const response = await app.inject({
-            method: HttpMethod.Post,
-            url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            payload: { ...payload, accountId: bob.id },
-          });
-          expect(response.statusCode).toEqual(StatusCodes.OK);
-          const newAppData = await db.query.appDataTable.findFirst({
-            where: and(eq(appDataTable.type, payload.type), eq(appDataTable.accountId, bob.id)),
-          });
-          assertIsDefined(newAppData);
-          expect(newAppData.data).toEqual(payload.data);
-          expect(newAppData.accountId).toEqual(bob.id);
-          expect(newAppData.creatorId).toEqual(actor.id);
-          expectAppDatas([response.json()], [newAppData]);
-        });
-        it('Invalid item id throws', async () => {
-          const { apps } = await seedFromJson({ apps: [{}] });
-          const {
-            actor,
-            items: [item],
-          } = await seedFromJson({
-            items: [
-              {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-                type: ItemType.APP,
-              },
-            ],
-          });
-          assertIsDefined(actor);
-          assertIsMemberForTest(actor);
-          mockAuthenticate(actor);
-          const chosenApp = apps[0];
+        const token = await getAccessToken(app, item, chosenApp);
 
-          const token = await getAccessToken(app, item, chosenApp);
-          const response = await app.inject({
-            method: HttpMethod.Post,
-            url: `${APP_ITEMS_PREFIX}/invalid-id/app-data`,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            payload: { data: { some: 'data' }, type: faker.word.sample() },
-          });
-          expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${v4()}/app-data`,
+          payload: { data: { some: 'data' } },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       });
-      describe('Sign In with Read permission', () => {
-        it('Post app data to some member', async () => {
-          const { apps } = await seedFromJson({ apps: [{}] });
-          const {
-            actor,
-            items: [item],
-            members: [bob],
-          } = await seedFromJson({
-            items: [
-              {
-                memberships: [
-                  { account: 'actor', permission: PermissionLevel.Read },
-                  { account: { name: 'bob' }, permission: PermissionLevel.Admin },
-                ],
-                type: ItemType.APP,
-              },
-            ],
-          });
-          assertIsDefined(actor);
-          assertIsMemberForTest(actor);
-          mockAuthenticate(actor);
-          const chosenApp = apps[0];
+    });
 
-          const token = await getAccessToken(app, item, chosenApp);
-          const payload = { data: { some: 'data' }, type: faker.word.sample() };
-          const response = await app.inject({
-            method: HttpMethod.Post,
-            url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
-            headers: {
-              Authorization: `Bearer ${token}`,
+    describe('Sign In', () => {
+      it('Post app data successfully', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              type: ItemType.APP,
             },
-            payload: { ...payload, accountId: bob.id },
-          });
-          expect(response.statusCode).toEqual(StatusCodes.OK);
-          const newAppData = await db.query.appDataTable.findFirst({
-            where: eq(appDataTable.type, payload.type),
-          });
-          assertIsDefined(newAppData);
-          expect(newAppData.data).toEqual(payload.data);
-          expect(newAppData.accountId).toEqual(bob.id);
-          expect(newAppData.creatorId).toEqual(actor.id);
-          expectAppDatas([response.json()], [newAppData]);
+          ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const payload = { data: { some: 'data' }, type: faker.word.sample() };
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const savedAppData = await db.query.appDataTable.findFirst({
+          where: eq(appDataTable.type, payload.type),
+        });
+        assertIsDefined(savedAppData);
+        expect(savedAppData.data).toEqual(payload.data);
+        expect(savedAppData.itemId).toEqual(item.id);
+        expectAppDatas([response.json()], [savedAppData]);
+      });
+      // note: This test is flacky
+      it('Post app data to some member', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          members: [bob],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [
+                { account: 'actor', permission: PermissionLevel.Admin },
+                { account: { name: 'bob' }, permission: PermissionLevel.Read },
+              ],
+              type: ItemType.APP,
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const payload = { data: { some: 'data' }, type: faker.word.sample() };
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { ...payload, accountId: bob.id },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const newAppData = await db.query.appDataTable.findFirst({
+          where: and(eq(appDataTable.type, payload.type), eq(appDataTable.accountId, bob.id)),
+        });
+        assertIsDefined(newAppData);
+        expect(newAppData.data).toEqual(payload.data);
+        expect(newAppData.accountId).toEqual(bob.id);
+        expect(newAppData.creatorId).toEqual(actor.id);
+        expectAppDatas([response.json()], [newAppData]);
+      });
+      it('Invalid item id throws', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              type: ItemType.APP,
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/invalid-id/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: { some: 'data' }, type: faker.word.sample() },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+    });
+    describe('Sign In with Read permission', () => {
+      it('Post app data to some member', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          members: [bob],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [
+                { account: 'actor', permission: PermissionLevel.Read },
+                { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+              ],
+              type: ItemType.APP,
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const payload = { data: { some: 'data' }, type: faker.word.sample() };
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { ...payload, accountId: bob.id },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const newAppData = await db.query.appDataTable.findFirst({
+          where: eq(appDataTable.type, payload.type),
+        });
+        assertIsDefined(newAppData);
+        expect(newAppData.data).toEqual(payload.data);
+        expect(newAppData.accountId).toEqual(bob.id);
+        expect(newAppData.creatorId).toEqual(actor.id);
+        expectAppDatas([response.json()], [newAppData]);
       });
     });
   });
