@@ -791,6 +791,10 @@ export const itemsRawTable = pgTable(
       table.creatorId.asc().nullsLast().op('uuid_ops'),
     ),
     index('IDX_gist_item_path').using('gist', table.path.asc().nullsLast().op('gist_ltree_ops')),
+    // allow the use of the view without loosing perf
+    index('IDX_gist_item_path_deleted_at')
+      .using('gist', table.path.asc().nullsLast().op('gist_ltree_ops'))
+      .where(isNull(table.deletedAt)),
     foreignKey({
       columns: [table.creatorId],
       foreignColumns: [accountsTable.id],
