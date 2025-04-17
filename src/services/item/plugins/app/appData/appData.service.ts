@@ -131,12 +131,13 @@ export class AppDataService {
 
     // get relations
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
-    if (appData) {
-      await this.hooks.runPostHooks('post', account, dbConnection, {
-        appData,
-        itemId,
-      });
+    if (!appData) {
+      throw new AppDataNotFound(appDataId);
     }
+    await this.hooks.runPostHooks('post', account, dbConnection, {
+      appData,
+      itemId,
+    });
     return appData;
   }
 
@@ -190,12 +191,13 @@ export class AppDataService {
 
     // get relations
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
-    if (appData) {
-      await this.hooks.runPostHooks('patch', account, dbConnection, {
-        appData,
-        itemId,
-      });
+    if (!appData) {
+      throw new AppDataNotFound(appDataId);
     }
+    await this.hooks.runPostHooks('patch', account, dbConnection, {
+      appData,
+      itemId,
+    });
     return appData;
   }
 
