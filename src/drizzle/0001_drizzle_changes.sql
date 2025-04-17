@@ -73,7 +73,7 @@ ALTER TABLE "category" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> state
 ALTER TABLE "chat_message" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 ALTER TABLE "chat_message" ALTER COLUMN "item_id" SET NOT NULL;--> statement-breakpoint
 
-ALTER TABLE "invitation" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint 
+ALTER TABLE "invitation" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 
 CREATE TYPE "public"."permission_enum" AS ENUM('read', 'write', 'admin');--> statement-breakpoint
 ALTER TABLE "invitation" ADD COLUMN "permission_new" permission_enum NOT NULL DEFAULT 'read'::permission_enum;--> statement-breakpoint
@@ -83,7 +83,7 @@ ALTER TABLE "invitation" RENAME COLUMN "permission_new" TO "permission";--> stat
 
 
 ALTER TABLE "app_data" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
- 
+
 -- create a new column for the data of appdata
 
 ALTER TABLE "app_data" ADD COLUMN "data_new" jsonb NOT NULL DEFAULT '{}'::jsonb;--> statement-breakpoint
@@ -111,18 +111,18 @@ UPDATE "app_setting" SET "data_new" = "data"::jsonb; --> statement-breakpoint
 ALTER TABLE "app_setting" DROP COLUMN "data"--> statement-breakpoint
 ALTER TABLE "app_setting" RENAME COLUMN "data_new" TO "data";--> statement-breakpoint
 
+-- delete actions that are not needed anymore (get and get_children)
+DELETE FROM "action" WHERE "type" = 'get' OR "type" = 'get_children';
 
 ALTER TABLE "action" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 
--- covnert action.extra column to jsonb and set the default to an empty object
-
+-- convert action.extra column to jsonb and set the default to an empty object
 ALTER TABLE "action" ADD COLUMN "extra_new" jsonb NOT NULL DEFAULT '{}'::jsonb;--> statement-breakpoint
 UPDATE "action" SET "extra_new" = "extra"::jsonb; --> statement-breakpoint
 ALTER TABLE "action" DROP COLUMN "extra"--> statement-breakpoint
 ALTER TABLE "action" RENAME COLUMN "extra_new" TO "extra";--> statement-breakpoint
 
 -- convert geolocation column to a jsonb column (it is still nullable)
-
 ALTER TABLE "action" ADD COLUMN "geolocation_new" jsonb;--> statement-breakpoint
 UPDATE "action" SET "geolocation_new" = "geolocation"::jsonb WHERE "geolocation" IS NOT NULL; --> statement-breakpoint
 ALTER TABLE "action" DROP COLUMN "geolocation"--> statement-breakpoint

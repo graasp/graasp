@@ -6,7 +6,7 @@ import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config';
 import { ETHERPAD_API_VERSION } from '../constants';
 
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type ExtractMethods<T> = PickMatching<T, Function>;
 
 type EtherpadApiResponse<T> = [

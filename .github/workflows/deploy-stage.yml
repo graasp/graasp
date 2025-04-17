@@ -95,7 +95,6 @@ jobs:
           container-name: ${{ vars.CONTAINER_NAME_GRAASP }}
           image: ${{ needs.build.outputs.image_url }}
           environment-variables: |
-            DATABASE_LOGS=${{ vars.DATABASE_LOGS }}
             DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }}
             APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
             APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
@@ -153,7 +152,6 @@ jobs:
             S3_FILE_ITEM_SECRET_ACCESS_KEY=${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY }}
             SECURE_SESSION_SECRET_KEY=${{ secrets.SECURE_SESSION_SECRET_KEY }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-            TOKEN_BASED_AUTH=${{ vars.TOKEN_BASED_AUTH }}
             WEBSOCKETS_PLUGIN=${{ vars.WEBSOCKETS_PLUGIN }}
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             OPENAI_ORG_ID=${{ secrets.OPENAI_ORG_ID }}

@@ -191,7 +191,7 @@ export class S3FileRepository implements FileRepository {
       // fetch and save file in temporary path
       const res = await fetch(url);
       const fileStream = fs.createWriteStream(filepath);
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         res.body.pipe(fileStream);
         res.body.on('error', reject);
         fileStream.on('finish', resolve);
@@ -201,10 +201,7 @@ export class S3FileRepository implements FileRepository {
       // create and return read stream (similar to local file service)
       const file = fs.createReadStream(filepath);
 
-      file.on('close', function (err: Error) {
-        if (err) {
-          log.error(err);
-        }
+      file.on('close', function () {
         fs.unlinkSync(filepath);
       });
 

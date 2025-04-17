@@ -59,6 +59,10 @@ ClientManager.getInstance().setHost(CLIENT_HOST).addHost(Context.Library, LIBRAR
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
+/**
+ * Host address the server listen on, default to 0.0.0.0 to bind to all addresses.
+ */
+export const HOST_LISTEN_ADDRESS = process.env.HOST_LISTEN_ADDRESS || '0.0.0.0';
 
 export const PORT = process.env.PORT ? +process.env.PORT : 3000;
 export const HOST = `${PROTOCOL}://${HOSTNAME}:${PORT}`;
@@ -125,7 +129,6 @@ export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
 export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
 
 // Token based auth
-export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 if (!process.env.AUTH_TOKEN_JWT_SECRET) {
   throw new Error('process.env.AUTH_TOKEN_JWT_SECRET should be defined');
 }

@@ -1,0 +1,209 @@
+# This is the Graasp docker compose file which allows you to run
+# everything that is needed to have a local graasp environment
+#
+# You can run this file with (from the project root folder):
+#     docker compose -f docker/compose.yml up -d
+#
+# The first time you will have to also start the migration container
+#     docker compose -f docker/compose.yml run -e DB_CONNECTION=postgres://graasper:graasper@db:5432/graasp?sslmode=disable migrate
+#
+#
+
+
+name: graasp
+
+volumes:
+  postgres-data:
+  graasp-files:
+  meilisearch_data:
+
+x-shared_environment: &shared_environment
+  # shape of the connection string:
+  # postgres://user:password@host:port/db_name?sslmode=disable
+  DB_CONNECTION: postgres://graasper:graasper@db:5432/graasp?sslmode=disable # update with your own value
+
+services:
+  core:
+    # image: public.ecr.aws/i3k4i6f8/graasp:core-0.0.1 # local image or image from aws ECR public
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    environment:
+      <<: *shared_environment
+
+      HOSTNAME: localhost
+      COOKIE_DOMAIN: localhost
+      CORS_ORIGIN_REGEX: '^http?:\/\/(localhost)?:[0-9]{4}$'
+
+      FILE_STORAGE_ROOT_PATH: /tmp
+      FILE_STORAGE_HOST: http://localhost:1081
+
+      # endpoint of the nudenet model
+      IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
+
+      # replace all these with fresh values !
+      # to generate values use:
+      #    npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
+      SECURE_SESSION_SECRET_KEY:  # replace with your own value
+      JWT_SECRET:  # replace with your own value
+      AUTH_TOKEN_JWT_SECRET:  # replace with your own value
+      REFRESH_TOKEN_JWT_SECRET:  # replace with your own value
+      PASSWORD_RESET_JWT_SECRET:  # replace with your own value
+      EMAIL_CHANGE_JWT_SECRET:  # replace with your own value
+      APPS_JWT_SECRET:  # replace with your own value
+
+      # the Mailer config is set by the "mailer" service below
+      MAILER_CONFIG_SMTP_HOST: mailer
+      MAILER_CONFIG_SMTP_PORT: 1025
+      MAILER_CONFIG_SMTP_USE_SSL: 'false' # enable if your mail server supports SSL (if using the local mailcatcher, disable SSL)
+      MAILER_CONFIG_USERNAME: docker
+      MAILER_CONFIG_PASSWORD: docker
+
+      # H5P configuration
+      H5P_FILE_STORAGE_TYPE: file
+      H5P_STORAGE_ROOT_PATH: /tmp/graasp-h5p/
+      H5P_PATH_PREFIX: h5p-content/
+      H5P_FILE_STORAGE_HOST: http://localhost:1081
+
+      # Meilisearch configuration
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_MASTER_KEY: masterKey
+      MEILISEARCH_REBUILD_SECRET: secret
+
+      # Etherpad
+      ETHERPAD_URL: http://etherpad:9001
+      # Optional, if the etherpad server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
+      ETHERPAD_PUBLIC_URL: http://localhost:9001
+      # Optional, if the etherpad cookie domain is different from the domain of the public URL
+      ETHERPAD_COOKIE_DOMAIN: localhost
+      # Api key should be the same as the one mounted inside the etherpad container
+      ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+      # Redis
+      REDIS_HOST: redis
+
+      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
+
+      APPS_PUBLISHER_ID: 1234-1234 # replace by your own data
+
+      JOB_SCHEDULING: true
+      OPENAI_API_KEY: <token> # replace with your own KEY
+
+      GEOLOCATION_API_HOST: https://api.geoapify.com/v1/geocode
+      GEOLOCATION_API_KEY: 12344556899 # replace with your own API key
+
+      RECAPTCHA_SECRET_ACCESS_KEY:  # replace with a correct value
+    ports:
+      - "3000:3000"
+    volumes:
+      - graasp-files:/tmp
+    depends_on:
+      - nudenet
+      - redis
+      - meilisearch
+
+  migrate:
+    # image: public.ecr.aws/i3k4i6f8/graasp:migrate-0.0.1
+    build:
+      context: ../
+      dockerfile: ./docker/migrate.Dockerfile
+    environment:
+      <<: *shared_environment
+    deploy:
+      # ensures the service is not launched when we run "docker compose up"
+      replicas: 0
+
+  db:
+    image: postgres:15.8-alpine
+    hostname: db
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    volumes:
+      # a docker volume to persist the postgres data
+      # Delete this volume if you want to reset your DB
+      - postgres-data:/var/lib/postgresql/data
+      # copy the init script inside the docker container where it will be executed
+      # WARNING: It will only be executed when there is no data mounted to the container
+      # If you want to execute it, down the container, delete the volume associated to it and up the container again, it should execute.
+      - ../bootstrapDB.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_DB: docker
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis
+    restart: on-failure
+    hostname: redis
+
+  etherpad:
+    image: etherpad/etherpad
+    hostname: etherpad
+    # start the server with dev API key
+    # https://hub.docker.com/r/etherpad/etherpad/dockerfile
+    # https://github.com/ether/etherpad-lite/issues/3849
+    volumes:
+      # bind copy the dev API key
+      - ../.devcontainer/etherpad/devApiKey.txt:/opt/etherpad-lite/APIKEY.txt
+    ports:
+      - "9001:9001"
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      # These credentials are created by the init script run on the DB, if the container goes into a restart loop
+      # ensure that the correct database and users have been created. (You should ensure the init script is run)
+      DB_NAME: etherpad
+      DB_USER: etherpad
+      DB_PASS: etherpad
+      # only API can create pads
+      EDIT_ONLY: true
+    # restart the container until db has created tables
+    restart: on-failure
+    depends_on:
+      - db
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.8
+    hostname: meilisearch
+    restart: on-failure
+    environment:
+      - MEILI_MASTER_KEY=masterKey # Change this !
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=development
+      - MEILI_LOG_LEVEL
+    volumes:
+      - meilisearch_data:/meili_data
+
+  localfile:
+    image: joseluisq/static-web-server:2
+    environment:
+      - SERVER_PORT=80
+      - SERVER_ROOT=/tmp
+    volumes:
+      - graasp-files:/tmp
+    ports:
+      - "1081:80"
+
+  nudenet:
+    image: notaitech/nudenet:classifier
+    hostname: nudenet
+
+  iframely:
+    image: graasp/iframely:latest
+    hostname: iframely
+    environment:
+      NODE_ENV: production # required in order for the responses to not timeout
+
+  # a mock mailbox on port 1025 (web UI at http://localhost:1080)
+  mailer:
+    image: schickling/mailcatcher
+    hostname: mailer
+    ports:
+      - "1080:1080"
