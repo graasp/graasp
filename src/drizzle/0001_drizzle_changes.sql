@@ -111,6 +111,8 @@ UPDATE "app_setting" SET "data_new" = "data"::jsonb; --> statement-breakpoint
 ALTER TABLE "app_setting" DROP COLUMN "data"--> statement-breakpoint
 ALTER TABLE "app_setting" RENAME COLUMN "data_new" TO "data";--> statement-breakpoint
 
+-- delete actions that are not needed anymore (get and get_children)
+DELETE FROM "action" WHERE "type" = 'get' OR "type" = 'get_children';
 
 ALTER TABLE "action" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 
