@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.66.0](https://github.com/graasp/graasp/compare/v1.65.2...v1.66.0) (2025-04-17)
+
+
+### Features
+
+* drizzleORM migration ([#1804](https://github.com/graasp/graasp/issues/1804)) ([6231c38](https://github.com/graasp/graasp/commit/6231c38681b4f3232b00796b1ce9a23a7b4aa65b))
+* **graasp-export:** export in graasp format ([#1796](https://github.com/graasp/graasp/issues/1796)) ([37eab43](https://github.com/graasp/graasp/commit/37eab43dcd262682f8b78de3d41c398bb6bbd252))
+
+
+### Bug Fixes
+
+* add index on path with deleted_at condition ([#1812](https://github.com/graasp/graasp/issues/1812)) ([2bef3cd](https://github.com/graasp/graasp/commit/2bef3cda42c25a934295572d5942d30d5a559a66))
+* add member prod to app data ([#1811](https://github.com/graasp/graasp/issues/1811)) ([1c75cd8](https://github.com/graasp/graasp/commit/1c75cd8c9f64ac4ecbd1362d328ae51e5ee13154))
+* rename tag repository files ([f72bf18](https://github.com/graasp/graasp/commit/f72bf184262c4d761b657421f4b76233a6e41fa4))
+* tag rename ([186ef1a](https://github.com/graasp/graasp/commit/186ef1a099e7366cd85cec1959b535a39e175032))
+* update sdk ([f669fca](https://github.com/graasp/graasp/commit/f669fcaa77121276cc98fd2bec309f8b3a290fed))
+
 ## [1.65.2](https://github.com/graasp/graasp/compare/v1.65.1...v1.65.2) (2025-03-17)
 
 
