@@ -42,7 +42,7 @@ services:
       IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
 
       # replace all these with fresh values !
-      # to Generate values use:
+      # to generate values use:
       #    npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
       SECURE_SESSION_SECRET_KEY:  # replace with your own value
       JWT_SECRET:  # replace with your own value
