@@ -2,12 +2,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
-import { SQL, and, between, desc, eq, exists, ilike, isNotNull, or } from 'drizzle-orm';
+import { SQL, and, between, desc, eq, or } from 'drizzle-orm';
 import fetch from 'node-fetch';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { type DBConnection, db } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import {
   isAncestorOrSelf,
   isDescendantOrSelf,
@@ -16,13 +16,7 @@ import {
   tagSearch,
   transformLangToReconfigLang,
 } from '../../../../drizzle/operations';
-import {
-  accountsTable,
-  itemGeolocationsTable,
-  itemTagsTable,
-  items,
-  tagsTable,
-} from '../../../../drizzle/schema';
+import { accountsTable, itemGeolocationsTable, items } from '../../../../drizzle/schema';
 import {
   ItemGeolocationRaw,
   ItemGeolocationWithItem,
