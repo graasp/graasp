@@ -328,7 +328,6 @@ export class ItemMembershipRepository {
       .select({ name: items.name })
       .from(im)
       .innerJoin(items, eq(im.itemPath, items.path))
-      .innerJoin(accountsTable, eq(items.creatorId, accountsTable.id))
       .where(and(...andConditions));
 
     return result.map(({ name }) => name);

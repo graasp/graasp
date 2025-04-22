@@ -40,7 +40,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const hook = async (actor: AuthenticatedUser, dbConnection: DBConnection, { original, copy }) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
-    await appSettingService.copyForItem(db, actor, original, copy.id);
+    await appSettingService.copyForItem(dbConnection, actor, original, copy.id);
   };
   itemService.hooks.setPostHook('copy', hook);
 

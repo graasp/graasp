@@ -1,6 +1,7 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
+import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -13,7 +14,8 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { appSettingsTable } from '../../../../../drizzle/schema';
+import { isDirectChild } from '../../../../../drizzle/operations';
+import { appSettingsTable, itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';
@@ -754,6 +756,107 @@ describe('Apps Settings Tests', () => {
         });
         expect(response.json()).toMatchObject(new MemberCannotAdminItem(item.id));
       });
+    });
+  });
+  describe('hooks', () => {
+    it('copies app settings on item copy', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            type: ItemType.APP,
+            appSettings: [{ creator: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // copy item
+      const response = await app.inject({
+        method: 'POST',
+        url: 'items/copy',
+        query: {
+          id: [item.id],
+        },
+        payload: {},
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        const itemInDb = await db.query.itemsRawTable.findMany({
+          where: eq(itemsRawTable.name, item.name),
+        });
+        expect(itemInDb).toHaveLength(1);
+        const appSettings = await db.query.appSettingsTable.findMany({
+          where: eq(appSettingsTable.itemId, itemInDb[0].id),
+        });
+        expect(appSettings).toHaveLength(1);
+
+        // copied app has copied settings
+        const copyInDb = await db.query.itemsRawTable.findMany({
+          where: eq(itemsRawTable.name, `${item.name} (2)`),
+        });
+        expect(copyInDb).toHaveLength(1);
+        const copiedAppSettings = await db.query.appSettingsTable.findMany({
+          where: eq(appSettingsTable.itemId, copyInDb[0].id),
+        });
+        expect(copiedAppSettings).toHaveLength(1);
+      }, 5000);
+    });
+    it('copies app settings on parent item copy', async () => {
+      const {
+        actor,
+        items: [parent, appItem],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            children: [
+              {
+                type: ItemType.APP,
+                appSettings: [{ creator: 'actor' }],
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // copy parent
+      const response = await app.inject({
+        method: 'POST',
+        url: 'items/copy',
+        query: {
+          id: [parent.id],
+        },
+        payload: {},
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        const copiedParent = await db.query.itemsRawTable.findMany({
+          where: eq(itemsRawTable.name, `${parent.name} (2)`),
+        });
+        expect(copiedParent).toHaveLength(1);
+
+        // copied app has copied settings
+        const copyInDb = await db.query.itemsRawTable.findMany({
+          where: and(
+            eq(itemsRawTable.name, appItem.name),
+            isDirectChild(itemsRawTable.path, copiedParent[0].path),
+          ),
+        });
+        expect(copyInDb).toHaveLength(1);
+        const copiedAppSettings = await db.query.appSettingsTable.findMany({
+          where: eq(appSettingsTable.itemId, copyInDb[0].id),
+        });
+        expect(copiedAppSettings).toHaveLength(1);
+      }, 5000);
     });
   });
 });

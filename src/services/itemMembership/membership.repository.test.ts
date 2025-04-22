@@ -3,6 +3,8 @@ import { PermissionLevel } from '@graasp/sdk';
 import { clearDatabase } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
+import { assertIsDefined } from '../../utils/assertions';
+import { assertIsMemberForTest } from '../authentication';
 import { ItemMembershipRepository } from './membership.repository';
 
 const itemMembershipRepository = new ItemMembershipRepository();
@@ -78,6 +80,119 @@ describe('ItemMembership Repository', () => {
       expect(admins).toContain(cedric.id);
       expect(admins).toContain(evian.id);
       expect(admins).toContain(fabrice.id);
+    });
+  });
+
+  describe('getAccessibleItemNames', () => {
+    it('return read, write and admin items with common name', async () => {
+      const commonStart = 'commonStart';
+      const {
+        items: [i1, i2, i3, i4],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'commonStart 1',
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+          {
+            name: 'commonStart 2',
+            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+          },
+          {
+            name: 'commonStart 3',
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+          // noise
+          {
+            name: 'commonStart 4',
+            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const names = await itemMembershipRepository.getAccessibleItemNames(db, actor, {
+        startWith: commonStart,
+      });
+      expect(names).toContain(i1.name);
+      expect(names).toContain(i2.name);
+      expect(names).toContain(i3.name);
+      expect(names).not.toContain(i4.name);
+    });
+    it('return accessible child with permission', async () => {
+      const commonStart = 'commonStart';
+      const {
+        items: [i1, i2, i3],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'commonStart 1',
+            children: [
+              {
+                name: 'commonStart 2',
+                memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              },
+              // noise
+              {
+                name: 'commonStart 4',
+                memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const names = await itemMembershipRepository.getAccessibleItemNames(db, actor, {
+        startWith: commonStart,
+      });
+      expect(names).toContain(i2.name);
+      expect(names).not.toContain(i1.name);
+      expect(names).not.toContain(i3.name);
+    });
+    it('return only accessible parent without child', async () => {
+      const commonStart = 'commonStart';
+      const {
+        items: [i1, i2, i3],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'commonStart 1',
+            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            children: [
+              // noise
+              {
+                name: 'commonStart 2',
+                memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              },
+              // noise
+              {
+                name: 'commonStart 3',
+                memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              },
+            ],
+          },
+          // noise
+          {
+            name: 'commonStart 4',
+            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const names = await itemMembershipRepository.getAccessibleItemNames(db, actor, {
+        startWith: commonStart,
+      });
+      expect(names).toContain(i1.name);
+      expect(names).not.toContain(i2.name);
+      expect(names).not.toContain(i3.name);
     });
   });
 });
