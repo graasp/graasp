@@ -258,7 +258,11 @@ export class S3FileRepository implements FileRepository {
   }
 
   async getUrl(
-    { expiration, filepath }: { filepath: string; expiration?: number },
+    {
+      expiration,
+      filepath,
+      downloadName,
+    }: { filepath: string; expiration?: number; downloadName?: string },
     log: FastifyBaseLogger,
   ) {
     const { s3Bucket: bucket } = this.options;
@@ -273,6 +277,9 @@ export class S3FileRepository implements FileRepository {
       const command = new GetObjectCommand({
         Bucket: bucket,
         Key: filepath,
+        ResponseContentDisposition: downloadName
+          ? 'attachment; filename ="' + downloadName + '"'
+          : undefined,
       });
       const url = await getSignedUrl(this.s3Instance, command, param);
 

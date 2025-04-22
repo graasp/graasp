@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm';
+import { StatusCodes } from 'http-status-codes';
 
 import { FolderItemFactory, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
@@ -9,10 +10,10 @@ import { itemMembershipsTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMemberForTest } from '../authentication';
 
-it('Create successfully', async () => {
+it('Create successfully in parallel', async () => {
   const { app } = await build();
 
-  const { members, items } = await seedFromJson({
+  const { items } = await seedFromJson({
     actor: null,
     items: [
       {
@@ -46,11 +47,9 @@ it('Create successfully', async () => {
     where: eq(itemMembershipsTable.itemPath, items[0].path),
     with: { account: true },
   });
-  console.log(itemMemberships);
 
-  const requests = itemMemberships.map(async ({ account, permission }) => {
+  const requests = itemMemberships.map(async ({ account }) => {
     const payload = FolderItemFactory();
-    console.log(account.name, permission, payload.name);
     assertIsDefined(account);
     assertIsMemberForTest(account);
     mockAuthenticate(account);
@@ -60,7 +59,8 @@ it('Create successfully', async () => {
       url: '/items',
       payload,
     });
-    console.log(account.name, permission, payload.name, response.statusCode);
+
+    expect(response.statusCode).toEqual(StatusCodes.OK);
   });
 
   await Promise.all(requests);
