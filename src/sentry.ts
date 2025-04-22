@@ -110,14 +110,14 @@ export function initSentry(instance: FastifyInstance): {
      *  https://www.fastify.io/docs/latest/Reference/Decorators/#decoraterequestname-value-dependencies
      *  https://www.fastify.io/docs/latest/Reference/Decorators/
      */
-    instance.decorateRequest('metrics', null);
+    // instance.decorateRequest('metrics', null);
 
     instance.addHook('onRequest', async (request) => {
       request.metrics = {
         sentry: {
           transaction: Sentry.startTransaction({
             op: 'request',
-            name: `${request.routerMethod ?? request.method} ${request.routerPath ?? request.url}`,
+            name: `${request.routeOptions.method ?? request.method} ${request.routeOptions.url ?? request.url}`,
           }),
         },
       };
