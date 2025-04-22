@@ -9,7 +9,7 @@ describe('Mailer', () => {
     const lang = 'fr';
     const link = faker.internet.url();
     const itemName = faker.lorem.lines(1);
-    const memberName = faker.internet.userName();
+    const memberName = faker.internet.username();
 
     it('addButton generates button given link and text', () => {
       const link = 'mylink';

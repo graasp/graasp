@@ -7,7 +7,7 @@ import { FastifyBaseLogger, FastifySchema } from 'fastify';
 import { UnionOfConst } from '@graasp/sdk';
 
 import { resolveDependency } from '../di/utils';
-import { DBConnection, db } from '../drizzle/db';
+import { db } from '../drizzle/db';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/search.service';
 import { assertIsError } from '../utils/assertions';
 import {
