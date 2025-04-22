@@ -5,6 +5,7 @@ import {
   TProperties,
   TRef,
   TSchema,
+  TUnsafe,
   Type,
   UnsafeOptions,
 } from '@sinclair/typebox';
@@ -37,17 +38,13 @@ const schemas: TSchema[] = [];
  * @param options The options for the schema.
  * @returns The schema passed as argument.
  */
-export function registerSchemaAsRef<T extends TSchema>(
-  id: string,
-  title: string,
-  schema: T,
-): TRef<T> {
+export function registerSchemaAsRef<T extends TSchema>(id: string, title: string, schema: T) {
   // Set schema options
   schema.$id = id;
   schema.title = title;
 
   schemas.push(schema);
-  return Type.Ref(schema);
+  return Type.Unsafe<Static<typeof schema>>(Type.Ref(schema.$id));
 }
 
 /**

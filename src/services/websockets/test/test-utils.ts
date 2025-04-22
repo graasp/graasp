@@ -124,7 +124,7 @@ export async function createFastifyInstance(
     server.addHook('preHandler', mockSessionPreHandler);
 
     setupFn(server).then(() => {
-      server.listen(config.port, config.host, (err, _addr) => {
+      server.listen({ port: config.port, host: config.host }, (err, _addr) => {
         if (err) {
           reject(err.message);
         }
