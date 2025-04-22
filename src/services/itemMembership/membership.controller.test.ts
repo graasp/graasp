@@ -879,7 +879,7 @@ describe('Membership routes tests', () => {
           items: [
             {
               memberships: [{ account: 'actor' }],
-              itemLoginSchema: { guests: [{ name: faker.internet.userName() }] },
+              itemLoginSchema: { guests: [{ name: faker.internet.username() }] },
             },
           ],
         });

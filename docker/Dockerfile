@@ -4,9 +4,6 @@
 # Update the NODE_VERSION arg in docker-compose.yml to pick a Node version of Docker Image
 ARG NODE_VERSION=22.14.0
 
-# Variable passed as a build arg. Represents the tag or git sha used for the build
-ARG APP_VERSION
-
 ##############################
 ### Build Application Step ###
 ##############################
@@ -33,6 +30,8 @@ RUN rm -rf node_modules && yarn workspaces focus --all --production
 # Final step that will run the application
 FROM node:${NODE_VERSION}-bookworm-slim AS runner
 
+# Variable passed as a build arg. Represents the tag or git sha used for the build
+ARG APP_VERSION
 # Set APP_VERSION as ENV variable from ARG passed at build step
 ENV APP_VERSION=${APP_VERSION:-latest}
 # Set NODE_ENV to production so we don't trigger .husky/install.mjs

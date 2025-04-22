@@ -398,7 +398,7 @@ describe('Item Login Tests', () => {
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
-          payload: { username: faker.internet.userName() },
+          payload: { username: faker.internet.username() },
         });
         expect(res.json()).toMatchObject(new ValidMemberSession(expect.anything()));
       });

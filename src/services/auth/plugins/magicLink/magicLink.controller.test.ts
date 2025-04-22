@@ -235,7 +235,7 @@ describe('Auth routes tests', () => {
       mockCaptchaValidation(RecaptchaAction.SignUp);
       const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
 
-      const name = faker.internet.userName().toLowerCase();
+      const name = faker.internet.username().toLowerCase();
       const email = faker.internet.email().toLowerCase();
 
       const responseRegister = await app.inject({
