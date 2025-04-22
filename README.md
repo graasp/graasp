@@ -112,10 +112,7 @@ COOKIE_DOMAIN=localhost
 CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
 ### Database configuration (set by ./.devcontainer/docker-compose.yml)
-# DB_NAME=docker
-# DB_USERNAME=docker
-# DB_PASSWORD=docker
-# DB_HOST=db
+# DB_CONNECTION=postgres://graasper:graasper@db:5432/graasp?sslmode=disable
 # If you use read replicas, set the hostnames here (separated by commas)
 # DB_READ_REPLICA_HOSTS=
 
@@ -258,10 +255,7 @@ To run the tests locally without obliterating your database you should create a 
 Simply change the config values for the database connection:
 
 ```sh
-DB_NAME=docker-test
-DB_USERNAME=docker-test
-DB_PASSWORD=docker-test
-DB_HOST=graasp-postgres-test
+DB_CONNECTION=postgres://test:test@db:5432/test?sslmode=disable
 ```
 
 This will ensure your tests run on the second database container. As they will clean the database between test runs you will not loose your development data.
