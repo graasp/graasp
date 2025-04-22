@@ -13,8 +13,8 @@ import { nullableAccountSchemaRef } from '../account/account.schemas';
  */
 
 export const rawChatMessageSchemaRef = registerSchemaAsRef(
-  'rawChatMessage',
-  'Raw Chat Message',
+  'chatMessageRaw',
+  'Chat Message Raw',
   customType.StrictObject(
     {
       id: customType.UUID(),
@@ -31,8 +31,8 @@ export const rawChatMessageSchemaRef = registerSchemaAsRef(
 );
 
 export const chatMessageSchemaRef = registerSchemaAsRef(
-  'chatMessage',
-  'Chat Message',
+  'chatMessageWithCreator',
+  'Chat Message with Creator',
   customType.StrictObject(
     {
       id: customType.UUID(),
