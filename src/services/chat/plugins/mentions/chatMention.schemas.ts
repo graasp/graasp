@@ -32,7 +32,7 @@ export const minimalChatMentionSchemaRef = registerSchemaAsRef(
 );
 
 export const completeChatMentionSchemaRef = registerSchemaAsRef(
-  'ChatMentionWithMessageAndAccount',
+  'chatMentionWithMessageAndAccount',
   'Complete Chat Mention with Message and Account',
   Type.Intersect(
     [
