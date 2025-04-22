@@ -18,9 +18,9 @@ runs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-assume-role: ${{ inputs.aws-role-arn }}
+        role-to-assume: ${{ inputs.aws-role-arn }}
         aws-region: us-east-1
 
     - name: Build and push the images
-      run: bash ./docker/build.sh
+      run: bash ./docker/build.sh ${{ inputs.aws-ecr-uri }} ${{ inputs.tag }}
       shell: bash
