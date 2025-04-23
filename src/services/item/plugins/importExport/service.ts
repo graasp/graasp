@@ -9,15 +9,22 @@ import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 import { ZipFile } from 'yazl';
 
-import { ItemSettings, ItemType, ItemTypeUnion, getMimetype } from '@graasp/sdk';
+import {
+  DocumentItemExtraProperties,
+  ItemSettings,
+  ItemType,
+  ItemTypeUnion,
+  getMimetype,
+} from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
+import FileService from '../../../file/file.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { BasicItemService } from '../../basic.service';
-import { FolderItem, isItemType } from '../../discrimination';
+import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
@@ -31,7 +38,7 @@ import {
   TXT_EXTENSION,
   URL_PREFIX,
 } from './constants';
-import { UnexpectedExportError } from './errors';
+import { GraaspExportInvalidFileError, UnexpectedExportError } from './errors';
 import { buildTextContent, getFilenameFromItem } from './utils';
 
 /**
@@ -45,6 +52,7 @@ export type GraaspExportItem = {
   type: ItemTypeUnion;
   description: string | null;
   settings: ItemSettings;
+  extra: object;
   thumbnailFilename?: string;
   children?: GraaspExportItem[];
   mimetype?: string;
@@ -52,15 +60,16 @@ export type GraaspExportItem = {
 
 @singleton()
 export class ImportExportService {
+  private readonly fileService: FileService;
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
   private readonly basicItemService: BasicItemService;
   private readonly etherpadService: EtherpadItemService;
   private readonly log: BaseLogger;
-  private readonly mimetics: typeof mimetics;
 
   constructor(
+    fileService: FileService,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
@@ -68,6 +77,7 @@ export class ImportExportService {
     basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
+    this.fileService = fileService;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
@@ -101,10 +111,10 @@ export class ImportExportService {
     options: {
       filename: string;
       folderPath: string;
-      parent?: FolderItem;
+      parentId?: string;
     },
   ): Promise<ItemRaw | null> {
-    const { filename, folderPath, parent } = options;
+    const { filename, folderPath, parentId } = options;
 
     this.log.debug(`handling '${filename}'`);
 
@@ -135,7 +145,7 @@ export class ImportExportService {
           type: ItemType.FOLDER,
           extra: { [ItemType.FOLDER]: {} },
         },
-        parentId: parent?.id,
+        parentId,
       });
     }
     // string content
@@ -171,7 +181,7 @@ export class ImportExportService {
           };
           return this.itemService.post(dbConnection, actor, {
             item: newItem,
-            parentId: parent?.id,
+            parentId,
           });
         } else if (type === ItemType.LINK) {
           const newItem = {
@@ -186,7 +196,7 @@ export class ImportExportService {
           };
           return this.itemService.post(dbConnection, actor, {
             item: newItem,
-            parentId: parent?.id,
+            parentId,
           });
         } else {
           throw new Error(`${type} is not handled`);
@@ -207,7 +217,7 @@ export class ImportExportService {
         };
         return this.itemService.post(dbConnection, actor, {
           item: newItem,
-          parentId: parent?.id,
+          parentId,
         });
       }
 
@@ -224,7 +234,7 @@ export class ImportExportService {
           mimetype,
           description,
           stream: file,
-          parentId: parent?.id,
+          parentId,
         });
 
         return item;
@@ -232,72 +242,103 @@ export class ImportExportService {
     }
   }
 
-  async fetchItemData(
+  private async readAndImportGraaspFile(
     dbConnection: DBConnection,
-    actor,
-    item,
-  ): Promise<{
-    name: string;
-    stream: NodeJS.ReadableStream;
-    mimetype: string;
-  }> {
-    switch (true) {
-      case isItemType(item, ItemType.FILE): {
-        const mimetype = getMimetype(item.extra) || 'application/octet-stream';
-        const url = await this.fileItemService.getUrl(dbConnection, actor, {
-          itemId: item.id,
-        });
-        const res = await fetch(url);
-        const filename = getFilenameFromItem(item);
-        return {
-          name: filename,
-          mimetype,
-          stream: res.body,
-        };
-      }
-      case isItemType(item, ItemType.H5P): {
-        const h5pUrl = await this.h5pService.getUrl(item);
-        const res = await fetch(h5pUrl);
+    actor: MinimalMember,
+    args: {
+      folderPath: string;
+      parentId: string;
+    },
+  ) {
+    const { folderPath, parentId } = args;
 
-        const filename = getFilenameFromItem(item);
-        return {
-          mimetype: 'application/octet-stream',
-          name: filename,
-          stream: res.body,
-        };
-      }
-      case isItemType(item, ItemType.DOCUMENT): {
-        return {
-          stream: Readable.from([item.extra.document?.content]),
-          name: getFilenameFromItem(item),
-          mimetype: item.extra.document.isRaw ? 'text/html' : 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.LINK): {
-        return {
-          stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.APP): {
-        return {
-          stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.ETHERPAD): {
-        return {
-          stream: Readable.from(
-            await this.etherpadService.getEtherpadContentFromItem(dbConnection, actor, item.id),
-          ),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/html',
-        };
+    const manifestFilePath = path.join(folderPath, GRAASP_MANIFEST_FILENAME);
+    const graaspManifestFile = await readFile(manifestFilePath, {
+      encoding: 'utf8',
+      flag: 'r',
+    });
+
+    const items = JSON.parse(graaspManifestFile) as GraaspExportItem[];
+
+    return this.importManifestItems(dbConnection, actor, { items, folderPath, parentId });
+  }
+
+  private async importManifestItems(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    args: {
+      items: GraaspExportItem[];
+      folderPath: string;
+      parentId: string;
+    },
+  ) {
+    const { items, folderPath, parentId } = args;
+
+    // Sanitize the items and add the thumbnails, if any
+    const augmentedItems = await Promise.all(
+      items.map(async (item) => {
+        const sanitizedDescription = item.description ? sanitize(item.description) : null;
+        let extra;
+
+        // Sanitize the document content
+        if (item.type === ItemType.DOCUMENT) {
+          if (!item.extra) {
+            throw new GraaspExportInvalidFileError();
+          }
+
+          const documentExtraProps = item.extra[ItemType.DOCUMENT] as DocumentItemExtraProperties;
+          const content = documentExtraProps.content;
+          const sanitizedContent = sanitize(content);
+          extra = { [ItemType.DOCUMENT]: { content: sanitizedContent } };
+        }
+
+        // Handle the file upload
+        if (item.type === ItemType.LOCAL_FILE || item.type === ItemType.S3_FILE) {
+          if (!item.mimetype) {
+            throw new GraaspExportInvalidFileError();
+          }
+
+          const pathToGraaspFile = path.join(folderPath, item.id);
+          const fileItemProperties = await this.fileItemService.uploadFile(dbConnection, actor, {
+            filename: item.name,
+            filepath: pathToGraaspFile,
+            mimetype: item.mimetype,
+          });
+
+          extra = {
+            // this is needed because if we directly use `this.fileService.type` then TS widens the type to `string` which we do not want
+            ...(this.fileService.fileType === ItemType.LOCAL_FILE
+              ? { [ItemType.LOCAL_FILE]: fileItemProperties }
+              : { [ItemType.S3_FILE]: fileItemProperties }),
+          };
+        }
+
+        const augmentedItem = { ...item, description: sanitizedDescription, extra };
+
+        return { item: augmentedItem, thumbnail: undefined };
+      }),
+    );
+
+    // Create the items in the DB
+    const uploadedItems = await this.itemService.postMany(dbConnection, actor, {
+      items: augmentedItems,
+      parentId: parentId,
+    });
+
+    // Recursively handle the children items
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type === ItemType.FOLDER) {
+        const children = items[i].children;
+        if (children && children.length) {
+          const createdFolderItem = uploadedItems[i];
+          await this.importManifestItems(dbConnection, actor, {
+            items: children,
+            folderPath,
+            parentId: createdFolderItem.id,
+          });
+        }
       }
     }
-    throw new Error(`cannot fetch data for item ${item.id}`);
   }
 
   /**
@@ -351,6 +392,7 @@ export class ImportExportService {
 
   /**
    * Recursively add items to the Graasp export file.
+   *
    * Note that the shortcut items are excluded for now, they will be included in a later release.
    * @param args item - the item to add
    *             archive - reference to the zip file to which the files will be written
@@ -373,7 +415,7 @@ export class ImportExportService {
     const itemPath = path.join(path.dirname('./'), exportItemId);
 
     // TODO EXPORT treat the shortcut items correctly
-    // ignore the shortcuts
+    // ignore the shortcuts for now
     if (isItemType(item, ItemType.SHORTCUT)) {
       return itemManifest;
     }
@@ -396,20 +438,22 @@ export class ImportExportService {
         description: item.description,
         type: item.type,
         settings: item.settings,
+        extra: item.extra,
         children: childrenManifest,
       });
       return itemManifest;
     }
 
     // treat single items
-    const { stream, name, mimetype } = await this.fetchItemData(dbConnection, actor, item);
+    const { stream, mimetype } = await this.fetchItemData(dbConnection, actor, item);
 
     itemManifest.push({
       id: exportItemId,
-      name,
+      name: item.name,
       description: item.description,
       type: item.type,
       settings: item.settings,
+      extra: item.extra,
       mimetype,
     });
     archive.addReadStream(stream, itemPath);
@@ -474,16 +518,28 @@ export class ImportExportService {
     return archive;
   }
 
-  /**
-   * Util recursive function that create graasp item given folder content
-   * @param actor
-   * @param options.parent parent item might be saved in
-   * @param options.folderPath current path in archive of the parent
-   */
-  async _import(
+  private async importGraaspFile(
     dbConnection: DBConnection,
     actor: MinimalMember,
-    { parent, folderPath }: { parent?: FolderItem; folderPath: string },
+    { parentId, folderPath }: { parentId: string; folderPath: string },
+  ) {
+    try {
+      await dbConnection.transaction(async (tx) => {
+        return this.readAndImportGraaspFile(tx, actor, {
+          folderPath,
+          parentId,
+        });
+      });
+    } catch (e) {
+      this.log.error(e);
+      throw e;
+    }
+  }
+
+  private async importFiles(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    { parentId, folderPath }: { parentId?: string; folderPath: string },
   ) {
     const filenames = fs.readdirSync(folderPath);
 
@@ -499,7 +555,7 @@ export class ImportExportService {
             const item = await this._saveItemFromFilename(tx, actor, {
               filename,
               folderPath,
-              parent,
+              parentId,
             });
             if (item) {
               items.push(item);
@@ -520,12 +576,38 @@ export class ImportExportService {
 
     // recursively create children in folders
     for (const newItem of items) {
-      if (isItemType(newItem, ItemType.FOLDER)) {
-        await this._import(dbConnection, actor, {
-          folderPath: path.join(folderPath, newItem.name),
-          parent: newItem,
+      const { type, name } = newItem;
+      if (type === ItemType.FOLDER) {
+        await this.importFiles(dbConnection, actor, {
+          folderPath: path.join(folderPath, name),
+          parentId: newItem.id,
         });
       }
+    }
+  }
+
+  /**
+   * Util recursive function that create graasp item given folder content
+   * @param actor
+   * @param repositories
+   * @param options.parent parent item might be saved in
+   * @param options.folderPath current path in archive of the parent
+   */
+  private async _import(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    { parentId, folderPath }: { parentId?: string; folderPath: string },
+  ) {
+    const filenames = fs.readdirSync(folderPath);
+
+    if (filenames.includes(GRAASP_MANIFEST_FILENAME)) {
+      if (!parentId) {
+        throw new Error('The graasp import needs a parent item');
+      }
+
+      await this.importGraaspFile(dbConnection, actor, { parentId, folderPath });
+    } else {
+      await this.importFiles(dbConnection, actor, { parentId, folderPath });
     }
   }
 
@@ -538,15 +620,74 @@ export class ImportExportService {
       parentId,
     }: { folderPath: string; targetFolder: string; parentId?: string },
   ): Promise<void> {
-    let parent: FolderItem | undefined;
     if (parentId) {
       // check item permission
-      parent = (await this.basicItemService.get(dbConnection, actor, parentId)) as FolderItem;
+      await this.basicItemService.get(dbConnection, actor, parentId);
     }
 
-    await this._import(dbConnection, actor, { parent, folderPath });
+    await this._import(dbConnection, actor, { parentId, folderPath });
 
     // delete zip and content
     fs.rmSync(targetFolder, { recursive: true });
+  }
+
+  async fetchItemData(
+    dbConnection: DBConnection,
+    actor,
+    item,
+  ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
+    switch (true) {
+      case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
+        const mimetype = getMimetype(item.extra) || 'application/octet-stream';
+        const url = await this.fileItemService.getUrl(dbConnection, actor, {
+          itemId: item.id,
+        });
+        const res = await fetch(url);
+        const filename = getFilenameFromItem(item);
+        return {
+          name: filename,
+          mimetype,
+          stream: res.body,
+        };
+      }
+      case isItemType(item, ItemType.H5P): {
+        const h5pUrl = await this.h5pService.getUrl(item);
+        const res = await fetch(h5pUrl);
+
+        const filename = getFilenameFromItem(item);
+        return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
+      }
+      case isItemType(item, ItemType.DOCUMENT): {
+        return {
+          stream: Readable.from([item.extra.document?.content]),
+          name: getFilenameFromItem(item),
+          mimetype: item.extra.document.isRaw ? 'text/html' : 'text/plain',
+        };
+      }
+      case isItemType(item, ItemType.LINK): {
+        return {
+          stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
+          name: getFilenameFromItem(item),
+          mimetype: 'text/plain',
+        };
+      }
+      case isItemType(item, ItemType.APP): {
+        return {
+          stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
+          name: getFilenameFromItem(item),
+          mimetype: 'text/plain',
+        };
+      }
+      case isItemType(item, ItemType.ETHERPAD): {
+        return {
+          stream: Readable.from(
+            await this.etherpadService.getEtherpadContentFromItem(dbConnection, actor, item.id),
+          ),
+          name: getFilenameFromItem(item),
+          mimetype: 'text/html',
+        };
+      }
+    }
+    throw new Error(`cannot fetch data for item ${item.id}`);
   }
 }

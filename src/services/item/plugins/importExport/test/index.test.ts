@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm';
+import { and, asc, eq, ne } from 'drizzle-orm';
 import FormData, { Readable } from 'form-data';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
@@ -9,7 +9,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { FileItemProperties, HttpMethod, ItemType, MimeTypes } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -415,6 +415,75 @@ describe('ZIP routes tests', () => {
         headers: form.getHeaders(),
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('Import a Graasp archive successfully', async () => {
+      // Set the variables that can be found in the manifest.json file of the graasp-archive.zip fixture
+      const folderDescription = '<p>A Graasp export folder</p>';
+      const documentContent = '<p>Hello.</p>';
+      const pdfName = 'output.pdf';
+      const pdfSize = 10024;
+      const pdfContent = 'This is a real document.';
+
+      // Create the actor and the parent item
+      const {
+        actor,
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // Import the graasp export file
+      const form = createFormData('graasp-archive.zip');
+      const importResponse = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/zip-import',
+        payload: form,
+        headers: form.getHeaders(),
+        query: { parentId: parentItem.id },
+      });
+      expect(importResponse.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        // Check that all the uploaded items found in the manifest are in place
+        const itemsInDB = await db.query.itemsRawTable.findMany({
+          where: and(
+            isDescendantOrSelf(itemsRawTable.path, parentItem.path),
+            ne(itemsRawTable.id, parentItem.id),
+          ),
+          orderBy: asc(itemsRawTable.order),
+        });
+        const folderItem = itemsInDB[0];
+        const documentItem = itemsInDB[1];
+        const fileItem = itemsInDB[2];
+
+        // Check that all the items have been imported and that their order is correct
+        expect(itemsInDB.length).toEqual(3);
+        expect(folderItem.type).toEqual(ItemType.FOLDER);
+        expect(documentItem.type).toEqual(ItemType.DOCUMENT);
+        expect(fileItem.type).toEqual(ItemType.S3_FILE);
+        expect(Number(itemsInDB[1].order)).toBeLessThan(Number(itemsInDB[2].order));
+
+        // Check that all the item properties have been assigned for the document type
+        expect(folderItem.description).toEqual(folderDescription);
+
+        // Check that all the item properties have been assigned for the document type
+        expect(documentItem.extra[ItemType.DOCUMENT]).toBeDefined();
+        expect(documentItem.extra[ItemType.DOCUMENT].content).toEqual(documentContent);
+
+        // Check that all the item properties have been assigned for the file type
+        let fileItemProperties: FileItemProperties;
+        if (fileItem.extra[ItemType.S3_FILE]) {
+          fileItemProperties = fileItem.extra[ItemType.S3_FILE] as FileItemProperties;
+        } else {
+          fileItemProperties = fileItem.extra[ItemType.LOCAL_FILE] as FileItemProperties;
+        }
+        expect(fileItemProperties).toBeDefined();
+        expect(fileItemProperties.name).toEqual(pdfName);
+        expect(fileItemProperties.path).toBeDefined();
+        expect(fileItemProperties.mimetype).toEqual(MimeTypes.PDF);
+        expect(fileItemProperties.content).toEqual(pdfContent);
+      });
     });
   });
 
