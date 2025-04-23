@@ -278,7 +278,7 @@ export class S3FileRepository implements FileRepository {
         Bucket: bucket,
         Key: filepath,
         ResponseContentDisposition: downloadName
-          ? 'attachment; filename ="' + downloadName + '"'
+          ? `attachment; filename="${downloadName}"`
           : undefined,
       });
       const url = await getSignedUrl(this.s3Instance, command, param);
