@@ -222,8 +222,8 @@ export class MeiliSearchWrapper {
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
       lang: item.lang,
       likes: likesCount,
       ...tagsByCategory,
@@ -284,7 +284,7 @@ export class MeiliSearchWrapper {
         );
 
         itemsToIndex.push({
-          publicationUpdatedAt: p.updatedAt,
+          publicationUpdatedAt: p.updatedAt.toISOString(),
           item: p.item,
           isHidden: Boolean(isHidden.find((ih) => p.item.path.includes(ih.item.path))),
         });
@@ -296,7 +296,7 @@ export class MeiliSearchWrapper {
         itemsToIndex = itemsToIndex.concat(
           descendants.map((d) => ({
             item: d,
-            publicationUpdatedAt: p.updatedAt,
+            publicationUpdatedAt: p.updatedAt.toISOString(),
             isHidden: Boolean(isHidden.find((ih) => d.path.includes(ih.item.path))),
           })),
         );

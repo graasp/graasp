@@ -871,7 +871,7 @@ export class ItemRepository {
   async softRemove(dbConnection: DBConnection, args: ItemRaw[]): Promise<void> {
     await dbConnection
       .update(itemsRawTable)
-      .set({ deletedAt: new Date().toISOString() })
+      .set({ deletedAt: new Date() })
       .where(
         inArray(
           itemsRawTable.id,

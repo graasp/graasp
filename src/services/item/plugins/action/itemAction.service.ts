@@ -149,8 +149,8 @@ export class ItemActionService {
       itemId: string;
       sampleSize?: number;
       view?: ViewOptions;
-      startDate?: string;
-      endDate?: string;
+      startDate?: Date;
+      endDate?: Date;
     },
   ) {
     // prevent access from unautorized members

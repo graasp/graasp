@@ -17,7 +17,7 @@ export const ActionFactory = (a: Partial<ActionRaw> = {}): ActionRaw => {
     view: faker.helpers.arrayElement(Object.values(View)),
     type: faker.lorem.word(),
     extra: { value: faker.lorem.word() },
-    createdAt: faker.date.between({ from: oneMonthAgo, to: now }).toISOString(),
+    createdAt: faker.date.between({ from: oneMonthAgo, to: now }),
     geolocation: faker.helpers.arrayElement([
       null,
       {

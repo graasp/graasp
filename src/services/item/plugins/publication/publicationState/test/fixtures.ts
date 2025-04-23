@@ -18,7 +18,7 @@ export const ItemMetadataFactory = (
   const path = item?.path ?? v4();
 
   return {
-    updatedAt: item?.updatedAt ?? new Date().toISOString(),
+    updatedAt: item?.updatedAt ?? new Date(),
     path: item?.parentItem ? buildPathFromIds[(item.parentItem.path, path)] : path,
     type: item?.type ?? ItemType.FOLDER,
     public: isPublic ? ({ type: ItemVisibilityType.Public } as ItemVisibilityRaw) : undefined,
@@ -46,7 +46,7 @@ export const ItemValidationGroupStatusFactory = (
   });
 
   return {
-    createdAt: validationDate.toISOString(),
+    createdAt: validationDate,
     itemValidations: [
       ivFactory(ItemValidationProcess.BadWordsDetection),
       ivFactory(ItemValidationProcess.ImageChecking),

@@ -264,7 +264,7 @@ export class ItemPublishedService {
 
     if (updatedAt) {
       // change value in meilisearch index
-      await this.meilisearchWrapper.updateItem(item.id, { updatedAt });
+      await this.meilisearchWrapper.updateItem(item.id, { updatedAt: updatedAt.toISOString() });
     }
   }
 

@@ -1,3 +1,5 @@
+import { Ajv } from 'ajv';
+
 import { fastifyHelmet } from '@fastify/helmet';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
@@ -16,6 +18,9 @@ import {
   PROD,
 } from './utils/config';
 import { GREETING } from './utils/constants';
+
+const ajv = new Ajv();
+ajvFormats(ajv);
 
 export const instance = fastify({
   // allows to remove logging of incomming requests

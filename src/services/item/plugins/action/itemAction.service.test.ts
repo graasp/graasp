@@ -134,7 +134,7 @@ describe('ItemActionService', () => {
                   account: 'actor',
                   view: Context.Builder,
                 },
-                { account: 'actor', view: Context.Player, createdAt: new Date().toISOString() },
+                { account: 'actor', view: Context.Player, createdAt: new Date() },
                 { account: 'actor', view: Context.Library },
                 { account: 'actor', view: Context.Player },
               ],

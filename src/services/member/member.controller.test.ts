@@ -44,7 +44,7 @@ describe('Member routes tests', () => {
       const { actor } = await seedFromJson({
         actor: MemberFactory({
           isValidated: false,
-          lastAuthenticatedAt: new Date().toISOString(),
+          lastAuthenticatedAt: new Date(),
         }),
       });
 

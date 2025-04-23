@@ -19,10 +19,10 @@ export type CurrentMember = {
   type: AccountType.Individual;
   isValidated: boolean;
   lang: string;
-  createdAt: string;
-  updatedAt: string;
-  lastAuthenticatedAt: string | null;
-  userAgreementsDate: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastAuthenticatedAt: Date | null;
+  userAgreementsDate: Date | null;
   extra: MemberExtra;
   enableSaveActions: boolean;
   // add any necessary properties here

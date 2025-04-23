@@ -86,7 +86,7 @@ export class ActionRequestExportService {
         await this._sendExportLinkInMail(
           member.toMemberInfo(),
           item,
-          lastRequestExport.createdAt,
+          lastRequestExport.createdAt.toISOString(),
           format,
         );
         return;
@@ -125,7 +125,12 @@ export class ActionRequestExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    await this._sendExportLinkInMail(member.toMemberInfo(), item, requestExport.createdAt, format);
+    await this._sendExportLinkInMail(
+      member.toMemberInfo(),
+      item,
+      requestExport.createdAt.toISOString(),
+      format,
+    );
 
     return item;
   }
@@ -197,7 +202,7 @@ export class ActionRequestExportService {
     const requestExport = await this.actionRequestExportRepository.addOne(dbConnection, {
       itemPath: baseAnalytics.item.path,
       memberId: actor.id,
-      createdAt: archive.timestamp.toISOString(),
+      createdAt: archive.timestamp,
       format,
     });
 
@@ -206,7 +211,7 @@ export class ActionRequestExportService {
       file: fs.createReadStream(archive.filepath),
       filepath: buildActionFilePath({
         itemId,
-        datetime: requestExport.createdAt,
+        datetime: requestExport.createdAt.toISOString(),
         format,
       }),
       mimetype: ZIP_MIMETYPE,

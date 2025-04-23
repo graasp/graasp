@@ -9,8 +9,8 @@ export const MemberProfileFactory = (
   return {
     id: v4(),
     visibility: true,
-    updatedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
+    updatedAt: new Date(),
+    createdAt: new Date(),
     twitterId: faker.word.sample(1),
     facebookId: faker.word.sample(1),
     linkedinId: faker.word.sample(1),

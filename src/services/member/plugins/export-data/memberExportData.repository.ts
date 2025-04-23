@@ -201,7 +201,7 @@ export class ExportDataRepository {
   ): Promise<
     {
       id: string;
-      createdAt: string;
+      createdAt: Date;
       itemId: string;
     }[]
   > {
@@ -227,7 +227,7 @@ export class ExportDataRepository {
   ): Promise<
     {
       id: string;
-      createdAt: string;
+      createdAt: Date;
       itemId: string;
     }[]
   > {

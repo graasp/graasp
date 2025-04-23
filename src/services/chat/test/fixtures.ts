@@ -19,8 +19,8 @@ export const ChatMessageWithMentionFactory = ({
   const body = `${mentionMessage} some-text-${faker.word.sample()} <!@${creator.id}>[${creator.name}]`;
   const chatMessage = {
     id: v4(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     itemId: v4(),
     creatorId: creator.id,
     body,
@@ -29,8 +29,8 @@ export const ChatMessageWithMentionFactory = ({
     accountId: mentionMember.id,
     messageId: chatMessage.id,
     id: v4(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     status: 'read' as const,
   };
   return { chatMessage, chatMention };

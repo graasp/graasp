@@ -100,7 +100,7 @@ export class MemberService {
 
   async refreshLastAuthenticatedAt(dbConnection: DBConnection, id: UUID) {
     return await this.memberRepository.patch(dbConnection, id, {
-      lastAuthenticatedAt: new Date().toISOString(),
+      lastAuthenticatedAt: new Date(),
     });
   }
   async validate(dbConnection: DBConnection, id: UUID) {

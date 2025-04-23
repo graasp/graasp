@@ -56,7 +56,7 @@ export class GuestRepository {
   async refreshLastAuthenticatedAt(dbConnection: DBConnection, id: UUID) {
     const res = await dbConnection
       .update(accountsTable)
-      .set({ lastAuthenticatedAt: new Date().toISOString() })
+      .set({ lastAuthenticatedAt: new Date() })
       .where(eq(accountsTable.id, id))
       .returning();
     return res[0];

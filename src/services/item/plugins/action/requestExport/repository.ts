@@ -61,7 +61,7 @@ export class ActionRequestExportRepository {
         eq(actionRequestExportsTable.memberId, memberId),
         eq(actionRequestExportsTable.itemPath, itemPath),
         eq(actionRequestExportsTable.format, format),
-        gte(actionRequestExportsTable.createdAt, lowerLimitDate.toISOString()),
+        gte(actionRequestExportsTable.createdAt, lowerLimitDate),
       ),
     });
   }

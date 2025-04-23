@@ -1230,10 +1230,10 @@ describe('Item Repository', () => {
           {
             children: [
               { order: 10.1 },
-              { createdAt: new Date(Date.now() - 1000).toISOString(), order: null },
+              { createdAt: new Date(Date.now() - 1000), order: null },
               { order: 16 },
               { order: 13 },
-              { createdAt: new Date(Date.now()).toISOString(), order: null },
+              { createdAt: new Date(Date.now()), order: null },
             ],
           },
         ],
@@ -1263,10 +1263,10 @@ describe('Item Repository', () => {
           {
             children: [
               { order: 10.1 },
-              { createdAt: new Date(Date.now() - 1000).toISOString(), order: 3 },
+              { createdAt: new Date(Date.now() - 1000), order: 3 },
               { order: 16 },
               { order: 13 },
-              { createdAt: new Date(Date.now()).toISOString(), order: 3 },
+              { createdAt: new Date(Date.now()), order: 3 },
             ],
           },
         ],

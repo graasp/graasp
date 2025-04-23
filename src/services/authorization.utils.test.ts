@@ -34,7 +34,7 @@ const descendants = [
 ];
 const hiddenVisibility = {
   id: v4(),
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
   creatorId: null,
   type: ItemVisibilityType.Hidden,
   item: descendants[2],

@@ -44,8 +44,8 @@ export const ItemFactory = (
     creator: null,
     id,
     path,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     ...item,
   };
 };

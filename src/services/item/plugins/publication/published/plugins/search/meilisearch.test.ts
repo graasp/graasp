@@ -50,8 +50,8 @@ const mockItemPublished = ({
     id,
     creatorId: v4(),
     item: { ...ItemFactory({ id, path }), creator: null },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     itemPath: path,
   };
 };

@@ -151,7 +151,7 @@ export class MemberRepository {
     // The auth frontend only blocks the user to create an account without checking the boxes.
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
-    const userAgreementsDate = new Date().toISOString();
+    const userAgreementsDate = new Date();
     const res = await dbConnection
       .insert(accountsTable)
       .values({

@@ -66,7 +66,7 @@ export class ItemBookmarkRepository {
   ): Promise<
     {
       id: string;
-      createdAt: string;
+      createdAt: Date;
       itemId: string;
     }[]
   > {

@@ -41,7 +41,7 @@ describe('ItemPublishedService - touchUpdatedAt', () => {
     // GIVEN
     const id = v4();
     const item = { id, path: buildPathFromIds(id) };
-    const updatedAt = new Date().toISOString();
+    const updatedAt = new Date();
 
     // MOCK
     const updateItemMock = jest.spyOn(meiliSearchWrapper, 'updateItem');

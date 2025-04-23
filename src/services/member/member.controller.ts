@@ -51,6 +51,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       if (user?.account) {
         const account = await accountRepository.get(db, user?.account?.id);
         // TODO: this type is wrong. Should accountRepository.get return either MemberDTO or GuestDTO (implementing AccountDTO)?
+        console.log(account.toCurrent());
         return account.toCurrent() as any;
       }
       return null;

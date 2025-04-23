@@ -320,7 +320,7 @@ describe('Action Plugin Tests', () => {
             actionRequestExports: [
               {
                 member: 'actor',
-                createdAt: new Date('2021').toISOString(),
+                createdAt: new Date('2021'),
               },
             ],
           },
@@ -355,7 +355,7 @@ describe('Action Plugin Tests', () => {
             actionRequestExports: [
               {
                 member: 'actor',
-                createdAt: new Date().toISOString(),
+                createdAt: new Date(),
               },
             ],
           },

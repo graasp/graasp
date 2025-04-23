@@ -120,8 +120,8 @@ export class ItemPublishedRepository {
     return publishedInfos.map(({ item }) => item);
   }
 
-  async touchUpdatedAt(dbConnection: DBConnection, path: ItemRaw['path']): Promise<string | null> {
-    const updatedAt = new Date().toISOString();
+  async touchUpdatedAt(dbConnection: DBConnection, path: ItemRaw['path']): Promise<Date | null> {
+    const updatedAt = new Date();
 
     const result = await dbConnection
       .update(publishedItemsTable)

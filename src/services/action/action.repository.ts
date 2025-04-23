@@ -41,7 +41,7 @@ export class ActionRepository {
     const res = await dbConnection.query.actionsTable.findMany({
       where: and(
         eq(actionsTable.accountId, accountId),
-        between(actionsTable.createdAt, startDate.toISOString(), endDate.toISOString()),
+        between(actionsTable.createdAt, startDate, endDate),
       ),
       orderBy: desc(actionsTable.createdAt),
       with: {
@@ -73,13 +73,13 @@ export class ActionRepository {
       sampleSize?: number;
       view?: ViewOptions;
       accountId?: UUID;
-      startDate?: string;
-      endDate?: string;
+      startDate?: Date;
+      endDate?: Date;
     },
   ): Promise<ActionWithItem[]> {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
-    const endDate = filters?.endDate ?? formatISO(new Date());
-    const startDate = filters?.startDate ?? formatISO(addMonths(endDate, -1));
+    const endDate = filters?.endDate ?? new Date();
+    const startDate = filters?.startDate ?? addMonths(endDate, -1);
 
     const andConditions = [between(actionsTable.createdAt, startDate, endDate)];
 

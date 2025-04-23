@@ -11,7 +11,7 @@ import { assertIsDefined } from '../../../../utils/assertions';
 export const getDateBeforeOrAfterNow = (dateDiff: number) => {
   const date = new Date(); // Today's date
   date.setDate(date.getDate() + dateDiff);
-  return date.toISOString();
+  return date;
 };
 
 const GET_URL = '/members/actions';
@@ -71,8 +71,8 @@ describe('Get member actions', () => {
           {
             memberships: [{ account: 'actor' }],
             actions: [
-              { account: 'actor', createdAt: '2015-03-25T12:02:29.210Z' },
-              { account: 'actor', createdAt: '2015-03-25T12:02:29.210Z' },
+              { account: 'actor', createdAt: new Date(Date.parse('2015-03-25T12:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date(Date.parse('2015-03-25T12:02:29.210Z')) },
             ],
           },
         ],

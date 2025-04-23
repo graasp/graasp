@@ -65,7 +65,8 @@ export const schemaRegisterPlugin: FastifyPluginAsyncTypebox = async (fastify) =
  */
 export const customType = {
   // TODO: type changed with drizzle from date to string (timestamp)
-  DateTime: (options?: UnsafeOptions) => Type.String(options),
+  DateTime: (options?: UnsafeOptions) =>
+    Type.Unsafe<Date>({ ...options, type: 'string', format: 'date-time' }),
   UUID: (options?: StringOptions) => Type.String({ ...options, format: 'uuid' }),
   Username: (options?: StringOptions) =>
     Type.String({
