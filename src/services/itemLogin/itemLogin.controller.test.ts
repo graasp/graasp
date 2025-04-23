@@ -309,7 +309,7 @@ describe('Item Login Tests', () => {
         expect(result.item.id).toEqual(item.id);
       });
 
-      it('Successfully get item login defined in parent when calling from child for child ', async () => {
+      it('Successfully get item login defined in parent when calling from child for child', async () => {
         const {
           actor,
           items: [parentItem, child],
@@ -338,6 +338,29 @@ describe('Item Login Tests', () => {
         expect(result.type).toEqual(itemLoginSchema.type);
         expect(result.status).toEqual(itemLoginSchema.status);
         expect(result.item.id).toEqual(parentItem.id);
+      });
+
+      it('Return no content if item does not have item login schema', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
       });
 
       it('Throws if has Write permission', async () => {

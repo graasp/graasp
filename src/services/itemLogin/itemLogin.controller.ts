@@ -69,13 +69,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: getItemLoginSchema,
       preHandler: isAuthenticated,
     },
-    async ({ user, params: { id: itemId } }) => {
+    async ({ user, params: { id: itemId } }, reply) => {
       const item = await basicItemService.get(db, user?.account, itemId, PermissionLevel.Admin);
       const itemLoginSchema = await itemLoginService.getByItemPath(db, item.path);
       if (!itemLoginSchema) {
-        throw new ItemLoginSchemaNotFound({ itemId });
+        reply.status(StatusCodes.NO_CONTENT);
+      } else {
+        return itemLoginSchema;
       }
-      return itemLoginSchema;
     },
   );
 

@@ -85,6 +85,9 @@ export const getItemLoginSchema = {
   }),
   response: {
     [StatusCodes.OK]: itemLoginSchemaSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null({
+      description: 'Response if item does not have an item login',
+    }),
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },
