@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/graasp/graasp/compare/v1.65.2...v2.0.0) (2025-04-23)
+
+
+### Features
+
+* drizzleORM migration ([#1804](https://github.com/graasp/graasp/issues/1804)) ([6231c38](https://github.com/graasp/graasp/commit/6231c38681b4f3232b00796b1ce9a23a7b4aa65b))
+* **graasp-export:** export in graasp format ([#1796](https://github.com/graasp/graasp/issues/1796)) ([37eab43](https://github.com/graasp/graasp/commit/37eab43dcd262682f8b78de3d41c398bb6bbd252))
+* return no content for no item login schema ([#1821](https://github.com/graasp/graasp/issues/1821)) ([5881041](https://github.com/graasp/graasp/commit/5881041db1eb9d57c83ecd0e02d9098c8b089c05))
+
+
+### Bug Fixes
+
+* add index on path with deleted_at condition ([#1812](https://github.com/graasp/graasp/issues/1812)) ([2bef3cd](https://github.com/graasp/graasp/commit/2bef3cda42c25a934295572d5942d30d5a559a66))
+* add member prod to app data ([#1811](https://github.com/graasp/graasp/issues/1811)) ([1c75cd8](https://github.com/graasp/graasp/commit/1c75cd8c9f64ac4ecbd1362d328ae51e5ee13154))
+* copy app settings on item copy ([#1819](https://github.com/graasp/graasp/issues/1819)) ([efa82b6](https://github.com/graasp/graasp/commit/efa82b68499cd0cdfe5dfaa480fed22f2ebf9e93))
+* docker arg into later stage ([#1820](https://github.com/graasp/graasp/issues/1820)) ([7fb23f7](https://github.com/graasp/graasp/commit/7fb23f79729ee5d17c8d0be7391f0c82d1b1cd64))
+* fix action export and improve download name ([#1822](https://github.com/graasp/graasp/issues/1822)) ([8078614](https://github.com/graasp/graasp/commit/8078614de1a603993f4a348d5ca9993a9c38f494))
+* rename tag repository files ([f72bf18](https://github.com/graasp/graasp/commit/f72bf184262c4d761b657421f4b76233a6e41fa4))
+* tag rename ([186ef1a](https://github.com/graasp/graasp/commit/186ef1a099e7366cd85cec1959b535a39e175032))
+* update readme ([#1818](https://github.com/graasp/graasp/issues/1818)) ([2842fbe](https://github.com/graasp/graasp/commit/2842fbe2632484c210a8484c385b4a26ffb0df94))
+* update sdk ([f669fca](https://github.com/graasp/graasp/commit/f669fcaa77121276cc98fd2bec309f8b3a290fed))
+* workflows ([#1813](https://github.com/graasp/graasp/issues/1813)) ([033758f](https://github.com/graasp/graasp/commit/033758f9ff7bf6d29837f1e3e75f0b684f593fea))
+
 ## [1.65.2](https://github.com/graasp/graasp/compare/v1.65.1...v1.65.2) (2025-03-17)
 
 
