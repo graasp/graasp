@@ -38,6 +38,7 @@ export interface FileRepository {
       filepath: string;
       // used by s3 to set an expiry link on signed url
       expiration?: number;
+      downloadName?: string;
     },
     log?: FastifyBaseLogger,
   ): Promise<string>;

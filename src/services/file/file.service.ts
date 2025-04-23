@@ -123,8 +123,12 @@ class FileService {
     );
   }
 
-  async getUrl(data: { expiration?: number; path?: string }): Promise<string> {
-    const { expiration, path: filepath } = data;
+  async getUrl(data: {
+    expiration?: number;
+    path?: string;
+    downloadName?: string;
+  }): Promise<string> {
+    const { expiration, path: filepath, downloadName } = data;
     if (!filepath) {
       throw new DownloadFileInvalidParameterError();
     }
@@ -134,6 +138,7 @@ class FileService {
         {
           expiration,
           filepath,
+          downloadName,
         },
         this.logger,
       );

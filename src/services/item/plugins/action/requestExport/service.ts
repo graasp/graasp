@@ -23,6 +23,7 @@ import {
 } from '../../../../action/utils/export';
 import { AuthorizationService } from '../../../../authorization';
 import FileService from '../../../../file/file.service';
+import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
 import { BasicItemService } from '../../../basic.service';
 import { ItemActionService } from '../itemAction.service';
@@ -80,16 +81,24 @@ export class ActionRequestExportService {
     });
 
     // check if a previous request already created the file and send it back
-    if (lastRequestExport) {
-      await this._sendExportLinkInMail(
-        member.toMemberInfo(),
-        item,
-        lastRequestExport.createdAt,
-        format,
-      );
-      return;
-      // the previous exported data does not exist or
-      // is outdated and a new version should be uploaded
+    try {
+      if (lastRequestExport) {
+        await this._sendExportLinkInMail(
+          member.toMemberInfo(),
+          item,
+          lastRequestExport.createdAt,
+          format,
+        );
+        return;
+        // the previous exported data does not exist or
+        // is outdated and a new version should be uploaded
+      }
+    } catch (e) {
+      // previous request export exists but not the file
+      // we should create a new export
+      if (!(e instanceof S3FileNotFound)) {
+        throw e;
+      }
     }
 
     // get actions data and create archive in background
@@ -127,12 +136,16 @@ export class ActionRequestExportService {
     archiveDate: string,
     format: ExportActionsFormatting,
   ) {
-    const filepath = buildActionFilePath(item.id, archiveDate);
+    const filepath = buildActionFilePath({
+      itemId: item.id,
+      datetime: archiveDate,
+      format,
+    });
     const link = await this.fileService.getUrl({
       path: filepath,
       expiration: EXPORT_FILE_EXPIRATION,
+      downloadName: `${item.name}_${format}_actions_${archiveDate}`,
     });
-
     const mail = new MailBuilder({
       subject: {
         text: TRANSLATIONS.EXPORT_ACTIONS_TITLE,
@@ -180,19 +193,23 @@ export class ActionRequestExportService {
       format,
     });
 
-    // upload file
-    await this.fileService.upload(actor, {
-      file: fs.createReadStream(archive.filepath),
-      filepath: buildActionFilePath(itemId, archive.timestamp.toISOString()),
-      mimetype: ZIP_MIMETYPE,
-    });
-
     // create request row
     const requestExport = await this.actionRequestExportRepository.addOne(dbConnection, {
       itemPath: baseAnalytics.item.path,
       memberId: actor.id,
       createdAt: archive.timestamp.toISOString(),
       format,
+    });
+
+    // upload file
+    await this.fileService.upload(actor, {
+      file: fs.createReadStream(archive.filepath),
+      filepath: buildActionFilePath({
+        itemId,
+        datetime: requestExport.createdAt,
+        format,
+      }),
+      mimetype: ZIP_MIMETYPE,
     });
 
     return requestExport;

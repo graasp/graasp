@@ -5,6 +5,7 @@ import path from 'path';
 
 import { ExportActionsFormatting } from '@graasp/sdk';
 
+import { AppActionRaw, AppDataRaw, AppSettingRaw } from '../../../drizzle/types';
 import { TMP_FOLDER } from '../../../utils/config';
 import { CannotWriteFileError } from './errors';
 
@@ -13,8 +14,17 @@ export const buildItemTmpFolder = (itemId: string): string =>
 export const buildActionFileName = (name: string, datetime: string, format: string): string =>
   `${name}_${datetime}.${format}`;
 
-export const buildActionFilePath = (itemId: string, datetime: string): string =>
-  `actions/${itemId}/${datetime}`;
+export const buildActionFilePath = ({
+  itemId,
+  datetime,
+  format,
+}: {
+  itemId: string;
+  datetime: string;
+  format: ExportActionsFormatting;
+}): string => {
+  return `actions/${itemId}/${format}/${datetime}`;
+};
 
 export const buildArchiveDateAsName = (timestamp: Date): string => timestamp.toISOString();
 
@@ -80,8 +90,7 @@ export const exportActionsInArchive = async (args: {
   // timestamp and datetime are used to build folder name and human readable filename
   const timestamp = new Date();
   const archiveDate = buildArchiveDateAsName(timestamp);
-  // TODO: use item name for title
-  const fileName = `actions_${archiveDate}`;
+  const fileName = `actions_${baseAnalytics.item.id}_${archiveDate}`;
 
   // create tmp dir
   const outputPath = path.join(storageFolder, `${fileName}.zip`);
@@ -136,20 +145,29 @@ export const exportActionsInArchive = async (args: {
     writeFileForFormat(chatPath, format, baseAnalytics.chatMessages);
 
     // merge together actions, data and settings from all app_items
-    const { appActions = [], appData = [], appSettings = [] } = {};
-    // const { appActions, appData, appSettings } = Object.entries(baseAnalytics.apps).reduce<{
-    //   appActions: AppActionRaw[];
-    //   appData: AppDataRaw[];
-    //   appSettings: AppSettingRaw[];
-    // }>(
-    //   (acc, [_appID, { actions, data, settings }]) => {
-    //     acc.appActions.push(...actions);
-    //     acc.appData.push(...data);
-    //     acc.appSettings.push(...settings);
-    //     return acc;
-    //   },
-    //   { appActions: [], appData: [], appSettings: [] },
-    // );
+    const { appActions, appData, appSettings } = Object.entries(baseAnalytics.apps).reduce<{
+      appActions: AppActionRaw[];
+      appData: AppDataRaw[];
+      appSettings: AppSettingRaw[];
+    }>(
+      (
+        acc,
+        [_appID, { actions, data, settings }]: [
+          string,
+          {
+            actions: AppActionRaw[];
+            data: AppDataRaw[];
+            settings: AppSettingRaw[];
+          },
+        ],
+      ) => {
+        acc.appActions.push(...actions);
+        acc.appData.push(...data);
+        acc.appSettings.push(...settings);
+        return acc;
+      },
+      { appActions: [], appData: [], appSettings: [] },
+    );
 
     switch (format) {
       // For JSON format only output a single file
