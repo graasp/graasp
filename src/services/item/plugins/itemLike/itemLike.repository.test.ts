@@ -1,7 +1,6 @@
 import { v4 } from 'uuid';
 
-import { FolderItemFactory } from '@graasp/sdk';
-
+import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemLikesTable } from '../../../../drizzle/schema';
@@ -28,7 +27,7 @@ describe('ItemLike Repository', () => {
         items: [item],
         members: [creator, other],
       } = await seedFromJson({
-        items: [FolderItemFactory({ creator: null })],
+        items: [ItemFactory({ type: 'folder', creator: null })],
         members: [{}, {}],
       });
       const likes = await db
@@ -65,7 +64,7 @@ describe('ItemLike Repository', () => {
         items: [item],
         members: [creator, other],
       } = await seedFromJson({
-        items: [FolderItemFactory({ creator: null })],
+        items: [ItemFactory({ type: 'folder', creator: null })],
         members: [{}, {}],
       });
       // save 2 likes by different members

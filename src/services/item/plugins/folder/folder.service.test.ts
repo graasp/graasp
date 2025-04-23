@@ -93,7 +93,7 @@ describe('Folder Service', () => {
     // });
 
     it('throw if item is not a folder', async () => {
-      const appItem = AppItemFactory() as ItemWithCreator;
+      const appItem = ItemFactory({ type: 'app' }) as ItemWithCreator;
       jest.spyOn(BasicItemService.prototype, 'get').mockImplementation(async () => {
         return appItem;
       });

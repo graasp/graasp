@@ -10,6 +10,7 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
+import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
@@ -156,7 +157,7 @@ describe('App Item tests', () => {
         } = await seedFromJson({
           items: [
             {
-              ...AppItemFactory(),
+              ...ItemFactory({ type: 'app' }),
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
             },
           ],

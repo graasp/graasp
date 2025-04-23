@@ -48,10 +48,15 @@ const buildPackedDescendants = (
   permission: PermissionLevelOptions | null,
   hiddenVisibility: ItemVisibilityWithItem,
 ): PackedItem[] => {
-  const arr = descendants.map((descendant) =>
-    PackedFolderItemFactory(descendant as never, {
-      permission,
-    }),
+  const arr = descendants.map(
+    (descendant) =>
+      ({
+        ...PackedFolderItemFactory(descendant as never, {
+          permission,
+        }),
+        createdAt: descendant.createdAt,
+        updatedAt: descendant.updatedAt,
+      }) as PackedItem,
   );
   const idx = arr.findIndex(({ id }) => id === hiddenVisibility.item.id);
   arr[idx].hidden = hiddenVisibility;

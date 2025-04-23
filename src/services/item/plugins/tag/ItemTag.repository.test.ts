@@ -1,8 +1,9 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 
-import { FolderItemFactory, TagCategory } from '@graasp/sdk';
+import { TagCategory } from '@graasp/sdk';
 
+import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemTagsTable, itemsRawTable, tagsTable } from '../../../../drizzle/schema';
@@ -64,8 +65,8 @@ describe('ItemTag Repository', () => {
       const tag = await saveTag({ category });
       const tag1 = await saveTag({ name: tag.name + ' second', category });
 
-      const item = await saveItem(FolderItemFactory({ creator: null }));
-      const item1 = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
+      const item1 = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       // add tag once, tag1 twice
       await saveItemTag({ itemId: item.id, tagId: tag.id });
@@ -91,7 +92,7 @@ describe('ItemTag Repository', () => {
       const promises = Array.from({ length: TAG_COUNT_MAX_RESULTS + 13 }, async (_, idx) => {
         const tag = await saveTag({ name: 'tag' + idx, category });
         for (let i = 0; i < idx; i++) {
-          const item = await saveItem(FolderItemFactory({ creator: null }));
+          const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
           await saveItemTag({ itemId: item.id, tagId: tag.id });
         }
         return tag;
@@ -124,7 +125,7 @@ describe('ItemTag Repository', () => {
       expect(await repository.getByItemId(db, v4())).toHaveLength(0);
     });
     it('get empty tags for item', async () => {
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       const tags = await repository.getByItemId(db, item.id);
       expect(tags).toHaveLength(0);
@@ -132,7 +133,7 @@ describe('ItemTag Repository', () => {
 
     it('get tags for item', async () => {
       // save item with tags
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
       const tag1 = await saveTag({ category: TagCategory.Discipline });
       const tag2 = await saveTag({ category: TagCategory.Discipline });
       await saveItemTag({ itemId: item.id, tagId: tag1.id });
@@ -140,7 +141,7 @@ describe('ItemTag Repository', () => {
 
       // noise
       const anotherTag = await saveTag({ category: TagCategory.Discipline });
-      const anotherItem = await saveItem(FolderItemFactory({ creator: null }));
+      const anotherItem = await saveItem(ItemFactory({ type: 'folder', creator: null }));
       await saveItemTag({ itemId: anotherItem.id, tagId: anotherTag.id });
 
       const tags = await repository.getByItemId(db, item.id);
@@ -154,7 +155,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.create(db, undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       await expect(() => repository.create(db, item.id, undefined!)).rejects.toThrow();
     });
@@ -163,13 +164,13 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.create(db, v4(), tag.id)).rejects.toThrow();
     });
     it('throw for non-existing tag', async () => {
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       await expect(() => repository.create(db, item.id, v4())).rejects.toThrow();
     });
     it('create tag for item', async () => {
       const tag = await saveTag({ category: TagCategory.Discipline });
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       await repository.create(db, item.id, tag.id);
 
@@ -180,7 +181,7 @@ describe('ItemTag Repository', () => {
     });
     it('throw if tag already exists for item', async () => {
       const tag = await saveTag({ category: TagCategory.Discipline });
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
       await saveItemTag({ tagId: tag.id, itemId: item.id });
 
       await expect(async () => await repository.create(db, item.id, tag.id)).rejects.toThrow(
@@ -194,7 +195,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.delete(db, undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       await expect(() => repository.delete(db, item.id, undefined!)).rejects.toThrow();
     });
@@ -203,19 +204,19 @@ describe('ItemTag Repository', () => {
       expect(await repository.delete(db, v4(), tag.id)).toBeUndefined();
     });
     it('does not throw for non-existing tag', async () => {
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       expect(await repository.delete(db, item.id, v4())).toBeUndefined();
     });
     it('does not throw if tag is not associated with item', async () => {
       const tag = await saveTag({ category: TagCategory.Level });
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
 
       expect(await repository.delete(db, item.id, tag.id)).toBeUndefined();
     });
     it('delete tag for item', async () => {
       const tag = await saveTag({ category: TagCategory.ResourceType });
-      const item = await saveItem(FolderItemFactory({ creator: null }));
+      const item = await saveItem(ItemFactory({ type: 'folder', creator: null }));
       await saveItemTag({ tagId: tag.id, itemId: item.id });
 
       // noise
