@@ -1,3 +1,4 @@
+import { format as formatDate } from 'date-fns';
 import fs from 'fs';
 import { singleton } from 'tsyringe';
 
@@ -144,7 +145,7 @@ export class ActionRequestExportService {
     const link = await this.fileService.getUrl({
       path: filepath,
       expiration: EXPORT_FILE_EXPIRATION,
-      downloadName: `${item.name}_${format}_actions_${archiveDate}`,
+      downloadName: `${item.name}_${format}_actions_${formatDate(archiveDate, 't')}.zip`,
     });
     const mail = new MailBuilder({
       subject: {
