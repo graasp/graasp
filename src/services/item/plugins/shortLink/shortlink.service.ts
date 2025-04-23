@@ -48,7 +48,7 @@ export class ShortLinkService {
       // to create a short links to the library on an unpublished item.
       try {
         await this.itemPublishedService.get(dbConnection, member, shortLink.itemId);
-      } catch (ex) {
+      } catch (_e) {
         throw new ItemPublishedNotFound();
       }
     }
