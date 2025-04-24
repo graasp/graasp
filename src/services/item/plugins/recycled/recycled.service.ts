@@ -77,10 +77,6 @@ export class RecycledBinService {
   async recycleMany(dbConnection: DBConnection, actor: MinimalMember, itemIds: string[]) {
     const items = await this.itemRepository.getMany(dbConnection, itemIds);
 
-    if (items.length != itemIds.length) {
-      throw new Error('did not find all items');
-    }
-
     // if item is already deleted, it will throw not found here
     for (const item of items) {
       await this.authorizationService.validatePermission(

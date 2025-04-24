@@ -451,16 +451,25 @@ describe('Item Repository', () => {
       const result = await itemRepository.getMany(db, []);
       expect(result).toHaveLength(0);
     });
-    it('return result for ids and ignore errors', async () => {
+    it('return result for ids', async () => {
       const {
         items: [item1, item2, item3],
       } = await seedFromJson({ actor: null, items: [{}, {}, {}] });
 
-      const result = await itemRepository.getMany(db, [item2.id, item1.id, item3.id, v4()]);
+      const result = await itemRepository.getMany(db, [item2.id, item1.id, item3.id]);
       expect(result).toHaveLength(3);
       expectItem(result[1], item1);
       expectItem(result[0], item2);
       expectItem(result[2], item3);
+    });
+    it('throw if one item is not found', async () => {
+      const {
+        items: [item1, item2, item3],
+      } = await seedFromJson({ actor: null, items: [{}, {}, {}] });
+
+      expect(() =>
+        itemRepository.getMany(db, [item2.id, item1.id, item3.id, v4()]),
+      ).rejects.toThrow();
     });
   });
   describe('getNumberOfLevelsToFarthestChild', () => {

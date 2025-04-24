@@ -402,6 +402,12 @@ export class ItemRepository {
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
 
+  /**
+   * Returns items matching provided ids, ordered by the given ids array.
+   * @param dbConnection current connection to the db
+   * @param ids items to retrieve, in order
+   * @returns ordered items with given ids
+   */
   async getMany(dbConnection: DBConnection, ids: string[]): Promise<ItemWithCreator[]> {
     if (!ids.length) {
       return [];
@@ -417,6 +423,11 @@ export class ItemRepository {
       ...item_view,
       creator: account as MemberRaw,
     }));
+
+    if (result.length != ids.length) {
+      const missingId = result.find(({ id }) => !ids.includes(id));
+      throw new ItemNotFound(missingId);
+    }
 
     // order here by id
     result.sort((a, b) => {

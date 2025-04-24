@@ -83,6 +83,7 @@ export class BasicItemService {
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
   }> {
     const result = await this.itemRepository.getMany(dbConnection, ids);
+
     // check memberships
     // remove items if they do not have permissions
     const { itemMemberships, visibilities } =
