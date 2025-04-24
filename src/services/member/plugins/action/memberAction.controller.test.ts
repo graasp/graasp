@@ -71,8 +71,8 @@ describe('Get member actions', () => {
           {
             memberships: [{ account: 'actor' }],
             actions: [
-              { account: 'actor', createdAt: new Date(Date.parse('2015-03-25T12:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2015-03-25T12:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date('2015-03-25T12:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2015-03-25T12:02:29.210Z') },
             ],
           },
         ],

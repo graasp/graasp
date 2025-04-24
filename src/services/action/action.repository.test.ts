@@ -105,8 +105,8 @@ describe('Action Repository', () => {
         items: [
           {
             actions: [
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date('2025-03-25T13:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2025-03-25T13:02:29.210Z') },
             ],
           },
         ],
@@ -128,14 +128,14 @@ describe('Action Repository', () => {
         items: [
           {
             actions: [
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T12:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date('2025-03-25T12:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2025-03-25T13:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2025-03-25T13:02:29.210Z') },
               // noise - out of sample size because is older
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T11:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date('2025-03-25T11:02:29.210Z') },
               // noise - out of date range
-              { account: 'actor', createdAt: new Date(Date.parse('2020-03-25T13:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2020-03-25T13:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date('2020-03-25T13:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2020-03-25T13:02:29.210Z') },
             ],
           },
         ],
@@ -162,11 +162,11 @@ describe('Action Repository', () => {
             actions: [
               ...Array.from({ length: DEFAULT_ACTIONS_SAMPLE_SIZE }, () => ({
                 account: 'actor' as SeedActor,
-                createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')),
+                createdAt: new Date('2025-03-25T13:02:29.210Z'),
               })),
               // noise - out of date range
-              { account: 'actor', createdAt: new Date(Date.parse('2020-03-25T13:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2020-03-25T13:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date('2020-03-25T13:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2020-03-25T13:02:29.210Z') },
             ],
           },
         ],
@@ -190,17 +190,17 @@ describe('Action Repository', () => {
               {
                 view,
                 account: 'actor',
-                createdAt: new Date(Date.parse('2025-03-25T12:02:29.210Z')),
+                createdAt: new Date('2025-03-25T12:02:29.210Z'),
               },
               {
                 view,
                 account: 'actor',
-                createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')),
+                createdAt: new Date('2025-03-25T13:02:29.210Z'),
               },
               {
                 view,
                 account: 'actor',
-                createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')),
+                createdAt: new Date('2025-03-25T13:02:29.210Z'),
               },
               // noise - another view
               { view: Context.Account, account: 'actor' },
@@ -229,15 +229,15 @@ describe('Action Repository', () => {
             actions: [
               {
                 account: { name: 'bob' },
-                createdAt: new Date(Date.parse('2025-03-25T12:02:29.210Z')),
+                createdAt: new Date('2025-03-25T12:02:29.210Z'),
               },
               {
                 account: { name: 'bob' },
-                createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')),
+                createdAt: new Date('2025-03-25T13:02:29.210Z'),
               },
               {
                 account: { name: 'bob' },
-                createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')),
+                createdAt: new Date('2025-03-25T13:02:29.210Z'),
               },
               // noise - another account
               { account: 'actor' },
@@ -265,20 +265,20 @@ describe('Action Repository', () => {
         items: [
           {
             actions: [
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T12:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')) },
-              { account: 'actor', createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')) },
+              { account: 'actor', createdAt: new Date('2025-03-25T12:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2025-03-25T13:02:29.210Z') },
+              { account: 'actor', createdAt: new Date('2025-03-25T13:02:29.210Z') },
             ],
             children: [
               {
                 actions: [
                   {
                     account: { name: 'bob' },
-                    createdAt: new Date(Date.parse('2025-03-25T12:02:29.210Z')),
+                    createdAt: new Date('2025-03-25T12:02:29.210Z'),
                   },
                   {
                     account: { name: 'bob' },
-                    createdAt: new Date(Date.parse('2025-03-25T13:02:29.210Z')),
+                    createdAt: new Date('2025-03-25T13:02:29.210Z'),
                   },
                 ],
               },
