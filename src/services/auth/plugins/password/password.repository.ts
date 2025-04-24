@@ -39,7 +39,7 @@ export class MemberPasswordRepository {
     });
   }
 
-  async patch(dbConnection: DBConnection, memberId: UUID, newPassword: string): Promise<void> {
+  async put(dbConnection: DBConnection, memberId: UUID, newPassword: string): Promise<void> {
     if (!isPasswordStrong(newPassword)) {
       throw new PasswordNotStrong(newPassword);
     }

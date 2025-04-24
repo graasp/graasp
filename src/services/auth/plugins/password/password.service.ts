@@ -123,14 +123,14 @@ export class MemberPasswordService {
       }
     }
     // apply password change
-    await this.memberPasswordRepository.patch(dbConnection, authenticatedUser.id, newPassword);
+    await this.memberPasswordRepository.put(dbConnection, authenticatedUser.id, newPassword);
   }
 
   /**
    * Modify the password of a member. Force the change without checking the current password.
    * Check if the Password Reset Request UUID is registered in the redis database.
    * If it is, delete it and change the password of the associated member.
-   * @param repositories Object with the repositories needed to interact with the database. Must contain a memberPasswordRepository.
+   * @param dbConnection current connection to the database
    * @param password New password.
    * @param uuid The Password Reset Request UUID associated to the member that wants to reset the password.
    * @returns void
@@ -141,7 +141,7 @@ export class MemberPasswordService {
       return;
     }
     await this.redis.del(this.buildRedisKey(uuid));
-    await this.memberPasswordRepository.patch(dbConnection, id, password);
+    await this.memberPasswordRepository.put(dbConnection, id, password);
   }
 
   /**
