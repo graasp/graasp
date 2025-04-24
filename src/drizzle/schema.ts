@@ -775,12 +775,14 @@ export const itemsRawTable = pgTable(
     // TODO: fix type
     extra: jsonb().$type<object>().default({}).notNull(),
     settings: jsonb().$type<ItemSettings>().default({}).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
-    deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
+    deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
     lang: varchar().default('en').notNull(),
 
     order: customNumeric('order'),
@@ -813,7 +815,9 @@ export const membershipRequestsTable = pgTable(
   'membership_request',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     memberId: uuid('member_id').notNull(),
     itemId: uuid('item_id').notNull(),
   },
@@ -840,14 +844,16 @@ export const accountsTable = pgTable(
     email: varchar({ length: 150 }),
     extra: jsonb().$type<CompleteMember['extra']>().default({}).notNull(),
     type: accountTypeEnum().default('individual').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
-    userAgreementsDate: timestamp('user_agreements_date', { mode: 'string' }),
+    userAgreementsDate: timestamp('user_agreements_date', { withTimezone: true, mode: 'string' }),
     enableSaveActions: boolean('enable_save_actions').default(true),
-    lastAuthenticatedAt: timestamp('last_authenticated_at', { mode: 'string' }),
+    lastAuthenticatedAt: timestamp('last_authenticated_at', { withTimezone: true, mode: 'string' }),
     isValidated: boolean('is_validated').default(false),
     itemLoginSchemaId: uuid('item_login_schema_id').references(
       (): AnyPgColumn => itemLoginSchemasTable.id,
