@@ -900,8 +900,15 @@ describe('ItemGeolocationRepository', () => {
     it('update geolocation', async () => {
       const {
         actor,
-        items: [item],
-      } = await seedFromJson({ items: [{ geolocation: { lat: 1, lng: 2, country: 'de' } }] });
+        items: [item, noise],
+        geolocations,
+      } = await seedFromJson({
+        items: [
+          { geolocation: { lat: 1, lng: 2, country: 'de' } },
+          // noise
+          { geolocation: { lat: 1, lng: 2, country: 'de' } },
+        ],
+      });
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
@@ -910,6 +917,10 @@ describe('ItemGeolocationRepository', () => {
       await repository.put(db, item.path, { lat, lng });
       const geoloc = await getGeolocationByItemPath(item.path);
       expect(geoloc).toMatchObject({ lat, lng, country: 'CH' });
+
+      // noise should keep the same value
+      const savedGeoloc = await getGeolocationByItemPath(noise.path);
+      expect(savedGeoloc).toEqual(geolocations[1]);
     });
   });
 });
