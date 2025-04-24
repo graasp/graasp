@@ -467,9 +467,10 @@ describe('Item Repository', () => {
         items: [item1, item2, item3],
       } = await seedFromJson({ actor: null, items: [{}, {}, {}] });
 
+      const missingId = v4();
       expect(() =>
-        itemRepository.getMany(db, [item2.id, item1.id, item3.id, v4()]),
-      ).rejects.toThrow();
+        itemRepository.getMany(db, [item2.id, item1.id, item3.id, missingId]),
+      ).rejects.toMatchObject(ItemNotFound(missingId));
     });
   });
   describe('getNumberOfLevelsToFarthestChild', () => {

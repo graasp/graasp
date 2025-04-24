@@ -425,7 +425,8 @@ export class ItemRepository {
     }));
 
     if (result.length != ids.length) {
-      const missingId = result.find(({ id }) => !ids.includes(id));
+      const resultIds = result.map(({ id }) => id);
+      const missingId = ids.find((id) => !resultIds.includes(id));
       throw new ItemNotFound(missingId);
     }
 
