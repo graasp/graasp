@@ -113,7 +113,7 @@ CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
 ### Database configuration (set by ./.devcontainer/docker-compose.yml)
 # DB_CONNECTION=postgres://graasper:graasper@db:5432/graasp?sslmode=disable
-# If you use read replicas, set the connection string here (separated by commas)
+# If you use read replicas, set the connection strings here (separated by commas)
 # DB_READ_REPLICA_CONNECTIONS=
 
 ### Sessions
