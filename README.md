@@ -113,8 +113,8 @@ CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
 ### Database configuration (set by ./.devcontainer/docker-compose.yml)
 # DB_CONNECTION=postgres://graasper:graasper@db:5432/graasp?sslmode=disable
-# If you use read replicas, set the hostnames here (separated by commas)
-# DB_READ_REPLICA_HOSTS=
+# If you use read replicas, set the connection strings here (separated by commas)
+# DB_READ_REPLICA_CONNECTIONS=
 
 ### Sessions
 
@@ -258,9 +258,7 @@ Simply change the config values for the database connection:
 DB_CONNECTION=postgres://test:test@db:5432/test?sslmode=disable
 ```
 
-This will ensure your tests run on the second database container. As they will clean the database between test runs you will not loose your development data.
-
-It's also important to add `AUTO_RUN_MIGRATIONS=false` in your `.env.test` file to not run the migrations on every application launch.
+This will ensure your tests run on the second database container. As they will create new data and sometimes delete data between test runs you will not loose your development data.
 
 ## Database and Migrations
 

@@ -106,7 +106,7 @@ jobs:
             DB_HOST=${{ secrets.DB_HOST }}
             DB_NAME=${{ secrets.DB_NAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_READ_REPLICA_HOSTS=${{ secrets.DB_READ_REPLICA_HOSTS }}
+            DB_READ_REPLICA_CONNECTIONS=${{ secrets.DB_READ_REPLICA_CONNECTIONS }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             SENTRY_ENV=${{ vars.SENTRY_ENV }}
             EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=${{ vars.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
