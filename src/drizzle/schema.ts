@@ -89,7 +89,9 @@ export const publishedItemsTable = pgTable(
   'item_published',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     creatorId: uuid('creator_id').references(() => accountsTable.id, {
       onDelete: 'set null',
     }),
@@ -99,7 +101,7 @@ export const publishedItemsTable = pgTable(
         onUpdate: 'cascade',
         onDelete: 'cascade',
       }),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -130,8 +132,10 @@ export const itemMembershipsTable = pgTable(
     accountId: uuid('account_id')
       .notNull()
       .references(() => accountsTable.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -167,8 +171,10 @@ export const memberPasswordsTable = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -184,7 +190,9 @@ export const recycledItemDatasTable = pgTable(
   'recycled_item_data',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     creatorId: uuid('creator_id'),
     itemPath: ltree('item_path').notNull(),
   },
@@ -209,7 +217,9 @@ export const itemLikesTable = pgTable(
   'item_like',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     creatorId: uuid('creator_id').notNull(),
     itemId: uuid('item_id').notNull(),
   },
@@ -236,7 +246,9 @@ export const itemFlagsTable = pgTable(
     type: varchar().notNull(),
     creatorId: uuid('creator_id'),
     itemId: uuid('item_id'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -261,7 +273,9 @@ export const itemCategoriesTable = pgTable(
     creatorId: uuid('creator_id'),
     itemPath: ltree('item_path').notNull(),
     categoryId: uuid('category_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -291,8 +305,10 @@ export const chatMessagesTable = pgTable(
     id: uuid().defaultRandom().primaryKey().notNull(),
     itemId: uuid('item_id').notNull(),
     creatorId: uuid('creator_id'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -322,8 +338,10 @@ export const chatMentionsTable = pgTable(
     accountId: uuid('account_id')
       .references(() => accountsTable.id)
       .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -353,8 +371,10 @@ export const appDataTable = pgTable(
     type: varchar({ length: 25 }).notNull(),
     creatorId: uuid('creator_id'),
     visibility: varchar().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -392,7 +412,9 @@ export const appActionsTable = pgTable(
     itemId: uuid('item_id').notNull(),
     data: jsonb().$type<object>().default({}).notNull(),
     type: varchar({ length: 25 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -416,8 +438,10 @@ export const appSettingsTable = pgTable(
     creatorId: uuid('creator_id'),
     name: varchar().notNull(),
     data: jsonb().$type<object>().default({}).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -452,8 +476,10 @@ export const invitationsTable = pgTable(
     name: varchar({ length: 100 }),
     email: varchar({ length: 100 }).notNull(),
     permission: permissionEnum().default('read').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -481,8 +507,10 @@ export const publishersTable = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 250 }).notNull(),
     origins: text().array().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -499,8 +527,10 @@ export const appsTable = pgTable(
     description: varchar({ length: 250 }).notNull(),
     url: varchar({ length: 250 }).notNull(),
     publisherId: uuid('publisher_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -523,7 +553,9 @@ export const itemValidationGroupsTable = pgTable(
   {
     id: uuid().primaryKey().notNull().defaultRandom(),
     itemId: uuid('item_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -543,8 +575,10 @@ export const itemValidationsTable = pgTable(
     status: itemValidationStatusEnum().notNull(),
     result: varchar(),
     itemValidationGroupId: uuid('item_validation_group_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -571,8 +605,10 @@ export const itemValidationReviewsTable = pgTable(
     reviewerId: uuid('reviewer_id'),
     status: varchar().notNull(),
     reason: varchar(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -595,7 +631,9 @@ export const itemBookmarksTable = pgTable(
   'item_favorite',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     memberId: uuid('member_id').notNull(),
     itemId: uuid('item_id').notNull(),
   },
@@ -625,8 +663,10 @@ export const memberProfilesTable = pgTable(
     facebookId: varchar({ length: 100 }),
     linkedinId: varchar({ length: 100 }),
     twitterId: varchar({ length: 100 }),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -653,7 +693,9 @@ export const shortLinksTable = pgTable(
   {
     alias: varchar({ length: 255 }).primaryKey().notNull(),
     platform: shortLinkPlatformEnum().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     itemId: uuid('item_id').notNull(),
   },
   (table) => [
@@ -684,7 +726,9 @@ export const actionsTable = pgTable(
     type: varchar().notNull(),
     extra: jsonb().$type<object>().default({}).notNull(),
     geolocation: jsonb().$type<geoip.Lookup>(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     accountId: uuid('account_id'),
     itemId: uuid('item_id'),
   },
@@ -717,8 +761,10 @@ export const itemGeolocationsTable = pgTable(
     lat: doublePrecision().notNull(),
     lng: doublePrecision().notNull(),
     country: varchar({ length: 4 }),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -742,7 +788,9 @@ export const actionRequestExportsTable = pgTable(
   'action_request_export',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
     memberId: uuid('member_id').notNull(),
     itemPath: ltree('item_path'),
     format: actionRequestExportFormatEnum().default('json').notNull(),
@@ -905,8 +953,10 @@ export const guestPasswordsTable = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -927,8 +977,10 @@ export const itemLoginSchemasTable = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     type: itemLoginSchemaTypeEnum().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
@@ -950,7 +1002,9 @@ export const itemVisibilitiesTable = pgTable(
     type: itemVisibilityEnum().notNull(),
     itemPath: ltree('item_path').notNull(),
     creatorId: uuid('creator_id'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index('IDX_gist_item_visibility_path').using(
