@@ -13,7 +13,7 @@ export class GuestPasswordRepository {
     });
     return res?.password;
   }
-  async patch(dbConnection: DBConnection, guestId: UUID, newPassword: string): Promise<void> {
+  async put(dbConnection: DBConnection, guestId: UUID, newPassword: string): Promise<void> {
     // auto-generate a salt and a hash
     const hash = await encryptPassword(newPassword);
 
