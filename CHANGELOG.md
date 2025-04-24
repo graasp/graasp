@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.1](https://github.com/graasp/graasp/compare/v2.0.0...v2.0.1) (2025-04-24)
+
+
+### Bug Fixes
+
+* add id-token permission in release-please workflow ([eeec1e8](https://github.com/graasp/graasp/commit/eeec1e825f9d0a6dbe174c655797b27a65ba0a26))
+* convert timestamp columns to include timezone ([#1830](https://github.com/graasp/graasp/issues/1830)) ([a79b234](https://github.com/graasp/graasp/commit/a79b234f137170201cda48a631ec225fa657b7b5))
+* **export-actions:** use timestamp for filenames, infer zip ([#1828](https://github.com/graasp/graasp/issues/1828)) ([0ed2f46](https://github.com/graasp/graasp/commit/0ed2f4668f97ff1ca9466d2bca79aadddae2c14a))
+
 ## [2.0.0](https://github.com/graasp/graasp/compare/v1.65.2...v2.0.0) (2025-04-23)
 
 
