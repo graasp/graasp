@@ -1,4 +1,5 @@
 import archiver from 'archiver';
+import { format as formatDate } from 'date-fns';
 import fs, { mkdirSync } from 'fs';
 import { unparse } from 'papaparse';
 import path from 'path';
@@ -12,7 +13,7 @@ import { CannotWriteFileError } from './errors';
 export const buildItemTmpFolder = (itemId: string): string =>
   path.join(TMP_FOLDER, 'export', itemId);
 export const buildActionFileName = (name: string, datetime: string, format: string): string =>
-  `${name}_${datetime}.${format}`;
+  `${name}_${formatDate(datetime, 't')}.${format}`;
 
 export const buildActionFilePath = ({
   itemId,
@@ -23,7 +24,7 @@ export const buildActionFilePath = ({
   datetime: string;
   format: ExportActionsFormatting;
 }): string => {
-  return `actions/${itemId}/${format}/${datetime}`;
+  return `actions/${itemId}/${format}/${formatDate(datetime, 't')}`;
 };
 
 export const buildArchiveDateAsName = (timestamp: Date): string => timestamp.toISOString();
