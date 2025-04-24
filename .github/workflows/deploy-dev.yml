@@ -24,39 +24,16 @@ jobs:
     environment: development
 
     steps:
-      # Check-out repository under $GITHUB_WORKSPACE, so the job can access it
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Configure AWS credential and region environment variables for use in next steps
-      - name: Configure AWS Credentials
-        id: configure-aws
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Build images
+        uses: ./.github/actions/build-images
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }} # todo: add in envs
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }} # todo: add in envs
+          tag: ${{ github.ref_name || github.ref || github.sha }}
+          aws-ecr-uri: ${{ vars.PRIVATE_ECR }}/graasp
+          aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
-
-      # Log in the local Docker client
-      - name: Login to Amazon ECR
-        id: login-ecr-build
-        uses: aws-actions/amazon-ecr-login@v2
-
-      # Set output variable tag with the current checked out ref
-      - name: Set Image Url
-        id: image-url
-        env:
-          TARGET_IMAGE_URL: ${{ steps.login-ecr-build.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.ref_name || github.ref || github.sha }}
-        run: echo "image_url=${TARGET_IMAGE_URL}" >> $GITHUB_OUTPUT
-
-      # Build and tag the docker image
-      - name: Build, tag and push image to AWS ECR
-        id: build-image
-        env:
-          TARGET_IMAGE_URL: ${{ steps.image-url.outputs.image_url }}
-        run: |
-          docker build -t $TARGET_IMAGE_URL -f docker/Dockerfile --build-arg APP_VERSION=${{ github.sha }} .
-          docker push $TARGET_IMAGE_URL
 
   # Deploy to dev environment
   deploy:

@@ -32,6 +32,7 @@ jobs:
           tag: ${{ steps.release.outputs.tag_name }}
           aws-ecr-uri: ${{ vars.GRAASP_PUBLIC_ECR }}
           aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
 
       # ------ Legacy behavior ---
       # put created tag in an env variable to be sent to the dispatch
