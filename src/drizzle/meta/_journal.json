@@ -22,6 +22,13 @@
       "when": 1744886643813,
       "tag": "0002_add-item-view-index",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1745474597532,
+      "tag": "0003_use-timezone-in-items-account",
+      "breakpoints": true
     }
   ]
 }
