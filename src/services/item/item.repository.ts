@@ -402,16 +402,10 @@ export class ItemRepository {
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
 
-  async getMany(
-    dbConnection: DBConnection,
-    ids: string[],
-    args: { throwOnError?: boolean } = {},
-  ): Promise<ResultOf<ItemWithCreator>> {
+  async getMany(dbConnection: DBConnection, ids: string[]): Promise<ItemWithCreator[]> {
     if (!ids.length) {
-      return { data: {}, errors: [] };
+      return [];
     }
-
-    const { throwOnError = false } = args;
 
     const result = (
       await dbConnection
@@ -424,17 +418,14 @@ export class ItemRepository {
       creator: account as MemberRaw,
     }));
 
-    const mappedResult = mapById({
-      keys: ids,
-      findElement: (id) => result.find(({ id: thisId }) => thisId === id),
-      buildError: (id) => new ItemNotFound(id),
+    // order here by id
+    result.sort((a, b) => {
+      const aIdx = ids.findIndex((i) => i === a.id);
+      const bIdx = ids.findIndex((i) => i === b.id);
+      return aIdx > bIdx ? 1 : -1;
     });
 
-    if (throwOnError && mappedResult.errors.length) {
-      throw mappedResult.errors[0];
-    }
-
-    return mappedResult;
+    return result;
   }
 
   async getNumberOfLevelsToFarthestChild(

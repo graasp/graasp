@@ -75,11 +75,11 @@ export class RecycledBinService {
   }
 
   async recycleMany(dbConnection: DBConnection, actor: MinimalMember, itemIds: string[]) {
-    const itemsResult = await this.itemRepository.getMany(dbConnection, itemIds, {
-      throwOnError: true,
-    });
-    const { data: idsToItems } = itemsResult;
-    const items = Object.values(idsToItems);
+    const items = await this.itemRepository.getMany(dbConnection, itemIds);
+
+    if (items.length != itemIds.length) {
+      throw new Error('did not find all items');
+    }
 
     // if item is already deleted, it will throw not found here
     for (const item of items) {
@@ -117,7 +117,7 @@ export class RecycledBinService {
       await this.hooks.runPostHooks('recycle', actor, dbConnection, { item, isRecycledRoot: true });
     }
 
-    return itemsResult;
+    return items;
   }
 
   async restoreMany(dbConnection: DBConnection, member: MinimalMember, itemIds: string[]) {

@@ -136,14 +136,14 @@ export class ItemWrapperService {
    * @returns ResultOf<PackedItem>
    */
   mergeResult(
-    items: ResultOf<ItemWithCreator>,
+    items: ItemWithCreator[],
     memberships: ResultOf<ItemMembershipRaw | null>,
     visibilities?: ResultOf<ItemVisibilityRaw[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): ResultOf<PackedItem> {
     const data: ResultOf<PackedItem>['data'] = {};
 
-    for (const i of Object.values(items.data)) {
+    for (const i of items) {
       const { permission = null } = memberships.data[i.id] ?? {};
       const thumbnails = itemsThumbnails?.[i.id];
 
@@ -162,7 +162,7 @@ export class ItemWrapperService {
       };
     }
 
-    return { data, errors: [...items.errors, ...memberships.errors] };
+    return { data, errors: [...memberships.errors] };
   }
 
   async createPackedItems(

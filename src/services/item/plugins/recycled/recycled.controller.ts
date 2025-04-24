@@ -73,7 +73,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('recycle', ids, items.data, items.errors),
+            ItemOpFeedbackEvent('recycle', ids, items),
           );
           return items;
         })

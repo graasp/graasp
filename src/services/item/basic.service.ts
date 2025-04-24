@@ -73,12 +73,12 @@ export class BasicItemService {
    * @param ids
    * @returns result of items given ids
    */
-  async _getMany(
+  async getMany(
     dbConnection: DBConnection,
     actor: MaybeUser,
     ids: string[],
   ): Promise<{
-    items: ResultOf<ItemWithCreator>;
+    items: ItemWithCreator[];
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
   }> {
@@ -90,31 +90,12 @@ export class BasicItemService {
         dbConnection,
         PermissionLevel.Read,
         actor,
-        Object.values(result.data),
+        result,
       );
 
-    for (const [id, _item] of Object.entries(result.data)) {
-      // Do not delete if value exist but is null, because no memberships but can be public
-      if (itemMemberships?.data[id] === undefined) {
-        delete result.data[id];
-      }
-    }
+    // Do not exclude if value exist but is null, because no memberships but can be public
+    const items = result.filter((i) => itemMemberships?.data[i.id] !== undefined);
 
-    return { items: result, itemMemberships, visibilities };
-  }
-
-  /**
-   * get generic items
-   * @param actor
-   * @param ids
-   * @returns
-   */
-  async getMany(dbConnection: DBConnection, actor: MaybeUser, ids: string[]) {
-    const { items, itemMemberships } = await this._getMany(dbConnection, actor, ids);
-
-    return {
-      data: items.data,
-      errors: items.errors.concat(itemMemberships?.errors ?? []),
-    };
+    return { items, itemMemberships, visibilities };
   }
 }

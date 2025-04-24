@@ -449,25 +449,18 @@ describe('Item Repository', () => {
   describe('getMany', () => {
     it('return empty for empty ids', async () => {
       const result = await itemRepository.getMany(db, []);
-      expect(Object.keys(result.data)).toHaveLength(0);
-      expect(result.errors).toHaveLength(0);
+      expect(result).toHaveLength(0);
     });
-    it('return result for ids with errors', async () => {
+    it('return result for ids and ignore errors', async () => {
       const {
         items: [item1, item2, item3],
       } = await seedFromJson({ actor: null, items: [{}, {}, {}] });
 
-      const result = await itemRepository.getMany(db, [item1.id, item2.id, item3.id, v4()]);
-      expectItem(result.data[item1.id], item1);
-      expectItem(result.data[item2.id], item2);
-      expectItem(result.data[item3.id], item3);
-      expect(result.errors).toHaveLength(1);
-    });
-
-    it('throw for error', async () => {
-      await expect(
-        itemRepository.getMany(db, [v4()], { throwOnError: true }),
-      ).rejects.toBeInstanceOf(ItemNotFound);
+      const result = await itemRepository.getMany(db, [item2.id, item1.id, item3.id, v4()]);
+      expect(result).toHaveLength(3);
+      expectItem(result[1], item1);
+      expectItem(result[0], item2);
+      expectItem(result[2], item3);
     });
   });
   describe('getNumberOfLevelsToFarthestChild', () => {
