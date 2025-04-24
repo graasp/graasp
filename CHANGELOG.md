@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.2](https://github.com/graasp/graasp/compare/v2.0.1...v2.0.2) (2025-04-24)
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-js-v3 monorepo to v3.787.0 ([#1702](https://github.com/graasp/graasp/issues/1702)) ([5396a8e](https://github.com/graasp/graasp/commit/5396a8e354f8846c5b88607713ada8814ae81a20))
+
 ## [2.0.1](https://github.com/graasp/graasp/compare/v2.0.0...v2.0.1) (2025-04-24)
 
 
