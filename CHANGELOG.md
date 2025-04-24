@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.3](https://github.com/graasp/graasp/compare/v2.0.2...v2.0.3) (2025-04-24)
+
+
+### Bug Fixes
+
+* read replica env vars ([#1836](https://github.com/graasp/graasp/issues/1836)) ([8c6add2](https://github.com/graasp/graasp/commit/8c6add26f8c2b85325874e01835644268fa7ea81))
+
 ## [2.0.2](https://github.com/graasp/graasp/compare/v2.0.1...v2.0.2) (2025-04-24)
 
 
