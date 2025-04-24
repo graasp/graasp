@@ -343,7 +343,7 @@ export class ItemService {
 
     // rescale the item ordering, if there's more than one item
     if (items.length > 1) {
-      this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
+      await this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
     }
 
     return createdItems;

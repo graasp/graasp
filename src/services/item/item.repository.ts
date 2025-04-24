@@ -79,6 +79,7 @@ import {
 import { mapById } from '../utils';
 import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
 import { FolderItem, isItemType } from './discrimination';
+import { ItemOrderingError } from './errors';
 import {
   ItemChildrenParams,
   ItemSearchParams,
@@ -1024,11 +1025,15 @@ export class ItemRepository {
       }));
 
       // can update in disorder
-      await Promise.all(
+      const updates = await Promise.allSettled(
         values.map(async (i) => {
           return await dbConnection.update(itemsRawTable).set(i).where(eq(itemsRawTable.id, i.id));
         }),
       );
+      const error = updates.find((u) => u.status === 'rejected');
+      if (error) {
+        throw new ItemOrderingError(error.reason);
+      }
     }
   }
 
