@@ -15,7 +15,7 @@ const getPasswordForMemberId = async (memberId: string) => {
   });
 };
 
-describe('Password Repository', () => {
+describe('Member Password Repository', () => {
   describe('put', () => {
     it('replace existing password with new password', async () => {
       const { members } = await seedFromJson({ actor: null, members: [{}, {}, {}] });

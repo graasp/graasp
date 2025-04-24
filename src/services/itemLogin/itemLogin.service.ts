@@ -116,7 +116,7 @@ export class ItemLoginService {
         }
       } else {
         // If schema was modified from passwordless to '* + password' - update member with password
-        await this.guestPasswordRepository.patch(dbConnection, guestAccount.id, password);
+        await this.guestPasswordRepository.put(dbConnection, guestAccount.id, password);
       }
     }
     // create a new item login
@@ -141,7 +141,7 @@ export class ItemLoginService {
       assertIsDefined(guestAccount);
       if (loginSchemaRequiresPassword(itemLoginSchema.type)) {
         password = asDefined(password, MissingCredentialsForLoginSchema);
-        await this.guestPasswordRepository.patch(dbConnection, guestAccount.id, password);
+        await this.guestPasswordRepository.put(dbConnection, guestAccount.id, password);
       }
 
       // create membership
