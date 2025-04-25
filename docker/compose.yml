@@ -60,7 +60,7 @@ services:
       MAILER_CONFIG_PASSWORD: docker
 
       # H5P configuration
-      H5P_FILE_STORAGE_TYPE: file
+      H5P_FILE_STORAGE_TYPE: local
       H5P_STORAGE_ROOT_PATH: /tmp/graasp-h5p/
       H5P_PATH_PREFIX: h5p-content/
       H5P_FILE_STORAGE_HOST: http://localhost:1081

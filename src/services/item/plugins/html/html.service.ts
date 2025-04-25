@@ -40,10 +40,10 @@ export abstract class HtmlService {
   constructor(
     {
       config,
-      type,
+      fileStorageType,
     }: {
       config: FileServiceConfig;
-      type: FileStorageType;
+      fileStorageType: FileStorageType;
     },
     storageService: StorageService,
     pathPrefix: string,
@@ -57,7 +57,7 @@ export abstract class HtmlService {
     }
     this.logger = log;
     this.extension = extension;
-    this.fileService = new FileService(fileRepositoryFactory(type, config), this.logger);
+    this.fileService = new FileService(fileRepositoryFactory(fileStorageType, config), this.logger);
     this.storageService = storageService;
     this.mimetype = mimetype;
     this.pathPrefix = pathPrefix;

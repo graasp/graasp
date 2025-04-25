@@ -31,7 +31,7 @@ env:
   ETHERPAD_URL: 'http://etherpad:9001'
   LIBRARY_CLIENT_HOST: 'http://localhost:3113'
   FILE_STORAGE_ROOT_PATH: /
-  H5P_FILE_STORAGE_TYPE: local
+  H5P_FILE_STORAGE_TYPE: s3
   H5P_PATH_PREFIX: h5p-content/
   H5P_STORAGE_ROOT_PATH: /tmp/h5p
   H5P_FILE_STORAGE_HOST: http://localhost:1081

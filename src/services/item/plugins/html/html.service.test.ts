@@ -1,6 +1,5 @@
-import { ItemType } from '@graasp/sdk';
-
 import { BaseLogger } from '../../../../logger';
+import { FileStorage } from '../../../file/types';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { ItemRepository } from '../../item.repository';
 import { HtmlService } from './html.service';
@@ -35,7 +34,7 @@ describe('Html Service', () => {
   const htmlService = new MockHtmlService(
     {
       config: { s3: MOCK_S3_CONFIG },
-      type: ItemType.FILE,
+      fileStorageType: FileStorage.S3,
     },
     new MockStorageService({} as ItemRepository),
     'prefix',
