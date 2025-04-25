@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { addMonths, format, formatISO } from 'date-fns';
 import { count, desc, getTableColumns, gte, inArray, lte, sql } from 'drizzle-orm';
 import { and } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
@@ -20,7 +20,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params: { startDate: string; endDate: string },
+    params: { startDate?: string; endDate?: string },
   ): Promise<{
     [hour: number]: {
       count: {
@@ -33,7 +33,8 @@ export class ItemActionRepository {
       };
     };
   }> {
-    const { startDate, endDate } = params;
+    const endDate = params.endDate ?? formatISO(new Date());
+    const startDate = params.startDate ?? formatISO(addMonths(endDate, -1));
 
     const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })
@@ -95,7 +96,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params,
+    params: { startDate?: string; endDate?: string },
   ): Promise<{
     [day: string]: {
       count: {
@@ -108,7 +109,8 @@ export class ItemActionRepository {
       };
     };
   }> {
-    const { startDate, endDate } = params;
+    const endDate = params.endDate ?? formatISO(new Date());
+    const startDate = params.startDate ?? formatISO(addMonths(endDate, -1));
 
     const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })
@@ -171,7 +173,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params,
+    params: { startDate?: string; endDate?: string },
   ): Promise<{
     [weekday: number]: {
       count: {
@@ -184,7 +186,8 @@ export class ItemActionRepository {
       };
     };
   }> {
-    const { startDate, endDate } = params;
+    const endDate = params.endDate ?? formatISO(new Date());
+    const startDate = params.startDate ?? formatISO(addMonths(endDate, -1));
 
     const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })

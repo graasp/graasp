@@ -322,7 +322,7 @@ export class ItemActionService {
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
     actor: MaybeUser,
-    params: { startDate: string; endDate: string },
+    params: { startDate?: string; endDate?: string },
   ) {
     const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
@@ -333,7 +333,7 @@ export class ItemActionService {
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
     actor: MaybeUser,
-    params: { startDate: string; endDate: string },
+    params: { startDate?: string; endDate?: string },
   ) {
     const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
@@ -344,7 +344,7 @@ export class ItemActionService {
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
     actor: MaybeUser,
-    params: { startDate: string; endDate: string },
+    params: { startDate?: string; endDate?: string },
   ) {
     const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
