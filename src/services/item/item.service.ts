@@ -468,24 +468,6 @@ export class ItemService {
     return new ItemWrapper(item, itemMembership, visibilities, thumbnails[item.id]).packed();
   }
 
-  /**
-   * get item packed with complementary items
-   * @param actor
-   * @param ids
-   * @returns
-   */
-  async getManyPacked(dbConnection: DBConnection, actor: MaybeUser, ids: string[]) {
-    const { items, itemMemberships, visibilities } = await this.basicItemService.getMany(
-      dbConnection,
-      actor,
-      ids,
-    );
-
-    const thumbnails = await this.itemThumbnailService.getUrlsByItems(items);
-
-    return this.itemWrapperService.mergeResult(items, itemMemberships, visibilities, thumbnails);
-  }
-
   async getAccessible(
     dbConnection: DBConnection,
     member: MinimalMember,
