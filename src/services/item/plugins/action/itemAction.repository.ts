@@ -20,7 +20,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params,
+    params: { startDate: string; endDate: string },
   ): Promise<{
     [hour: number]: {
       count: {

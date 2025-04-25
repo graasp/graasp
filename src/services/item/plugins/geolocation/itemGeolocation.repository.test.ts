@@ -7,6 +7,7 @@ import { clearDatabase } from '../../../../../test/app';
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemGeolocationsTable } from '../../../../drizzle/schema';
+import { ItemRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
@@ -17,7 +18,7 @@ import { expectItemGeolocations } from './test/utils';
 
 const repository = new ItemGeolocationRepository();
 
-const getGeolocationByItemPath = async (itemPath) => {
+const getGeolocationByItemPath = async (itemPath: ItemRaw['path']) => {
   return await db.query.itemGeolocationsTable.findFirst({
     where: eq(itemGeolocationsTable.itemPath, itemPath),
   });

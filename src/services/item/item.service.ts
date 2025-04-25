@@ -318,7 +318,7 @@ export class ItemService {
 
     // no previous item adds at the beginning
     // else define order from given previous item id
-    let order;
+    let order: number | null;
     if (!previousItemId) {
       order = await this.itemRepository.getFirstOrderValue(dbConnection, parentItem.path);
     } else {
@@ -328,9 +328,11 @@ export class ItemService {
         previousItemId,
       );
     }
-    for (let i = 0; i < items.length; i++) {
-      items[i] = { ...items[i], order };
-      order += DEFAULT_ORDER;
+    if (order) {
+      for (let i = 0; i < items.length; i++) {
+        items[i] = { ...items[i], order };
+        order += DEFAULT_ORDER;
+      }
     }
 
     const createdItems = await this.createItemsAndMemberships(

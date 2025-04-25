@@ -17,6 +17,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
+import { ItemRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
@@ -59,7 +60,7 @@ jest.mock('@aws-sdk/lib-storage', () => {
   };
 });
 
-const getActionsByItemId = async (itemId) => {
+const getActionsByItemId = async (itemId: ItemRaw['id']) => {
   return await db.query.actionsTable.findMany({
     where: eq(actionsTable.itemId, itemId),
   });

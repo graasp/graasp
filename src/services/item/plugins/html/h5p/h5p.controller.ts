@@ -9,6 +9,7 @@ import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { DBConnection, db } from '../../../../../drizzle/db';
+import { ItemRaw } from '../../../../../drizzle/types';
 import { MaybeUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
@@ -152,7 +153,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   async function copyH5PAssets(
     actor: MaybeUser,
     dbConnection: DBConnection,
-    { original: item, copy },
+    { original: item, copy }: { original: ItemRaw; copy: ItemRaw },
   ) {
     // only execute this handler for H5P item types
     if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {

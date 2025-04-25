@@ -14,10 +14,14 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { memberProfilesTable } from '../../../../drizzle/schema';
+import { MemberProfileRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../utils/config';
 
-const expectProfile = (profile, expected) => {
+const expectProfile = (
+  profile: Pick<MemberProfileRaw, 'linkedinId' | 'facebookId' | 'twitterId' | 'bio'>,
+  expected: Pick<MemberProfileRaw, 'linkedinId' | 'facebookId' | 'twitterId' | 'bio'>,
+) => {
   expect(profile.linkedinId).toEqual(expected.linkedinId);
   expect(profile.facebookId).toEqual(expected.facebookId);
   expect(profile.twitterId).toEqual(expected.twitterId);

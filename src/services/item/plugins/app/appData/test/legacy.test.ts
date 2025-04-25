@@ -15,6 +15,7 @@ import build, {
 } from '../../../../../../../test/app';
 import { seedFromJson } from '../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../drizzle/db';
+import { AccountRaw } from '../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../../authentication';
@@ -71,7 +72,7 @@ describe('App Data Tests - Legacy', () => {
         },
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
-      response.json().forEach((ad) => {
+      response.json<{ member: AccountRaw }[]>().forEach((ad) => {
         expect(ad.member).toBeDefined();
       });
     });

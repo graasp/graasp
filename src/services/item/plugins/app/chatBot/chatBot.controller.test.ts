@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { GPTVersion, HttpMethod, ItemType } from '@graasp/sdk';
 
@@ -27,7 +27,7 @@ import {
 // This allow to mock the response of OpenAI only.
 jest.mock('./openAICompletion');
 
-function expectException(response, ex) {
+function expectException(response: LightMyRequestResponse, ex: { code: string; message: string }) {
   expect(response.json().code).toBe(ex.code);
   expect(response.json().message).toBe(ex.message);
 }

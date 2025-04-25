@@ -36,7 +36,7 @@ async function cleanFiles() {
   await fsp.rm(H5P_TMP_FOLDER, { recursive: true, force: true });
 }
 
-const buildExpectedItem = (item) => {
+const buildExpectedItem = (item: H5PItem) => {
   const contentId = item.extra.h5p.contentId;
 
   const expectedExtra = {
@@ -204,19 +204,19 @@ describe('Service plugin', () => {
         ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[]),
       );
 
-      let copiedH5P;
+      let copiedH5P: H5PItem;
       await waitForExpect(async () => {
         // expect(false).toBeTruthy();
-        copiedH5P = await db.query.itemsRawTable.findFirst({
+        copiedH5P = (await db.query.itemsRawTable.findFirst({
           where: isDirectChild(itemsRawTable.path, targetParent.path),
-        });
+        })) as H5PItem;
         expect(copiedH5P).toBeDefined();
       }, 5000); // the above line ensures exists
 
       await waitForExpect(async () => {
         // wait for copied folder to exist
         const h5pFolders = await fsp.readdir(h5pBucket);
-        const copiedContentId = (copiedH5P as H5PItem).extra.h5p.contentId;
+        const copiedContentId = copiedH5P.extra.h5p.contentId;
         expect(h5pFolders).toContain(copiedContentId);
         // expected name of the copy
         const H5P_ACCORDION_COPY_FILENAME = `${path.basename(

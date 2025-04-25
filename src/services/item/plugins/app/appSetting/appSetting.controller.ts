@@ -4,6 +4,7 @@ import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { DBConnection, db } from '../../../../../drizzle/db';
+import { ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import {
@@ -37,7 +38,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   // copy app settings and related files on item copy
-  const hook = async (actor: AuthenticatedUser, dbConnection: DBConnection, { original, copy }) => {
+  const hook = async (
+    actor: AuthenticatedUser,
+    dbConnection: DBConnection,
+    { original, copy }: { original: ItemRaw; copy: ItemRaw },
+  ) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
     await appSettingService.copyForItem(dbConnection, actor, original, copy.id);

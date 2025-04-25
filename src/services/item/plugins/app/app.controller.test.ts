@@ -13,6 +13,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
+import { AccountRaw, AppRaw, ItemWithCreator } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../utils/config';
 import { assertIsMemberForTest } from '../../../authentication';
@@ -44,8 +45,9 @@ describe('Apps Plugin Tests', () => {
         method: HttpMethod.Get,
         url: `${APP_ITEMS_PREFIX}/list`,
       });
-      const data = response.json();
+      const data = response.json<AppRaw[]>();
       const appValue = data.find((a) => a.name === apps[0].name);
+      assertIsDefined(appValue);
       expect(appValue.url).toEqual(apps[0].url);
       expect(appValue.id).toBeFalsy();
     });
@@ -295,7 +297,7 @@ describe('Apps Plugin Tests', () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        const data = response.json();
+        const data = response.json<{ item: ItemWithCreator; members: AccountRaw[] }>();
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(data.item.id).toEqual(item.id);
@@ -334,7 +336,7 @@ describe('Apps Plugin Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const data = response.json();
+        const data = response.json<{ item: ItemWithCreator; members: AccountRaw[] }>();
         expect(data.item.id).toEqual(item.id);
         expect(data.members).toHaveLength(2);
         const membersId = data.members.map((i) => i.id);
@@ -375,7 +377,7 @@ describe('Apps Plugin Tests', () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        const result = response.json();
+        const result = response.json<{ item: ItemWithCreator; members: AccountRaw[] }>();
         const { members, item: resultItem } = result;
         expectItem(resultItem, item);
         expect(members).toHaveLength(2);
@@ -415,7 +417,7 @@ describe('Apps Plugin Tests', () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        const result = response.json();
+        const result = response.json<{ item: ItemWithCreator; members: AccountRaw[] }>();
         const { members, item: resultItem } = result;
         expectItem(resultItem, item);
         expect(members).toHaveLength(2);
