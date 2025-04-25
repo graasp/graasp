@@ -14,11 +14,12 @@ import path from 'path';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { ItemType, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
 import { S3FileConfiguration } from '../interfaces/configuration';
 import { FileRepository, FileUpload } from '../interfaces/fileRepository';
+import { FileStorageType } from '../types';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import {
   DownloadFileUnexpectedError,
@@ -29,6 +30,7 @@ import {
 export class S3FileRepository implements FileRepository {
   private readonly options: S3FileConfiguration;
   private readonly s3Instance: S3;
+  readonly fileStorageType: FileStorageType;
 
   constructor(options: S3FileConfiguration) {
     this.options = options;
@@ -51,10 +53,6 @@ export class S3FileRepository implements FileRepository {
       // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
       endpoint: S3_FILE_ITEM_HOST,
     });
-  }
-
-  get fileType() {
-    return ItemType.S3_FILE;
   }
 
   async getFileSize(filepath: string) {

@@ -1,13 +1,7 @@
 import { SQL } from 'drizzle-orm';
 import { and, eq, or } from 'drizzle-orm/sql';
 
-import {
-  AppDataVisibility,
-  FileItemType,
-  ItemType,
-  PermissionLevel,
-  PermissionLevelOptions,
-} from '@graasp/sdk';
+import { AppDataVisibility, ItemType, PermissionLevel, PermissionLevelOptions } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { appDataTable } from '../../../../../drizzle/schema';
@@ -54,8 +48,8 @@ export class AppDataRepository {
       throw new AppDataNotFound(appDataId);
     }
 
-    const dataType = originalData?.type as FileItemType;
-    if ([ItemType.LOCAL_FILE, ItemType.S3_FILE].includes(dataType)) {
+    const dataType = originalData?.type;
+    if (ItemType.FILE === dataType) {
       throw new PreventUpdateAppDataFile(originalData.id);
     }
 

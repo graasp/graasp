@@ -1,15 +1,15 @@
-import { inject, singleton } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
 import {
   AppDataVisibility,
   type FileItemType,
+  ItemType,
   PermissionLevel,
   PermissionLevelCompare,
   PermissionLevelOptions,
   UUID,
 } from '@graasp/sdk';
 
-import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
 import { type DBConnection } from '../../../../../drizzle/db';
 import { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
@@ -77,12 +77,10 @@ export class AppDataService {
   }>();
 
   constructor(
-    @inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType,
     authorizationService: AuthorizationService,
     itemRepository: ItemRepository,
     appDataRepository: AppDataRepository,
   ) {
-    this.fileItemType = fileItemType;
     this.itemRepository = itemRepository;
     this.authorizationService = authorizationService;
     this.appDataRepository = appDataRepository;
@@ -167,7 +165,7 @@ export class AppDataService {
     }
 
     // prevent patch on app data file
-    if (currentAppData?.data && currentAppData.data[this.fileItemType]) {
+    if (currentAppData?.data && currentAppData.data[ItemType.FILE]) {
       throw new PreventUpdateAppDataFile(currentAppData.id);
     }
 

@@ -1213,10 +1213,10 @@ export async function seedFromJson(data: DataType = {}) {
  */
 export function buildFile(member: ReferencedSeedActor, extra: Partial<FileItemProperties> = {}) {
   return {
-    type: ItemType.S3_FILE,
+    type: ItemType.FILE,
     extra: {
-      [ItemType.S3_FILE]: {
-        size: extra[ItemType.S3_FILE]?.size ?? faker.number.int({ min: 1, max: 1000 }),
+      [ItemType.FILE]: {
+        size: extra[ItemType.FILE]?.size ?? faker.number.int({ min: 1, max: 1000 }),
         content: 'content',
         mimetype: 'image/png',
         name: faker.system.fileName(),

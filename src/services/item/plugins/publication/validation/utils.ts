@@ -5,7 +5,7 @@ import { ItemType, MimeTypes, getMimetype } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../../../drizzle/types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { LocalFileItem, S3FileItem, isItemType } from '../../../discrimination';
+import { FileItem, isItemType } from '../../../discrimination';
 
 export const stripHtml = (str?: string | null): string => (str ? striptags(str) : '');
 
@@ -13,10 +13,10 @@ export const buildStoragePath = (itemId: string): string =>
   path.join(TMP_FOLDER, 'validations', itemId);
 
 export const isFileType = (item: ItemRaw) => {
-  return isItemType(item, ItemType.S3_FILE) || isItemType(item, ItemType.LOCAL_FILE);
+  return isItemType(item, ItemType.FILE);
 };
 
-export const isImage = (item: ItemRaw): item is S3FileItem | LocalFileItem => {
+export const isImage = (item: ItemRaw): item is FileItem => {
   if (!isFileType(item)) {
     return false;
   }

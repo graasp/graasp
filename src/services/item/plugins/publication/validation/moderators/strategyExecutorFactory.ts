@@ -35,10 +35,6 @@ export class StrategyExecutorFactory {
     this.thumbnailValidationStrategy = thumbnailValidationStrategy;
   }
 
-  private isSameTypeAsFileService(item: ItemRaw) {
-    return item.type === this.fileService.fileType;
-  }
-
   /**
    * Define the different validation processes to run on the given item depending on the type.
    * @param item The item to validate.
@@ -50,7 +46,7 @@ export class StrategyExecutorFactory {
       buildStrategyExecutor(this.textValidationStrategy, item),
     ];
 
-    if (this.isSameTypeAsFileService(item) && isImage(item)) {
+    if (isImage(item)) {
       validationStrategies.push(buildStrategyExecutor(this.imageValidationStrategy, item));
     }
 

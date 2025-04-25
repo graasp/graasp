@@ -10,11 +10,11 @@ import { FastifyInstance } from 'fastify';
 
 import {
   DescriptionPlacement,
+  FileItemExtra,
   HttpMethod,
   ItemType,
   MaxWidth,
   PermissionLevel,
-  S3FileItemExtra,
 } from '@graasp/sdk';
 
 import build, {
@@ -28,7 +28,7 @@ import { db } from '../../../../drizzle/db';
 import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
-import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX, S3_FILE_ITEM_PLUGIN } from '../../../../utils/config';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import {
   DownloadFileInvalidParameterError,
@@ -151,7 +151,7 @@ describe('File Item routes tests', () => {
 
           // check file properties
           // TODO: more precise check
-          expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
+          expect(item?.extra[ItemType.FILE]).toBeTruthy();
 
           // a membership is created for this item
           const membership = await getItemMembershipByPath(newItem.path);
@@ -183,7 +183,7 @@ describe('File Item routes tests', () => {
           expect(uploadDoneMock).toHaveBeenCalledTimes(
             Object.entries(ThumbnailSizeFormat).length + 1,
           );
-          expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
+          expect(item?.extra[ItemType.FILE]).toBeTruthy();
         });
 
         it('Upload successfully many files', async () => {
@@ -222,7 +222,7 @@ describe('File Item routes tests', () => {
           // check file properties
           // TODO: more precise check
           for (const item of newItems) {
-            expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
+            expect(item?.extra[ItemType.FILE]).toBeTruthy();
           }
           // a membership is created for this item
           const memberships = await db.query.itemMembershipsTable.findMany({
@@ -269,7 +269,7 @@ describe('File Item routes tests', () => {
 
           // check file properties
           // TODO: more precise check
-          expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
+          expect(item?.extra[ItemType.FILE]).toBeTruthy();
           expect(item?.path).toContain(parentItem.path);
 
           // a membership is not created for new item because it inherits parent
@@ -305,11 +305,7 @@ describe('File Item routes tests', () => {
           // check that both items exist in db and that their types are correctly interpreted
           const imageItem = await getItemById(newItems[0].id);
           expectItem(imageItem, newItems[0]);
-          if (S3_FILE_ITEM_PLUGIN) {
-            expect(imageItem?.type).toEqual(ItemType.S3_FILE);
-          } else {
-            expect(imageItem?.type).toEqual(ItemType.LOCAL_FILE);
-          }
+          expect(imageItem?.type).toEqual(ItemType.FILE);
 
           const h5pItem = await getItemById(newItems[1].id);
           expectItem(h5pItem, newItems[1]);
@@ -425,7 +421,7 @@ describe('File Item routes tests', () => {
           // check item exists in db
           const item = await getItemById(uploadedItems[0].id);
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          expect(item!.type).toEqual(ItemType.S3_FILE);
+          expect(item!.type).toEqual(ItemType.FILE);
         });
         it('Gracefully fails if s3 upload throws', async () => {
           uploadDoneMock.mockImplementation(() => {
@@ -647,9 +643,9 @@ describe('File Item routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
-        payload: { extra: { [FILE_ITEM_TYPE]: { altText: 'new name' } } },
+        payload: { extra: { [ItemType.FILE]: { altText: 'new name' } } },
       });
-      expect(response.json().extra[FILE_ITEM_TYPE].altText).toEqual('new name');
+      expect(response.json().extra[ItemType.FILE].altText).toEqual('new name');
     });
 
     it('Edit file item maxWidth', async () => {
@@ -693,7 +689,7 @@ describe('File Item routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
-        payload: { extra: { [FILE_ITEM_TYPE]: { size: 10 } } },
+        payload: { extra: { [ItemType.FILE]: { size: 10 } } },
       });
       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
@@ -822,8 +818,8 @@ describe('File Item routes tests', () => {
             });
             expect(items).toHaveLength(2);
 
-            expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
-              (items[1].extra as S3FileItemExtra).s3File.path,
+            expect((items[0].extra as FileItemExtra).file.path).not.toEqual(
+              (items[1].extra as FileItemExtra).file.path,
             );
 
             done(true);
@@ -840,9 +836,9 @@ describe('File Item routes tests', () => {
             {
               children: [
                 {
-                  type: ItemType.S3_FILE,
+                  type: ItemType.FILE,
                   extra: {
-                    [ItemType.S3_FILE]: {
+                    [ItemType.FILE]: {
                       size: DEFAULT_MAX_STORAGE,
                       name: 'name',
                       mimetype: 'mimetype',
@@ -913,7 +909,7 @@ describe('File Item routes tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.LOCAL_FILE]: {},
+            [ItemType.FILE]: {},
           },
           settings: {
             hasThumbnail: true,

@@ -242,7 +242,7 @@ export class ImportExportService {
     mimetype: string;
   }> {
     switch (true) {
-      case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
+      case isItemType(item, ItemType.FILE): {
         const mimetype = getMimetype(item.extra) || 'application/octet-stream';
         const url = await this.fileItemService.getUrl(dbConnection, actor, {
           itemId: item.id,

@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
+import { FileItemProperties, ItemType, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../../../drizzle/db';
 import { AppSettingRaw, AppSettingWithItem, ItemRaw } from '../../../../../../../drizzle/types';
@@ -81,7 +81,7 @@ class AppSettingFileService {
       id: appSettingId,
       name,
       data: {
-        [this.fileService.fileType]: fileProperties,
+        [ItemType.FILE]: fileProperties,
       },
     });
 
@@ -100,7 +100,7 @@ class AppSettingFileService {
       item.id,
       appSettingId,
     );
-    const fileProp = appSetting.data[this.fileService.fileType] as AppSettingFileProperties;
+    const fileProp = appSetting.data[ItemType.FILE] as AppSettingFileProperties;
     if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
     }
@@ -115,7 +115,6 @@ class AppSettingFileService {
   }
 
   async copyMany(dbConnection: DBConnection, actor: MinimalMember, toCopy: AppSettingWithItem[]) {
-    const fileItemType = this.fileService.fileType;
     for (const appSetting of toCopy) {
       if (!appSetting.data) {
         throw new Error('App setting file is not correctly defined');
@@ -124,9 +123,9 @@ class AppSettingFileService {
       // create file data object
       const itemId = appSetting.item.id;
       const newFilePath = this.buildFilePath(itemId, appSetting.id);
-      const originalFileExtra = appSetting.data[fileItemType] as AppSettingFileProperties;
+      const originalFileExtra = appSetting.data[ItemType.FILE] as AppSettingFileProperties;
       const newFileData = {
-        [fileItemType]: {
+        [ItemType.FILE]: {
           path: newFilePath,
           name: originalFileExtra.name,
           mimetype: originalFileExtra.mimetype,
@@ -152,7 +151,7 @@ class AppSettingFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appSetting?.data?.[this.fileService.fileType] as FileItemProperties;
+      const fileProp = appSetting?.data?.[ItemType.FILE] as FileItemProperties;
       if (!fileProp) {
         return;
       }

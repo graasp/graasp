@@ -10,14 +10,13 @@ import { v4 } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { FileItemType } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { TMP_FOLDER } from '../../../../utils/config';
 import FileService, { FileServiceConfig } from '../../../file/file.service';
+import { FileStorageType } from '../../../file/types';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { GraaspHtmlError, HtmlImportError } from './errors';
@@ -44,7 +43,7 @@ export abstract class HtmlService {
       type,
     }: {
       config: FileServiceConfig;
-      type: FileItemType;
+      type: FileStorageType;
     },
     storageService: StorageService,
     pathPrefix: string,

@@ -1,6 +1,9 @@
 # Graasp Backend
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![GitHub Release](https://img.shields.io/github/release/graasp/graasp)]()
@@ -162,14 +165,14 @@ EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES=1440
 # FILE_STORAGE_HOST=http://localhost:1081
 
 # Graasp s3 file item
-S3_FILE_ITEM_PLUGIN=false
+FILE_STORAGE_TYPE=s3
 S3_FILE_ITEM_REGION=us-east-1
 S3_FILE_ITEM_BUCKET=graasp
 S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
 S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
 
 # Graasp H5P
-H5P_FILE_STORAGE_TYPE=file
+H5P_FILE_STORAGE_TYPE=local
 H5P_STORAGE_ROOT_PATH=/tmp/graasp-h5p/
 H5P_PATH_PREFIX=h5p-content/
 H5P_FILE_STORAGE_HOST=http://localhost:1081

@@ -110,8 +110,7 @@ const linkItemCreateSchema = itemCreateSchemaFactoryWithSettings(
 const fileItemExtra = customType.StrictObject({
   name: Type.String(),
 });
-const localFileItemCreateSchema = itemCreateSchemaFactory(ItemType.LOCAL_FILE, fileItemExtra);
-const s3FileItemCreateSchema = itemCreateSchemaFactory(ItemType.S3_FILE, fileItemExtra);
+const fileItemCreateSchema = itemCreateSchemaFactory(ItemType.FILE, fileItemExtra);
 const etherpadItemCreateSchema = itemCreateSchemaFactory(
   ItemType.ETHERPAD,
   customType.StrictObject({ groupID: Type.String(), padID: Type.String() }),
@@ -149,8 +148,7 @@ export const create = {
       appItemCreateSchema,
       documentItemCreateSchema,
       linkItemCreateSchema,
-      localFileItemCreateSchema,
-      s3FileItemCreateSchema,
+      fileItemCreateSchema,
       etherpadItemCreateSchema,
       h5pItemCreateSchema,
       shortcutItemCreateSchema,

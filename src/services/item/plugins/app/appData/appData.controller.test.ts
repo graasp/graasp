@@ -38,9 +38,9 @@ const expectAppDatas = (
 
 function buildAppDataFile() {
   return {
-    type: ItemType.S3_FILE,
+    type: ItemType.FILE,
     data: {
-      [ItemType.S3_FILE]: {
+      [ItemType.FILE]: {
         size: faker.number.int({ min: 1, max: 1000 }),
         content: 'content',
         mimetype: 'image/png',

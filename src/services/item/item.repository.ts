@@ -19,7 +19,6 @@ import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
 import {
-  FileItemType,
   ItemSettings,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
@@ -776,17 +775,13 @@ export class ItemRepository {
    * @param itemType file item type
    * @returns total storage used by file items
    */
-  async getItemSumSize(
-    dbConnection: DBConnection,
-    memberId: string,
-    itemType: FileItemType,
-  ): Promise<number> {
+  async getItemSumSize(dbConnection: DBConnection, memberId: string): Promise<number> {
     const result = await dbConnection
       .select({
-        total: sql<string>`SUM(((${items.extra}::jsonb->${itemType})::jsonb->'size')::bigint)`,
+        total: sql<string>`SUM(((${items.extra}->${ItemType.FILE})->'size')::bigint)`,
       })
       .from(items)
-      .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)));
+      .where(and(eq(items.creatorId, memberId), eq(items.type, ItemType.FILE)));
     const [{ total }] = result;
     return parseInt(total ?? 0);
   }
@@ -794,7 +789,6 @@ export class ItemRepository {
   async getFilesMetadata(
     dbConnection: DBConnection,
     memberId: string,
-    itemType: FileItemType,
     { page = FILE_METADATA_MIN_PAGE, pageSize = FILE_METADATA_DEFAULT_PAGE_SIZE }: Pagination,
   ) {
     const limit = Math.min(pageSize, FILE_METADATA_MAX_PAGE_SIZE);
@@ -816,16 +810,16 @@ export class ItemRepository {
         parentTable,
         sql`${parentTable.path} = subpath(${items.path}, 0, (nlevel(${items.path}) - 1))`,
       )
-      .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)))
+      .where(and(eq(items.creatorId, memberId), eq(items.type, ItemType.FILE)))
       .offset(skip)
       // order by size
-      .orderBy(desc(sql`(${items.extra}::json -> ${itemType} ->> 'size')::decimal`))
+      .orderBy(desc(sql`(${items.extra}::json -> ${ItemType.FILE} ->> 'size')::decimal`))
       .limit(limit);
 
     const entities = result.map(({ parentName, parentId, extra, ...item }) => ({
       ...item,
-      size: extra[itemType].size,
-      path: extra[itemType].path,
+      size: extra[ItemType.FILE].size,
+      path: extra[ItemType.FILE].path,
       parent: parentId
         ? {
             id: parentId,

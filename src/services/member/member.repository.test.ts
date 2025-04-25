@@ -4,7 +4,7 @@ import { EmailFrequency } from '@graasp/sdk';
 
 import { MemberFactory } from '../../../test/factories/member.factory';
 import { seedFromJson } from '../../../test/mocks/seed';
-import { client, db } from '../../drizzle/db';
+import { db } from '../../drizzle/db';
 import { MemberRaw } from '../../drizzle/types';
 import { MemberNotFound } from '../../utils/errors';
 import { MemberRepository } from './member.repository';

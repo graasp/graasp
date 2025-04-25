@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
-import { FileItemType, ItemType } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { appSettingsTable } from '../../../../../drizzle/schema';
@@ -35,9 +35,9 @@ export class AppSettingRepository {
 
     // parsing very unsecurely ...
     const appSettingData = originalData.data as { type: string };
-    const dataType = appSettingData?.type as FileItemType;
+    const dataType = appSettingData?.type;
 
-    if ([ItemType.LOCAL_FILE, ItemType.S3_FILE].includes(dataType)) {
+    if (ItemType.FILE === dataType) {
       throw new PreventUpdateAppSettingFile(originalData);
     }
 
