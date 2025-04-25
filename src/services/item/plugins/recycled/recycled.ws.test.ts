@@ -77,7 +77,7 @@ describe('Recycle websocket hooks', () => {
         const { deletedAt, createdAt, updatedAt, ...i } = updatedItem;
 
         expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
-          ItemOpFeedbackEvent('recycle', [item.id], { [item.id]: i } as never),
+          ItemOpFeedbackEvent('recycle', [item.id], [i] as never),
         );
       });
     });
