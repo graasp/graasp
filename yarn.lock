@@ -2256,17 +2256,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/busboy@npm:3.1.1":
+"@fastify/busboy@npm:3.1.1, @fastify/busboy@npm:^3.0.0":
   version: 3.1.1
   resolution: "@fastify/busboy@npm:3.1.1"
   checksum: 10/3d67fe6c6fbd9bace81f45d932809ea6b0c20da030315ac961e43a788f0a235380883c14c6c789d5ff6d099d0aca6561d540cac83c08e9bba3e7952d8814e0a4
-  languageName: node
-  linkType: hard
-
-"@fastify/busboy@npm:^2.1.0":
-  version: 2.1.1
-  resolution: "@fastify/busboy@npm:2.1.1"
-  checksum: 10/2bb8a7eca8289ed14c9eb15239bc1019797454624e769b39a0b90ed204d032403adc0f8ed0d2aef8a18c772205fa7808cf5a1b91f21c7bfc7b6032150b1062c5
   languageName: node
   linkType: hard
 
@@ -2290,13 +2283,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/deepmerge@npm:^1.0.0":
-  version: 1.3.0
-  resolution: "@fastify/deepmerge@npm:1.3.0"
-  checksum: 10/6ddfc230ed46bfb158dbf83c2cc7f6119c9c1afb96d885cf5d95ac17b56126d04eef83ddb1ee7a1b044e65a128c76ebf8b391a26490b19f5812fa0d2d2a3a675
-  languageName: node
-  linkType: hard
-
 "@fastify/deepmerge@npm:^2.0.0":
   version: 2.0.2
   resolution: "@fastify/deepmerge@npm:2.0.2"
@@ -2311,7 +2297,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/error@npm:^3.0.0, @fastify/error@npm:^3.3.0, @fastify/error@npm:^3.4.0":
+"@fastify/error@npm:^3.3.0, @fastify/error@npm:^3.4.0":
   version: 3.4.1
   resolution: "@fastify/error@npm:3.4.1"
   checksum: 10/4d63660f7d4a0d6091abf869208d30898bde82f513ca7be542243d9d740df743dd4be293e7db30858fca612dd512d28a818ea06dc674e06b445278fcefcdda92
@@ -2387,17 +2373,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/multipart@npm:8.3.0":
-  version: 8.3.0
-  resolution: "@fastify/multipart@npm:8.3.0"
+"@fastify/multipart@npm:8.3.1":
+  version: 8.3.1
+  resolution: "@fastify/multipart@npm:8.3.1"
   dependencies:
-    "@fastify/busboy": "npm:^2.1.0"
-    "@fastify/deepmerge": "npm:^1.0.0"
-    "@fastify/error": "npm:^3.0.0"
+    "@fastify/busboy": "npm:^3.0.0"
+    "@fastify/deepmerge": "npm:^2.0.0"
+    "@fastify/error": "npm:^4.0.0"
     fastify-plugin: "npm:^4.0.0"
     secure-json-parse: "npm:^2.4.0"
     stream-wormhole: "npm:^1.1.0"
-  checksum: 10/23b9b709a499af0c0beaaaabd52032a92fa8f4a398ed821c2b4f272e68602ed7bcf91b5daed1e5270c3c61a8b3e8ea1bc2924f21fbcfdbdbd07f4342bd17cd81
+  checksum: 10/3760105b52b87285364372b2b34a383c54e38c160407f17162cb0e057650d9e9f5fb688f2f165342e18849256b4107891e684051fa6b5da6eaf04ccd0e8c4ca6
   languageName: node
   linkType: hard
 
@@ -8286,7 +8272,7 @@ __metadata:
     "@fastify/error": "npm:4.1.0"
     "@fastify/forwarded": "npm:3.0.0"
     "@fastify/helmet": "npm:11.1.1"
-    "@fastify/multipart": "npm:8.3.0"
+    "@fastify/multipart": "npm:8.3.1"
     "@fastify/passport": "npm:2.5.0"
     "@fastify/secure-session": "npm:7.5.1"
     "@fastify/static": "npm:7.0.4"
