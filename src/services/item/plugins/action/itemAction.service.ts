@@ -28,7 +28,6 @@ import { InvalidAggregationError } from '../../../action/utils/errors';
 import { filterOutItems } from '../../../authorization.utils';
 import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { ExportDataRepository } from '../../../member/plugins/export-data/memberExportData.repository';
 import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
@@ -36,9 +35,8 @@ import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/appData.repository';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
-import { ItemActionRepository } from './itemAction.repository';
+import { type ActionDateFilters, ItemActionRepository } from './itemAction.repository';
 import { View, ViewOptions } from './itemAction.schemas';
-// import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
 
 @singleton()
@@ -51,7 +49,6 @@ export class ItemActionService {
   private readonly chatMessageRepository: ChatMessageRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly appDataRepository: AppDataRepository;
-  private readonly exportDataRepository: ExportDataRepository;
   private readonly itemService: ItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly itemActionRepository: ItemActionRepository;
@@ -65,7 +62,6 @@ export class ItemActionService {
     appSettingRepository: AppSettingRepository,
     appDataRepository: AppDataRepository,
     chatMessageRepository: ChatMessageRepository,
-    exportDataRepository: ExportDataRepository,
     itemService: ItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     itemActionRepository: ItemActionRepository,
@@ -78,7 +74,6 @@ export class ItemActionService {
     this.appSettingRepository = appSettingRepository;
     this.appDataRepository = appDataRepository;
     this.chatMessageRepository = chatMessageRepository;
-    this.exportDataRepository = exportDataRepository;
     this.itemService = itemService;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemActionRepository = itemActionRepository;
@@ -322,7 +317,7 @@ export class ItemActionService {
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
     actor: MaybeUser,
-    params: { startDate?: string; endDate?: string },
+    params: ActionDateFilters,
   ) {
     const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
@@ -333,7 +328,7 @@ export class ItemActionService {
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
     actor: MaybeUser,
-    params: { startDate?: string; endDate?: string },
+    params: ActionDateFilters,
   ) {
     const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
@@ -344,7 +339,7 @@ export class ItemActionService {
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
     actor: MaybeUser,
-    params: { startDate?: string; endDate?: string },
+    params: ActionDateFilters,
   ) {
     const item = await this.basicItemService.get(dbConnection, actor, itemId);
 

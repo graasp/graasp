@@ -10,6 +10,7 @@ import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
 import { AuthorizationService } from '../../../authorization';
+import { ActionDateFilters } from '../../../item/plugins/action/itemAction.repository';
 
 export const getPreviousMonthFromNow = () => {
   const date = new Date(); // Today's date
@@ -46,7 +47,7 @@ export class ActionMemberService {
   async getFilteredActions(
     dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
-    filters: { startDate?: string; endDate?: string },
+    filters: ActionDateFilters,
   ) {
     const { startDate, endDate } = filters;
     const start = startDate ? new Date(startDate) : getPreviousMonthFromNow();

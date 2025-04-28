@@ -9,6 +9,8 @@ import { actionsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { ItemRaw } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
 
+export type ActionDateFilters = { startDate?: string; endDate?: string };
+
 @singleton()
 export class ItemActionRepository {
   private sanitizeName(name: string) {
@@ -20,7 +22,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params: { startDate?: string; endDate?: string },
+    params: ActionDateFilters,
   ): Promise<{
     [hour: number]: {
       count: {
@@ -96,7 +98,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params: { startDate?: string; endDate?: string },
+    params: ActionDateFilters,
   ): Promise<{
     [day: string]: {
       count: {
@@ -173,7 +175,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params: { startDate?: string; endDate?: string },
+    params: ActionDateFilters,
   ): Promise<{
     [weekday: number]: {
       count: {
