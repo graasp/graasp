@@ -22,3 +22,16 @@ export class WrongItemTypeError extends GraaspItemError {
     );
   }
 }
+
+export class ItemOrderingError extends GraaspItemError {
+  constructor(reason?: string) {
+    super(
+      {
+        code: 'GIERR002',
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Error while rescaling',
+      },
+      reason,
+    );
+  }
+}

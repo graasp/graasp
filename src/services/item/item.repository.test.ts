@@ -1287,6 +1287,43 @@ describe('Item Repository', () => {
       // second among duplicata because is less recent
       expect(await getOrderForItemId(item5.id)).toEqual(40);
     });
+    it('throw if one update throws and rollback in transaction', async () => {
+      const {
+        actor,
+        items: [parentItem, item1, item2, item3, item4],
+      } = await seedFromJson({
+        items: [
+          { children: [{ order: 10.1 }, { order: 10.12 }, { order: 10.14 }, { order: 10.13 }] },
+        ],
+      });
+
+      assertIsDefined(actor);
+
+      let updateMock;
+      try {
+        await db.transaction(async (tx) => {
+          updateMock = jest.spyOn(tx, 'update').mockImplementationOnce(() => {
+            throw new Error('mock update error');
+          });
+
+          await itemRepository.rescaleOrder(
+            tx,
+            new MemberDTO(actor).toMinimal(),
+            parentItem as FolderItem,
+          );
+        });
+        // function should have rejected
+        expect(false).toBeTruthy();
+      } catch (_e) {
+        // function rejected as expected
+        expect(updateMock).toHaveBeenCalledTimes(4);
+      }
+
+      expect(await getOrderForItemId(item1.id)).toEqual(10.1);
+      expect(await getOrderForItemId(item2.id)).toEqual(10.12);
+      expect(await getOrderForItemId(item3.id)).toEqual(10.14);
+      expect(await getOrderForItemId(item4.id)).toEqual(10.13);
+    });
     it('do not rescale if bigger than threshold', async () => {
       const {
         actor,
