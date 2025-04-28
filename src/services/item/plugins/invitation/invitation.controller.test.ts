@@ -29,7 +29,7 @@ import { assertIsMemberForTest } from '../../../authentication';
 import { MissingGroupColumnInCSVError } from './utils/errors';
 
 // we need a different form data for each test
-const createFormData = (filename) => {
+const createFormData = (filename: string) => {
   const form = new FormData();
   form.append(
     'myfile',

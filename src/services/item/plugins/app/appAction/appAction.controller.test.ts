@@ -14,14 +14,19 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { appActionsTable } from '../../../../../drizzle/schema';
+import { AppActionRaw } from '../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../authentication';
 import { getAccessToken } from '../test/fixtures';
 
-const expectAppActions = (values, expected) => {
+const expectAppActions = (
+  values: Pick<AppActionRaw, 'id' | 'type' | 'data'>[],
+  expected: Pick<AppActionRaw, 'id' | 'type' | 'data'>[],
+) => {
   for (const expectValue of expected) {
     const value = values.find(({ id }) => id === expectValue.id);
+    assertIsDefined(value);
     expect(value.type).toEqual(expectValue.type);
     expect(value.data).toEqual(expectValue.data);
   }
@@ -168,7 +173,7 @@ describe('App Actions Tests', () => {
 
           const [actorAction, actorAction1, ...otherActions] = appActions;
           const wantedAppActions = [actorAction, actorAction1];
-          const returnedAppActions = response.json();
+          const returnedAppActions = response.json<AppActionRaw[]>();
           expectAppActions(returnedAppActions, wantedAppActions);
           // contains only own actions
           otherActions.forEach(({ id }) => {
@@ -266,6 +271,7 @@ describe('App Actions Tests', () => {
         const savedAppAction = await db.query.appActionsTable.findFirst({
           where: eq(appActionsTable.id, newAppAction.id),
         });
+        assertIsDefined(savedAppAction);
         expectAppActions([newAppAction], [savedAppAction]);
       });
       it('Invalid item id throws', async () => {

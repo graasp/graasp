@@ -15,6 +15,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { appDataTable } from '../../../../../drizzle/schema';
+import { AppDataRaw } from '../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../authentication';
@@ -23,9 +24,13 @@ import { PreventUpdateAppDataFile } from './errors';
 
 jest.retryTimes(3, { logErrorsBeforeRetry: true });
 
-const expectAppDatas = (values, expected) => {
+const expectAppDatas = (
+  values: Pick<AppDataRaw, 'id' | 'type' | 'data'>[],
+  expected: Pick<AppDataRaw, 'id' | 'type' | 'data'>[],
+) => {
   for (const expectValue of expected) {
     const value = values.find(({ id }) => id === expectValue.id);
+    assertIsDefined(value);
     expect(value.type).toEqual(expectValue.type);
     expect(value.data).toEqual(expectValue.data);
   }
@@ -597,6 +602,7 @@ describe('App Data Tests', () => {
           where: eq(appDataTable.id, chosenAppData.id),
         });
         expect(savedAppData).toMatchObject(updatedData);
+        assertIsDefined(savedAppData);
         expectAppDatas([response.json()], [savedAppData]);
       });
       it('Invalid item id throws bad request', async () => {

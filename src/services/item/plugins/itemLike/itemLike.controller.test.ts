@@ -18,7 +18,7 @@ import { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAccess } from '../../../../utils/errors';
 import { assertIsMember } from '../../../authentication';
-import { ItemWrapper } from '../../ItemWrapper';
+import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { expectManyPackedItems } from '../../test/fixtures/items';
 import { ItemLikeNotFound } from './utils/errors';
 
@@ -101,7 +101,7 @@ describe('Item Like', () => {
 
         // check returned items
         expectManyPackedItems(
-          res.json().map(({ item }) => item),
+          res.json<{ item: PackedItem }[]>().map(({ item }) => item),
           items.map((i) => new ItemWrapper({ ...i, creator: null }).packed()),
           actor,
         );

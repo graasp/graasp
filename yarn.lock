@@ -4307,6 +4307,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.uniqby@npm:4.7.9":
+  version: 4.7.9
+  resolution: "@types/lodash.uniqby@npm:4.7.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 10/24cc8af36e0d4c52b7294c7ba7d814c89ce2c8118d94350bbed21031fef850fa1a280bfd2b30a47e0b5f7aa6ac649a36a5089aa76bc23787963a5ee6443f631e
+  languageName: node
+  linkType: hard
+
 "@types/lodash@npm:*":
   version: 4.17.15
   resolution: "@types/lodash@npm:4.17.15"
@@ -8306,6 +8315,7 @@ __metadata:
     "@types/jsonwebtoken": "npm:9.0.9"
     "@types/lodash.groupby": "npm:4.6.9"
     "@types/lodash.partition": "npm:^4"
+    "@types/lodash.uniqby": "npm:4.7.9"
     "@types/mime": "npm:3.0.4"
     "@types/node": "npm:22.14.0"
     "@types/node-fetch": "npm:2"

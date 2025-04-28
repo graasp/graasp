@@ -41,7 +41,7 @@ const getGuest = async ({
   )[0];
 };
 
-const getItemLoginSchemaById = async (ilsId) => {
+const getItemLoginSchemaById = async (ilsId: string) => {
   return await db.query.itemLoginSchemasTable.findFirst({
     where: eq(itemLoginSchemasTable.id, ilsId),
   });

@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { addMonths, format, formatISO } from 'date-fns';
 import { count, desc, getTableColumns, gte, inArray, lte, sql } from 'drizzle-orm';
 import { and } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
@@ -8,6 +8,8 @@ import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import { actionsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { ItemRaw } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
+
+export type ActionDateFilters = { startDate?: string; endDate?: string };
 
 @singleton()
 export class ItemActionRepository {
@@ -20,7 +22,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params,
+    params: ActionDateFilters,
   ): Promise<{
     [hour: number]: {
       count: {
@@ -33,7 +35,8 @@ export class ItemActionRepository {
       };
     };
   }> {
-    const { startDate, endDate } = params;
+    const endDate = params.endDate ?? formatISO(new Date());
+    const startDate = params.startDate ?? formatISO(addMonths(endDate, -1));
 
     const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })
@@ -95,7 +98,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params,
+    params: ActionDateFilters,
   ): Promise<{
     [day: string]: {
       count: {
@@ -108,7 +111,8 @@ export class ItemActionRepository {
       };
     };
   }> {
-    const { startDate, endDate } = params;
+    const endDate = params.endDate ?? formatISO(new Date());
+    const startDate = params.startDate ?? formatISO(addMonths(endDate, -1));
 
     const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })
@@ -171,7 +175,7 @@ export class ItemActionRepository {
     dbConnection: DBConnection,
     itemPath: ItemRaw['path'],
     actor: MaybeUser,
-    params,
+    params: ActionDateFilters,
   ): Promise<{
     [weekday: number]: {
       count: {
@@ -184,7 +188,8 @@ export class ItemActionRepository {
       };
     };
   }> {
-    const { startDate, endDate } = params;
+    const endDate = params.endDate ?? formatISO(new Date());
+    const startDate = params.startDate ?? formatISO(addMonths(endDate, -1));
 
     const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })

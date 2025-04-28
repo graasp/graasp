@@ -16,7 +16,7 @@ export class UrlValidator implements Validator {
     try {
       const _url = new URL(strUrl);
       return { name, value: strUrl };
-    } catch (e) {
+    } catch (_e) {
       throw new InvalidUrlError(name);
     }
   }

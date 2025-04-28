@@ -269,12 +269,20 @@ export class ItemGeolocationRepository {
       `${GEOLOCATION_API_HOST}/search?${searchParams.toString()}`,
     ).then((r) => r.json());
 
-    return results.map((r) => ({
-      addressLabel: r.formatted,
-      country: r.country_code,
-      id: r.place_id,
-      lat: r.lat,
-      lng: r.lon,
-    }));
+    return results.map(
+      (r: {
+        formatted: string;
+        country_code: string;
+        place_id: string;
+        lat: string;
+        lon: string;
+      }) => ({
+        addressLabel: r.formatted,
+        country: r.country_code,
+        id: r.place_id,
+        lat: r.lat,
+        lng: r.lon,
+      }),
+    );
   }
 }

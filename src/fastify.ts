@@ -43,7 +43,7 @@ export const instance = fastify({
 }).withTypeProvider<TypeBoxTypeProvider>();
 
 // On close, close database connection
-instance.addHook('onClose', async (instance) => {
+instance.addHook('onClose', async () => {
   await client.end();
 });
 

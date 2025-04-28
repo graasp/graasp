@@ -140,7 +140,7 @@ const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
     const etherpadApiEndpoint = new URL(`${ETHERPAD_URL}/api`);
     const res = await fetch(etherpadApiEndpoint.toString());
     if (res.ok) {
-      const response = (await res.json()) satisfies { currentVersion: string };
+      const response = (await res.json()) as { currentVersion: string };
       return new HealthyStatus(`Running ${response.currentVersion}`);
     }
     return new UnHealthyStatus('Etherpad');

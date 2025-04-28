@@ -16,6 +16,7 @@ import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { isDirectChild } from '../../../../../drizzle/operations';
 import { appSettingsTable, itemsRawTable } from '../../../../../drizzle/schema';
+import { AppSettingRaw } from '../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';
@@ -28,9 +29,13 @@ import { getAccessToken } from '../test/fixtures';
  * @param values values returned by the API
  * @param expected expected values
  */
-const expectAppSettings = (values, expected) => {
+const expectAppSettings = (
+  values: Pick<AppSettingRaw, 'id' | 'name' | 'data'>[],
+  expected: Pick<AppSettingRaw, 'id' | 'name' | 'data'>[],
+) => {
   for (const expectValue of expected) {
     const value = values.find(({ id }) => id === expectValue.id);
+    assertIsDefined(value);
     expect(value.name).toEqual(expectValue.name);
     expect(value.data).toEqual(expectValue.data);
   }
@@ -322,6 +327,7 @@ describe('Apps Settings Tests', () => {
         const savedAppSetting = await db.query.appSettingsTable.findFirst({
           where: eq(appSettingsTable.id, newAppSetting.id),
         });
+        assertIsDefined(savedAppSetting);
         expectAppSettings([newAppSetting], [savedAppSetting]);
       });
       it('Post app setting throws for read membership', async () => {

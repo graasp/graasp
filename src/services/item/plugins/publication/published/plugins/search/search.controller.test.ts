@@ -218,8 +218,8 @@ describe('Collection Search endpoints', () => {
     });
 
     describe('triggers indexation on changes', () => {
-      let indexSpy;
-      let deleteSpy;
+      let indexSpy: jest.SpyInstance;
+      let deleteSpy: jest.SpyInstance;
 
       beforeEach(async () => {
         indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'indexOne');
