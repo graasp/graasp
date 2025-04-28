@@ -23,7 +23,6 @@ import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { MemberService } from '../../../member/member.service';
-import { ExportDataRepository } from '../../../member/plugins/export-data/memberExportData.repository';
 import { BasicItemService } from '../../basic.service';
 import { ItemService } from '../../item.service';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
@@ -48,7 +47,6 @@ const service = new ItemActionService(
   new AppSettingRepository(),
   new AppDataRepository(),
   new ChatMessageRepository(),
-  new ExportDataRepository(),
   itemService as ItemService,
   new ItemVisibilityRepository(),
   new ItemActionRepository(),
