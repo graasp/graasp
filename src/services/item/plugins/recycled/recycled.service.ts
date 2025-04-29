@@ -75,11 +75,7 @@ export class RecycledBinService {
   }
 
   async recycleMany(dbConnection: DBConnection, actor: MinimalMember, itemIds: string[]) {
-    const itemsResult = await this.itemRepository.getMany(dbConnection, itemIds, {
-      throwOnError: true,
-    });
-    const { data: idsToItems } = itemsResult;
-    const items = Object.values(idsToItems);
+    const items = await this.itemRepository.getMany(dbConnection, itemIds);
 
     // if item is already deleted, it will throw not found here
     for (const item of items) {
@@ -107,7 +103,10 @@ export class RecycledBinService {
       });
     }
 
-    await this.itemRepository.softRemove(dbConnection, [...allDescendants, ...items]);
+    const softDeletedItems = await this.itemRepository.softRemove(dbConnection, [
+      ...allDescendants,
+      ...items,
+    ]);
     await this.recycledItemRepository.addMany(dbConnection, items, actor);
 
     for (const d of allDescendants) {
@@ -117,7 +116,7 @@ export class RecycledBinService {
       await this.hooks.runPostHooks('recycle', actor, dbConnection, { item, isRecycledRoot: true });
     }
 
-    return itemsResult;
+    return softDeletedItems;
   }
 
   async restoreMany(dbConnection: DBConnection, member: MinimalMember, itemIds: string[]) {

@@ -134,14 +134,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  fastify.get(
-    '/',
-    { schema: getMany, preHandler: optionalIsAuthenticated },
-    async ({ user, query: { id: ids } }) => {
-      return itemService.getManyPacked(db, user?.account, ids);
-    },
-  );
-
   // returns items you have access to given the parameters
   fastify.get(
     '/accessible',

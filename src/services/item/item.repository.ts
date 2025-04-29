@@ -402,16 +402,16 @@ export class ItemRepository {
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
 
-  async getMany(
-    dbConnection: DBConnection,
-    ids: string[],
-    args: { throwOnError?: boolean } = {},
-  ): Promise<ResultOf<ItemWithCreator>> {
+  /**
+   * Returns items matching provided ids, ordered by the given ids array.
+   * @param dbConnection current connection to the db
+   * @param ids items to retrieve, in order
+   * @returns ordered items with given ids
+   */
+  async getMany(dbConnection: DBConnection, ids: string[]): Promise<ItemWithCreator[]> {
     if (!ids.length) {
-      return { data: {}, errors: [] };
+      return [];
     }
-
-    const { throwOnError = false } = args;
 
     const result = (
       await dbConnection
@@ -424,17 +424,20 @@ export class ItemRepository {
       creator: account as MemberRaw,
     }));
 
-    const mappedResult = mapById({
-      keys: ids,
-      findElement: (id) => result.find(({ id: thisId }) => thisId === id),
-      buildError: (id) => new ItemNotFound(id),
-    });
-
-    if (throwOnError && mappedResult.errors.length) {
-      throw mappedResult.errors[0];
+    if (result.length != ids.length) {
+      const resultIds = result.map(({ id }) => id);
+      const missingId = ids.find((id) => !resultIds.includes(id));
+      throw new ItemNotFound(missingId);
     }
 
-    return mappedResult;
+    // order here by id
+    result.sort((a, b) => {
+      const aIdx = ids.findIndex((i) => i === a.id);
+      const bIdx = ids.findIndex((i) => i === b.id);
+      return aIdx > bIdx ? 1 : -1;
+    });
+
+    return result;
   }
 
   async getNumberOfLevelsToFarthestChild(
@@ -869,8 +872,8 @@ export class ItemRepository {
   async delete(dbConnection: DBConnection, args: ItemRaw['id'][]): Promise<void> {
     await dbConnection.delete(itemsRawTable).where(inArray(itemsRawTable.id, args));
   }
-  async softRemove(dbConnection: DBConnection, args: ItemRaw[]): Promise<void> {
-    await dbConnection
+  async softRemove(dbConnection: DBConnection, args: ItemRaw[]): Promise<ItemRaw[]> {
+    return await dbConnection
       .update(itemsRawTable)
       .set({ deletedAt: new Date().toISOString() })
       .where(
@@ -878,7 +881,8 @@ export class ItemRepository {
           itemsRawTable.id,
           args.map(({ id }) => id),
         ),
-      );
+      )
+      .returning();
   }
   async recover(dbConnection: DBConnection, args: ItemRaw[]): Promise<ItemRaw[]> {
     return await dbConnection

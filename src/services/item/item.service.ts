@@ -202,19 +202,10 @@ export class ItemService {
     }[],
     createdItems: ItemRaw[],
   ) {
-    const insertedItems = await this.itemRepository.getMany(
+    const orderedItems = await this.itemRepository.getMany(
       dbConnection,
       createdItems.map((i) => i.id),
     );
-
-    // order items from the db
-    // to get them in the same order as the input item array
-    const orderedItems = Object.values(insertedItems.data);
-    orderedItems.sort((a, b) => {
-      const aIdx = inputItems.findIndex((i) => i.item.id === a.id);
-      const bIdx = inputItems.findIndex((i) => i.item.id === b.id);
-      return aIdx > bIdx ? 1 : -1;
-    });
 
     // construct geolocation and thumbnail maps
     const geolocations = {};
@@ -475,24 +466,6 @@ export class ItemService {
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
     return new ItemWrapper(item, itemMembership, visibilities, thumbnails[item.id]).packed();
-  }
-
-  /**
-   * get item packed with complementary items
-   * @param actor
-   * @param ids
-   * @returns
-   */
-  async getManyPacked(dbConnection: DBConnection, actor: MaybeUser, ids: string[]) {
-    const { items, itemMemberships, visibilities } = await this.basicItemService._getMany(
-      dbConnection,
-      actor,
-      ids,
-    );
-
-    const thumbnails = await this.itemThumbnailService.getUrlsByItems(Object.values(items.data));
-
-    return this.itemWrapperService.mergeResult(items, itemMemberships, visibilities, thumbnails);
   }
 
   async getAccessible(

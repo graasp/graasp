@@ -2519,9 +2519,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:5.11.0":
-  version: 5.11.0
-  resolution: "@graasp/sdk@npm:5.11.0"
+"@graasp/sdk@npm:5.12.0":
+  version: 5.12.0
+  resolution: "@graasp/sdk@npm:5.12.0"
   dependencies:
     "@faker-js/faker": "npm:9.5.0"
     filesize: "npm:10.1.6"
@@ -2529,7 +2529,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3 || ^4.0.0
     uuid: ^9 || ^10 || ^11.0.0
-  checksum: 10/5044771c5fdc3d5d7c35c291e74962d347fb9fff703e7d832f0d3ddbcbd691f30a637c72854c0057de589d33e17cd0fb0f4e88e7302b5eec7ef2e56ab28ec68d
+  checksum: 10/14db99deb7701030b15ab5d93ab09b330f32b00ba79c5dd5688f0db42896a432de59a1d7c95035f9fd81e707d031862164938bfb8450d7c82f649f5daef23598
   languageName: node
   linkType: hard
 
@@ -8295,7 +8295,7 @@ __metadata:
     "@fastify/type-provider-typebox": "npm:4.1.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:5.11.0"
+    "@graasp/sdk": "npm:5.12.0"
     "@graasp/translations": "npm:1.43.0"
     "@jest/globals": "npm:29.7.0"
     "@quobix/vacuum": "npm:0.16.5"
