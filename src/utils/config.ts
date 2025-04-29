@@ -47,6 +47,7 @@ export const DEV = ENVIRONMENT === Environment.development;
 export const TEST = ENVIRONMENT === Environment.test;
 
 export const APP_VERSION = process.env.APP_VERSION;
+export const BUILD_TIMESTAMP = process.env.BUILD_TIMESTAMP;
 
 export const CLIENT_HOST = process.env.CLIENT_HOST ?? 'http://localhost:3114';
 

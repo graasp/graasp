@@ -126,7 +126,7 @@ services:
       # copy the init script inside the docker container where it will be executed
       # WARNING: It will only be executed when there is no data mounted to the container
       # If you want to execute it, down the container, delete the volume associated to it and up the container again, it should execute.
-      - ../bootstrapDB.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../.devcontainer/postgresql:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_DB: docker
       POSTGRES_USER: docker
