@@ -229,7 +229,7 @@ export class ImportExportService {
 
         // upload file
         const file = fs.createReadStream(filepath);
-        const item = await this.fileItemService.upload(dbConnection, actor, {
+        const item = await this.fileItemService.uploadFileAndCreateItem(dbConnection, actor, {
           filename,
           mimetype,
           description,
@@ -525,7 +525,7 @@ export class ImportExportService {
   ) {
     try {
       await dbConnection.transaction(async (tx) => {
-        return this.readAndImportGraaspFile(tx, actor, {
+        await this.readAndImportGraaspFile(tx, actor, {
           folderPath,
           parentId,
         });

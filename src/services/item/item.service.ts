@@ -213,12 +213,12 @@ export class ItemService {
     for (let i = 0; i < inputItems.length; i++) {
       const geolocation = inputItems[i].geolocation;
       if (geolocation) {
-        geolocations[orderedItems[i].path] = geolocation;
+        geolocations[insertedItems[i].path] = geolocation;
       }
 
       const thumbnail = inputItems[i].thumbnail;
       if (thumbnail) {
-        thumbnails[orderedItems[i].id] = thumbnail;
+        thumbnails[insertedItems[i].id] = thumbnail;
       }
     }
 

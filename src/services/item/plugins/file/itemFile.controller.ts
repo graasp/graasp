@@ -148,7 +148,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
                 log,
               );
             } else {
-              item = await fileItemService.upload(tx, member, {
+              item = await fileItemService.uploadFileAndCreateItem(tx, member, {
                 parentId,
                 filename,
                 mimetype,

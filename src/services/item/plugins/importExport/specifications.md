@@ -1,4 +1,41 @@
-# Import ZIP
+# Graasp format export and import
+
+## Export
+
+### Export file structure
+
+The export operation produces a single zip file. This file is a simple zip file that contains a `graasp-manifest.json` file and a collection of UUID-named files. The `graasp-manifest.json` file contains an ordered array where each item has the following structure:
+
+```
+- id (the newly generated ID that links the JSON item to the actual file in the zip)
+- name (name of the item)
+- type (item type)
+- description (item description in HTML)
+- settings (item settings)
+- extra (item extras)
+- thumbnailFilename (item thumbnail in the original size, if present) - COMING SOON
+- children (item children, in case of a folder item)
+- mimetype (item file mimetype, in case there's a file attached to the item)
+```
+
+## Import
+
+Upon the import, the uploaded ZIP file is scanned for the presence of a `graasp-manifest.json` file. If the file is present, it is scanned and then the items and their children are recursively imported, respecting the item order in the manifest file.
+
+The `description` field for all items is sanitized before item creation.
+
+### Item type-specific treatment
+
+- `APP` - Not currently supported.
+- `DOCUMENT` - The `name` and `content` fields are sanitized.
+- `FOLDER` - The children are recursively imported, if present.
+- `LINK` - Not currently supported.
+- `FILE` - The file is imported with the same procedure as in the raw file import. The item is then created with the `extra` field based on the properties extracted from the file.
+- `SHORTCUT` - Not currently supported.
+- `H5P` - Not currently supported.
+- `ETHERPAD` - Not currently supported.
+
+# Raw ZIP Import
 
 ## Sanitize
 

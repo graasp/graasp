@@ -90,7 +90,7 @@ class FileItemService extends ItemService {
    * Upload the file and create an item from the extracted file properties.
    * @returns The newly created item
    */
-  async upload(
+  async uploadFileAndCreateItem(
     dbConnection: DBConnection,
     actor: MinimalMember,
     {
