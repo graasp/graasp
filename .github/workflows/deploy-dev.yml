@@ -11,6 +11,9 @@ on:
 # env:
 #   NODE_OPTIONS: '--max_old_space_size=8192' # Allows to increase Node's max heap size
 
+permissions:
+  id-token: write # This is required for requesting the JWT ofr OIDC
+
 jobs:
   # Build image and push to ECR
   build:
