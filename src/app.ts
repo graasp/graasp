@@ -14,6 +14,7 @@ import authPlugin from './services/auth';
 import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership/membership.controller';
+import { maintenancePlugin } from './services/maintenance/maintenance.controller';
 import MemberServiceApi from './services/member';
 import tagPlugin from './services/tag/tag.controller';
 import websocketsPlugin from './services/websockets/websocket.controller';
@@ -59,4 +60,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(ItemMembershipServiceApi))
       .register(tagPlugin);
   });
+
+  await instance.register(maintenancePlugin);
 }

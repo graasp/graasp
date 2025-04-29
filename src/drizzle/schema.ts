@@ -1066,3 +1066,13 @@ export const itemTagsTable = pgTable(
     unique('UQ_item_tag').on(table.tagId, table.itemId),
   ],
 );
+
+export const maintenanceTable = pgTable(
+  'maintenance',
+  {
+    slug: varchar({ length: 100 }).notNull(),
+    startAt: timestamp('start_at', { withTimezone: true, mode: 'string' }).notNull(),
+    endAt: timestamp('end_at', { withTimezone: true, mode: 'string' }).notNull(),
+  },
+  (table) => [unique('maintenance_slug_key').on(table.slug)],
+);

@@ -29,6 +29,13 @@
       "when": 1745474597532,
       "tag": "0003_use-timezone-in-items-account",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1745928219011,
+      "tag": "0004_maintenance",
+      "breakpoints": true
     }
   ]
 }
