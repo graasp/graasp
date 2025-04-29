@@ -137,7 +137,7 @@ export const create = {
   tags: ['item'],
   summary: 'Create item',
   description:
-    'Create item, whose possible types are folder, app, document, embeddedLink, localFile, s3File, etherpad, h5p and shortcut.',
+    'Create item, whose possible types are folder, app, document, embeddedLink, file, etherpad, h5p and shortcut.',
 
   querystring: Type.Partial(
     customType.StrictObject({ parentId: customType.UUID(), previousItemId: customType.UUID() }),

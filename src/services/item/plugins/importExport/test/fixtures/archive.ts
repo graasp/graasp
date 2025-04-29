@@ -41,18 +41,18 @@ export const archive = [
     name: 'fixtureUtils.ts',
     description: '',
     type: ItemType.FILE,
-    extra: { s3File: { name: 'fixtureUtils.ts', mimetype: 'text/plain', size: 337 } },
+    extra: { file: { name: 'fixtureUtils.ts', mimetype: 'text/plain', size: 337 } },
   },
   {
     name: 'img.png',
     description: 'img.png',
     type: ItemType.FILE,
-    extra: { s3File: { name: 'img.png', mimetype: 'image/png', size: 4616 } },
+    extra: { file: { name: 'img.png', mimetype: 'image/png', size: 4616 } },
   },
   {
     name: 'img_no_extension',
     description: '',
     type: ItemType.FILE,
-    extra: { s3File: { name: 'img_no_extension', mimetype: 'image/png', size: 4616 } },
+    extra: { file: { name: 'img_no_extension', mimetype: 'image/png', size: 4616 } },
   },
 ];

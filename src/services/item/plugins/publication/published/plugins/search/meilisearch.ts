@@ -10,15 +10,7 @@ import {
 } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import {
-  DocumentItemExtra,
-  IndexItem,
-  ItemType,
-  ItemVisibilityType,
-  LocalFileItemExtra,
-  MimeTypes,
-  TagCategory,
-} from '@graasp/sdk';
+import { IndexItem, ItemType, ItemVisibilityType, MimeTypes, TagCategory } from '@graasp/sdk';
 
 import { DBConnection, db } from '../../../../../../../drizzle/db';
 import { items } from '../../../../../../../drizzle/schema';
@@ -231,11 +223,11 @@ export class MeiliSearchWrapper {
 
   // Retrieve searchable part inside an item
   private async getContent(item: ItemRaw) {
-    switch (item.type) {
-      case ItemType.DOCUMENT:
-        return this.removeHTMLTags((item.extra as DocumentItemExtra).document.content); // better way to type extra safely?
-      case ItemType.FILE: {
-        const localExtra = (item.extra as LocalFileItemExtra).file;
+    switch (true) {
+      case isItemType(item, ItemType.DOCUMENT):
+        return this.removeHTMLTags(item.extra.document.content); // better way to type extra safely?
+      case isItemType(item, ItemType.FILE): {
+        const localExtra = item.extra.file;
         if (localExtra.mimetype === MimeTypes.PDF) {
           return localExtra.content;
         } else {

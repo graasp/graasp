@@ -193,18 +193,22 @@ export const MAILER_CONFIG_FROM_EMAIL =
 /**
  * GRAASP FILE STORAGE CONFIG
  */
-// TODO: should this be here?
 export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
 export const FILE_STORAGE_HOST = process.env.FILE_STORAGE_HOST;
 
-export const FILE_STORAGE_TYPE = process.env.FILE_STORAGE_TYPE ?? FileStorage.Local;
-if (!Object.values(FileStorage).includes(FILE_STORAGE_TYPE)) {
-  throw new Error(`File Storage type is not handled: '${FILE_STORAGE_TYPE}'`);
+if (
+  process.env.FILE_STORAGE_TYPE &&
+  !(Object.values(FileStorage) as string[]).includes(process.env.FILE_STORAGE_TYPE)
+) {
+  throw new Error(
+    `File Storage type is not handled: '${process.env.FILE_STORAGE_TYPE}'. It should be one of: ${Object.values(FileStorage)}`,
+  );
 }
+export const FILE_STORAGE_TYPE =
+  (process.env.FILE_STORAGE_TYPE as FileStorageType) ?? FileStorage.Local;
 
 // Graasp S3 file item
 // TODO: should this be here?
-export const S3_FILE_ITEM_PLUGIN = process.env.S3_FILE_ITEM_PLUGIN === 'true';
 export const S3_FILE_ITEM_REGION = process.env.S3_FILE_ITEM_REGION;
 export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
@@ -231,7 +235,7 @@ const getS3FilePluginConfig = () => {
     s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
   };
 };
-// the varaible is undefined when `S3_FILE_ITEM_PLUGIN` is false
+// the varaible is undefined when `FILE_STORAGE_TYPE` is local
 export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration | undefined =
   FILE_STORAGE_TYPE === FileStorage.S3 ? getS3FilePluginConfig() : undefined;
 
