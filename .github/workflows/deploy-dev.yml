@@ -29,7 +29,7 @@ jobs:
         uses: ./.github/actions/build-images
         with:
           tag: next
-          aws-ecr-uri: ${{ vars.PRIVATE_ECR }}/graasp
+          aws-ecr-uri: ${{ vars.PRIVATE_ECR }}
           aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
