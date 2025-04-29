@@ -872,8 +872,8 @@ export class ItemRepository {
   async delete(dbConnection: DBConnection, args: ItemRaw['id'][]): Promise<void> {
     await dbConnection.delete(itemsRawTable).where(inArray(itemsRawTable.id, args));
   }
-  async softRemove(dbConnection: DBConnection, args: ItemRaw[]): Promise<void> {
-    await dbConnection
+  async softRemove(dbConnection: DBConnection, args: ItemRaw[]): Promise<ItemRaw[]> {
+    return await dbConnection
       .update(itemsRawTable)
       .set({ deletedAt: new Date().toISOString() })
       .where(
@@ -881,7 +881,8 @@ export class ItemRepository {
           itemsRawTable.id,
           args.map(({ id }) => id),
         ),
-      );
+      )
+      .returning();
   }
   async recover(dbConnection: DBConnection, args: ItemRaw[]): Promise<ItemRaw[]> {
     return await dbConnection

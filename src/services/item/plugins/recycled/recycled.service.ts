@@ -103,7 +103,10 @@ export class RecycledBinService {
       });
     }
 
-    await this.itemRepository.softRemove(dbConnection, [...allDescendants, ...items]);
+    const softDeletedItems = await this.itemRepository.softRemove(dbConnection, [
+      ...allDescendants,
+      ...items,
+    ]);
     await this.recycledItemRepository.addMany(dbConnection, items, actor);
 
     for (const d of allDescendants) {
@@ -113,7 +116,7 @@ export class RecycledBinService {
       await this.hooks.runPostHooks('recycle', actor, dbConnection, { item, isRecycledRoot: true });
     }
 
-    return items;
+    return softDeletedItems;
   }
 
   async restoreMany(dbConnection: DBConnection, member: MinimalMember, itemIds: string[]) {

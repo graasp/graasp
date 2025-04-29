@@ -76,9 +76,9 @@ describe('Recycle websocket hooks', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { deletedAt, createdAt, updatedAt, ...i } = updatedItem;
 
-        expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
-          ItemOpFeedbackEvent('recycle', [item.id], [i] as never),
-        );
+        const feedbackEvent = memberUpdates.find((v) => v.kind === 'feedback');
+        const expectedFeedback = ItemOpFeedbackEvent('recycle', [item.id], [updatedItem]);
+        expect(feedbackEvent).toMatchObject(expectedFeedback);
       });
     });
 
