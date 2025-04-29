@@ -36,7 +36,7 @@ export const zipExport = {
   }),
   response: {
     // return a stream
-    [StatusCodes.OK]: Type.Any('a stream of data for the export zip content'),
+    [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the export zip content' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -53,7 +53,7 @@ export const graaspZipExport = {
   }),
   response: {
     // return a stream
-    [StatusCodes.OK]: Type.Any('a stream of data for the graasp export content'),
+    [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the graasp export content' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
