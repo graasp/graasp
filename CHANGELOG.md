@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/graasp/graasp/compare/v2.0.3...v2.1.0) (2025-04-30)
+
+
+### Features
+
+* remove resultOf from item repository get many ([#1839](https://github.com/graasp/graasp/issues/1839)) ([fdc84f7](https://github.com/graasp/graasp/commit/fdc84f7e4beb3df6484edd0e639e588f9c5397d6))
+
+
+### Bug Fixes
+
+* **dev-container:** fix the init.sql file volume ([#1844](https://github.com/graasp/graasp/issues/1844)) ([0c53bbb](https://github.com/graasp/graasp/commit/0c53bbb2ae26592a0591c35003461908b0bb444a))
+* **item-reorder:** wait for reorder to throw ([#1833](https://github.com/graasp/graasp/issues/1833)) ([a6957fd](https://github.com/graasp/graasp/commit/a6957fdaa7bdf4e4bd381910652a353c0d92eb83))
+* setup init script ([#1774](https://github.com/graasp/graasp/issues/1774)) ([cbfb80a](https://github.com/graasp/graasp/commit/cbfb80a6f57198b49c2af485023aef9c5462a49f))
+* upgrade fastify v5 ([#1816](https://github.com/graasp/graasp/issues/1816)) ([24d36b8](https://github.com/graasp/graasp/commit/24d36b858085c0dc8cd4266110f56a2b8752bb44))
+
 ## [2.0.3](https://github.com/graasp/graasp/compare/v2.0.2...v2.0.3) (2025-04-24)
 
 
