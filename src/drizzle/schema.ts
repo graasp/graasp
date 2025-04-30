@@ -1067,12 +1067,8 @@ export const itemTagsTable = pgTable(
   ],
 );
 
-export const maintenanceTable = pgTable(
-  'maintenance',
-  {
-    slug: varchar({ length: 100 }).notNull(),
-    startAt: timestamp('start_at', { withTimezone: true, mode: 'string' }).notNull(),
-    endAt: timestamp('end_at', { withTimezone: true, mode: 'string' }).notNull(),
-  },
-  (table) => [unique('maintenance_slug_key').on(table.slug)],
-);
+export const maintenanceTable = pgTable('maintenance', {
+  slug: varchar({ length: 100 }).notNull().primaryKey().unique('UQ_maintenance_slug'),
+  startAt: timestamp('start_at', { withTimezone: true, mode: 'string' }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true, mode: 'string' }).notNull(),
+});

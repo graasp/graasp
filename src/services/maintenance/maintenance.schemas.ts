@@ -6,19 +6,17 @@ import { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 
-const maintenanceSchema = customType.StrictObject(
-  {
-    slug: Type.String(),
-    startAt: customType.DateTime(),
-    endAt: customType.DateTime(),
-  },
-  { description: 'Entry of a maintenance period, usually to perform a migration.' },
-);
-
 const maintenanceSchemaRef = registerSchemaAsRef(
   'maintenance',
   'Maintenance Entry',
-  maintenanceSchema,
+  customType.StrictObject(
+    {
+      slug: Type.String(),
+      startAt: customType.DateTime(),
+      endAt: customType.DateTime(),
+    },
+    { description: 'Entry of a maintenance period, usually to perform a migration.' },
+  ),
 );
 
 export const getNextMaintenance = {

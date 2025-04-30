@@ -36,6 +36,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
   await instance.register(fp(passportPlugin));
   // need to be defined before member and item for auth check
 
+  await instance.register(maintenancePlugin);
+
   await instance.register(fp(authPlugin));
 
   await instance.register(async (instance) => {
@@ -60,6 +62,4 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(ItemMembershipServiceApi))
       .register(tagPlugin);
   });
-
-  await instance.register(maintenancePlugin);
 }
