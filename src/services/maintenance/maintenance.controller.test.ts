@@ -56,7 +56,8 @@ describe('Maintenance Controller Tests', () => {
         method: HttpMethod.Get,
         url: `maintenance/next`,
       });
-      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      expect(response.json()).toBeNull();
     });
   });
 });
