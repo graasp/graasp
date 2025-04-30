@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/graasp/graasp/compare/v2.1.0...v2.2.0) (2025-04-30)
+
+
+### Features
+
+* add get maintenance endpoint ([#1845](https://github.com/graasp/graasp/issues/1845)) ([9372106](https://github.com/graasp/graasp/commit/9372106c101f7d3dc173ec8296f9555c49830d85))
+
 ## [2.1.0](https://github.com/graasp/graasp/compare/v2.0.3...v2.1.0) (2025-04-30)
 
 
