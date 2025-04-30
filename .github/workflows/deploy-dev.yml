@@ -24,7 +24,7 @@ jobs:
       - name: Build images
         uses: ./.github/actions/build-images
         with:
-          tag: next
+          tag: nightly
           aws-ecr-uri: ${{ vars.PRIVATE_ECR }}
           aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
