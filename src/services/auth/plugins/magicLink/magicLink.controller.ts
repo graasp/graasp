@@ -90,7 +90,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             // Authentication failed
             const target = ClientManager.getInstance().getURLByContext(Context.Auth);
             target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
-            reply.redirect(StatusCodes.SEE_OTHER, target.toString());
+            reply.redirect(target.toString(), StatusCodes.SEE_OTHER);
           } else {
             request.logIn(user, { session: true });
             request.authInfo = info;
@@ -114,7 +114,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           await memberService.validate(tx, member.id);
         }
       });
-      reply.redirect(StatusCodes.SEE_OTHER, redirectionLink);
+      reply.redirect(redirectionLink, StatusCodes.SEE_OTHER);
     },
   );
 

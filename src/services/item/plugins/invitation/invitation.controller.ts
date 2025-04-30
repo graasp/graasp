@@ -216,6 +216,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 };
 
 export default fp(plugin, {
-  fastify: '4.x',
+  fastify: '5.x',
   name: 'graasp-plugin-invitations',
 });
