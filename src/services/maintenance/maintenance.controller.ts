@@ -22,10 +22,10 @@ export const maintenancePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         {
           schema: getNextMaintenance,
         },
-        async (_request, reply) => {
+        async (_request) => {
           const entry = await maintenanceService.getNext(db);
           if (!entry) {
-            return reply.status(StatusCodes.NO_CONTENT).send();
+            return null;
           }
           return entry;
         },
