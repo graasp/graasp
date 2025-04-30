@@ -27,7 +27,6 @@ import {
   Paginated,
   Pagination,
   PermissionLevel,
-  ResultOf,
   buildPathFromIds,
   getChildFromPath,
   getParentFromPath,
