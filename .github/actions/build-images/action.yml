@@ -8,6 +8,9 @@ inputs:
   aws-ecr-uri:
     description: "AWS ECR URI, similar to 'public.ecr.aws/ecr-default-alias'"
     required: true
+  aws-region:
+    description: "AWS REGION, similar to 'eu-central-1'"
+    required: true
   aws-role-arn:
     description: 'AWS Role to assume'
     required: true
@@ -19,7 +22,11 @@ runs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ inputs.aws-role-arn }}
-        aws-region: us-east-1
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Auth to the ECR
+      run: bash ./docker/auth.sh ${{ inputs.aws-ecr-uri }} ${{ inputs.aws-region }}
+      shell: bash
 
     - name: Build and push the images
       run: bash ./docker/build.sh ${{ inputs.aws-ecr-uri }} ${{ inputs.tag }}

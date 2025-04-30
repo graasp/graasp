@@ -12,6 +12,7 @@ import { SearchService } from '../services/item/plugins/publication/published/pl
 import { assertIsError } from '../utils/assertions';
 import {
   APP_VERSION,
+  BUILD_TIMESTAMP,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   ETHERPAD_URL,
 } from '../utils/config';
@@ -112,7 +113,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get('/version', async (_, reply) => {
     // allow request cross origin
     reply.header('Access-Control-Allow-Origin', '*');
-    return APP_VERSION;
+    return `${APP_VERSION} @ ${BUILD_TIMESTAMP}`;
   });
 };
 

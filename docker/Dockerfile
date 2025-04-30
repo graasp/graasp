@@ -34,6 +34,9 @@ FROM node:${NODE_VERSION}-bookworm-slim AS runner
 ARG APP_VERSION
 # Set APP_VERSION as ENV variable from ARG passed at build step
 ENV APP_VERSION=${APP_VERSION:-latest}
+# Set BUILD_TIMESTAMP as ENV variable from ARG passed at build step
+ARG BUILD_TIMESTAMP
+ENV BUILD_TIMESTAMP=${BUILD_TIMESTAMP:-not-provided}
 # Set NODE_ENV to production so we don't trigger .husky/install.mjs
 ENV NODE_ENV=production
 
