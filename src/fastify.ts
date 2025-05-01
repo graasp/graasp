@@ -57,6 +57,7 @@ const start = async () => {
       origin: [new RegExp(CORS_ORIGIN_REGEX)],
       credentials: true, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
       maxAge: 7200, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
+      methods: ['HEAD', 'GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     });
   }
 
