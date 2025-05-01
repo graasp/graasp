@@ -1,6 +1,6 @@
 import { inject, singleton } from 'tsyringe';
 
-import { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
+import type { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';

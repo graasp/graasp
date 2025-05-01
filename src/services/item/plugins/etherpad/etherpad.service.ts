@@ -25,7 +25,7 @@ import { ItemService } from '../../item.service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
 import { EtherpadServiceConfig } from './serviceConfig';
-import { PadNameFactory } from './types';
+import { type PadNameFactory } from './types';
 
 export class RandomPadNameFactory implements PadNameFactory {
   public getName() {
