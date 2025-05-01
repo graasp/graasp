@@ -41,16 +41,15 @@ import {
   UnauthorizedMember,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
-import { AuthorizationService } from '../authorization';
 import {
   filterOutItems,
   filterOutPackedDescendants,
   filterOutPackedItems,
 } from '../authorization.utils';
+import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';
-import { BasicItemService } from './basic.service';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
 import { FolderItem, isItemType } from './discrimination';
 import { ItemRepository } from './item.repository';
@@ -72,10 +71,9 @@ export class ItemService {
   private readonly itemGeolocationRepository: ItemGeolocationRepository;
   private readonly itemPublishedRepository: ItemPublishedRepository;
   protected readonly itemRepository: ItemRepository;
-  protected readonly authorizationService: AuthorizationService;
+  protected readonly authorizedItemService: AuthorizedItemService;
   private readonly itemWrapperService: ItemWrapperService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
-  public readonly basicItemService: BasicItemService;
   public readonly recycledBinService: RecycledBinService;
 
   hooks = new HookManager<{
@@ -110,10 +108,9 @@ export class ItemService {
     itemRepository: ItemRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
-    basicItemService: BasicItemService,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
   ) {
@@ -124,10 +121,9 @@ export class ItemService {
     this.itemPublishedRepository = itemPublishedRepository;
     this.itemGeolocationRepository = itemGeolocationRepository;
     this.itemRepository = itemRepository;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.itemWrapperService = itemWrapperService;
     this.itemVisibilityRepository = itemVisibilityRepository;
-    this.basicItemService = basicItemService;
     this.recycledBinService = recycledBinService;
     this.log = log;
   }
@@ -281,12 +277,11 @@ export class ItemService {
     previousItemId?: string,
   ) {
     this.log.debug(`verify parent ${parentId} exists and the member has permission over it`);
-    const parentItem = await this.basicItemService.get(
-      dbConnection,
-      member,
-      parentId,
-      PermissionLevel.Write,
-    );
+    const parentItem = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
+      itemId: parentId,
+      permission: PermissionLevel.Write,
+    });
     const inheritedMembership = await this.itemMembershipRepository.getInherited(
       dbConnection,
       parentItem.path,
@@ -457,12 +452,12 @@ export class ItemService {
     id: string,
     permission: PermissionLevelOptions = PermissionLevel.Read,
   ) {
-    const { item, itemMembership, visibilities } = await this.basicItemService._get(
-      dbConnection,
-      actor,
-      id,
-      permission,
-    );
+    const { item, itemMembership, visibilities } =
+      await this.authorizedItemService.getItemWithPropertiesByItemId(dbConnection, {
+        actor,
+        itemId: id,
+        permission,
+      });
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
     return new ItemWrapper(item, itemMembership, visibilities, thumbnails[item.id]).packed();
@@ -491,7 +486,7 @@ export class ItemService {
     itemId: string,
     params?: ItemChildrenParams,
   ) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     return this.itemRepository.getChildren(dbConnection, actor, item, params);
   }
@@ -543,7 +538,7 @@ export class ItemService {
     itemId: UUID,
     options?: { types?: ItemTypeUnion[] },
   ) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     if (!isItemType(item, ItemType.FOLDER)) {
       return { item, descendants: <ItemWithCreator[]>[] };
@@ -598,16 +593,13 @@ export class ItemService {
   }
 
   async getParents(dbConnection: DBConnection, actor: MaybeUser, itemId: UUID) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
     const parents = await this.itemRepository.getAncestors(dbConnection, item);
 
-    const { itemMemberships, visibilities } =
-      await this.authorizationService.validatePermissionMany(
-        dbConnection,
-        PermissionLevel.Read,
-        actor,
-        parents,
-      );
+    const { itemMemberships, visibilities } = await this.authorizedItemService.getManyItems(
+      dbConnection,
+      { permission: PermissionLevel.Read, actor, items: parents },
+    );
     // remove parents actor does not have access
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
@@ -621,16 +613,11 @@ export class ItemService {
     itemId: UUID,
     body: Partial<ItemRaw>,
   ): Promise<ItemRaw> {
-    // check memberships
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
-    await this.authorizationService.validatePermission(
-      dbConnection,
-
-      PermissionLevel.Write,
-      member,
-      item,
-    );
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      permission: PermissionLevel.Write,
+      actor: member,
+      itemId,
+    });
 
     await this.hooks.runPreHooks('update', member, dbConnection, { item: item });
 
@@ -655,14 +642,11 @@ export class ItemService {
 
   // QUESTION? DELETE BY PATH???
   async delete(dbConnection: DBConnection, actor: MinimalMember, itemId: UUID) {
-    // check memberships
-    const item = await this.itemRepository.getDeletedById(dbConnection, itemId);
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      permission: PermissionLevel.Admin,
       actor,
-      item,
-    );
+      itemId,
+    });
 
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
@@ -736,14 +720,11 @@ export class ItemService {
     itemId: UUID,
     parentItem?: FolderItem,
   ) {
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      member,
-      item,
-    );
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      permission: PermissionLevel.Admin,
+      actor: member,
+      itemId,
+    });
 
     // check how "big the tree is" below the item
     await this.itemRepository.checkNumberOfDescendants(
@@ -809,12 +790,11 @@ export class ItemService {
   ) {
     let parentItem: FolderItem | undefined = undefined;
     if (toItemId) {
-      parentItem = (await this.basicItemService.get(
-        dbConnection,
-        member,
-        toItemId,
-        PermissionLevel.Write,
-      )) as FolderItem;
+      parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
+        actor: member,
+        itemId: toItemId,
+        permission: PermissionLevel.Write,
+      })) as FolderItem;
     }
 
     const results = await Promise.all(
@@ -878,7 +858,10 @@ export class ItemService {
     itemId: UUID,
     parentItem?: FolderItem,
   ) {
-    const item = await this.basicItemService.get(dbConnection, member, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
+      itemId,
+    });
 
     if (parentItem) {
       // check how deep (number of levels) the resulting tree will be
@@ -1002,12 +985,11 @@ export class ItemService {
   ) {
     let parentItem: FolderItem | undefined;
     if (args.parentId) {
-      parentItem = (await this.basicItemService.get(
-        dbConnection,
-        member,
-        args.parentId,
-        PermissionLevel.Write,
-      )) as FolderItem;
+      parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
+        actor: member,
+        itemId: args.parentId,
+        permission: PermissionLevel.Write,
+      })) as FolderItem;
     }
 
     const results = await Promise.all(
@@ -1031,7 +1013,7 @@ export class ItemService {
     itemId: string,
     body: { previousItemId?: string },
   ) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     const ids = getIdsFromPath(item.path);
 
@@ -1057,11 +1039,10 @@ export class ItemService {
   ) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
-      const parentItem = (await this.basicItemService.get(
-        dbConnection,
-        member,
-        parentId,
-      )) as FolderItem;
+      const parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
+        actor: member,
+        itemId: parentId,
+      })) as FolderItem;
       await this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
     }
   }

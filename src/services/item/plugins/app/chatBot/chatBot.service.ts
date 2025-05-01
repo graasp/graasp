@@ -4,17 +4,17 @@ import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorization';
 import { ItemRepository } from '../../../item.repository';
 import { fetchOpenAI } from './utils';
 
 @singleton()
 export class ChatBotService {
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly itemRepository: ItemRepository;
 
-  constructor(authorizationService: AuthorizationService, itemRepository: ItemRepository) {
-    this.authorizationService = authorizationService;
+  constructor(authorizedItemService: AuthorizedItemService, itemRepository: ItemRepository) {
+    this.authorizedItemService = authorizedItemService;
     this.itemRepository = itemRepository;
   }
 
@@ -29,7 +29,7 @@ export class ChatBotService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check that the member can read the item to be allowed to interact with the chat
-    await this.authorizationService.validatePermission(
+    await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,

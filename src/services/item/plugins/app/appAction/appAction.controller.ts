@@ -9,8 +9,7 @@ import { db } from '../../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
 import { asDefined } from '../../../../../utils/assertions';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { AuthorizationService } from '../../../../authorization';
-import { BasicItemService } from '../../../basic.service';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { addMemberInAppAction } from '../legacy';
 import { AppActionEvent, appActionsTopic } from '../ws/events';
 import { checkItemIsApp } from '../ws/utils';
@@ -24,13 +23,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
     const { websockets } = fastify;
 
-    const basicItemService = resolveDependency(BasicItemService);
-    const authorizationService = resolveDependency(AuthorizationService);
+    const authorizedItemService = resolveDependency(AuthorizedItemService);
 
     websockets.register(appActionsTopic, async (req) => {
       const { channel: id, member } = req;
-      const item = await basicItemService.get(db, member, id);
-      await authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
+      const item = await authorizedItemService.getItemById(db, {
+        actor: member,
+        itemId: id,
+        permission: PermissionLevel.Admin,
+      });
       checkItemIsApp(item);
     });
 

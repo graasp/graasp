@@ -10,9 +10,8 @@ import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
@@ -21,46 +20,38 @@ import { ItemThumbnailSize, ItemsThumbnails } from './types';
 @injectable()
 export class ItemThumbnailService {
   private readonly thumbnailService: ThumbnailService;
-  private readonly basicItemService: BasicItemService;
   private readonly itemService: ItemService;
   private readonly logger: BaseLogger;
-  private readonly authorizationService: AuthorizationService;
-  private readonly itemRepository: ItemRepository;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
     // As ItemService use ItemThumbnailService, there is a circular dependency issue.
     // This can be solved by refactoring the code or using the `delay` helper function.
     @inject(delay(() => ItemService)) itemService: ItemService,
     thumbnailService: ThumbnailService,
-    basicItemService: BasicItemService,
-    @inject(delay(() => AuthorizationService))
-    authorizationService: AuthorizationService,
+    @inject(delay(() => AuthorizedItemService))
+    authorizedItemService: AuthorizedItemService,
     itemRepository: ItemRepository,
     logger: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
-    this.basicItemService = basicItemService;
     this.itemService = itemService;
-    this.itemRepository = itemRepository;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.logger = logger;
   }
 
   async upload(dbConnection: DBConnection, actor: MinimalMember, itemId: string, file: Readable) {
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Write,
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      permission: PermissionLevel.Write,
       actor,
-      item,
-    );
+      itemId,
+    });
     await this.thumbnailService.upload(actor, itemId, file);
 
     // update item that should have thumbnail
     await this.itemService.patch(dbConnection, actor, itemId, {
       settings: { hasThumbnail: true },
     });
-    return item;
   }
 
   async getFile(
@@ -69,14 +60,10 @@ export class ItemThumbnailService {
     { size, itemId }: { size: string; itemId: string },
   ) {
     // prehook: get item and input in download call ?
-    // check rights
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
       actor,
-      item,
-    );
+      itemId,
+    });
 
     const result = await this.thumbnailService.getFile({
       id: itemId,
@@ -91,7 +78,7 @@ export class ItemThumbnailService {
     actor: MaybeUser,
     { size, itemId }: { size: string; itemId: string },
   ) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     // item does not have thumbnail
     if (!item.settings.hasThumbnail) {
@@ -162,7 +149,11 @@ export class ItemThumbnailService {
     actor: MinimalMember,
     { itemId }: { itemId: string },
   ) {
-    await this.basicItemService.get(dbConnection, actor, itemId, PermissionLevel.Write);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      actor,
+      itemId,
+      permission: PermissionLevel.Write,
+    });
     await Promise.all(
       Object.values(ThumbnailSize).map(async (size) => {
         this.thumbnailService.delete({ id: itemId, size });
