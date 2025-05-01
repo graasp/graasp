@@ -7,7 +7,7 @@ import { type DBConnection } from '../../../../../drizzle/db';
 import { appActionsTable } from '../../../../../drizzle/schema';
 import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorization';
 import { ItemRepository } from '../../../item.repository';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { InputAppAction } from './appAction.interface';
@@ -18,14 +18,14 @@ import { AppActionNotAccessible } from './errors';
 export class AppActionService {
   private readonly appActionRepository: AppActionRepository;
   private readonly itemRepository: ItemRepository;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     appActionRepository: AppActionRepository,
     itemRepository: ItemRepository,
   ) {
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.appActionRepository = appActionRepository;
     this.itemRepository = itemRepository;
   }
@@ -50,7 +50,7 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // posting an app action is allowed to readers
-    await this.authorizationService.validatePermission(
+    await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,
@@ -81,7 +81,7 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizationService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,
@@ -114,7 +114,7 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemIds[0]);
 
     // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizationService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,

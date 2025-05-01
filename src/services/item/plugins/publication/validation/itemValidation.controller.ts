@@ -9,9 +9,9 @@ import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
 import { assertIsMember } from '../../../../authentication';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { memberAccountRole } from '../../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { BasicItemService } from '../../../basic.service';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   const validationService = resolveDependency(ItemValidationService);
   const publishService = resolveDependency(ItemPublishedService);
-  const basicItemService = resolveDependency(BasicItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
   const folderItemService = resolveDependency(FolderItemService);
 
   // get validation status of given itemId
@@ -40,7 +40,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const item = await basicItemService.get(db, member, itemId);
+      const item = await authorizedItemService.getItemById(db, {
+        actor: member,
+        itemId,
+        permission: PermissionLevel.Admin,
+      });
       return await validationService.getLastItemValidationGroupForItem(db, member, item);
     },
   );

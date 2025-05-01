@@ -4,7 +4,7 @@ import { getIdsFromPath } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../di/utils';
 import { DBConnection, db } from '../../../drizzle/db';
-import { BasicItemService } from '../../item/basic.service';
+import { AuthorizedItemService } from '../../authorizedItem.service';
 import { WebsocketService } from '../../websockets/ws-service';
 import { ItemMembershipService } from '../membership.service';
 import { ItemMembershipEvent, itemMembershipsTopic } from './events';
@@ -12,13 +12,13 @@ import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 export function registerItemMembershipWsHooks(
   dbConnection: DBConnection,
   websockets: WebsocketService,
-  basicItemService: BasicItemService,
+  authorizedItemService: AuthorizedItemService,
   itemMembershipService: ItemMembershipService,
 ): void {
   websockets.register(itemMembershipsTopic, async (req) => {
     const { channel: itemId, member } = req;
     // item must exist with read permission, else exception is thrown
-    await basicItemService.get(dbConnection, member, itemId);
+    await authorizedItemService.hasPermissionForItemId(dbConnection, { actor: member, itemId });
   });
 
   // on create:
@@ -75,8 +75,8 @@ export function registerItemMembershipWsHooks(
  */
 export const membershipWsHooks: FastifyPluginAsync = async (fastify) => {
   const { websockets } = fastify;
-  const basicItemService = resolveDependency(BasicItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
-  registerItemMembershipWsHooks(db, websockets, basicItemService, itemMembershipService);
+  registerItemMembershipWsHooks(db, websockets, authorizedItemService, itemMembershipService);
 };

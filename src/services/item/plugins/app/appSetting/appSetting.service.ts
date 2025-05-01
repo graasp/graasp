@@ -7,12 +7,12 @@ import { AppSettingInsertDTO, AppSettingRaw, type ItemRaw } from '../../../../..
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
-import { BasicItemService } from '../../../basic.service';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { AppSettingRepository } from './appSetting.repository';
 
 @singleton()
 export class AppSettingService {
-  private readonly basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly appSettingRepository: AppSettingRepository;
 
   hooks = new HookManager<{
@@ -45,8 +45,11 @@ export class AppSettingService {
     };
   }>();
 
-  constructor(basicItemService: BasicItemService, appSettingRepository: AppSettingRepository) {
-    this.basicItemService = basicItemService;
+  constructor(
+    authorizedItemService: AuthorizedItemService,
+    appSettingRepository: AppSettingRepository,
+  ) {
+    this.authorizedItemService = authorizedItemService;
     this.appSettingRepository = appSettingRepository;
   }
 
@@ -57,7 +60,11 @@ export class AppSettingService {
     body: Omit<AppSettingInsertDTO, 'itemId' | 'memberId'>,
   ) {
     // posting an app setting is allowed to admin only
-    await this.basicItemService.get(dbConnection, member, itemId, PermissionLevel.Admin);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      actor: member,
+      itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     await this.hooks.runPreHooks('post', member, dbConnection, {
       appSetting: body,
@@ -84,7 +91,11 @@ export class AppSettingService {
     body: Partial<AppSettingInsertDTO>,
   ) {
     // patching requires admin rights
-    await this.basicItemService.get(dbConnection, member, itemId, PermissionLevel.Admin);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      actor: member,
+      itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     await this.hooks.runPreHooks('patch', member, dbConnection, {
       appSetting: { ...body, id: appSettingId },
@@ -106,7 +117,11 @@ export class AppSettingService {
     appSettingId: string,
   ) {
     // delete an app data is allowed to admins
-    await this.basicItemService.get(dbConnection, member, itemId, PermissionLevel.Admin);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      actor: member,
+      itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     const appSetting = await this.appSettingRepository.getOneOrThrow(dbConnection, appSettingId);
 
@@ -124,7 +139,7 @@ export class AppSettingService {
 
   async get(dbConnection: DBConnection, actor: MaybeUser, itemId: string, appSettingId: UUID) {
     // get app setting is allowed to readers
-    await this.basicItemService.get(dbConnection, actor, itemId);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, { actor, itemId });
 
     return await this.appSettingRepository.getOneOrThrow(dbConnection, appSettingId);
   }
@@ -132,7 +147,7 @@ export class AppSettingService {
   async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string, name?: string) {
     // item can be public
     // get app setting is allowed to readers
-    await this.basicItemService.get(dbConnection, actor, itemId);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, { actor, itemId });
 
     return this.appSettingRepository.getForItem(dbConnection, itemId, name);
   }

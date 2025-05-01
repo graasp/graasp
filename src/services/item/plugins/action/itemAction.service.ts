@@ -26,9 +26,9 @@ import {
 } from '../../../action/constants';
 import { InvalidAggregationError } from '../../../action/utils/errors';
 import { filterOutItems } from '../../../authorization.utils';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
@@ -41,7 +41,7 @@ import { ItemActionType } from './utils';
 
 @singleton()
 export class ItemActionService {
-  private readonly basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly actionService: ActionService;
   private readonly actionRepository: ActionRepository;
   private readonly appActionRepository: AppActionRepository;
@@ -55,7 +55,7 @@ export class ItemActionService {
 
   constructor(
     actionService: ActionService,
-    basicItemService: BasicItemService,
+    authorizedItemService: AuthorizedItemService,
     actionRepository: ActionRepository,
     itemMembershipRepository: ItemMembershipRepository,
     appActionRepository: AppActionRepository,
@@ -67,7 +67,7 @@ export class ItemActionService {
     itemActionRepository: ItemActionRepository,
   ) {
     this.actionService = actionService;
-    this.basicItemService = basicItemService;
+    this.authorizedItemService = authorizedItemService;
     this.actionRepository = actionRepository;
     this.itemMembershipRepository = itemMembershipRepository;
     this.appActionRepository = appActionRepository;
@@ -93,7 +93,11 @@ export class ItemActionService {
     }
 
     // check right and get item
-    const item = await this.basicItemService.get(dbConnection, actor, itemId, PermissionLevel.Read);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor,
+      itemId,
+      permission: PermissionLevel.Read,
+    });
 
     // check permission
     const permission = (
@@ -154,12 +158,10 @@ export class ItemActionService {
     }
 
     // check right and get item
-    const item = await this.basicItemService.get(
-      dbConnection,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
       actor,
-      payload.itemId,
-      PermissionLevel.Read,
-    );
+      itemId: payload.itemId,
+    });
 
     // check permission
     const permission = actor
@@ -319,7 +321,7 @@ export class ItemActionService {
     actor: MaybeUser,
     params: ActionDateFilters,
   ) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     return this.itemActionRepository.getActionsByHour(dbConnection, item.path, actor, params);
   }
@@ -330,7 +332,7 @@ export class ItemActionService {
     actor: MaybeUser,
     params: ActionDateFilters,
   ) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     return this.itemActionRepository.getActionsByDay(dbConnection, item.path, actor, params);
   }
@@ -341,7 +343,7 @@ export class ItemActionService {
     actor: MaybeUser,
     params: ActionDateFilters,
   ) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     return this.itemActionRepository.getActionsByWeekday(dbConnection, item.path, actor, params);
   }

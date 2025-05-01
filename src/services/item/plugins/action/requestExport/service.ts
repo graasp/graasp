@@ -22,11 +22,10 @@ import {
   buildItemTmpFolder,
   exportActionsInArchive,
 } from '../../../../action/utils/export';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import FileService from '../../../../file/file.service';
 import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
-import { BasicItemService } from '../../../basic.service';
 import { ItemActionService } from '../itemAction.service';
 import { ActionRequestExportRepository } from './repository';
 
@@ -34,24 +33,22 @@ import { ActionRequestExportRepository } from './repository';
 export class ActionRequestExportService {
   private readonly fileService: FileService;
   private readonly itemActionService: ItemActionService;
-  private readonly basicItemService: BasicItemService;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly mailerService: MailerService;
   private readonly memberService: MemberService;
   private readonly actionRequestExportRepository: ActionRequestExportRepository;
 
   constructor(
     itemActionService: ItemActionService,
-    authorizationService: AuthorizationService,
-    basicItemService: BasicItemService,
+    authorizedItemService: AuthorizedItemService,
     fileService: FileService,
     mailerService: MailerService,
     memberService: MemberService,
     actionRequestExportRepository: ActionRequestExportRepository,
   ) {
     this.itemActionService = itemActionService;
-    this.basicItemService = basicItemService;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
+    this.authorizedItemService = authorizedItemService;
     this.fileService = fileService;
     this.mailerService = mailerService;
     this.memberService = memberService;
@@ -66,13 +63,11 @@ export class ActionRequestExportService {
   ) {
     // check member has admin access to the item
     const member = await this.memberService.get(dbConnection, minimalMember.id);
-    const item = await this.basicItemService.get(dbConnection, minimalMember, itemId);
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      minimalMember,
-      item,
-    );
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: minimalMember,
+      itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     // get last export entry within interval
     const lastRequestExport = await this.actionRequestExportRepository.getLast(dbConnection, {

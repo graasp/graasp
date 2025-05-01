@@ -8,14 +8,14 @@ import { asDefined } from '../../../../utils/assertions';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { BasicItemService } from '../../basic.service';
 import { create, deleteOne, getLikesForCurrentMember, getLikesForItem } from './itemLike.schemas';
 import { ItemLikeService } from './itemLike.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const basicItemService = resolveDependency(BasicItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
   const itemLikeService = resolveDependency(ItemLikeService);
   const actionService = resolveDependency(ActionService);
 
@@ -57,7 +57,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (tx) => {
         await itemLikeService.post(tx, member, itemId);
         // action like item
-        const item = await basicItemService.get(tx, member, itemId);
+        const item = await authorizedItemService.getItemById(tx, { actor: member, itemId });
         const action = {
           item,
           type: ActionTriggers.ItemLike,
@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (tx) => {
         const newItemLike = await itemLikeService.removeOne(tx, member, itemId);
         // action unlike item
-        const item = await basicItemService.get(tx, member, itemId);
+        const item = await authorizedItemService.getItemById(tx, { actor: member, itemId });
 
         const action = {
           item,

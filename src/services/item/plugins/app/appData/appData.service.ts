@@ -14,7 +14,7 @@ import { type DBConnection } from '../../../../../drizzle/db';
 import { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemRepository } from '../../../item.repository';
 import { AppDataRepository } from './appData.repository';
 import {
@@ -59,7 +59,7 @@ export class AppDataService {
   private readonly fileItemType: FileItemType;
   private readonly itemRepository: ItemRepository;
   private readonly appDataRepository: AppDataRepository;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   hooks = new HookManager<{
     post: {
@@ -77,12 +77,12 @@ export class AppDataService {
   }>();
 
   constructor(
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemRepository: ItemRepository,
     appDataRepository: AppDataRepository,
   ) {
     this.itemRepository = itemRepository;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.appDataRepository = appDataRepository;
   }
 
@@ -96,7 +96,7 @@ export class AppDataService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // posting an app data is allowed to readers
-    await this.authorizationService.validatePermission(
+    await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,
@@ -151,7 +151,7 @@ export class AppDataService {
 
     // patching requires at least read
     const { itemMembership: inheritedMembership } =
-      await this.authorizationService.validatePermission(
+      await this.authorizedItemService.validatePermission(
         dbConnection,
         PermissionLevel.Read,
         account,
@@ -210,7 +210,7 @@ export class AppDataService {
 
     // delete an app data is allowed to readers
     const { itemMembership: inheritedMembership } =
-      await this.authorizationService.validatePermission(
+      await this.authorizedItemService.validatePermission(
         dbConnection,
         PermissionLevel.Read,
         account,
@@ -252,7 +252,7 @@ export class AppDataService {
     item: ItemRaw,
     appDataId: UUID,
   ) {
-    const { itemMembership } = await this.authorizationService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,
@@ -277,7 +277,7 @@ export class AppDataService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // posting an app data is allowed to readers
-    const { itemMembership } = await this.authorizationService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,

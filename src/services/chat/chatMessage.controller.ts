@@ -16,6 +16,7 @@ import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemService } from '../item/item.service';
 import { guestAccountRole } from '../itemLogin/strategies/guestAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
@@ -41,7 +42,7 @@ export interface GraaspChatPluginOptions {
 const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastify) => {
   await fastify.register(fp(mentionPlugin));
 
-  const itemService = resolveDependency(ItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
   const chatService = resolveDependency(ChatMessageService);
   const actionChatService = resolveDependency(ActionChatService);
 
@@ -53,7 +54,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
     websockets.register(itemChatTopic, async (req) => {
       const { channel: itemId, member } = req;
       // item must exist with read permission, else exception is thrown
-      await itemService.basicItemService.get(db, member, itemId, PermissionLevel.Read);
+      await authorizedItemService.hasPermissionForItemId(db, { actor: member, itemId });
     });
 
     fastify.get(

@@ -4,16 +4,19 @@ import { FlagType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../types';
-import { BasicItemService } from '../../basic.service';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemFlagRepository } from './itemFlag.repository';
 
 @singleton()
 export class ItemFlagService {
-  private readonly basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly itemFlagRepository: ItemFlagRepository;
 
-  constructor(basicItemService: BasicItemService, itemFlagRepository: ItemFlagRepository) {
-    this.basicItemService = basicItemService;
+  constructor(
+    authorizedItemService: AuthorizedItemService,
+    itemFlagRepository: ItemFlagRepository,
+  ) {
+    this.authorizedItemService = authorizedItemService;
     this.itemFlagRepository = itemFlagRepository;
   }
 
@@ -28,7 +31,7 @@ export class ItemFlagService {
     flagType: FlagType,
   ) {
     // only register member can report
-    await this.basicItemService.get(dbConnection, actor, itemId);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, { actor, itemId });
 
     await this.itemFlagRepository.addOne(dbConnection, {
       flagType,

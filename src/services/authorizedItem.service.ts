@@ -17,6 +17,7 @@ import {
   MemberCannotReadItem,
   MemberCannotWriteItem,
 } from '../utils/errors';
+import { ItemRepository } from './item/item.repository';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
@@ -27,16 +28,39 @@ const permissionMapping: { [K in PermissionLevelOptions]: PermissionLevelOptions
 };
 
 @singleton()
-export class AuthorizationService {
+export class AuthorizedItemService {
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemRepository: ItemRepository;
 
   constructor(
     itemMembershipRepository: ItemMembershipRepository,
     itemVisibilityRepository: ItemVisibilityRepository,
+    itemRepository: ItemRepository,
   ) {
     this.itemMembershipRepository = itemMembershipRepository;
     this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemRepository = itemRepository;
+  }
+
+  public async getManyItemsById(
+    dbConnection: DBConnection,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      itemIds,
+    }: {
+      permission: PermissionLevelOptions;
+      actor: { id: string } | undefined;
+      itemIds: ItemRaw['id'][];
+    },
+  ): Promise<{
+    items: ItemRaw[];
+    itemMemberships: ResultOf<ItemMembershipRaw | null>;
+    visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
+  }> {
+    const items = await this.itemRepository.getMany(dbConnection, itemIds);
+    return this.getManyItems(dbConnection, { permission, actor, items });
   }
 
   /**
@@ -47,18 +71,22 @@ export class AuthorizationService {
    * @param item
    * @throws if the user cannot access the item
    */
-  public async validatePermissionMany(
+  public async getManyItems(
     dbConnection: DBConnection,
-    permission: PermissionLevelOptions,
-    actor: { id: string } | undefined,
-    items: ItemRaw[],
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      items,
+    }: { permission: PermissionLevelOptions; actor: { id: string } | undefined; items: ItemRaw[] },
   ): Promise<{
+    items: ItemRaw[];
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
   }> {
     // items array is empty, nothing to check return early
     if (!items.length) {
       return {
+        items,
         itemMemberships: { data: {}, errors: [] },
         visibilities: { data: {}, errors: [] },
       };
@@ -133,29 +161,77 @@ export class AuthorizationService {
       }
     }
 
-    return { itemMemberships: resultOfMemberships, visibilities };
+    return { items, itemMemberships: resultOfMemberships, visibilities };
   }
 
   public async hasPermission(
     dbConnection: DBConnection,
-    permission: PermissionLevelOptions,
-    actor: MaybeUser,
-    item: ItemRaw,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      item,
+    }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
   ) {
     try {
-      await this.validatePermission(dbConnection, permission, actor, item);
+      await this.getItem(dbConnection, { permission, actor, item });
       return true;
     } catch (err: unknown) {
       return false;
     }
   }
 
-  public async validatePermission(
+  public async hasPermissionForItemId(
     dbConnection: DBConnection,
-    permission: PermissionLevelOptions,
-    actor: { id: string } | undefined,
-    item: ItemRaw,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      itemId,
+    }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
+  ) {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    return this.hasPermission(dbConnection, { permission, actor, item });
+  }
+
+  public async getItemById(
+    dbConnection: DBConnection,
+    {
+      permission,
+      actor,
+      itemId,
+    }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
+  ) {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    return this.getItem(dbConnection, { permission, actor, item });
+  }
+
+  public async getItem(
+    dbConnection: DBConnection,
+    args: { permission?: PermissionLevelOptions; actor: { id: string } | undefined; item: ItemRaw },
+  ): Promise<ItemRaw> {
+    return (await this.getItemWithProperties(dbConnection, args)).item;
+  }
+
+  public async getItemWithPropertiesByItemId(
+    dbConnection: DBConnection,
+    args: {
+      permission?: PermissionLevelOptions;
+      actor: { id: string } | undefined;
+      itemId: ItemRaw['id'];
+    },
+  ) {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, args.itemId);
+    return this.getItemWithProperties(dbConnection, { item, ...args });
+  }
+
+  public async getItemWithProperties(
+    dbConnection: DBConnection,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      item,
+    }: { permission?: PermissionLevelOptions; actor: { id: string } | undefined; item: ItemRaw },
   ): Promise<{
+    item: ItemRaw;
     itemMembership: ItemMembershipRaw | null;
     visibilities: ItemVisibilityWithItem[];
   }> {
@@ -185,12 +261,12 @@ export class AuthorizationService {
 
     // correct membership level pass successfully
     if (isValid) {
-      return { itemMembership: inheritedMembership, visibilities };
+      return { item, itemMembership: inheritedMembership, visibilities };
     }
 
     // PUBLIC CHECK
     if (permission === PermissionLevel.Read && isPublic) {
-      return { itemMembership: inheritedMembership, visibilities };
+      return { item, itemMembership: inheritedMembership, visibilities };
     }
 
     if (!inheritedMembership) {

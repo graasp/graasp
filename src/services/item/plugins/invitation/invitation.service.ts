@@ -18,7 +18,7 @@ import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { AuthenticatedUser, MaybeUser, MinimalMember, NonEmptyArray } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ItemMembershipService } from '../../../itemMembership/membership.service';
 import { MemberService } from '../../../member/member.service';
@@ -46,7 +46,7 @@ export class InvitationService {
   private readonly itemService: ItemService;
   private readonly memberService: MemberService;
   private readonly itemMembershipService: ItemMembershipService;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly invitationRepository: InvitationRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
 
@@ -56,7 +56,7 @@ export class InvitationService {
     itemService: ItemService,
     memberService: MemberService,
     itemMembershipService: ItemMembershipService,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     invitationRepository: InvitationRepository,
     itemMembershipRepository: ItemMembershipRepository,
   ) {
@@ -65,7 +65,7 @@ export class InvitationService {
     this.itemService = itemService;
     this.memberService = memberService;
     this.itemMembershipService = itemMembershipService;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.invitationRepository = invitationRepository;
     this.itemMembershipRepository = itemMembershipRepository;
   }
@@ -164,7 +164,7 @@ export class InvitationService {
     if (!invitation) {
       throw new InvitationNotFound({ invitationId });
     }
-    await this.authorizationService.validatePermission(
+    await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Admin,
       authenticatedUser,
@@ -183,7 +183,7 @@ export class InvitationService {
     if (!invitation) {
       throw new Error('missing invitation');
     }
-    await this.authorizationService.validatePermission(
+    await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Admin,
       authenticatedUser,
@@ -200,7 +200,7 @@ export class InvitationService {
       throw new InvitationNotFound(invitationId);
     }
 
-    await this.authorizationService.validatePermission(
+    await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Admin,
       member,

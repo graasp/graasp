@@ -7,11 +7,10 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { FolderItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
@@ -33,10 +32,9 @@ export class FolderItemService extends ItemService {
     itemRepository: ItemRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
-    basicItemService: BasicItemService,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
   ) {
@@ -48,10 +46,9 @@ export class FolderItemService extends ItemService {
       itemRepository,
       itemPublishedRepository,
       itemGeolocationRepository,
-      authorizationService,
+      authorizedItemService,
       itemWrapperService,
       itemVisibilityRepository,
-      basicItemService,
       recycledBinService,
       log,
     );
@@ -63,7 +60,11 @@ export class FolderItemService extends ItemService {
     itemId: ItemRaw['id'],
     permission?: PermissionLevelOptions,
   ): Promise<FolderItem> {
-    const item = await this.basicItemService.get(dbConnection, member, itemId, permission);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
+      itemId,
+      permission,
+    });
     if (!isItemType(item, ItemType.FOLDER)) {
       throw new WrongItemTypeError(item.type);
     }

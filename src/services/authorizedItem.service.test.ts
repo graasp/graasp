@@ -5,7 +5,8 @@ import { ItemVisibilityFactory } from '../../test/factories/itemVisibility.facto
 import { DBConnection } from '../drizzle/db';
 import { ItemMembershipWithItemAndAccount, ItemRaw } from '../drizzle/types';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
-import { AuthorizationService } from './authorization';
+import { AuthorizedItemService } from './authorizedItem.service';
+import { ItemRepository } from './item/item.repository';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
@@ -27,10 +28,12 @@ const buildSharedMembership = (permission: PermissionLevelOptions, item: ItemRaw
 
 const itemMembershipRepository = new ItemMembershipRepository();
 const itemVisibilityRepository = new ItemVisibilityRepository();
+const itemRepository = new ItemRepository();
 
-const authorizationService = new AuthorizationService(
+const authorizationService = new AuthorizedItemService(
   itemMembershipRepository,
   itemVisibilityRepository,
+  itemRepository,
 );
 
 describe('validatePermission', () => {
