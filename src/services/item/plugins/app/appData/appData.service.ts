@@ -2,7 +2,7 @@ import { inject, singleton } from 'tsyringe';
 
 import {
   AppDataVisibility,
-  FileItemType,
+  type FileItemType,
   PermissionLevel,
   PermissionLevelCompare,
   PermissionLevelOptions,
@@ -56,7 +56,7 @@ const itemVisibilityAppDataAbility = (
 
 @singleton()
 export class AppDataService {
-  private fileItemType: FileItemType;
+  private readonly fileItemType: FileItemType;
   private readonly itemRepository: ItemRepository;
   private readonly appDataRepository: AppDataRepository;
   private readonly authorizationService: AuthorizationService;

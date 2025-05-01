@@ -1,6 +1,6 @@
 // this is an esm module, since we are using commonjs it can have unexpected behavior
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
+// @ts-expect-error esm module
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { SQL, and, between, desc, eq, or } from 'drizzle-orm';
 import fetch from 'node-fetch';
