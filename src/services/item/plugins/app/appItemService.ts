@@ -6,11 +6,10 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { AppItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
@@ -32,10 +31,9 @@ export class AppItemService extends ItemService {
     itemRepository: ItemRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
-    basicItemService: BasicItemService,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
   ) {
@@ -47,10 +45,9 @@ export class AppItemService extends ItemService {
       itemRepository,
       itemPublishedRepository,
       itemGeolocationRepository,
-      authorizationService,
+      authorizedItemService,
       itemWrapperService,
       itemVisibilityRepository,
-      basicItemService,
       recycledBinService,
       log,
     );

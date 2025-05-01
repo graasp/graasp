@@ -13,9 +13,8 @@ import { asDefined } from '../../../../utils/assertions';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
-import '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { BasicItemService } from '../../basic.service';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { graaspZipExport, zipExport, zipImport } from './schema';
@@ -28,7 +27,7 @@ function encodeFilename(name: string) {
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const log = resolveDependency(BaseLogger);
-  const basicItemService = resolveDependency(BasicItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
   const actionService = resolveDependency(ActionService);
   const importExportService = resolveDependency(ImportExportService);
 
@@ -103,7 +102,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         params: { itemId },
       } = request;
       const member = user?.account;
-      const item = await basicItemService.get(db, member, itemId);
+      const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
 
       // trigger download action for a collection
       const action = {
@@ -163,7 +162,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         params: { itemId },
       } = request;
       const member = user?.account;
-      const item = await basicItemService.get(db, member, itemId);
+      const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
 
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');

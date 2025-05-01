@@ -6,22 +6,22 @@ import { type DBConnection } from '../../drizzle/db';
 import { ItemMembershipRaw, ItemVisibilityWithItem, ItemWithCreator } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { MaybeUser } from '../../types';
-import { AuthorizationService } from '../authorization';
+import { AuthorizedItemService } from '../authorization';
 import { ItemRepository } from './item.repository';
 
 @singleton()
 export class BasicItemService {
   private readonly log: BaseLogger;
   protected readonly itemRepository: ItemRepository;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
     itemRepository: ItemRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     log: BaseLogger,
   ) {
     this.itemRepository = itemRepository;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.log = log;
   }
 
@@ -40,7 +40,7 @@ export class BasicItemService {
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, id);
 
-    const { itemMembership, visibilities } = await this.authorizationService.validatePermission(
+    const { itemMembership, visibilities } = await this.authorizedItemService.validatePermission(
       dbConnection,
       permission,
       actor,
@@ -87,7 +87,7 @@ export class BasicItemService {
     // check memberships
     // remove items if they do not have permissions
     const { itemMemberships, visibilities } =
-      await this.authorizationService.validatePermissionMany(
+      await this.authorizedItemService.validatePermissionMany(
         dbConnection,
         PermissionLevel.Read,
         actor,

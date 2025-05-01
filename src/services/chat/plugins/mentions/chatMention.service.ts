@@ -8,7 +8,7 @@ import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { AccountType, AuthenticatedUser } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorization';
 import { ItemRepository } from '../../../item/item.repository';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberCannotAccessMention } from '../../errors';
@@ -17,20 +17,20 @@ import { ChatMentionRepository } from './chatMention.repository';
 @singleton()
 export class MentionService {
   private readonly mailerService: MailerService;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly itemRepository: ItemRepository;
   private readonly chatMentionRepository: ChatMentionRepository;
   private readonly memberRepository: MemberRepository;
 
   constructor(
     mailerService: MailerService,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemRepository: ItemRepository,
     chatMentionRepository: ChatMentionRepository,
     memberRepository: MemberRepository,
   ) {
     this.mailerService = mailerService;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.itemRepository = itemRepository;
     this.chatMentionRepository = chatMentionRepository;
     this.memberRepository = memberRepository;
@@ -79,7 +79,7 @@ export class MentionService {
   ) {
     // check actor has access to item
     const item = await this.itemRepository.getOneOrThrow(dbConnection, message.itemId);
-    await this.authorizationService.validatePermission(
+    await this.authorizedItemService.validatePermission(
       dbConnection,
       PermissionLevel.Read,
       account,

@@ -4,8 +4,8 @@ import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemWrapper } from '../../../ItemWrapper';
-import { BasicItemService } from '../../../basic.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../published/itemPublished.repository';
 import { ItemValidationGroupRepository } from '../validation/ItemValidationGroup.repository';
@@ -14,20 +14,20 @@ import { PublicationState } from './publicationState';
 
 @singleton()
 export class PublicationService {
-  private readonly basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly validationRepository: ItemValidationGroupRepository;
   private readonly publishedRepository: ItemPublishedRepository;
   private readonly validationQueue: ValidationQueue;
 
   constructor(
-    basicItemService: BasicItemService,
+    authorizedItemService: AuthorizedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     validationRepository: ItemValidationGroupRepository,
     publishedRepository: ItemPublishedRepository,
     validationQueue: ValidationQueue,
   ) {
-    this.basicItemService = basicItemService;
+    this.authorizedItemService = AuthorizedItemService;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.validationRepository = validationRepository;
     this.publishedRepository = publishedRepository;
@@ -39,12 +39,11 @@ export class PublicationService {
     member: AuthenticatedUser,
     itemId: string,
   ) {
-    const item = await this.basicItemService.get(
-      dbConnection,
-      member,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
       itemId,
-      PermissionLevel.Admin,
-    );
+      permission: PermissionLevel.Admin,
+    });
     const publicVisibility = await this.itemVisibilityRepository.getType(
       dbConnection,
       item.path,
