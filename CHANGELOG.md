@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.1](https://github.com/graasp/graasp/compare/v2.2.0...v2.2.1) (2025-05-01)
+
+
+### Bug Fixes
+
+* allow cors for patch, put and delete ([#1856](https://github.com/graasp/graasp/issues/1856)) ([b6060b9](https://github.com/graasp/graasp/commit/b6060b965020435efdaeb5956af82ebe02343bc5))
+* auto-deploy ([#1835](https://github.com/graasp/graasp/issues/1835)) ([8ead8db](https://github.com/graasp/graasp/commit/8ead8db90c55b994e5c39bc00893d6c3298de814))
+
 ## [2.2.0](https://github.com/graasp/graasp/compare/v2.1.0...v2.2.0) (2025-04-30)
 
 
