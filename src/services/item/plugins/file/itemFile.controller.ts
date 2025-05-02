@@ -11,7 +11,7 @@ import { type ItemRaw } from '../../../../drizzle/types';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';
-import { AuthorizedItemService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import FileService from '../../../file/file.service';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
@@ -117,8 +117,11 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
       // check rights
       if (parentId) {
-        const item = await itemRepository.getOneOrThrow(db, parentId);
-        await authorizedItemService.validatePermission(db, PermissionLevel.Write, member, item);
+        await authorizedItemService.hasPermissionForItemId(db, {
+          permission: PermissionLevel.Write,
+          actor: member,
+          itemId: parentId,
+        });
       }
 
       // upload file one by one

@@ -7,6 +7,7 @@ import {
   ItemWithCreator,
 } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
@@ -15,7 +16,9 @@ import { MeiliSearchWrapper } from '../publication/published/plugins/search/meil
 import { ItemLikeRepository } from './itemLike.repository';
 import { ItemLikeService } from './itemLike.service';
 
-const itemService = { get: jest.fn() as BasicItemService['get'] } as BasicItemService;
+const authorizedItemService = {
+  // get: jest.fn() as BasicItemService['get']
+} as AuthorizedItemService;
 const meilisearchWrapper = {
   updateItem: jest.fn() as MeiliSearchWrapper['updateItem'],
 } as MeiliSearchWrapper;
@@ -34,8 +37,9 @@ const itemVisibilityRepository = {
 const itemPublishedRepository = {
   getForItem: jest.fn() as ItemPublishedRepository['getForItem'],
 } as ItemPublishedRepository;
+
 const itemLikeService = new ItemLikeService(
-  itemService,
+  authorizedItemService,
   itemLikeRepository,
   itemPublishedRepository,
   itemMembershipRepository,

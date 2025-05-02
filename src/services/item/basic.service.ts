@@ -6,7 +6,7 @@ import { type DBConnection } from '../../drizzle/db';
 import { ItemMembershipRaw, ItemVisibilityWithItem, ItemWithCreator } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { MaybeUser } from '../../types';
-import { AuthorizedItemService } from '../authorization';
+import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemRepository } from './item.repository';
 
 @singleton()
@@ -32,39 +32,17 @@ export class BasicItemService {
    * @param permission
    * @returns
    */
-  async _get(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    id: string,
-    permission: PermissionLevelOptions = PermissionLevel.Read,
-  ) {
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, id);
-
-    const { itemMembership, visibilities } = await this.authorizedItemService.validatePermission(
-      dbConnection,
-      permission,
-      actor,
-      item,
-    );
-    return { item, itemMembership, visibilities };
-  }
-
-  /**
-   * get for an item
-   * @param actor
-   * @param id
-   * @param permission
-   * @returns
-   */
   async get(
     dbConnection: DBConnection,
     actor: MaybeUser,
     id: string,
     permission: PermissionLevelOptions = PermissionLevel.Read,
   ) {
-    const { item } = await this._get(dbConnection, actor, id, permission);
-
-    return item;
+    return await this.authorizedItemService.getItemById(dbConnection, {
+      permission,
+      actor,
+      itemId: id,
+    });
   }
 
   /**
@@ -86,13 +64,10 @@ export class BasicItemService {
 
     // check memberships
     // remove items if they do not have permissions
-    const { itemMemberships, visibilities } =
-      await this.authorizedItemService.validatePermissionMany(
-        dbConnection,
-        PermissionLevel.Read,
-        actor,
-        result,
-      );
+    const { itemMemberships, visibilities } = await this.authorizedItemService.getManyItems(
+      dbConnection,
+      { permission: PermissionLevel.Read, actor, items: result },
+    );
 
     // Do not exclude if value exist but is null, because no memberships but can be public
     const items = result.filter((i) => itemMemberships?.data[i.id] !== undefined);

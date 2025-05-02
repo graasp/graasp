@@ -5,10 +5,9 @@ import { ThumbnailSize } from '@graasp/sdk';
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { db } from '../../../../drizzle/db';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { BasicItemService } from '../../basic.service';
-import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemThumbnailService } from './itemThumbnail.service';
 import { constructMockedUrl, expectValidUrls } from './test/fixtures/utils';
@@ -28,15 +27,12 @@ const stubThumbnailService = {
 const stubBasicItemService = {
   get: jest.fn(),
 } as unknown as BasicItemService;
-const itemRepository = {} as unknown as ItemRepository;
-const authorizationService = {} as unknown as AuthorizationService;
+const authorizedItemService = {} as unknown as AuthorizedItemService;
 
 export const itemThumbnailService = new ItemThumbnailService(
   dummyItemService,
   stubThumbnailService,
-  stubBasicItemService,
-  authorizationService,
-  itemRepository,
+  authorizedItemService,
   MOCK_LOGGER,
 );
 

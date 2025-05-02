@@ -11,11 +11,10 @@ import { MOCK_LOGGER } from '../../../../../test/app';
 import { db } from '../../../../drizzle/db';
 import { ItemRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { DocumentItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -44,10 +43,9 @@ const documentService = new DocumentItemService(
   itemRepository,
   {} as ItemPublishedRepository,
   {} as ItemGeolocationRepository,
-  {} as AuthorizationService,
+  {} as AuthorizedItemService,
   {} as ItemWrapperService,
   {} as ItemVisibilityRepository,
-  {} as BasicItemService,
   {} as RecycledBinService,
   MOCK_LOGGER,
 );

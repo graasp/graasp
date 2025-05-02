@@ -6,6 +6,7 @@ import { DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemWrapper } from '../../../ItemWrapper';
+import { ItemRepository } from '../../../item.repository';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../published/itemPublished.repository';
 import { ItemValidationGroupRepository } from '../validation/ItemValidationGroup.repository';
@@ -19,6 +20,7 @@ export class PublicationService {
   private readonly validationRepository: ItemValidationGroupRepository;
   private readonly publishedRepository: ItemPublishedRepository;
   private readonly validationQueue: ValidationQueue;
+  private readonly itemRepository: ItemRepository;
 
   constructor(
     authorizedItemService: AuthorizedItemService,
@@ -26,12 +28,14 @@ export class PublicationService {
     validationRepository: ItemValidationGroupRepository,
     publishedRepository: ItemPublishedRepository,
     validationQueue: ValidationQueue,
+    itemRepository: ItemRepository,
   ) {
-    this.authorizedItemService = AuthorizedItemService;
+    this.authorizedItemService = authorizedItemService;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.validationRepository = validationRepository;
     this.publishedRepository = publishedRepository;
     this.validationQueue = validationQueue;
+    this.itemRepository = itemRepository;
   }
 
   public async computeStateForItem(
@@ -39,9 +43,10 @@ export class PublicationService {
     member: AuthenticatedUser,
     itemId: string,
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, {
+    const item = await this.itemRepository.getOneWithCreatorOrThrow(dbConnection, itemId);
+    await this.authorizedItemService.hasPermission(dbConnection, {
       actor: member,
-      itemId,
+      item,
       permission: PermissionLevel.Admin,
     });
     const publicVisibility = await this.itemVisibilityRepository.getType(
