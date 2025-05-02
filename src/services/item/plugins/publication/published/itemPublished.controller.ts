@@ -13,8 +13,8 @@ import {
   optionalIsAuthenticated,
 } from '../../../../auth/plugins/passport';
 import { assertIsMember } from '../../../../authentication';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../../item.service';
 import { PublicationService } from '../publicationState/publication.service';
 import {
   getCollectionsForMember,
@@ -28,7 +28,7 @@ import graaspSearchPlugin from './plugins/search/search.controller';
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemPublishedService = resolveDependency(ItemPublishedService);
   const publicationService = resolveDependency(PublicationService);
-  const itemService = resolveDependency(ItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
 
   fastify.register(graaspSearchPlugin);
 
@@ -64,12 +64,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       await db.transaction(async (tx) => {
-        const item = await itemService.basicItemService.get(
-          tx,
-          member,
-          params.itemId,
-          PermissionLevel.Admin,
-        );
+        const item = await authorizedItemService.getItemById(tx, {
+          actor: member,
+          itemId: params.itemId,
+          permission: PermissionLevel.Admin,
+        });
 
         const status = await publicationService.computeStateForItem(tx, member, item.id);
 

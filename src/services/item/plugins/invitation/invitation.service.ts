@@ -18,7 +18,7 @@ import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { AuthenticatedUser, MaybeUser, MinimalMember, NonEmptyArray } from '../../../../types';
-import { AuthorizedItemService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ItemMembershipService } from '../../../itemMembership/membership.service';
 import { MemberService } from '../../../member/member.service';
@@ -116,12 +116,11 @@ export class InvitationService {
     authenticatedUser: AuthenticatedUser,
     itemId: string,
   ) {
-    const item = await this.itemService.basicItemService.get(
-      dbConnection,
-      authenticatedUser,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: authenticatedUser,
       itemId,
-      PermissionLevel.Admin,
-    );
+      permission: PermissionLevel.Admin,
+    });
     return this.invitationRepository.getManyByItem(dbConnection, item.path);
   }
 
@@ -131,12 +130,11 @@ export class InvitationService {
     itemId: string,
     invitations: Pick<InvitationInsertDTO, 'permission' | 'email'>[],
   ) {
-    const item = await this.itemService.basicItemService.get(
-      dbConnection,
-      member,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
       itemId,
-      PermissionLevel.Admin,
-    );
+      permission: PermissionLevel.Admin,
+    });
 
     await this.invitationRepository.addMany(dbConnection, invitations, item.path, member);
 
@@ -164,12 +162,11 @@ export class InvitationService {
     if (!invitation) {
       throw new InvitationNotFound({ invitationId });
     }
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      authenticatedUser,
-      invitation.item,
-    );
+    await this.authorizedItemService.hasPermission(dbConnection, {
+      permission: PermissionLevel.Admin,
+      actor: authenticatedUser,
+      item: invitation.item,
+    });
 
     await this.invitationRepository.updateOne(dbConnection, invitationId, body);
   }
@@ -183,12 +180,11 @@ export class InvitationService {
     if (!invitation) {
       throw new Error('missing invitation');
     }
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      authenticatedUser,
-      invitation.item,
-    );
+    await this.authorizedItemService.hasPermission(dbConnection, {
+      permission: PermissionLevel.Admin,
+      actor: authenticatedUser,
+      item: invitation.item,
+    });
 
     await this.invitationRepository.delete(dbConnection, invitationId);
   }
@@ -200,12 +196,11 @@ export class InvitationService {
       throw new InvitationNotFound(invitationId);
     }
 
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      member,
-      invitation.item,
-    );
+    await this.authorizedItemService.hasPermission(dbConnection, {
+      permission: PermissionLevel.Admin,
+      actor: member,
+      item: invitation.item,
+    });
 
     this.sendInvitationEmail({ invitation, member });
   }
@@ -299,7 +294,11 @@ export class InvitationService {
     memberships: ItemMembershipRaw[];
     invitations: InvitationWithItem[];
   }> {
-    await this.itemService.basicItemService.get(dbConnection, actor, itemId, PermissionLevel.Admin);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      actor,
+      itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     return this._createMembershipsAndInvitationsForUserList(
       dbConnection,
@@ -319,7 +318,11 @@ export class InvitationService {
     verifyCSVFileFormat(file);
 
     // get the item, verify user has Admin access
-    await this.itemService.basicItemService.get(dbConnection, actor, itemId, PermissionLevel.Admin);
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      actor,
+      itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     // parse CSV file
     const { rows, header } = await parseCSV(file.file);
@@ -359,19 +362,17 @@ export class InvitationService {
     verifyCSVFileFormat(file);
 
     // get parentItem
-    const parentItem = await this.itemService.basicItemService.get(
-      dbConnection,
+    const parentItem = await this.authorizedItemService.getItemById(dbConnection, {
       actor,
-      parentId,
-      PermissionLevel.Admin,
-    );
+      itemId: parentId,
+      permission: PermissionLevel.Admin,
+    });
 
     // check that the template exists
-    const templateItem = await this.itemService.basicItemService.get(
-      dbConnection,
+    const templateItem = await this.authorizedItemService.getItemById(dbConnection, {
       actor,
-      templateId,
-    );
+      itemId: templateId,
+    });
     if (!templateItem.id) {
       throw new TemplateItemDoesNotExist();
     }

@@ -92,16 +92,12 @@ export class AppDataService {
     itemId: string,
     body: InputAppData,
   ) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // posting an app data is allowed to readers
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: account,
+      itemId,
+    });
 
     // any user can write app data for others
     const attachedToMemberId = body.accountId ?? body.memberId ?? account.id;
@@ -146,17 +142,13 @@ export class AppDataService {
     appDataId: string,
     body: Partial<AppDataRaw>,
   ) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // patching requires at least read
     const { itemMembership: inheritedMembership } =
-      await this.authorizedItemService.validatePermission(
-        dbConnection,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
+      await this.authorizedItemService.getItemWithPropertiesById(dbConnection, {
+        permission: PermissionLevel.Read,
+        actor: account,
+        itemId,
+      });
 
     const currentAppData = await this.appDataRepository.getOne(dbConnection, appDataId);
 
@@ -205,17 +197,13 @@ export class AppDataService {
     itemId: string,
     appDataId: string,
   ) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // delete an app data is allowed to readers
     const { itemMembership: inheritedMembership } =
-      await this.authorizedItemService.validatePermission(
-        dbConnection,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
+      await this.authorizedItemService.getItemWithPropertiesById(dbConnection, {
+        permission: PermissionLevel.Read,
+        actor: account,
+        itemId,
+      });
 
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
 
@@ -252,11 +240,9 @@ export class AppDataService {
     item: ItemRaw,
     appDataId: UUID,
   ) {
-    const { itemMembership } = await this.authorizedItemService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.getItemWithProperties(
       dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
+      { permission: PermissionLevel.Read, actor: account, item },
     );
 
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
@@ -273,15 +259,10 @@ export class AppDataService {
   }
 
   async getForItem(dbConnection: DBConnection, account: MaybeUser, itemId: string, type?: string) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // posting an app data is allowed to readers
-    const { itemMembership } = await this.authorizedItemService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.getItemWithPropertiesById(
       dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
+      { permission: PermissionLevel.Read, actor: account, itemId },
     );
 
     return this.appDataRepository.getForItem(

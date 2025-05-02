@@ -17,6 +17,7 @@ import { type ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { EtherpadItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
@@ -47,6 +48,7 @@ export class EtherpadItemService {
   private readonly itemRepository: ItemRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly log: BaseLogger;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
     etherpad: Etherpad,
@@ -56,6 +58,7 @@ export class EtherpadItemService {
     itemRepository: ItemRepository,
     itemMembershipRepository: ItemMembershipRepository,
     log: BaseLogger,
+    authorizedItemService: AuthorizedItemService,
   ) {
     this.api = etherpad;
     this.padNameFactory = padNameFactory;
@@ -65,6 +68,7 @@ export class EtherpadItemService {
     this.itemMembershipRepository = itemMembershipRepository;
     this.itemRepository = itemRepository;
     this.log = log;
+    this.authorizedItemService = authorizedItemService;
   }
 
   /**
@@ -233,7 +237,10 @@ export class EtherpadItemService {
     itemId: string,
     mode: 'read' | 'write',
   ) {
-    const item = await this.itemService.basicItemService.get(dbConnection, account, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: account,
+      itemId,
+    });
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
@@ -383,7 +390,10 @@ export class EtherpadItemService {
     account: AuthenticatedUser,
     itemId: string,
   ): Promise<string> {
-    const item = await this.itemService.basicItemService.get(dbConnection, account, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: account,
+      itemId,
+    });
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);

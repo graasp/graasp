@@ -7,8 +7,7 @@ import { type DBConnection } from '../../../../../drizzle/db';
 import { appActionsTable } from '../../../../../drizzle/schema';
 import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
-import { AuthorizedItemService } from '../../../../authorization';
-import { ItemRepository } from '../../../item.repository';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { InputAppAction } from './appAction.interface';
 import { AppActionRepository } from './appAction.repository';
@@ -17,17 +16,14 @@ import { AppActionNotAccessible } from './errors';
 @singleton()
 export class AppActionService {
   private readonly appActionRepository: AppActionRepository;
-  private readonly itemRepository: ItemRepository;
   private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
     authorizedItemService: AuthorizedItemService,
     appActionRepository: AppActionRepository,
-    itemRepository: ItemRepository,
   ) {
     this.authorizedItemService = authorizedItemService;
     this.appActionRepository = appActionRepository;
-    this.itemRepository = itemRepository;
   }
 
   async getOne(
@@ -46,16 +42,12 @@ export class AppActionService {
     itemId: string,
     body: InputAppAction,
   ): Promise<AppActionWithItemAndAccount> {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // posting an app action is allowed to readers
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: account,
+      itemId,
+    });
 
     const rawAppActions = await this.appActionRepository.addOne(dbConnection, {
       itemId,
@@ -77,15 +69,10 @@ export class AppActionService {
     itemId: string,
     filters: SingleItemGetFilter,
   ) {
-    // check item exists
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizedItemService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.getItemWithPropertiesById(
       dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
+      { permission: PermissionLevel.Read, actor: account, itemId },
     );
     const permission = itemMembership?.permission;
     let { accountId: fMemberId } = filters;
@@ -110,15 +97,10 @@ export class AppActionService {
     itemIds: string[],
     filters: ManyItemsGetFilter,
   ) {
-    // check item exists
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemIds[0]);
-
     // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizedItemService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.getItemWithPropertiesById(
       dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
+      { permission: PermissionLevel.Read, actor: account, itemId: itemIds[0] },
     );
     const permission = itemMembership?.permission;
     const { accountId: fMemberId } = filters;

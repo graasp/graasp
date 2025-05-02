@@ -4,19 +4,20 @@ import { MOCK_LOGGER } from '../../../test/app';
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { MemberFactory } from '../../../test/factories/member.factory';
 import { db } from '../../drizzle/db';
-import { AuthorizationService } from '../authorization';
+import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { BasicItemService } from './basic.service';
 import { ItemRepository } from './item.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 
 const itemRepository = new ItemRepository();
-const authorizationService = new AuthorizationService(
+const authorizedItemService = new AuthorizedItemService(
   new ItemMembershipRepository(),
   new ItemVisibilityRepository(),
+  new ItemRepository(),
 );
 
-const itemService = new BasicItemService(itemRepository, authorizationService, MOCK_LOGGER);
+const itemService = new BasicItemService(itemRepository, authorizedItemService, MOCK_LOGGER);
 
 describe('Item Service', () => {
   afterEach(async () => {
@@ -31,7 +32,7 @@ describe('Item Service', () => {
 
       jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
       jest
-        .spyOn(authorizationService, 'validatePermission')
+        .spyOn(authorizedItemService, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
 
       const result = await itemService.get(db, actor, item.id);
@@ -49,7 +50,7 @@ describe('Item Service', () => {
       const item = ItemFactory();
 
       jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(item);
-      jest.spyOn(authorizationService, 'validatePermission').mockRejectedValue(new Error());
+      jest.spyOn(authorizedItemService, 'validatePermission').mockRejectedValue(new Error());
 
       await expect(() => itemService.get(db, actor, item.id)).rejects.toThrow();
     });

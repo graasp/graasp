@@ -9,7 +9,7 @@ import { AuthenticatedUser } from '../../../../types';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
-import { AuthorizedItemService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ActionDateFilters } from '../../../item/plugins/action/itemAction.repository';
 
 export const getPreviousMonthFromNow = () => {
@@ -71,12 +71,11 @@ export class ActionMemberService {
       new Map(actionsNeedPermission.map(({ item }) => [item?.id, item])).values(),
     ).filter(Boolean);
 
-    const { itemMemberships } = await this.authorizedItemService.validatePermissionMany(
-      dbConnection,
-      PermissionLevel.Read,
-      authenticatedUser,
-      setOfItemsToCheckPermission as ItemRaw[],
-    );
+    const { itemMemberships } = await this.authorizedItemService.getManyItems(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: authenticatedUser,
+      items: setOfItemsToCheckPermission as ItemRaw[],
+    });
 
     const filteredActionsWithAccessPermission = actionsNeedPermission.filter((g) => {
       return g.item && g?.item?.id in itemMemberships.data;

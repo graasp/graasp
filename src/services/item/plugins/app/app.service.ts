@@ -8,7 +8,7 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
-import { AuthorizedItemService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
@@ -59,19 +59,17 @@ export class AppService {
     itemId: string,
     appDetails: { origin: string; key: string },
   ) {
-    // check item is app
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    // check actor has access to item
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor,
+      itemId,
+    });
+
+    // check item is an app
     if (item.type !== ItemType.APP) {
       throw new WrongItemTypeError(ItemType.APP);
     }
-
-    // check actor has access to item
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
-      actor,
-      item,
-    );
 
     await this.appRepository.isValidAppOrigin(dbConnection, appDetails);
 

@@ -8,8 +8,7 @@ import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { AccountType, AuthenticatedUser } from '../../../../types';
-import { AuthorizedItemService } from '../../../authorization';
-import { ItemRepository } from '../../../item/item.repository';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberCannotAccessMention } from '../../errors';
 import { ChatMentionRepository } from './chatMention.repository';
@@ -18,20 +17,17 @@ import { ChatMentionRepository } from './chatMention.repository';
 export class MentionService {
   private readonly mailerService: MailerService;
   private readonly authorizedItemService: AuthorizedItemService;
-  private readonly itemRepository: ItemRepository;
   private readonly chatMentionRepository: ChatMentionRepository;
   private readonly memberRepository: MemberRepository;
 
   constructor(
     mailerService: MailerService,
     authorizedItemService: AuthorizedItemService,
-    itemRepository: ItemRepository,
     chatMentionRepository: ChatMentionRepository,
     memberRepository: MemberRepository,
   ) {
     this.mailerService = mailerService;
     this.authorizedItemService = authorizedItemService;
-    this.itemRepository = itemRepository;
     this.chatMentionRepository = chatMentionRepository;
     this.memberRepository = memberRepository;
   }
@@ -77,14 +73,11 @@ export class MentionService {
     message: ChatMessageRaw,
     mentionedMembers: string[],
   ) {
-    // check actor has access to item
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, message.itemId);
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: account,
+      itemId: message.itemId,
+    });
 
     const mentions = await this.chatMentionRepository.postMany(
       dbConnection,

@@ -211,16 +211,24 @@ export class AuthorizedItemService {
     return (await this.getItemWithProperties(dbConnection, args)).item;
   }
 
-  public async getItemWithPropertiesByItemId(
+  public async getItemWithPropertiesById(
     dbConnection: DBConnection,
-    args: {
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      itemId,
+    }: {
       permission?: PermissionLevelOptions;
       actor: { id: string } | undefined;
       itemId: ItemRaw['id'];
     },
-  ) {
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, args.itemId);
-    return this.getItemWithProperties(dbConnection, { item, ...args });
+  ): Promise<{
+    item: ItemRaw;
+    itemMembership: ItemMembershipRaw | null;
+    visibilities: ItemVisibilityWithItem[];
+  }> {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    return this.getItemWithProperties(dbConnection, { permission, actor, item });
   }
 
   public async getItemWithProperties(

@@ -117,8 +117,11 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
       // check rights
       if (parentId) {
-        const item = await itemRepository.getOneOrThrow(db, parentId);
-        await authorizedItemService.validatePermission(db, PermissionLevel.Write, member, item);
+        await authorizedItemService.hasPermissionForItemId(db, {
+          permission: PermissionLevel.Write,
+          actor: member,
+          itemId: parentId,
+        });
       }
 
       // upload file one by one

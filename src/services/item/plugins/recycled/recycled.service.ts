@@ -7,7 +7,7 @@ import { type ItemRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { ItemNotFound } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
-import { AuthorizedItemService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { isItemType } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { RecycledItemDataRepository } from './recycled.repository';
@@ -52,16 +52,17 @@ export class RecycledBinService {
     member: MinimalMember,
     ids: ItemRaw['id'][],
   ) {
-    const items = await this.recycledItemRepository.getDeletedTreesById(dbConnection, ids);
-
     // validate permission on parents
-    const rootItems = items.filter(({ id }) => ids.includes(id));
-    await this.authorizedItemService.validatePermissionMany(
-      dbConnection,
-      PermissionLevel.Admin,
-      member,
-      rootItems,
-    );
+    // TODO: optimize!!!!!!
+    for (const id of ids) {
+      await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+        permission: PermissionLevel.Admin,
+        actor: member,
+        itemId: id,
+      });
+    }
+
+    const items = await this.recycledItemRepository.getDeletedTreesById(dbConnection, ids);
 
     return items;
   }
@@ -79,12 +80,11 @@ export class RecycledBinService {
 
     // if item is already deleted, it will throw not found here
     for (const item of items) {
-      await this.authorizedItemService.validatePermission(
-        dbConnection,
-        PermissionLevel.Admin,
+      await this.authorizedItemService.hasPermission(dbConnection, {
+        permission: PermissionLevel.Admin,
         actor,
         item,
-      );
+      });
     }
 
     let allDescendants: ItemRaw[] = [];
@@ -128,12 +128,11 @@ export class RecycledBinService {
     }
 
     for (const item of items) {
-      await this.authorizedItemService.validatePermission(
-        dbConnection,
-        PermissionLevel.Admin,
-        member,
+      await this.authorizedItemService.hasPermission(dbConnection, {
+        permission: PermissionLevel.Admin,
+        actor: member,
         item,
-      );
+      });
     }
 
     let allDescendants: ItemRaw[] = [];

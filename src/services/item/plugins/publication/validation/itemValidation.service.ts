@@ -9,7 +9,7 @@ import { type ItemRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { AuthorizedItemService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { FolderItem } from '../../../discrimination';
 import { ItemRepository } from '../../../item.repository';
 import { ItemPublishedService } from '../published/itemPublished.service';
@@ -59,12 +59,11 @@ export class ItemValidationService {
     const group = await this.itemValidationGroupRepository.getLastForItem(dbConnection, item.id);
 
     // check permissions
-    await this.authorizedItemService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      member,
+    await this.authorizedItemService.hasPermission(dbConnection, {
+      permission: PermissionLevel.Admin,
+      actor: member,
       item,
-    );
+    });
 
     return group;
   }

@@ -452,12 +452,15 @@ export class ItemService {
     id: string,
     permission: PermissionLevelOptions = PermissionLevel.Read,
   ) {
-    const { item, itemMembership, visibilities } =
-      await this.authorizedItemService.getItemWithPropertiesByItemId(dbConnection, {
-        actor,
-        itemId: id,
+    const item = await this.itemRepository.getOneWithCreatorOrThrow(dbConnection, id);
+    const { itemMembership, visibilities } = await this.authorizedItemService.getItemWithProperties(
+      dbConnection,
+      {
+        item,
         permission,
-      });
+        actor,
+      },
+    );
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
     return new ItemWrapper(item, itemMembership, visibilities, thumbnails[item.id]).packed();
@@ -549,23 +552,6 @@ export class ItemService {
       descendants: await this.itemRepository.getDescendants(dbConnection, item, options),
     };
   }
-
-  // async getFilteredDescendants(dbConnection: DBConnection, account: MaybeUser, itemId: UUID) {
-  //   const { descendants } = await this.getDescendants(dbConnection, account, itemId);
-  //   if (!descendants.length) {
-  //     return [];
-  //   }
-  //   // TODO optimize?
-  //   return filterOutItems(
-  //     dbConnection,
-  //     account,
-  //     {
-  //       itemMembershipRepository: this.itemMembershipRepository,
-  //       itemVisibilityRepository: this.itemVisibilityRepository,
-  //     },
-  //     descendants,
-  //   );
-  // }
 
   async getPackedDescendants(
     dbConnection: DBConnection,

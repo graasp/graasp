@@ -6,12 +6,12 @@ import { asDefined } from '../../../../../utils/assertions';
 import { OPENAI_DEFAULT_TEMPERATURE, OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import { InvalidJWTItem } from '../../../../../utils/errors';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { ItemService } from '../../../item.service';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { create } from './chatBot.schemas';
 import { ChatBotService } from './chatBot.service';
 
 const chatBotPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const itemService = resolveDependency(ItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
   const chatBotService = resolveDependency(ChatBotService);
 
   fastify.post(
@@ -24,7 +24,7 @@ const chatBotPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       const jwtItemId = asDefined(user?.app).item.id;
       if (jwtItemId !== itemId) {
-        await itemService.basicItemService.get(db, member, itemId);
+        await authorizedItemService.getItemById(db, { actor: member, itemId });
         throw new InvalidJWTItem(jwtItemId ?? '<EMPTY>', itemId);
       }
       // default to 3.5 turbo / or the version specified in the env variable
