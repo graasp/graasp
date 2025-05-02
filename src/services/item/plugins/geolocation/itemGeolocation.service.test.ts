@@ -8,8 +8,7 @@ import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ItemNotFound, MemberCannotWriteItem } from '../../../../utils/errors';
 import { assertIsMemberForTest } from '../../../authentication';
-import { AuthorizationService } from '../../../authorization';
-import { BasicItemService } from '../../basic.service';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ItemGeolocationRepository } from './itemGeolocation.repository';
 import { ItemGeolocationService } from './itemGeolocation.service';
@@ -18,9 +17,9 @@ import { expectPackedItemGeolocations } from './test/utils';
 const itemThumbnailService = {
   getUrlsByItems: jest.fn(() => ({ small: 'url' })),
 } as unknown as ItemThumbnailService;
-const authorizationService = {
+const authorizedItemService = {
   validatePermissionMany: jest.fn(),
-} as unknown as AuthorizationService;
+} as unknown as AuthorizedItemService;
 const itemGeolocationRepository = {
   getUrlsByItems: jest.fn(() => ({ small: 'url' })),
   delete: jest.fn(),
@@ -29,14 +28,9 @@ const itemGeolocationRepository = {
   getItemsIn: jest.fn(),
 } as unknown as ItemGeolocationRepository;
 
-const basicItemService = {
-  get: jest.fn(),
-} as unknown as BasicItemService;
-
 const service = new ItemGeolocationService(
-  basicItemService,
   itemThumbnailService,
-  authorizationService,
+  authorizedItemService,
   itemGeolocationRepository,
   'geolocation-key',
 );
@@ -66,7 +60,9 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(basicItemService, 'get').mockResolvedValueOnce({ ...item, creator: null });
+      jest
+        .spyOn(authorizedItemService, 'getItemById')
+        .mockResolvedValueOnce({ ...item, creator: null });
       const deleteMock = jest.spyOn(itemGeolocationRepository, 'delete');
 
       await service.delete(db, actor, item.id);
@@ -202,7 +198,7 @@ describe('ItemGeolocationService', () => {
         { ...geolocations[0], item: { ...items[0], creator: actor } },
         { ...geolocations[1], item: { ...items[1], creator: actor } },
       ]);
-      jest.spyOn(authorizationService, 'validatePermissionMany').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'validatePermissionMany').mockResolvedValue({
         itemMemberships: {
           data: {
             [items[0].id]: itemMemberships[0],
@@ -263,7 +259,7 @@ describe('ItemGeolocationService', () => {
         { ...geolocations[0], item: { ...items[0], creator: actor } },
         { ...geolocations[1], item: { ...items[1], creator: actor } },
       ]);
-      jest.spyOn(authorizationService, 'validatePermissionMany').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'validatePermissionMany').mockResolvedValue({
         itemMemberships: {
           data: {
             [items[1].id]: itemMemberships[0],
@@ -325,7 +321,7 @@ describe('ItemGeolocationService', () => {
       jest
         .spyOn(itemGeolocationRepository, 'getItemsIn')
         .mockResolvedValue([{ ...geolocations[0], item: { ...parent, creator: actor } }]);
-      jest.spyOn(authorizationService, 'validatePermissionMany').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'validatePermissionMany').mockResolvedValue({
         itemMemberships: {
           data: {
             [parent.id]: null,
@@ -384,7 +380,7 @@ describe('ItemGeolocationService', () => {
       jest
         .spyOn(itemGeolocationRepository, 'getItemsIn')
         .mockResolvedValue([{ ...geolocations[0], item: { ...child, creator: actor } }]);
-      jest.spyOn(authorizationService, 'validatePermissionMany').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'validatePermissionMany').mockResolvedValue({
         itemMemberships: {
           data: {
             [parent.id]: null,
@@ -436,7 +432,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
       jest.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([]);
-      jest.spyOn(authorizationService, 'validatePermissionMany').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'validatePermissionMany').mockResolvedValue({
         itemMemberships: {
           data: {
             [item.id]: itemMemberships[0],

@@ -12,7 +12,6 @@ import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
 import { ItemThumbnailSize, ItemsThumbnails } from './types';
@@ -31,7 +30,6 @@ export class ItemThumbnailService {
     thumbnailService: ThumbnailService,
     @inject(delay(() => AuthorizedItemService))
     authorizedItemService: AuthorizedItemService,
-    itemRepository: ItemRepository,
     logger: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
