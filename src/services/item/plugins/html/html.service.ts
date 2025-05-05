@@ -10,14 +10,13 @@ import { v4 } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { FileItemType } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { TMP_FOLDER } from '../../../../utils/config';
 import FileService, { FileServiceConfig } from '../../../file/file.service';
+import { FileStorageType } from '../../../file/types';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { GraaspHtmlError, HtmlImportError } from './errors';
@@ -41,10 +40,10 @@ export abstract class HtmlService {
   constructor(
     {
       config,
-      type,
+      fileStorageType,
     }: {
       config: FileServiceConfig;
-      type: FileItemType;
+      fileStorageType: FileStorageType;
     },
     storageService: StorageService,
     pathPrefix: string,
@@ -58,7 +57,7 @@ export abstract class HtmlService {
     }
     this.logger = log;
     this.extension = extension;
-    this.fileService = new FileService(fileRepositoryFactory(type, config), this.logger);
+    this.fileService = new FileService(fileRepositoryFactory(fileStorageType, config), this.logger);
     this.storageService = storageService;
     this.mimetype = mimetype;
     this.pathPrefix = pathPrefix;

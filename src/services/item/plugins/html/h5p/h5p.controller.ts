@@ -12,9 +12,11 @@ import { DBConnection, db } from '../../../../../drizzle/db';
 import { ItemRaw } from '../../../../../drizzle/types';
 import { MaybeUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
+import { H5P_FILE_STORAGE_TYPE } from '../../../../../utils/config';
 import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../../authentication';
 import { AuthorizationService } from '../../../../authorization';
+import { FileStorage } from '../../../../file/types';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { isItemType } from '../../../discrimination';
 import { ItemService } from '../../../item.service';
@@ -42,7 +44,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
    * In the future, consider refactoring the fileService so that it can be grabbed from the
    * core instance and can serve the files directly (with an option to use or not auth)
    */
-  if (h5pService.fileService.fileType === ItemType.LOCAL_FILE) {
+  if (H5P_FILE_STORAGE_TYPE === FileStorage.Local) {
     /** Helper to set CORS headers policy */
     const setHeaders = (response: FastifyStaticReply) => {
       response.setHeader('Cross-Origin-Resource-Policy', 'same-site');

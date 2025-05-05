@@ -575,9 +575,9 @@ describe('Item Repository', () => {
         actor: null,
         items: [
           {
-            type: ItemType.S3_FILE,
+            type: ItemType.FILE,
             extra: {
-              [ItemType.S3_FILE]: {
+              [ItemType.FILE]: {
                 content: 'prop',
                 name: 'name',
                 path: 'path',
@@ -592,7 +592,7 @@ describe('Item Repository', () => {
 
       const newData = {
         // correct data
-        [ItemType.S3_FILE]: {
+        [ItemType.FILE]: {
           content: 'hello',
         },
         // incorrect data
@@ -602,7 +602,7 @@ describe('Item Repository', () => {
       expectItem(newItem, {
         ...item,
         extra: {
-          [ItemType.S3_FILE]: {
+          [ItemType.FILE]: {
             content: 'hello',
             name: 'name',
             path: 'path',
@@ -614,7 +614,7 @@ describe('Item Repository', () => {
       expectItem(await itemRawRepository.findOneBy({ id: item.id }), {
         ...item,
         extra: {
-          [ItemType.S3_FILE]: {
+          [ItemType.FILE]: {
             content: 'hello',
             name: 'name',
             path: 'path',
@@ -668,7 +668,7 @@ describe('Item Repository', () => {
         members: [member],
         items: [parentItem],
       } = await seedFromJson({ members: [{}], items: [{}] });
-      const data = { name: 'name-1', type: ItemType.S3_FILE };
+      const data = { name: 'name-1', type: ItemType.FILE };
 
       const newItem = await itemRepository.addOne(db, {
         item: data,
@@ -1015,7 +1015,7 @@ describe('Item Repository', () => {
   });
 
   describe('getItemSumSize', () => {
-    const itemType = ItemType.S3_FILE;
+    const itemType = ItemType.FILE;
     it('get sum for no item', async () => {
       const {
         members: [member],
@@ -1023,7 +1023,7 @@ describe('Item Repository', () => {
         actor: null,
         members: [{}],
       });
-      const result = await itemRepository.getItemSumSize(db, member.id, itemType);
+      const result = await itemRepository.getItemSumSize(db, member.id);
       expect(result).toEqual(0);
     });
     it('get sum for many items', async () => {
@@ -1036,7 +1036,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
 
-      const result = await itemRepository.getItemSumSize(db, actor.id, itemType);
+      const result = await itemRepository.getItemSumSize(db, actor.id);
       expect(result).toEqual(
         item1.extra[itemType].size + item2.extra[itemType].size + item3.extra[itemType].size,
       );

@@ -1,13 +1,14 @@
 import { config } from 'dotenv';
 import os from 'os';
 
-import { ClientManager, Context, FileItemType, GPTVersion, ItemType } from '@graasp/sdk';
+import { ClientManager, Context, GPTVersion } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
+import { FileStorage, FileStorageType } from '../services/file/types';
 import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
 import { asDefined } from './assertions';
 import { ExpectedEnvVariable } from './errors';
@@ -189,14 +190,25 @@ export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
 export const MAILER_CONFIG_FROM_EMAIL =
   process.env.MAILER_CONFIG_FROM_EMAIL ?? 'no-reply@graasp.org';
 
-// Graasp file item
-// TODO: should this be here?
+/**
+ * GRAASP FILE STORAGE CONFIG
+ */
 export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
 export const FILE_STORAGE_HOST = process.env.FILE_STORAGE_HOST;
 
+if (
+  process.env.FILE_STORAGE_TYPE &&
+  !(Object.values(FileStorage) as string[]).includes(process.env.FILE_STORAGE_TYPE)
+) {
+  throw new Error(
+    `File Storage type is not handled: '${process.env.FILE_STORAGE_TYPE}'. It should be one of: ${Object.values(FileStorage)}`,
+  );
+}
+export const FILE_STORAGE_TYPE =
+  (process.env.FILE_STORAGE_TYPE as FileStorageType) ?? FileStorage.Local;
+
 // Graasp S3 file item
 // TODO: should this be here?
-export const S3_FILE_ITEM_PLUGIN = process.env.S3_FILE_ITEM_PLUGIN === 'true';
 export const S3_FILE_ITEM_REGION = process.env.S3_FILE_ITEM_REGION;
 export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
@@ -223,10 +235,14 @@ const getS3FilePluginConfig = () => {
     s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
   };
 };
-// the varaible is undefined when `S3_FILE_ITEM_PLUGIN` is false
-export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration | undefined = S3_FILE_ITEM_PLUGIN
-  ? getS3FilePluginConfig()
-  : undefined;
+// the varaible is undefined when `FILE_STORAGE_TYPE` is local
+export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration | undefined =
+  FILE_STORAGE_TYPE === FileStorage.S3 ? getS3FilePluginConfig() : undefined;
+
+export const FILE_ITEM_PLUGIN_OPTIONS: LocalFileConfiguration = {
+  storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root',
+  localFilesHost: FILE_STORAGE_HOST,
+};
 
 if (!process.env.H5P_PATH_PREFIX) {
   throw new Error('Invalid H5P path prefix');
@@ -236,15 +252,15 @@ export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 // ugly runtime type checking since typescript cannot infer types
 // todo: please use a typed env checker library, this is awful
 if (
-  process.env.H5P_FILE_STORAGE_TYPE !== ItemType.S3_FILE &&
-  process.env.H5P_FILE_STORAGE_TYPE !== ItemType.LOCAL_FILE
+  process.env.H5P_FILE_STORAGE_TYPE !== FileStorage.S3 &&
+  process.env.H5P_FILE_STORAGE_TYPE !== FileStorage.Local
 ) {
   throw new Error('Invalid H5P file storage type provided');
 }
-export const H5P_FILE_STORAGE_TYPE = process.env.H5P_FILE_STORAGE_TYPE as FileItemType;
+export const H5P_FILE_STORAGE_TYPE = process.env.H5P_FILE_STORAGE_TYPE as FileStorageType;
 
 // ugly runtime type checking since typescript cannot infer types
-if (H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE) {
+if (H5P_FILE_STORAGE_TYPE === FileStorage.S3) {
   if (
     !process.env.H5P_CONTENT_REGION ||
     !process.env.H5P_CONTENT_BUCKET ||
@@ -263,7 +279,7 @@ export const H5P_S3_CONFIG = {
 };
 
 // ugly runtime type checking since typescript cannot infer types
-if (H5P_FILE_STORAGE_TYPE === ItemType.LOCAL_FILE) {
+if (H5P_FILE_STORAGE_TYPE === FileStorage.Local) {
   if (!process.env.H5P_STORAGE_ROOT_PATH) throw new Error('H5P local storage root path missing');
 }
 export const H5P_LOCAL_CONFIG = {
@@ -275,15 +291,13 @@ export const H5P_LOCAL_CONFIG = {
 
 // ugly runtime type checking since typescript cannot infer types
 export const H5P_FILE_STORAGE_CONFIG =
-  H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE ? H5P_S3_CONFIG : H5P_LOCAL_CONFIG;
+  H5P_FILE_STORAGE_TYPE === FileStorage.S3 ? H5P_S3_CONFIG : H5P_LOCAL_CONFIG;
 
 export const ETHERPAD_URL = validateEnv('ETHERPAD_URL', new UrlValidator());
 
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = validateEnv('ETHERPAD_API_KEY', new RegexValidator(API_KEY_FORMAT));
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
-
-export const FILE_ITEM_TYPE = S3_FILE_ITEM_PLUGIN ? ItemType.S3_FILE : ItemType.LOCAL_FILE;
 
 if (!process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN) {
   throw new Error('EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN is not defined');
@@ -305,11 +319,6 @@ export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API ?? '';
-
-export const FILE_ITEM_PLUGIN_OPTIONS: LocalFileConfiguration = {
-  storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root',
-  localFilesHost: FILE_STORAGE_HOST,
-};
 
 export const ITEMS_ROUTE_PREFIX = '/items';
 export const APP_ITEMS_PREFIX = '/app-items';

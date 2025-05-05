@@ -42,7 +42,7 @@ export class H5PService extends HtmlService {
     const h5pValidator = new H5PValidator();
 
     super(
-      { config: H5P_FILE_STORAGE_CONFIG, type: H5P_FILE_STORAGE_TYPE },
+      { config: H5P_FILE_STORAGE_CONFIG, fileStorageType: H5P_FILE_STORAGE_TYPE },
       storageService,
       H5P_PATH_PREFIX,
       H5P_FILE_MIME_TYPE,

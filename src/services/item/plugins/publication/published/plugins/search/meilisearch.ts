@@ -10,16 +10,7 @@ import {
 } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import {
-  DocumentItemExtra,
-  IndexItem,
-  ItemType,
-  ItemVisibilityType,
-  LocalFileItemExtra,
-  MimeTypes,
-  S3FileItemExtra,
-  TagCategory,
-} from '@graasp/sdk';
+import { IndexItem, ItemType, ItemVisibilityType, MimeTypes, TagCategory } from '@graasp/sdk';
 
 import { DBConnection, db } from '../../../../../../../drizzle/db';
 import { items } from '../../../../../../../drizzle/schema';
@@ -232,21 +223,13 @@ export class MeiliSearchWrapper {
 
   // Retrieve searchable part inside an item
   private async getContent(item: ItemRaw) {
-    switch (item.type) {
-      case ItemType.DOCUMENT:
-        return this.removeHTMLTags((item.extra as DocumentItemExtra).document.content); // better way to type extra safely?
-      case ItemType.LOCAL_FILE: {
-        const localExtra = (item.extra as LocalFileItemExtra).file;
+    switch (true) {
+      case isItemType(item, ItemType.DOCUMENT):
+        return this.removeHTMLTags(item.extra.document.content); // better way to type extra safely?
+      case isItemType(item, ItemType.FILE): {
+        const localExtra = item.extra.file;
         if (localExtra.mimetype === MimeTypes.PDF) {
           return localExtra.content;
-        } else {
-          return '';
-        }
-      }
-      case ItemType.S3_FILE: {
-        const s3extra = (item.extra as S3FileItemExtra).s3File;
-        if (s3extra.mimetype === MimeTypes.PDF) {
-          return s3extra.content;
         } else {
           return '';
         }
@@ -375,7 +358,7 @@ export class MeiliSearchWrapper {
     // Paginate with 1000 items per page
     while (currentPage === 1 || (currentPage - 1) * 1000 < total) {
       const [fileItems, totalCount] = await this.findAndCountItems(dbConnection, {
-        where: { type: ItemType.S3_FILE },
+        where: { type: ItemType.FILE },
         take: 1000,
         skip: (currentPage - 1) * 1000,
         order: asc(items.createdAt),
@@ -388,14 +371,14 @@ export class MeiliSearchWrapper {
       );
 
       const filteredItems = fileItems.filter((i) => {
-        const s3extra = (i.extra as S3FileItemExtra).s3File;
-        return s3extra.mimetype === MimeTypes.PDF && s3extra.content === undefined;
+        const extra = i.extra[ItemType.FILE];
+        return extra.mimetype === MimeTypes.PDF && extra.content === undefined;
       });
 
       this.logger.info(`PDF BACKFILL: Page contains ${filteredItems.length} PDF to process`);
 
       for (const item of filteredItems) {
-        const s3extra = (item.extra as S3FileItemExtra).s3File;
+        const extra = item.extra[ItemType.FILE];
 
         // Probably not needed if we download the file only once
         // const MAX_ACCEPTED_SIZE_MB = 20;
@@ -404,11 +387,11 @@ export class MeiliSearchWrapper {
         // }
         try {
           const url = await this.fileService.getUrl({
-            path: s3extra.path,
+            path: extra.path,
           });
           const content = await readPdfContent(url);
           await this.itemRepository.updateOne(dbConnection, item.id, {
-            extra: { [ItemType.S3_FILE]: { content } } as S3FileItemExtra,
+            extra: { [ItemType.FILE]: { content } },
           });
         } catch (e) {
           this.logger.error(

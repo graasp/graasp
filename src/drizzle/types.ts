@@ -2,13 +2,12 @@ import {
   AppItemExtra,
   DocumentItemExtra,
   EtherpadItemExtra,
+  FileItemExtra,
   FolderItemExtra,
   H5PItemExtra,
   ItemSettings,
   LinkItemExtra,
   LinkItemSettings,
-  LocalFileItemExtra,
-  S3FileItemExtra,
   ShortcutItemExtra,
   UnionOfConst,
 } from '@graasp/sdk';
@@ -103,8 +102,7 @@ export const ItemType = {
   DOCUMENT: 'document',
   FOLDER: 'folder',
   LINK: 'embeddedLink',
-  LOCAL_FILE: 'file',
-  S3_FILE: 's3File',
+  FILE: 'file',
   SHORTCUT: 'shortcut',
   H5P: 'h5p',
   ETHERPAD: 'etherpad',
@@ -118,8 +116,7 @@ export type ItemExtraMap = {
   [ItemType.FOLDER]: FolderItemExtra;
   [ItemType.H5P]: H5PItemExtra;
   [ItemType.LINK]: LinkItemExtra;
-  [ItemType.LOCAL_FILE]: LocalFileItemExtra;
-  [ItemType.S3_FILE]: S3FileItemExtra;
+  [ItemType.FILE]: FileItemExtra;
   [ItemType.SHORTCUT]: ShortcutItemExtra;
 };
 
@@ -130,8 +127,7 @@ export type ItemSettingsMap = {
   [ItemType.FOLDER]: ItemSettings;
   [ItemType.H5P]: ItemSettings;
   [ItemType.LINK]: LinkItemSettings;
-  [ItemType.LOCAL_FILE]: ItemSettings;
-  [ItemType.S3_FILE]: ItemSettings;
+  [ItemType.FILE]: ItemSettings;
   [ItemType.SHORTCUT]: ItemSettings;
 };
 

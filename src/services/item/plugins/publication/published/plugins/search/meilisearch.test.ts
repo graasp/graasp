@@ -10,15 +10,7 @@ import {
 } from 'meilisearch';
 import { v4 } from 'uuid';
 
-import {
-  IndexItem,
-  ItemType,
-  ItemVisibilityType,
-  MimeTypes,
-  S3FileItemExtra,
-  TagCategory,
-  UUID,
-} from '@graasp/sdk';
+import { IndexItem, ItemType, ItemVisibilityType, MimeTypes, TagCategory, UUID } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import { ItemFactory } from '../../../../../../../../test/factories/item.factory';
@@ -387,13 +379,13 @@ describe('MeilisearchWrapper', () => {
 
     it('content is indexed', async () => {
       const item = ItemFactory();
-      const extraS3 = {
-        [ItemType.S3_FILE]: {
+      const extraFile = {
+        [ItemType.FILE]: {
           mimetype: MimeTypes.PDF,
           content: 's3 content',
         },
-      } as S3FileItemExtra;
-      const descendant = ItemFactory({ type: ItemType.S3_FILE, extra: extraS3 });
+      };
+      const descendant = ItemFactory({ type: ItemType.FILE, extra: extraFile });
       const extra = {
         [ItemType.DOCUMENT]: {
           content: 'my text is here',

@@ -4,21 +4,17 @@ import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
-import { ItemType } from '@graasp/sdk';
-
 import { LocalFileConfiguration } from '../interfaces/configuration';
 import { FileRepository, FileUpload } from '../interfaces/fileRepository';
+import { FileStorageType } from '../types';
 import { LocalFileNotFound } from '../utils/errors';
 
 export class LocalFileRepository implements FileRepository {
   private readonly options: LocalFileConfiguration;
+  readonly fileStorageType: FileStorageType;
 
   constructor(options: LocalFileConfiguration) {
     this.options = options;
-  }
-
-  get fileType() {
-    return ItemType.LOCAL_FILE;
   }
 
   buildFullPath = (filepath: string) => path.join(this.options.storageRootPath, filepath);

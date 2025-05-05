@@ -10,8 +10,8 @@ export const folder = {
 export const childContent = {
   name: 'img2.png',
   description: '',
-  type: ItemType.S3_FILE,
-  extra: { s3File: { name: 'img2.png', mimetype: 'image/png', size: 4616 } },
+  type: ItemType.FILE,
+  extra: { [ItemType.FILE]: { name: 'img2.png', mimetype: 'image/png', size: 4616 } },
 };
 export const link = {
   name: 'link',
@@ -40,19 +40,19 @@ export const archive = [
   {
     name: 'fixtureUtils.ts',
     description: '',
-    type: ItemType.S3_FILE,
-    extra: { s3File: { name: 'fixtureUtils.ts', mimetype: 'text/plain', size: 337 } },
+    type: ItemType.FILE,
+    extra: { file: { name: 'fixtureUtils.ts', mimetype: 'text/plain', size: 337 } },
   },
   {
     name: 'img.png',
     description: 'img.png',
-    type: ItemType.S3_FILE,
-    extra: { s3File: { name: 'img.png', mimetype: 'image/png', size: 4616 } },
+    type: ItemType.FILE,
+    extra: { file: { name: 'img.png', mimetype: 'image/png', size: 4616 } },
   },
   {
     name: 'img_no_extension',
     description: '',
-    type: ItemType.S3_FILE,
-    extra: { s3File: { name: 'img_no_extension', mimetype: 'image/png', size: 4616 } },
+    type: ItemType.FILE,
+    extra: { file: { name: 'img_no_extension', mimetype: 'image/png', size: 4616 } },
   },
 ];

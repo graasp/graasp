@@ -79,8 +79,7 @@ export const getFilenameFromItem = (item: ItemRaw): string => {
       }
       return extractFileName(item.name, 'graasp');
     }
-    case isItemType(item, ItemType.S3_FILE):
-    case isItemType(item, ItemType.LOCAL_FILE): {
+    case isItemType(item, ItemType.FILE): {
       const mimetype = getMimetype(item.extra);
       return extractFileName(item.name, extractExtension({ name: item.name, mimetype }));
     }

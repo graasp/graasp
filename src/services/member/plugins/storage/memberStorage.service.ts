@@ -1,8 +1,7 @@
-import { inject, singleton } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
-import type { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
+import type { MemberStorage, Pagination } from '@graasp/sdk';
 
-import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
 import { ItemRepository } from '../../../item/item.repository';
@@ -11,14 +10,9 @@ import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
 
 @singleton()
 export class StorageService {
-  private fileItemType: FileItemType;
   private readonly itemRepository: ItemRepository;
 
-  constructor(
-    @inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType,
-    itemRepository: ItemRepository,
-  ) {
-    this.fileItemType = fileItemType;
+  constructor(itemRepository: ItemRepository) {
     this.itemRepository = itemRepository;
   }
 
@@ -30,10 +24,9 @@ export class StorageService {
   async getStorageLimits(
     dbConnection: DBConnection,
     member: MinimalMember,
-    type: FileItemType,
   ): Promise<MemberStorage> {
     return {
-      current: await this.itemRepository.getItemSumSize(dbConnection, member?.id, type),
+      current: await this.itemRepository.getItemSumSize(dbConnection, member?.id),
       maximum: await this.getMaximumStorageSize(),
     };
   }
@@ -41,13 +34,11 @@ export class StorageService {
   async getStorageFilesMetadata(
     dbConnection: DBConnection,
     member: MinimalMember,
-    type: FileItemType,
     pagination: Pagination,
   ) {
     const entities = await this.itemRepository.getFilesMetadata(
       dbConnection,
       member?.id,
-      type,
       pagination,
     );
     return entities;
@@ -59,11 +50,7 @@ export class StorageService {
   async checkRemainingStorage(dbConnection: DBConnection, member: MinimalMember, size: number = 0) {
     const { id: memberId } = member;
 
-    const currentStorage = await this.itemRepository.getItemSumSize(
-      dbConnection,
-      memberId,
-      this.fileItemType,
-    );
+    const currentStorage = await this.itemRepository.getItemSumSize(dbConnection, memberId);
 
     const maxStorage = await this.getMaximumStorageSize();
     if (currentStorage + size > maxStorage) {

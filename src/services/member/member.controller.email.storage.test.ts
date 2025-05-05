@@ -7,7 +7,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, S3FileItemExtra } from '@graasp/sdk';
+import { FileItemExtra, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
@@ -346,9 +346,7 @@ describe('Member Storage Controller', () => {
       expect(resultDefault.data[0].name).toEqual(withoutParent.name);
       expect(resultDefault.data[0]).toHaveProperty('size');
       expect(resultDefault.data[0]).toHaveProperty('updatedAt');
-      expect(resultDefault.data[0].path).toEqual(
-        (withoutParent.extra as S3FileItemExtra).s3File.path,
-      );
+      expect(resultDefault.data[0].path).toEqual((withoutParent.extra as FileItemExtra).file.path);
       expect(resultDefault.data[0]).not.toHaveProperty('parent');
 
       // child item
@@ -356,7 +354,7 @@ describe('Member Storage Controller', () => {
       expect(resultDefault.data[1].name).toEqual(child.name);
       expect(resultDefault.data[1]).toHaveProperty('size');
       expect(resultDefault.data[1]).toHaveProperty('updatedAt');
-      expect(resultDefault.data[1].path).toEqual((child.extra as S3FileItemExtra).s3File.path);
+      expect(resultDefault.data[1].path).toEqual((child.extra as FileItemExtra).file.path);
       expect(resultDefault.data[1].parent.id).toEqual(parent.id);
     });
 

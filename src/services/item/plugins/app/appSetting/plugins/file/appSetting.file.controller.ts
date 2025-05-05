@@ -3,14 +3,13 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types';
+import { AppSettingRaw, AppSettingWithItem, ItemType } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import {
   authenticateAppsJWT,
   guestAuthenticateAppsJWT,
 } from '../../../../../../auth/plugins/passport';
-import FileService from '../../../../../../file/file.service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -29,7 +28,6 @@ export interface GraaspPluginFileOptions {
 const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;
 
-  const fileService = resolveDependency(FileService);
   const appSettingFileService = resolveDependency(AppSettingFileService);
 
   fastify.register(fastifyMultipart, {
@@ -67,7 +65,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     },
   ) => {
     // copy file only if content is a file
-    const isFileSetting = (a) => a.data[fileService.fileType];
+    const isFileSetting = (a) => a.data[ItemType.FILE];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(db, actor, toCopy);

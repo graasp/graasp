@@ -12,7 +12,6 @@ import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
-import { FILE_ITEM_TYPE } from '../../utils/config';
 import { MemberNotFound } from '../../utils/errors';
 import { assertIsMember, assertIsMemberForTest } from '../authentication';
 import { DEFAULT_MAX_STORAGE } from '../item/plugins/file/utils/constants';
@@ -102,13 +101,12 @@ describe('Member routes tests', () => {
 
   describe('GET /members/current/storage', () => {
     it('Returns successfully if signed in', async () => {
-      const fileServiceType = FILE_ITEM_TYPE;
       const { actor, items } = await seedFromJson({
         items: [
           {
-            type: FILE_ITEM_TYPE,
+            type: ItemType.FILE,
             extra: {
-              [ItemType.S3_FILE]: {
+              [ItemType.FILE]: {
                 size: 1234,
                 content: 'content',
                 mimetype: 'image/png',
@@ -120,9 +118,9 @@ describe('Member routes tests', () => {
             memberships: [{ account: 'actor' }],
           },
           {
-            type: FILE_ITEM_TYPE,
+            type: ItemType.FILE,
             extra: {
-              [ItemType.S3_FILE]: {
+              [ItemType.FILE]: {
                 size: 534,
                 content: 'content',
                 mimetype: 'image/png',
@@ -134,9 +132,9 @@ describe('Member routes tests', () => {
             memberships: [{ account: 'actor' }],
           },
           {
-            type: FILE_ITEM_TYPE,
+            type: ItemType.FILE,
             extra: {
-              [ItemType.S3_FILE]: {
+              [ItemType.FILE]: {
                 size: 8765,
                 content: 'content',
                 mimetype: 'image/png',
@@ -159,10 +157,10 @@ describe('Member routes tests', () => {
       mockAuthenticate(actor);
 
       const totalStorage = items.reduce((acc, i) => {
-        if (i.type !== ItemType.S3_FILE) {
+        if (i.type !== ItemType.FILE) {
           return acc;
         }
-        return acc + i.extra[fileServiceType]?.size;
+        return acc + i.extra[ItemType.FILE]?.size;
       }, 0);
 
       const response = await app.inject({
@@ -179,9 +177,9 @@ describe('Member routes tests', () => {
         items: [
           // noise
           {
-            type: ItemType.S3_FILE,
+            type: ItemType.FILE,
             extra: {
-              [ItemType.S3_FILE]: {
+              [ItemType.FILE]: {
                 size: 8765,
                 content: 'content',
                 mimetype: 'image/png',

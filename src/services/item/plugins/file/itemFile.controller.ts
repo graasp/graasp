@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/sdk';
+import { FileItemProperties, ItemType, PermissionLevel, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -60,10 +60,10 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     }
     try {
       // delete file only if type is the current file type
-      if (!id || type !== fileService.fileType) {
+      if (!id || type !== ItemType.FILE) {
         return;
       }
-      const filepath = (extra[fileService.fileType] as FileItemProperties).path;
+      const filepath = (extra[ItemType.FILE] as FileItemProperties).path;
       await fileService.delete(filepath);
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not
@@ -82,8 +82,8 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     const { id, type } = item; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== fileService.fileType) return;
-    const size = (item.extra[fileService.fileType] as FileItemProperties & { size?: number })?.size;
+    if (!id || type !== ItemType.FILE) return;
+    const size = (item.extra[ItemType.FILE] as FileItemProperties & { size?: number })?.size;
 
     await storageService.checkRemainingStorage(thisDb, actor, size);
   });
@@ -97,7 +97,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     const { id, type } = copy; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== fileService.fileType) {
+    if (!id || type !== ItemType.FILE) {
       return;
     }
     await fileItemService.copyFile(thisDb, actor, { original, copy });

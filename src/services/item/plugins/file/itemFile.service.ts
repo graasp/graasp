@@ -149,12 +149,9 @@ class FileItemService extends ItemService {
       const item = {
         name,
         description,
-        type: this.fileService.fileType,
+        type: ItemType.FILE,
         extra: {
-          // this is needed because if we directly use `this.fileService.type` then TS widens the type to `string` which we do not want
-          ...(this.fileService.fileType === ItemType.LOCAL_FILE
-            ? { [ItemType.LOCAL_FILE]: fileProperties }
-            : { [ItemType.S3_FILE]: fileProperties }),
+          [ItemType.FILE]: fileProperties,
         },
         creator: actor,
       };
@@ -213,7 +210,7 @@ class FileItemService extends ItemService {
       actor,
       item,
     );
-    const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
+    const extraData = item.extra[ItemType.FILE] as FileItemProperties;
     const result = await this.fileService.getFile(actor, {
       id: itemId,
       ...extraData,
@@ -240,7 +237,7 @@ class FileItemService extends ItemService {
       actor,
       item,
     );
-    const extraData = item.extra[this.fileService.fileType] as FileItemProperties | undefined;
+    const extraData = item.extra[ItemType.FILE] as FileItemProperties | undefined;
 
     const result = await this.fileService.getUrl({
       path: extraData?.path,
@@ -251,7 +248,7 @@ class FileItemService extends ItemService {
 
   async copyFile(dbConnection: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
-    const { path: originalPath, mimetype, name } = extra[this.fileService.fileType];
+    const { path: originalPath, mimetype, name } = extra[ItemType.FILE];
     const newFilePath = this.buildFilePath(getFileExtension(name));
 
     const data = {
@@ -266,15 +263,9 @@ class FileItemService extends ItemService {
     const filepath = await this.fileService.copy(member, data);
 
     // update item copy's 'extra'
-    if (this.fileService.fileType === ItemType.S3_FILE) {
-      await this.itemRepository.updateOne(dbConnection, copy.id, {
-        extra: { s3File: { ...extra.s3File, path: filepath } },
-      });
-    } else {
-      await this.itemRepository.updateOne(dbConnection, copy.id, {
-        extra: { file: { ...extra.s3File, path: filepath } },
-      });
-    }
+    await this.itemRepository.updateOne(dbConnection, copy.id, {
+      extra: { file: { ...extra[ItemType.FILE], path: filepath } },
+    });
   }
 
   async update(
@@ -286,7 +277,7 @@ class FileItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is file
-    if (!([ItemType.LOCAL_FILE, ItemType.S3_FILE] as ItemRaw['type'][]).includes(item.type)) {
+    if (ItemType.FILE !== item.type) {
       throw new WrongItemTypeError(item.type);
     }
 

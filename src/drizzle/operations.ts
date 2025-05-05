@@ -34,8 +34,7 @@ export function itemFullTextSearch(
   setweight(to_tsvector('simple', ${table.name}), 'A') || ' ' ||
       setweight(to_tsvector(${lang}, COALESCE(${table.description},'')), 'B') || ' ' ||
     setweight(to_tsvector(${lang}, COALESCE((${table.extra})->'document'->>'content','{}')), 'D') || ' ' ||
-    setweight(to_tsvector(${lang}, COALESCE((${table.extra})->'file'->'content','{}')), 'D') || ' ' ||
-    setweight(to_tsvector(${lang}, COALESCE((${table.extra})->'s3File'->'content','{}')), 'D')
+    setweight(to_tsvector(${lang}, COALESCE((${table.extra})->'file'->'content','{}')), 'D') || ' '
   ):: tsvector @@ plainto_tsquery(${lang}, ${keywordsString})`;
 }
 

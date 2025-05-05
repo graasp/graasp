@@ -1,12 +1,11 @@
 import {
   AppItemFactory,
   DocumentItemFactory,
+  FileItemFactory,
   FolderItemFactory,
   H5PItemFactory,
   ItemType,
   LinkItemFactory,
-  LocalFileItemFactory,
-  S3FileItemFactory,
 } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -16,9 +15,9 @@ describe('File name', () => {
   it('get file name from local file item', () => {
     expect(
       getFilenameFromItem(
-        LocalFileItemFactory({
+        FileItemFactory({
           name: 'myfile',
-          type: ItemType.LOCAL_FILE,
+          type: ItemType.FILE,
           extra: {
             file: {
               name: 'name',
@@ -34,9 +33,9 @@ describe('File name', () => {
 
     expect(
       getFilenameFromItem(
-        LocalFileItemFactory({
+        FileItemFactory({
           name: 'myfile.png',
-          type: ItemType.LOCAL_FILE,
+          type: ItemType.FILE,
           extra: {
             file: {
               name: 'name',
@@ -52,9 +51,9 @@ describe('File name', () => {
 
     expect(
       getFilenameFromItem(
-        LocalFileItemFactory({
+        FileItemFactory({
           name: 'myfile',
-          type: ItemType.LOCAL_FILE,
+          type: ItemType.FILE,
           extra: {
             file: {
               name: 'name',
@@ -72,7 +71,7 @@ describe('File name', () => {
     expect(
       getFilenameFromItem({
         name: 'myfile',
-        type: ItemType.S3_FILE,
+        type: ItemType.FILE,
         extra: {
           file: {
             name: 'name',
@@ -87,11 +86,11 @@ describe('File name', () => {
 
     expect(
       getFilenameFromItem(
-        S3FileItemFactory({
+        FileItemFactory({
           name: 'myfile.png',
-          type: ItemType.S3_FILE,
+          type: ItemType.FILE,
           extra: {
-            s3File: {
+            file: {
               name: 'name',
               path: 'path',
               mimetype: 'image/png',
@@ -105,11 +104,11 @@ describe('File name', () => {
 
     expect(
       getFilenameFromItem(
-        S3FileItemFactory({
+        FileItemFactory({
           name: 'myfile',
-          type: ItemType.S3_FILE,
+          type: ItemType.FILE,
           extra: {
-            s3File: {
+            file: {
               name: 'name',
               path: 'path',
               mimetype: 'image/jpeg',
