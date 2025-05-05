@@ -6,7 +6,7 @@ import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
+import { asDefined, assertIsMemberOrGuest } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
@@ -82,7 +82,7 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
         query: { mode = 'read' },
       } = request;
       const account = asDefined(user?.account);
-      assertIsMember(account);
+      assertIsMemberOrGuest(account);
 
       const { cookie, padUrl } = await etherpadItemService.getEtherpadFromItem(
         db,
