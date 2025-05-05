@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [2.3.0](https://github.com/graasp/graasp/compare/v2.2.1...v2.3.0) (2025-05-05)
 
-
 ### Features
 
 * unify file type ([#1840](https://github.com/graasp/graasp/issues/1840)) ([15dde54](https://github.com/graasp/graasp/commit/15dde54d9eda39e4792ee2ac61f658859b2de5fc))
+  * `s3File` references become all `file`. Few existing `localFile` references also become `file`. This change impacts item files, app data (files) and app settings (file)
+  * add `FILE_STORAGE_TYPE` environment variable being equal to `s3` or `local`.
+  * remove `S3_FILE_ITEM_PLUGIN`.
+  * change possible options for `H5P_FILE_STORAGE_TYPE` to `s3` or `local`.
 
 
 ### Bug Fixes
