@@ -43,7 +43,7 @@ const expectExpiration = (expires: Date) => {
   expect(isBefore(expires, add(oneDayFromNow, { minutes: 1 }))).toBeTruthy();
 };
 
-const createEtherpad = async (app) => {
+const createEtherpad = async (app, parentId?: string) => {
   // create an existing etherpad item to test reading it
   setUpApi({
     createGroupIfNotExistsFor: [
@@ -58,6 +58,7 @@ const createEtherpad = async (app) => {
     payload: {
       name: faker.word.sample(),
     },
+    query: parentId ? { parentId } : undefined,
   });
   expect(res.statusCode).toBe(StatusCodes.OK);
   const item = res.json();
@@ -271,12 +272,59 @@ describe('Etherpad service API', () => {
         mode,
       },
     });
-    it('views a pad in read mode successfully', async () => {
+    it('member views a pad in read mode successfully', async () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const item = await createEtherpad(app);
+
+      const reqParams = setUpApi({
+        getReadOnlyID: [
+          StatusCodes.OK,
+          { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
+        ],
+        createAuthorIfNotExistsFor: [
+          StatusCodes.OK,
+          { code: 0, message: 'ok', data: { authorID: MOCK_AUTHOR_ID } },
+        ],
+        createSession: [
+          StatusCodes.OK,
+          { code: 0, message: 'ok', data: { sessionID: MOCK_SESSION_ID } },
+        ],
+        listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
+      });
+      const res = await app.inject(payloadView('read', item.id));
+      const { getReadOnlyID } = await reqParams;
+      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
+      expect(res.statusCode).toEqual(StatusCodes.OK);
+      expect(res.json()).toEqual({
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
+      });
+    });
+    it('guest views a pad in read mode successfully', async () => {
+      const {
+        actor,
+        guests: [guest],
+        items: [parentItem],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ permission: 'write', account: 'actor' }],
+            type: 'folder',
+            itemLoginSchema: { guests: [{}] },
+          },
+        ],
+      });
+      assertIsDefined(guest);
+      assertIsDefined(actor);
+      // authenticate as actor
+      mockAuthenticate(actor);
+
+      const item = await createEtherpad(app, parentItem.id);
+
+      // switch to guest authentication
+      mockAuthenticate(guest);
 
       const reqParams = setUpApi({
         getReadOnlyID: [
