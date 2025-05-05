@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.3.0](https://github.com/graasp/graasp/compare/v2.2.1...v2.3.0) (2025-05-05)
+
+
+### Features
+
+* unify file type ([#1840](https://github.com/graasp/graasp/issues/1840)) ([15dde54](https://github.com/graasp/graasp/commit/15dde54d9eda39e4792ee2ac61f658859b2de5fc))
+
+
+### Bug Fixes
+
+* allow guests to access etherpad ([#1861](https://github.com/graasp/graasp/issues/1861)) ([1eeec20](https://github.com/graasp/graasp/commit/1eeec20a0b0e11b16416e5728fdf5a3a198849f6))
+* **dep:** remove `tsx` ([#1851](https://github.com/graasp/graasp/issues/1851)) ([f271c5d](https://github.com/graasp/graasp/commit/f271c5de50b4c4d35404642701e77d2af122da6f))
+
 ## [2.2.1](https://github.com/graasp/graasp/compare/v2.2.0...v2.2.1) (2025-05-01)
 
 
