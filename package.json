@@ -101,7 +101,7 @@
     "passport-custom": "1.1.1",
     "passport-jwt": "4.0.1",
     "passport-local": "1.0.0",
-    "pdf-text-reader": "3.0.2",
+    "pdf-text-reader": "5.1.0",
     "pdf2pic": "3.1.4",
     "pg": "8.14.1",
     "reflect-metadata": "0.2.2",

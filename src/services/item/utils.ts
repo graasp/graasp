@@ -1,6 +1,8 @@
 import { ValidateFunction } from 'ajv';
 import { Readable } from 'node:stream';
-import { readPdfText } from 'pdf-text-reader';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { readPdfPages } from 'pdf-text-reader';
 
 import { MultipartFields, MultipartFile } from '@fastify/multipart';
 
@@ -35,7 +37,7 @@ export const sortChildrenForTreeWith = <T extends ItemRaw>(
 
 export const readPdfContent = async (source: string | URL) => {
   try {
-    const pages = await readPdfText({ url: source, useSystemFonts: true });
+    const pages = await readPdfPages({ url: source, options: { useSystemFonts: true } });
     //limit indexing to first pages
     const maxPage = Math.min(pages.length, 10);
     return pages
