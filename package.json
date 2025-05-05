@@ -167,7 +167,6 @@
     "prettier": "3.5.3",
     "ts-jest": "29.2.3",
     "ts-node": "10.9.2",
-    "tsx": "4.19.3",
     "typescript": "5.8.3",
     "wait-for-expect": "3.0.2"
   },
