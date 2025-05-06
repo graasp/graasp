@@ -461,7 +461,7 @@ describe('ZIP routes tests', () => {
         expect(itemsInDB.length).toEqual(3);
         expect(folderItem.type).toEqual(ItemType.FOLDER);
         expect(documentItem.type).toEqual(ItemType.DOCUMENT);
-        expect(fileItem.type).toEqual(ItemType.S3_FILE);
+        expect(fileItem.type).toEqual(ItemType.FILE);
         expect(Number(itemsInDB[1].order)).toBeLessThan(Number(itemsInDB[2].order));
 
         // Check that all the item properties have been assigned for the document type
@@ -473,8 +473,8 @@ describe('ZIP routes tests', () => {
 
         // Check that all the item properties have been assigned for the file type
         let fileItemProperties: FileItemProperties;
-        if (fileItem.extra[ItemType.S3_FILE]) {
-          fileItemProperties = fileItem.extra[ItemType.S3_FILE] as FileItemProperties;
+        if (fileItem.extra[ItemType.FILE]) {
+          fileItemProperties = fileItem.extra[ItemType.FILE] as FileItemProperties;
         } else {
           fileItemProperties = fileItem.extra[ItemType.LOCAL_FILE] as FileItemProperties;
         }
