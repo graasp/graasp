@@ -293,7 +293,7 @@ export class ImportExportService {
         }
 
         // Handle the file upload
-        if (item.type === ItemType.LOCAL_FILE || item.type === ItemType.S3_FILE) {
+        if (item.type === ItemType.FILE) {
           if (!item.mimetype) {
             throw new GraaspExportInvalidFileError();
           }
@@ -306,10 +306,7 @@ export class ImportExportService {
           });
 
           extra = {
-            // this is needed because if we directly use `this.fileService.type` then TS widens the type to `string` which we do not want
-            ...(this.fileService.fileType === ItemType.LOCAL_FILE
-              ? { [ItemType.LOCAL_FILE]: fileItemProperties }
-              : { [ItemType.S3_FILE]: fileItemProperties }),
+            [ItemType.FILE]: fileItemProperties,
           };
         }
 
@@ -637,7 +634,7 @@ export class ImportExportService {
     item,
   ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
     switch (true) {
-      case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
+      case isItemType(item, ItemType.FILE): {
         const mimetype = getMimetype(item.extra) || 'application/octet-stream';
         const url = await this.fileItemService.getUrl(dbConnection, actor, {
           itemId: item.id,

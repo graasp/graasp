@@ -308,12 +308,9 @@ class FileItemService extends ItemService {
     const item = {
       name,
       description,
-      type: this.fileService.fileType,
+      type: ItemType.FILE,
       extra: {
-        // this is needed because if we directly use `this.fileService.type` then TS widens the type to `string` which we do not want
-        ...(this.fileService.fileType === ItemType.LOCAL_FILE
-          ? { [ItemType.LOCAL_FILE]: fileProperties }
-          : { [ItemType.S3_FILE]: fileProperties }),
+        [ItemType.FILE]: fileProperties,
       },
       creator: actor,
     };
