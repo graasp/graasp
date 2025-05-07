@@ -50,6 +50,7 @@ COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
 # Copy the dependencies and compiled server code
 COPY --chown=node:node --from=build ./app/node_modules ./node_modules
 COPY --chown=node:node --from=build ./app/dist ./dist
+COPY --chown=node:node --from=build ./app/instrument.mjs .
 
 # Set user to be non-root node
 USER node

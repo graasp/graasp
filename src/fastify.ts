@@ -5,7 +5,6 @@ import { fastify } from 'fastify';
 import registerAppPlugins from './app';
 import { client } from './drizzle/db';
 import ajvFormats from './schemas/ajvFormats';
-import { initSentry } from './sentry';
 import {
   APP_VERSION,
   CORS_ORIGIN_REGEX,
@@ -48,8 +47,6 @@ instance.addHook('onClose', async () => {
 });
 
 const start = async () => {
-  const { Sentry } = initSentry(instance);
-
   instance.register(fastifyHelmet);
 
   if (CORS_ORIGIN_REGEX) {
@@ -73,9 +70,6 @@ const start = async () => {
     }
   } catch (err) {
     instance.log.error(err);
-    Sentry?.withScope((_scope) => {
-      Sentry?.captureException(err);
-    });
     process.exit(1);
   }
   return instance;
