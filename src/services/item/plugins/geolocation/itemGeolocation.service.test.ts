@@ -18,7 +18,8 @@ const itemThumbnailService = {
   getUrlsByItems: jest.fn(() => ({ small: 'url' })),
 } as unknown as ItemThumbnailService;
 const authorizedItemService = {
-  validatePermissionMany: jest.fn(),
+  getItemById: jest.fn(),
+  getManyItemsWithProperties: jest.fn(),
 } as unknown as AuthorizedItemService;
 const itemGeolocationRepository = {
   getUrlsByItems: jest.fn(() => ({ small: 'url' })),
