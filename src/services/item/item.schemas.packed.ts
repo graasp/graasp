@@ -51,27 +51,6 @@ export const getOne = {
   response: { [StatusCodes.OK]: packedItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
-export const getMany = {
-  operationId: 'getManyItems',
-  tags: ['item'],
-  summary: 'Get many items',
-  description: 'Get many items by their ids.',
-
-  querystring: customType.StrictObject({
-    id: Type.Array(customType.UUID(), {
-      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
-      uniqueItems: true,
-    }),
-  }),
-  response: {
-    [StatusCodes.OK]: Type.Object({
-      data: Type.Record(Type.String({ format: 'uuid' }), packedItemSchemaRef),
-      errors: Type.Array(errorSchemaRef),
-    }),
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
 export const getAccessible = {
   operationId: 'getAccessibleItems',
   tags: ['item'],

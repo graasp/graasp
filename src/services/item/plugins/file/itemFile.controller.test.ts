@@ -27,7 +27,6 @@ import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { isDirectChild } from '../../../../drizzle/operations';
 import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
@@ -39,7 +38,7 @@ import {
   UploadFileUnexpectedError,
 } from '../../../file/utils/errors';
 import { ThumbnailSizeFormat } from '../../../thumbnail/constants';
-import { expectItem, expectManyItems } from '../../test/fixtures/items';
+import { expectItem } from '../../test/fixtures/items';
 import { DEFAULT_MAX_STORAGE } from './utils/constants';
 import { StorageExceeded } from './utils/errors';
 
