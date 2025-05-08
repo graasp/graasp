@@ -7,7 +7,6 @@ import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { db } from '../../../../drizzle/db';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { BasicItemService } from '../../basic.service';
 import { ItemService } from '../../item.service';
 import { ItemThumbnailService } from './itemThumbnail.service';
 import { constructMockedUrl, expectValidUrls } from './test/fixtures/utils';
@@ -24,15 +23,14 @@ const dummyItemService = {
 const stubThumbnailService = {
   getUrl: constructMockedUrl,
 } as unknown as ThumbnailService;
-const stubBasicItemService = {
-  get: jest.fn(),
-} as unknown as BasicItemService;
-const authorizedItemService = {} as unknown as AuthorizedItemService;
+const stubAuthorizedItemService = {
+  getItemById: jest.fn(),
+} as unknown as AuthorizedItemService;
 
 export const itemThumbnailService = new ItemThumbnailService(
   dummyItemService,
   stubThumbnailService,
-  authorizedItemService,
+  stubAuthorizedItemService,
   MOCK_LOGGER,
 );
 
@@ -45,7 +43,7 @@ describe('ItemThumbnailService', () => {
   describe('getUrl', () => {
     it('return url for item and size', async () => {
       const MOCK_ITEM = ItemFactory({ settings: { hasThumbnail: true } });
-      jest.spyOn(stubBasicItemService, 'get').mockResolvedValue(MOCK_ITEM);
+      jest.spyOn(stubAuthorizedItemService, 'getItemById').mockResolvedValue(MOCK_ITEM);
 
       const size = ThumbnailSize.Large;
       const result = await itemThumbnailService.getUrl(db, undefined, {
@@ -56,7 +54,7 @@ describe('ItemThumbnailService', () => {
     });
     it('return null for item without thumbnail', async () => {
       const MOCK_ITEM = ItemFactory({ settings: { hasThumbnail: false } });
-      jest.spyOn(stubBasicItemService, 'get').mockResolvedValue(MOCK_ITEM);
+      jest.spyOn(stubAuthorizedItemService, 'getItemById').mockResolvedValue(MOCK_ITEM);
 
       const result = await itemThumbnailService.getUrl(db, undefined, {
         size: ThumbnailSize.Large,
@@ -65,7 +63,7 @@ describe('ItemThumbnailService', () => {
       expect(result).toBeNull();
     });
     it('throw if cannot get item', async () => {
-      jest.spyOn(stubBasicItemService, 'get').mockRejectedValue(new Error());
+      jest.spyOn(stubAuthorizedItemService, 'getItemById').mockRejectedValue(new Error());
       await expect(() =>
         itemThumbnailService.getUrl(db, undefined, {
           size: ThumbnailSize.Large,

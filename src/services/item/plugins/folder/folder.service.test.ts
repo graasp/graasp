@@ -11,7 +11,6 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
@@ -93,7 +92,7 @@ describe('Folder Service', () => {
 
     it('throw if item is not a folder', async () => {
       const appItem = AppItemFactory() as ItemWithCreator;
-      jest.spyOn(BasicItemService.prototype, 'get').mockImplementation(async () => {
+      jest.spyOn(AuthorizedItemService.prototype, 'getItemById').mockImplementation(async () => {
         return appItem;
       });
 

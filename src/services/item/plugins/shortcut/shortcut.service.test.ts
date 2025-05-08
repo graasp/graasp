@@ -10,7 +10,6 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
@@ -108,7 +107,7 @@ describe('Shortcut Service', () => {
     //   });
     // });
     it('throw if target does not exist', async () => {
-      jest.spyOn(BasicItemService.prototype, 'get').mockRejectedValue(new Error());
+      jest.spyOn(AuthorizedItemService.prototype, 'getItemById').mockRejectedValue(new Error());
 
       await expect(() =>
         shortcutService.postWithOptions(db, MOCK_MEMBER, {
