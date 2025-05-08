@@ -60,7 +60,7 @@ export class ItemTagService {
   }
 
   async getByItemId(dbConnection: DBConnection, actor: MaybeUser, itemId: UUID) {
-    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
       actor,
       itemId,
     });

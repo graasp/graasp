@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
     websockets.register(itemChatTopic, async (req) => {
       const { channel: itemId, member } = req;
       // item must exist with read permission, else exception is thrown
-      await authorizedItemService.hasPermissionForItemId(db, { actor: member, itemId });
+      await authorizedItemService.assertPermissionForItemId(db, { actor: member, itemId });
     });
 
     fastify.get(

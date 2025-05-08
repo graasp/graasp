@@ -54,7 +54,7 @@ export class ShortLinkService {
     }
 
     // check that the member can admin the item to be allowed to create short link
-    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
       actor: member,
       itemId: shortLink.itemId,
       permission: PermissionLevel.Admin,
@@ -102,7 +102,7 @@ export class ShortLinkService {
     const shortLink = await this.shortLinkRepository.getOne(dbConnection, alias);
 
     // check that the member can admin the item to be allowed to create short link
-    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
       actor: member,
       itemId: shortLink.item.id,
       permission: PermissionLevel.Admin,
@@ -124,7 +124,7 @@ export class ShortLinkService {
     const shortLink = await this.shortLinkRepository.getOne(dbConnection, alias);
 
     // check that the member can admin the item to be allowed to create short link
-    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
       actor: member,
       itemId: shortLink.item.id,
       permission: PermissionLevel.Admin,

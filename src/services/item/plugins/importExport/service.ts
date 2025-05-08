@@ -677,7 +677,7 @@ export class ImportExportService {
   ): Promise<void> {
     if (parentId) {
       // check item permission
-      await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
         actor,
         itemId: parentId,
       });
