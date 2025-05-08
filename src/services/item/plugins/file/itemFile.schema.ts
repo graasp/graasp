@@ -22,10 +22,7 @@ export const upload = {
     ),
   }),
   response: {
-    [StatusCodes.OK]: customType.StrictObject({
-      data: Type.Record(customType.UUID(), itemSchemaRef),
-      errors: Type.Array(errorSchemaRef),
-    }),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful response' }),
     '4xx': errorSchemaRef,
   },
 };

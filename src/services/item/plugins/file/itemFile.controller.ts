@@ -106,7 +106,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   fastify.post('/upload', {
     schema: upload,
     preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-    handler: async (request) => {
+    handler: async (request, reply) => {
       const {
         user,
         query: { id: parentId, previousItemId },
@@ -165,6 +165,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           } finally {
             // force close to avoid hanging
             // necessary for errors that don't read the stream
+            log.debug('close file stream');
             stream.emit('end');
           }
         });
@@ -175,10 +176,12 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
         await itemService.rescaleOrderForParent(db, member, items[0]);
       }
 
-      return {
-        data: items.reduce((data, item) => ({ ...data, [item.id]: item }), {}),
-        errors,
-      };
+      // return first error only
+      if (errors.length) {
+        throw errors[0];
+      }
+
+      reply.status(StatusCodes.NO_CONTENT).send();
     },
   });
 
