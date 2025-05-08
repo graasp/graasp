@@ -1587,7 +1587,7 @@ describe('assertPermissionMany for no items', () => {
     const expected: Awaited<ReturnType<typeof authorizationService.getManyItemsWithProperties>> = {
       itemMemberships: { data: {}, errors: [] },
       visibilities: { data: {}, errors: [] },
-      items: [ITEM],
+      items: [],
     };
     // any other member shouldn't access
     expect(res).toEqual(expected);
