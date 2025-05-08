@@ -127,9 +127,7 @@ describe('App Service', () => {
       ).rejects.toThrow();
     });
     it('patch item settings', async () => {
-      jest
-        .spyOn(itemRepository, 'getOneOrThrow')
-        .mockResolvedValue({ ...MOCK_ITEM, creator: null });
+      jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(MOCK_ITEM);
 
       const itemServicePatchMock = jest
         .spyOn(ItemService.prototype, 'patch')
