@@ -65,9 +65,10 @@ export class ThumbnailService {
     return result;
   }
 
-  async getFile(actor: MaybeUser, { id, size }: { size: string; id: string }) {
-    const result = await this.fileService.getFile(actor, {
+  async getFile({ id, size }: { id: string; size: string }) {
+    const result = await this.fileService.getFile({
       path: this.buildFilePath(id, size),
+      id,
     });
 
     return result;
