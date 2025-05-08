@@ -43,7 +43,7 @@ export class AppActionService {
     body: InputAppAction,
   ): Promise<AppActionWithItemAndAccount> {
     // posting an app action is allowed to readers
-    await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
       permission: PermissionLevel.Read,
       actor: account,
       itemId,

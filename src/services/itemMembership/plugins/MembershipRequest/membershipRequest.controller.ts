@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       await db.transaction(async (tx) => {
         // Check if the Item exists and the member has the required permission.
-        await authorizedItemService.hasPermissionForItemId(tx, {
+        await authorizedItemService.assertPermissionForItemId(tx, {
           actor: member,
           itemId,
           permission: PermissionLevel.Admin,
@@ -121,14 +121,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         // Check if the member already has an access to the item (from membership), if so, throw an error
-        if (
-          await authorizedItemService.hasPermission(tx, {
+        try {
+          await authorizedItemService.assertPermission(tx, {
             permission: PermissionLevel.Read,
             actor: member,
             item,
-          })
-        ) {
+          });
           throw new ItemMembershipAlreadyExists();
+        } catch (_e) {
+          // we expect member to have not access
         }
 
         await membershipRequestService.post(tx, member.id, itemId);
@@ -150,7 +151,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       await db.transaction(async (tx) => {
         // Check if the item exists and the member has the required permission
-        await authorizedItemService.hasPermissionForItemId(tx, {
+        await authorizedItemService.assertPermissionForItemId(tx, {
           actor: member,
           itemId,
           permission: PermissionLevel.Admin,
