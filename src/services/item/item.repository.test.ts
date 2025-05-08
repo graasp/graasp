@@ -251,8 +251,6 @@ describe('Item Repository', () => {
       assertIsMember(actor);
       const result = await itemRepository.getOneOrThrow(db, item.id);
       expectItem(result, item);
-      // contains creator
-      expectMember(result.creator, new MemberDTO(actor).toCurrent());
     });
     it('getOne returns null for a non-existent id', async () => {
       const id = v4();
@@ -263,6 +261,18 @@ describe('Item Repository', () => {
       await expect(async () => await itemRepository.getOneOrThrow(db, id)).rejects.toThrow(
         new ItemNotFound(id),
       );
+    });
+    it('getOneWithCreatorOrThrow returns item with creator successfully', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({ items: [{ creator: 'actor' }] });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      const result = await itemRepository.getOneWithCreatorOrThrow(db, item.id);
+      expectItem(result, item);
+      // contains creator
+      expectMember(result.creator, new MemberDTO(actor).toCurrent());
     });
   });
 
