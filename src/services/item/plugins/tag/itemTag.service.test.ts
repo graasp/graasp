@@ -10,8 +10,11 @@ import {
   TagRaw,
 } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { TagRepository } from '../../../tag/tag.repository';
-import { BasicItemService } from '../../basic.service';
+import { ItemRepository } from '../../item.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemTagRepository } from './ItemTag.repository';
@@ -32,9 +35,14 @@ const tagRepository = {
 const itemPublishedRepository = {
   getForItem: jest.fn() as ItemPublishedRepository['getForItem'],
 } as ItemPublishedRepository;
+const authorizedItemService = new AuthorizedItemService(
+  new ItemMembershipRepository(),
+  new ItemVisibilityRepository(),
+  new ItemRepository(),
+);
 
 const itemTagService = new ItemTagService(
-  itemService,
+  authorizedItemService,
   tagRepository,
   itemTagRepository,
   itemPublishedRepository,

@@ -9,7 +9,6 @@ import {
 import { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -17,7 +16,7 @@ import { ItemLikeRepository } from './itemLike.repository';
 import { ItemLikeService } from './itemLike.service';
 
 const authorizedItemService = {
-  // get: jest.fn() as BasicItemService['get']
+  getItemById: jest.fn() as AuthorizedItemService['getItemById'],
 } as AuthorizedItemService;
 const meilisearchWrapper = {
   updateItem: jest.fn() as MeiliSearchWrapper['updateItem'],
@@ -54,7 +53,7 @@ describe('Item Like post', () => {
     jest.clearAllMocks();
   });
   it('does not update like count for indexed item if it is not published', async () => {
-    jest.spyOn(itemService, 'get').mockResolvedValue({} as ItemWithCreator);
+    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
     jest.spyOn(itemLikeRepository, 'addOne').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = jest.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
@@ -65,7 +64,7 @@ describe('Item Like post', () => {
   });
 
   it('update like count for indexed item if it is published', async () => {
-    jest.spyOn(itemService, 'get').mockResolvedValue({} as ItemWithCreator);
+    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
     jest.spyOn(itemLikeRepository, 'addOne').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = jest.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     jest
@@ -83,7 +82,7 @@ describe('Item Like removeOne', () => {
     jest.clearAllMocks();
   });
   it('do not update like count for indexed item if it is not published', async () => {
-    jest.spyOn(itemService, 'get').mockResolvedValue({} as ItemWithCreator);
+    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
     jest.spyOn(itemLikeRepository, 'deleteOneByCreatorAndItem').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = jest.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
@@ -94,7 +93,7 @@ describe('Item Like removeOne', () => {
   });
 
   it('update like count for indexed item if it is published', async () => {
-    jest.spyOn(itemService, 'get').mockResolvedValue({} as ItemWithCreator);
+    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
     jest.spyOn(itemLikeRepository, 'deleteOneByCreatorAndItem').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = jest.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     jest

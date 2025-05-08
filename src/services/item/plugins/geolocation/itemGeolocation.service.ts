@@ -88,10 +88,12 @@ export class ItemGeolocationService {
       return [];
     }
 
-    const { itemMemberships, visibilities } = await this.authorizedItemService.getManyItems(
-      dbConnection,
-      { permission: PermissionLevel.Read, actor, items: geoloc.map(({ item }) => item) },
-    );
+    const { itemMemberships, visibilities } =
+      await this.authorizedItemService.getManyItemsWithProperties(dbConnection, {
+        permission: PermissionLevel.Read,
+        actor,
+        items: geoloc.map(({ item }) => item),
+      });
 
     const thumbnailsByItem = await this.itemThumbnailService.getUrlsByItems(itemsWithGeoloc);
 
