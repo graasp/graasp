@@ -13,10 +13,14 @@ The export operation produces a single zip file. This file is a simple zip file 
 - description (item description in HTML)
 - settings (item settings)
 - extra (item extras)
-- thumbnailFilename (item thumbnail in the original size, if present) - COMING SOON
+- thumbnailFilename (item thumbnail in the original size, if present)
 - children (item children, in case of a folder item)
 - mimetype (item file mimetype, in case there's a file attached to the item)
 ```
+
+### Files and thumbnails
+
+Files are stored in the top level of the zip. The filename is the same as the item ID in the manifest file. The thumbnails are also stored on the top-level and are named using the `{ID}-thumbnail` convention.
 
 ## Import
 

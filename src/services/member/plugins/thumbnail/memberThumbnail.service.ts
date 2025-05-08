@@ -4,7 +4,7 @@ import { injectWithTransform, singleton } from 'tsyringe';
 import { AccountType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { MaybeUser, MinimalMember } from '../../../../types';
+import { MinimalMember } from '../../../../types';
 import { AccountRepository } from '../../../account/account.repository';
 import { AccountNotFound } from '../../../account/errors';
 import {
@@ -42,14 +42,10 @@ export class MemberThumbnailService {
   }
 
   // get member's avatar
-  async getFile(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    { size, memberId }: { memberId: string; size: string },
-  ) {
-    const result = await this.thumbnailService.getFile(actor, {
-      size,
+  async getFile({ size, memberId }: { memberId: string; size: string }) {
+    const result = await this.thumbnailService.getFile({
       id: memberId,
+      size,
     });
 
     return result;

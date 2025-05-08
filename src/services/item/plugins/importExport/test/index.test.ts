@@ -9,7 +9,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { FileItemProperties, HttpMethod, ItemType, MimeTypes } from '@graasp/sdk';
+import { FileItemProperties, HttpMethod, ItemType, MimeTypes, ThumbnailSize } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -21,6 +21,7 @@ import { db } from '../../../../../drizzle/db';
 import { isDescendantOrSelf, isDirectChild } from '../../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { LocalFileRepository } from '../../../../file/repositories/local';
 import { GRAASP_MANIFEST_FILENAME } from '../constants';
 import { GraaspExportItem } from '../service';
@@ -472,17 +473,27 @@ describe('ZIP routes tests', () => {
         expect(documentItem.extra[ItemType.DOCUMENT].content).toEqual(documentContent);
 
         // Check that all the item properties have been assigned for the file type
-        let fileItemProperties: FileItemProperties;
-        if (fileItem.extra[ItemType.FILE]) {
-          fileItemProperties = fileItem.extra[ItemType.FILE] as FileItemProperties;
-        } else {
-          fileItemProperties = fileItem.extra[ItemType.LOCAL_FILE] as FileItemProperties;
-        }
+        const fileItemProperties = fileItem.extra[ItemType.FILE] as FileItemProperties;
         expect(fileItemProperties).toBeDefined();
         expect(fileItemProperties.name).toEqual(pdfName);
         expect(fileItemProperties.path).toBeDefined();
         expect(fileItemProperties.mimetype).toEqual(MimeTypes.PDF);
         expect(fileItemProperties.content).toEqual(pdfContent);
+
+        // Check the the file item thumbnail has been imported correctly
+        expect(fileItem.settings.hasThumbnail).toBeTruthy();
+
+        const thumbnailURLResponse = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/${fileItem.id}${THUMBNAILS_ROUTE_PREFIX}/${ThumbnailSize.Original}`,
+        });
+
+        expect(thumbnailURLResponse.statusCode).toBe(StatusCodes.OK);
+        expect(
+          thumbnailURLResponse.body.includes(
+            `${THUMBNAILS_ROUTE_PREFIX}/${fileItem.id}/${ThumbnailSize.Original}`,
+          ),
+        ).toBeTruthy();
       });
     });
   });

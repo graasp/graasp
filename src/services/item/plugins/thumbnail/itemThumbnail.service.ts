@@ -78,9 +78,9 @@ export class ItemThumbnailService {
       item,
     );
 
-    const result = await this.thumbnailService.getFile(actor, {
-      size,
+    const result = await this.thumbnailService.getFile({
       id: itemId,
+      size,
     });
 
     return result;
