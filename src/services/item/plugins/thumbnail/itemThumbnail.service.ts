@@ -1,12 +1,15 @@
+import * as fs from 'fs';
+import { fromPath as convertPDFtoImageFromPath } from 'pdf2pic';
 import { Readable } from 'stream';
 import { delay, inject, injectable } from 'tsyringe';
 
-import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
+import { MimeTypes, PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
+import { asDefined } from '../../../../utils/assertions';
 import { AuthorizationService } from '../../../authorization';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { BasicItemService } from '../../basic.service';
@@ -168,5 +171,26 @@ export class ItemThumbnailService {
     await this.itemService.patch(dbConnection, actor, itemId, {
       settings: { hasThumbnail: false },
     });
+  }
+
+  /**
+   * Generate a thumbnail from the file, if possible.
+   * @param path File path
+   * @param mimetype Mimetype of the file
+   * @returns
+   */
+  async generateThumbnail(path: string, mimetype: string) {
+    try {
+      if (MimeTypes.isImage(mimetype)) {
+        return fs.createReadStream(path);
+      } else if (MimeTypes.isPdf(mimetype)) {
+        // Convert first page of PDF to image buffer and upload as thumbnail
+        const outputImg = await convertPDFtoImageFromPath(path)(1, { responseType: 'buffer' });
+        const buffer = asDefined(outputImg.buffer);
+        return Readable.from(buffer);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 }

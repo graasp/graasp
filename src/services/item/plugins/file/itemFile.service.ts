@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import path from 'path';
-import { fromPath as convertPDFtoImageFromPath } from 'pdf2pic';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
@@ -19,7 +18,6 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
-import { asDefined } from '../../../../utils/assertions';
 import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/file.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
@@ -82,13 +80,17 @@ class FileItemService extends ItemService {
     this.storageService = storageService;
   }
 
-  public buildFilePath(extension: string = '') {
+  private buildFilePath(extension: string = '') {
     // TODO: CHANGE ??
     const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
     return path.join('files', filepath);
   }
 
-  async upload(
+  /**
+   * Upload the file and create an item from the extracted file properties.
+   * @returns The newly created item
+   */
+  async uploadFileAndCreateItem(
     dbConnection: DBConnection,
     actor: MinimalMember,
     {
@@ -107,89 +109,84 @@ class FileItemService extends ItemService {
       previousItemId?: ItemRaw['id'];
     },
   ) {
-    const filepath = this.buildFilePath(getFileExtension(filename)); // parentId, filename
+    // Create temporary file
+    return await withTmpFile(async ({ path: tmpPath }) => {
+      // Write the uploaded file to the temporary file
+      await pipeline(stream, fs.createWriteStream(tmpPath));
 
-    // check member storage limit
+      // Upload the file
+      const fileProperties = await this.uploadFile(dbConnection, actor, {
+        filename,
+        filepath: tmpPath,
+        mimetype,
+      });
+
+      // Add thumbnails if the file is an image or a pdf
+      const thumbnail = await this.itemThumbnailService.generateThumbnail(tmpPath, mimetype);
+
+      // Create item from file properties
+      return await this.createItemFromFileProperties(dbConnection, actor, {
+        description,
+        parentId,
+        filename,
+        fileProperties,
+        previousItemId,
+        thumbnail,
+      });
+    });
+  }
+
+  /**
+   * Upload a file to the database and return the file item properties.
+   * @returns The file item properties extracted from the provided file
+   */
+  async uploadFile(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    {
+      filename,
+      filepath,
+      mimetype,
+    }: {
+      filename: string;
+      filepath: string;
+      mimetype: string;
+    },
+  ) {
+    // Check member storage limit
     await this.storageService.checkRemainingStorage(dbConnection, actor);
 
-    return await withTmpFile(async ({ path }) => {
-      // Write uploaded file to a temporary file
-      await pipeline(stream, fs.createWriteStream(path));
+    // Build the storage file path
+    const storageFilepath = this.buildFilePath(getFileExtension(filename));
 
-      // Content to be indexed for search
-      let content = '';
-      if (MimeTypes.isPdf(mimetype)) {
-        content = await readPdfContent(path);
-      }
-
-      // Upload to storage
-      await this.fileService.upload(actor, {
-        file: fs.createReadStream(path),
-        filepath,
-        mimetype,
-      });
-
-      const size = await this.fileService.getFileSize(actor, filepath);
-
-      // throw for empty files
-      if (!size) {
-        await this.fileService.delete(filepath);
-        throw new UploadEmptyFileError();
-      }
-
-      // create item from file properties
-      const name = filename.substring(0, MAX_ITEM_NAME_LENGTH);
-      const fileProperties: FileItemProperties = {
-        name: filename,
-        path: filepath,
-        mimetype,
-        size,
-        content,
-      };
-      const item = {
-        name,
-        description,
-        type: ItemType.FILE,
-        extra: {
-          [ItemType.FILE]: fileProperties,
-        },
-        creator: actor,
-      };
-
-      const newItem = await super.post(dbConnection, actor, {
-        item,
-        parentId,
-        previousItemId,
-      });
-
-      // add thumbnails if image or pdf
-      // allow failures
-      try {
-        if (MimeTypes.isImage(mimetype)) {
-          await this.itemThumbnailService.upload(
-            dbConnection,
-            actor,
-            newItem.id,
-            fs.createReadStream(path),
-          );
-        } else if (MimeTypes.isPdf(mimetype)) {
-          // Convert first page of PDF to image buffer and upload as thumbnail
-          const outputImg = await convertPDFtoImageFromPath(path)(1, { responseType: 'buffer' });
-          const buffer = asDefined(outputImg.buffer);
-          await this.itemThumbnailService.upload(
-            dbConnection,
-            actor,
-            newItem.id,
-            Readable.from(buffer),
-          );
-        }
-      } catch (e) {
-        console.error(e);
-      }
-
-      // retrieve item again since hasThumbnail might have changed
-      return await this.itemRepository.getOneOrThrow(dbConnection, newItem.id);
+    // Upload to storage
+    await this.fileService.upload(actor, {
+      file: fs.createReadStream(filepath),
+      filepath: storageFilepath,
+      mimetype,
     });
+
+    // Check the file size
+    const size = await this.fileService.getFileSize(actor, storageFilepath);
+    if (!size) {
+      await this.fileService.delete(storageFilepath);
+      throw new UploadEmptyFileError();
+    }
+
+    // Content to be indexed for search
+    let content = '';
+    if (MimeTypes.isPdf(mimetype)) {
+      content = await readPdfContent(filepath);
+    }
+
+    // Return the file item properties
+    return {
+      name: filename,
+      path: storageFilepath,
+      mimetype,
+      size,
+      content,
+    } as FileItemProperties;
   }
 
   async getFile(
@@ -282,6 +279,48 @@ class FileItemService extends ItemService {
     }
 
     await super.patch(dbConnection, member, item.id, body);
+  }
+
+  /**
+   * Form and post a new item with properties derived from the file.
+   */
+  private async createItemFromFileProperties(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    {
+      description,
+      parentId,
+      filename,
+      fileProperties,
+      previousItemId,
+      thumbnail,
+    }: {
+      description?: string;
+      parentId?: string;
+      filename: string;
+      fileProperties: FileItemProperties;
+      previousItemId?: ItemRaw['id'];
+      thumbnail?: Readable;
+    },
+  ) {
+    const name = filename.substring(0, MAX_ITEM_NAME_LENGTH);
+
+    const item = {
+      name,
+      description,
+      type: ItemType.FILE,
+      extra: {
+        [ItemType.FILE]: fileProperties,
+      },
+      creator: actor,
+    };
+
+    return super.post(dbConnection, actor, {
+      item,
+      parentId,
+      previousItemId,
+      thumbnail,
+    });
   }
 }
 
