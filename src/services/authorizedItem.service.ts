@@ -43,7 +43,7 @@ export class AuthorizedItemService {
     this.itemRepository = itemRepository;
   }
 
-  public async getManyItemsById(
+  public async getManyItemsWithPropertiesByIds(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
@@ -60,7 +60,7 @@ export class AuthorizedItemService {
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
   }> {
     const items = await this.itemRepository.getMany(dbConnection, itemIds);
-    return this.getManyItems(dbConnection, { permission, actor, items });
+    return this.getManyItemsWithProperties(dbConnection, { permission, actor, items });
   }
 
   /**
@@ -71,7 +71,7 @@ export class AuthorizedItemService {
    * @param item
    * @throws if the user cannot access the item
    */
-  public async getManyItems(
+  public async getManyItemsWithProperties(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
