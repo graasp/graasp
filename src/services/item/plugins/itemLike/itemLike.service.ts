@@ -56,7 +56,7 @@ export class ItemLikeService {
   }
 
   async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
-    await this.authorizedItemService.hasPermissionForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertPermissionForItemId(dbConnection, { actor, itemId });
 
     return this.itemLikeRepository.getByItemId(dbConnection, itemId);
   }

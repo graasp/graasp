@@ -164,7 +164,7 @@ export class AuthorizedItemService {
     return { items, itemMemberships: resultOfMemberships, visibilities };
   }
 
-  public async hasPermission(
+  public async assertPermission(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
@@ -172,15 +172,10 @@ export class AuthorizedItemService {
       item,
     }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
   ) {
-    try {
-      await this.getItem(dbConnection, { permission, actor, item });
-      return true;
-    } catch (err: unknown) {
-      return false;
-    }
+    await this.getItem(dbConnection, { permission, actor, item });
   }
 
-  public async hasPermissionForItemId(
+  public async assertPermissionForItemId(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
@@ -189,7 +184,7 @@ export class AuthorizedItemService {
     }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    return this.hasPermission(dbConnection, { permission, actor, item });
+    return await this.assertPermission(dbConnection, { permission, actor, item });
   }
 
   public async getItemById(

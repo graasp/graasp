@@ -37,7 +37,7 @@ const authorizationService = new AuthorizedItemService(
   itemRepository,
 );
 
-describe('hasPermissionMany for one item', () => {
+describe('assertPermissionMany for one item', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -1504,7 +1504,7 @@ describe('hasPermissionMany for one item', () => {
   });
 });
 
-describe('hasPermissionMany for many items', () => {
+describe('assertPermissionMany for many items', () => {
   const SHARED_ITEM = ItemFactory({ id: 'shared-item' });
   const PUBLIC_ITEM = ItemFactory({ id: 'public-item' });
 
@@ -1564,7 +1564,7 @@ describe('hasPermissionMany for many items', () => {
   });
 });
 
-describe('hasPermissionMany for no items', () => {
+describe('assertPermissionMany for no items', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });

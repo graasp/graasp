@@ -44,14 +44,15 @@ export class EnrollService {
     }
 
     // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error
-    if (
-      await this.authorizedItemService.hasPermission(dbConnection, {
+    try {
+      await this.authorizedItemService.assertPermission(dbConnection, {
         permission: PermissionLevel.Read,
         actor: member,
         item,
-      })
-    ) {
+      });
       throw new ItemMembershipAlreadyExists();
+    } catch (_e) {
+      // we expect the member to not have access to the item
     }
 
     await this.itemMembershipRepository.addOne(dbConnection, {

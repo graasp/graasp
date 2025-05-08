@@ -164,7 +164,7 @@ export class ItemMembershipService {
     if (membership.account.type === AccountType.Guest) {
       throw new CannotModifyGuestItemMembership();
     }
-    await this.authorizedItemService.hasPermission(dbConnection, {
+    await this.authorizedItemService.assertPermission(dbConnection, {
       permission: PermissionLevel.Admin,
       actor: authenticatedUser,
       item: membership.item,
@@ -192,7 +192,7 @@ export class ItemMembershipService {
     // check memberships
     const membership = await this.itemMembershipRepository.get(dbConnection, itemMembershipId);
     const { item } = membership;
-    await this.authorizedItemService.hasPermission(dbConnection, {
+    await this.authorizedItemService.assertPermission(dbConnection, {
       permission: PermissionLevel.Admin,
       actor,
       item,

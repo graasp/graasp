@@ -55,7 +55,7 @@ export class RecycledBinService {
     // validate permission on parents
     // TODO: optimize!!!!!!
     for (const id of ids) {
-      await this.authorizedItemService.hasPermissionForItemId(dbConnection, {
+      await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
         permission: PermissionLevel.Admin,
         actor: member,
         itemId: id,
@@ -80,7 +80,7 @@ export class RecycledBinService {
 
     // if item is already deleted, it will throw not found here
     for (const item of items) {
-      await this.authorizedItemService.hasPermission(dbConnection, {
+      await this.authorizedItemService.assertPermission(dbConnection, {
         permission: PermissionLevel.Admin,
         actor,
         item,
@@ -128,7 +128,7 @@ export class RecycledBinService {
     }
 
     for (const item of items) {
-      await this.authorizedItemService.hasPermission(dbConnection, {
+      await this.authorizedItemService.assertPermission(dbConnection, {
         permission: PermissionLevel.Admin,
         actor: member,
         item,
