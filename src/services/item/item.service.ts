@@ -582,10 +582,12 @@ export class ItemService {
     const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
     const parents = await this.itemRepository.getAncestors(dbConnection, item);
 
-    const { itemMemberships, visibilities } = await this.authorizedItemService.getManyItems(
-      dbConnection,
-      { permission: PermissionLevel.Read, actor, items: parents },
-    );
+    const { itemMemberships, visibilities } =
+      await this.authorizedItemService.getManyItemsWithProperties(dbConnection, {
+        permission: PermissionLevel.Read,
+        actor,
+        items: parents,
+      });
     // remove parents actor does not have access
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));

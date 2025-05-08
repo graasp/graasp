@@ -71,11 +71,14 @@ export class ActionMemberService {
       new Map(actionsNeedPermission.map(({ item }) => [item?.id, item])).values(),
     ).filter(Boolean);
 
-    const { itemMemberships } = await this.authorizedItemService.getManyItems(dbConnection, {
-      permission: PermissionLevel.Read,
-      actor: authenticatedUser,
-      items: setOfItemsToCheckPermission as ItemRaw[],
-    });
+    const { itemMemberships } = await this.authorizedItemService.getManyItemsWithProperties(
+      dbConnection,
+      {
+        permission: PermissionLevel.Read,
+        actor: authenticatedUser,
+        items: setOfItemsToCheckPermission as ItemRaw[],
+      },
+    );
 
     const filteredActionsWithAccessPermission = actionsNeedPermission.filter((g) => {
       return g.item && g?.item?.id in itemMemberships.data;
