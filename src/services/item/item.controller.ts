@@ -19,7 +19,6 @@ import {
   getAccessible,
   getChildren,
   getDescendantItems,
-  getMany,
   getOne,
   getParentItems,
 } from './item.schemas.packed';
