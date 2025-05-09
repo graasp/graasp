@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
@@ -36,6 +37,10 @@ export class ItemLikeRepository {
     const result = await dbConnection
       .insert(itemLikesTable)
       .values({ itemId, creatorId })
+      .onConflictDoUpdate({
+        target: [itemLikesTable.itemId, itemLikesTable.creatorId],
+        set: { createdAt: sql.raw('DEFAULT') },
+      })
       .returning();
     if (result.length != 1) {
       throw new Error('Expected to receive, created item, but did not get it.');
