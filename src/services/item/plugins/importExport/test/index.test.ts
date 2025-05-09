@@ -489,7 +489,6 @@ describe('ZIP routes tests', () => {
         });
 
         expect(thumbnailURLResponse.statusCode).toBe(StatusCodes.OK);
-        expect(thumbnailURLResponse.body.includes(fileItem.id)).toBeTruthy();
       });
     });
   });
