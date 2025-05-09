@@ -31,7 +31,15 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       permission: customType.Nullable(customType.EnumString(Object.values(PermissionLevel))),
       hidden: Type.Optional(itemVisibilitySchemaRef),
       public: Type.Optional(itemVisibilitySchemaRef),
-      thumbnails: Type.Optional(Type.Object({}, { additionalProperties: true })),
+      thumbnails: Type.Optional(
+        customType.StrictObject(
+          {
+            small: Type.String(),
+            medium: Type.String(),
+          },
+          { additionalProperties: true },
+        ),
+      ),
     },
     {
       description: 'Item with additional information',

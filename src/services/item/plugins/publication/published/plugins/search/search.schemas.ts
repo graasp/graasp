@@ -5,20 +5,37 @@ import { FastifySchema } from 'fastify';
 
 import { ItemType, TagCategory } from '@graasp/sdk';
 
-import { customType } from '../../../../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
 
-const meilisearchSearchResponseSchema = customType.StrictObject({
-  totalHits: Type.Optional(Type.Number()),
-  estimatedTotalHits: Type.Optional(Type.Number()),
-  processingTimeMs: Type.Number(),
-  query: Type.String(),
-  hits: Type.Array(
-    customType.StrictObject({
+const meilisearchHitRef = registerSchemaAsRef(
+  'searchHit',
+  'Search Hit',
+  customType.StrictObject({
+    name: Type.String(),
+    description: Type.String(),
+    content: Type.String(),
+    creator: customType.StrictObject({
+      id: customType.UUID(),
+      name: Type.String(),
+    }),
+    level: Type.Array(Type.String()),
+    discipline: Type.Array(Type.String()),
+    'resource-type': Type.Array(Type.String()),
+    id: customType.UUID(),
+    type: Type.Enum(ItemType),
+    isPublishedRoot: Type.Boolean(),
+    isHidden: Type.Boolean(),
+    createdAt: customType.DateTime(),
+    updatedAt: customType.DateTime(),
+    publicationUpdatedAt: customType.DateTime(),
+    lang: Type.String(),
+    likes: Type.Number(),
+    _formatted: customType.StrictObject({
       name: Type.String(),
       description: Type.String(),
       content: Type.String(),
@@ -30,37 +47,24 @@ const meilisearchSearchResponseSchema = customType.StrictObject({
       discipline: Type.Array(Type.String()),
       'resource-type': Type.Array(Type.String()),
       id: customType.UUID(),
-      type: Type.Enum(ItemType),
+      type: Type.String(),
       isPublishedRoot: Type.Boolean(),
+      publicationUpdatedAt: customType.DateTime(),
       isHidden: Type.Boolean(),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
-      publicationUpdatedAt: customType.DateTime(),
       lang: Type.String(),
       likes: Type.Number(),
-      _formatted: customType.StrictObject({
-        name: Type.String(),
-        description: Type.String(),
-        content: Type.String(),
-        creator: customType.StrictObject({
-          id: customType.UUID(),
-          name: Type.String(),
-        }),
-        level: Type.Array(Type.String()),
-        discipline: Type.Array(Type.String()),
-        'resource-type': Type.Array(Type.String()),
-        id: customType.UUID(),
-        type: Type.String(),
-        isPublishedRoot: Type.Boolean(),
-        publicationUpdatedAt: customType.DateTime(),
-        isHidden: Type.Boolean(),
-        createdAt: customType.DateTime(),
-        updatedAt: customType.DateTime(),
-        lang: Type.String(),
-        likes: Type.Number(),
-      }),
     }),
-  ),
+  }),
+);
+
+const meilisearchSearchResponseSchema = customType.StrictObject({
+  totalHits: Type.Optional(Type.Number()),
+  estimatedTotalHits: Type.Optional(Type.Number()),
+  processingTimeMs: Type.Number(),
+  query: Type.String(),
+  hits: Type.Array(meilisearchHitRef),
 });
 
 export const search = {
