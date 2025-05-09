@@ -43,7 +43,7 @@ export class AppActionService {
     body: InputAppAction,
   ): Promise<AppActionWithItemAndAccount> {
     // posting an app action is allowed to readers
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       permission: PermissionLevel.Read,
       actor: account,
       itemId,
@@ -89,29 +89,5 @@ export class AppActionService {
     return this.appActionRepository.getForItem(dbConnection, itemId, {
       accountId: fMemberId,
     });
-  }
-
-  async getForManyItems(
-    dbConnection: DBConnection,
-    account: AuthenticatedUser,
-    itemIds: string[],
-    filters: ManyItemsGetFilter,
-  ) {
-    // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizedItemService.getItemWithPropertiesById(
-      dbConnection,
-      { permission: PermissionLevel.Read, actor: account, itemId: itemIds[0] },
-    );
-    const permission = itemMembership?.permission;
-    const { accountId: fMemberId } = filters;
-
-    // can read only own app action if not admin
-    if (permission !== PermissionLevel.Admin) {
-      if (fMemberId && fMemberId !== account.id) {
-        throw new AppActionNotAccessible();
-      }
-    }
-
-    return this.appActionRepository.getForManyItems(dbConnection, itemIds, filters);
   }
 }

@@ -31,7 +31,7 @@ export class ItemFlagService {
     flagType: FlagType,
   ) {
     // only register member can report
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
 
     await this.itemFlagRepository.addOne(dbConnection, {
       flagType,

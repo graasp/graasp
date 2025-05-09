@@ -71,7 +71,7 @@ export class ActionMemberService {
       new Map(actionsNeedPermission.map(({ item }) => [item?.id, item])).values(),
     ).filter(Boolean);
 
-    const { itemMemberships } = await this.authorizedItemService.getManyItemsWithProperties(
+    const { itemMemberships } = await this.authorizedItemService.getPropertiesForItems(
       dbConnection,
       {
         permission: PermissionLevel.Read,

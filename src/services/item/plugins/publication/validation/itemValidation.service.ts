@@ -59,7 +59,7 @@ export class ItemValidationService {
     const group = await this.itemValidationGroupRepository.getLastForItem(dbConnection, item.id);
 
     // check permissions
-    await this.authorizedItemService.assertPermission(dbConnection, {
+    await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
       actor: member,
       item,

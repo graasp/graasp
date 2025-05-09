@@ -27,7 +27,7 @@ export class ChatMessageService {
 
   async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
     // check permission
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
 
     return await this.chatMessageRepository.getByItem(dbConnection, itemId);
   }
@@ -39,7 +39,7 @@ export class ChatMessageService {
     data: { body: string; mentions?: string[] },
   ) {
     // check permission
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
 
     const message = await this.chatMessageRepository.addOne(dbConnection, {
       itemId,
@@ -65,7 +65,7 @@ export class ChatMessageService {
     message: { body: string },
   ) {
     // check permission
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       actor: authenticatedUser,
       itemId,
     });
@@ -98,7 +98,7 @@ export class ChatMessageService {
     messageId: string,
   ) {
     // check permission
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       actor: authenticatedUser,
       itemId,
     });
@@ -120,7 +120,7 @@ export class ChatMessageService {
   async clear(dbConnection: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       actor: authenticatedUser,
       itemId,
       permission: PermissionLevel.Admin,

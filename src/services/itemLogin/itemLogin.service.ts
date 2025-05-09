@@ -1,14 +1,21 @@
 import { singleton } from 'tsyringe';
 
-import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
+import {
+  ItemLoginSchemaStatus,
+  ItemVisibilityType,
+  PermissionLevel,
+  PermissionLevelCompare,
+  UUID,
+} from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { MinimalAccount } from '../../drizzle/types';
+import { ItemRaw, MinimalAccount } from '../../drizzle/types';
 import { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemRepository } from '../item/item.repository';
+import { ItemVisibilityRepository } from '../item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import {
   CannotRegisterOnFrozenItemLoginSchema,
@@ -28,6 +35,7 @@ export class ItemLoginService {
   private readonly itemRepository: ItemRepository;
   private readonly guestRepository: GuestRepository;
   private readonly guestPasswordRepository: GuestPasswordRepository;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
     itemLoginSchemaRepository: ItemLoginSchemaRepository,
@@ -35,12 +43,14 @@ export class ItemLoginService {
     itemMembershipRepository: ItemMembershipRepository,
     guestRepository: GuestRepository,
     guestPasswordRepository: GuestPasswordRepository,
+    itemVisibilityRepository: ItemVisibilityRepository,
   ) {
     this.itemLoginSchemaRepository = itemLoginSchemaRepository;
     this.itemRepository = itemRepository;
     this.itemMembershipRepository = itemMembershipRepository;
     this.guestRepository = guestRepository;
     this.guestPasswordRepository = guestPasswordRepository;
+    this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
   async getSchemaType(dbConnection: DBConnection, actor: MaybeUser, itemPath: string) {
@@ -178,5 +188,39 @@ export class ItemLoginService {
 
   async delete(dbConnection: DBConnection, itemId: string) {
     return this.itemLoginSchemaRepository.deleteOneByItemId(dbConnection, itemId);
+  }
+
+  /**
+   * Returns whether the item is visible (and we can get the item login type from it)
+   */
+  public async isItemVisible(
+    dbConnection: DBConnection,
+    actor: MaybeUser,
+    itemPath: ItemRaw['path'],
+  ) {
+    const isHidden = await this.itemVisibilityRepository.getType(
+      dbConnection,
+      itemPath,
+      ItemVisibilityType.Hidden,
+    );
+    // If the item is hidden AND there is no membership with the user, then throw an error
+    if (isHidden) {
+      if (!actor) {
+        // If actor is not provided, then there is no membership
+        return false;
+      }
+
+      // Check if the actor has at least write permission
+      const membership = await this.itemMembershipRepository.getByAccountAndItemPath(
+        dbConnection,
+        actor?.id,
+        itemPath,
+      );
+      if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

@@ -93,7 +93,7 @@ export class AppDataService {
     body: InputAppData,
   ) {
     // posting an app data is allowed to readers
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       permission: PermissionLevel.Read,
       actor: account,
       itemId,

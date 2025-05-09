@@ -89,7 +89,7 @@ export class ItemGeolocationService {
     }
 
     const { itemMemberships, visibilities } =
-      await this.authorizedItemService.getManyItemsWithProperties(dbConnection, {
+      await this.authorizedItemService.getPropertiesForItems(dbConnection, {
         permission: PermissionLevel.Read,
         actor,
         items: geoloc.map(({ item }) => item),

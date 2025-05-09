@@ -19,7 +19,7 @@ const itemThumbnailService = {
 } as unknown as ItemThumbnailService;
 const authorizedItemService = {
   getItemById: jest.fn(),
-  getManyItemsWithProperties: jest.fn(),
+  getPropertiesForItems: jest.fn(),
 } as unknown as AuthorizedItemService;
 const itemGeolocationRepository = {
   getUrlsByItems: jest.fn(() => ({ small: 'url' })),
@@ -199,7 +199,7 @@ describe('ItemGeolocationService', () => {
         { ...geolocations[0], item: { ...items[0], creator: actor } },
         { ...geolocations[1], item: { ...items[1], creator: actor } },
       ]);
-      jest.spyOn(authorizedItemService, 'getManyItemsWithProperties').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
           data: {
             [items[0].id]: itemMemberships[0],
@@ -211,7 +211,6 @@ describe('ItemGeolocationService', () => {
           data: {},
           errors: [],
         },
-        items,
       });
 
       const res = await service.getIn(db, actor, {
@@ -261,7 +260,7 @@ describe('ItemGeolocationService', () => {
         { ...geolocations[0], item: { ...items[0], creator: actor } },
         { ...geolocations[1], item: { ...items[1], creator: actor } },
       ]);
-      jest.spyOn(authorizedItemService, 'getManyItemsWithProperties').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
           data: {
             [items[1].id]: itemMemberships[0],
@@ -272,7 +271,6 @@ describe('ItemGeolocationService', () => {
           data: { [items[0].id]: [{ ...itemVisibilities[0], item: items[0] }] },
           errors: [],
         },
-        items,
       });
       const res = await service.getIn(db, actor, {
         lat1: 0,
@@ -324,7 +322,7 @@ describe('ItemGeolocationService', () => {
       jest
         .spyOn(itemGeolocationRepository, 'getItemsIn')
         .mockResolvedValue([{ ...geolocations[0], item: { ...parent, creator: actor } }]);
-      jest.spyOn(authorizedItemService, 'getManyItemsWithProperties').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
           data: {
             [parent.id]: null,
@@ -338,7 +336,6 @@ describe('ItemGeolocationService', () => {
           },
           errors: [],
         },
-        items: [parent, child],
       });
       const res = await service.getIn(db, actor, {
         parentItemId: parent.id,
@@ -384,7 +381,7 @@ describe('ItemGeolocationService', () => {
       jest
         .spyOn(itemGeolocationRepository, 'getItemsIn')
         .mockResolvedValue([{ ...geolocations[0], item: { ...child, creator: actor } }]);
-      jest.spyOn(authorizedItemService, 'getManyItemsWithProperties').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
           data: {
             [parent.id]: null,
@@ -399,7 +396,6 @@ describe('ItemGeolocationService', () => {
           },
           errors: [],
         },
-        items: [parent, child],
       });
 
       const res = await service.getIn(db, actor, {
@@ -437,7 +433,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
       jest.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([]);
-      jest.spyOn(authorizedItemService, 'getManyItemsWithProperties').mockResolvedValue({
+      jest.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
           data: {
             [item.id]: itemMemberships[0],
@@ -448,7 +444,6 @@ describe('ItemGeolocationService', () => {
           data: {},
           errors: [],
         },
-        items: [item],
       });
 
       const res = await service.getIn(db, actor, {

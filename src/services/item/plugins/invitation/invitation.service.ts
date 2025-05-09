@@ -162,7 +162,7 @@ export class InvitationService {
     if (!invitation) {
       throw new InvitationNotFound({ invitationId });
     }
-    await this.authorizedItemService.assertPermission(dbConnection, {
+    await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
       actor: authenticatedUser,
       item: invitation.item,
@@ -180,7 +180,7 @@ export class InvitationService {
     if (!invitation) {
       throw new Error('missing invitation');
     }
-    await this.authorizedItemService.assertPermission(dbConnection, {
+    await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
       actor: authenticatedUser,
       item: invitation.item,
@@ -196,7 +196,7 @@ export class InvitationService {
       throw new InvitationNotFound(invitationId);
     }
 
-    await this.authorizedItemService.assertPermission(dbConnection, {
+    await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
       actor: member,
       item: invitation.item,
@@ -294,7 +294,7 @@ export class InvitationService {
     memberships: ItemMembershipRaw[];
     invitations: InvitationWithItem[];
   }> {
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       actor,
       itemId,
       permission: PermissionLevel.Admin,
@@ -318,7 +318,7 @@ export class InvitationService {
     verifyCSVFileFormat(file);
 
     // get the item, verify user has Admin access
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       actor,
       itemId,
       permission: PermissionLevel.Admin,

@@ -39,7 +39,7 @@ export class ItemThumbnailService {
   }
 
   async upload(dbConnection: DBConnection, actor: MinimalMember, itemId: string, file: Readable) {
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       permission: PermissionLevel.Write,
       actor,
       itemId,
@@ -58,7 +58,7 @@ export class ItemThumbnailService {
     { size, itemId }: { size: string; itemId: string },
   ) {
     // prehook: get item and input in download call ?
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       actor,
       itemId,
     });
@@ -147,7 +147,7 @@ export class ItemThumbnailService {
     actor: MinimalMember,
     { itemId }: { itemId: string },
   ) {
-    await this.authorizedItemService.assertPermissionForItemId(dbConnection, {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       actor,
       itemId,
       permission: PermissionLevel.Write,
