@@ -99,3 +99,7 @@ export const getFilenameFromItem = (item: ItemRaw): string => {
       return item.name;
   }
 };
+
+export const generateThumbnailFilename = (id: string): string => {
+  return `${id}-thumbnail`;
+};
