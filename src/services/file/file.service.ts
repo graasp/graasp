@@ -104,15 +104,10 @@ class FileService {
     return file;
   }
 
-  async getFile(_actor: MaybeUser, data: { id?: string; path?: string }): Promise<Readable> {
-    const { id, path: filepath } = data;
-    if (!filepath || !id) {
-      throw new DownloadFileInvalidParameterError();
-    }
-
+  async getFile({ id, path }: { id: string; path: string }): Promise<Readable> {
     return this.repository.getFile(
       {
-        filepath,
+        filepath: path,
         id,
       },
       this.logger,

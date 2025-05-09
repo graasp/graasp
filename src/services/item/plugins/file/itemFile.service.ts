@@ -208,7 +208,7 @@ class FileItemService extends ItemService {
       item,
     );
     const extraData = item.extra[ItemType.FILE] as FileItemProperties;
-    const result = await this.fileService.getFile(actor, {
+    const result = await this.fileService.getFile({
       id: itemId,
       ...extraData,
     });
