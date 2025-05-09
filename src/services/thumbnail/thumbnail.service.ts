@@ -67,10 +67,12 @@ export class ThumbnailService {
 
   async getFile({ id, size }: { id: string; size: string }) {
     try {
-      return this.fileService.getFile({
+      const file = await this.fileService.getFile({
         path: this.buildFilePath(id, size),
         id,
       });
+
+      return file;
     } catch (_err) {
       return undefined;
     }
