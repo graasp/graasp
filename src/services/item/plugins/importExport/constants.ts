@@ -10,6 +10,8 @@ export const ROOT_PATH = './';
 
 export const GRAASP_MANIFEST_FILENAME = 'graasp-manifest.json';
 
+export const GRAASP_ARCHIVE_THUMBNAIL_SUFFIX = '-thumbnail';
+
 export const DESCRIPTION_EXTENSION = '.description.html';
 
 export const GRAASP_DOCUMENT_EXTENSION = '.graasp';

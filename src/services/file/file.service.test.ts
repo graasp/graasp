@@ -145,7 +145,7 @@ describe('FileService', () => {
       const downloadMock = jest
         .spyOn(s3Repository, 'getFile')
         .mockImplementation(async () => returnValue);
-      expect(await s3FileService.getFile(member, downloadPayload)).toBeTruthy();
+      expect(await s3FileService.getFile(downloadPayload)).toBeTruthy();
       expect(downloadMock).toHaveBeenCalled();
     });
 
@@ -154,7 +154,7 @@ describe('FileService', () => {
       const downloadMock = jest
         .spyOn(s3Repository, 'getFile')
         .mockImplementation(async () => returnValue);
-      expect(await s3FileService.getFile(undefined, downloadPayload)).toBeTruthy();
+      expect(await s3FileService.getFile(downloadPayload)).toBeTruthy();
       expect(downloadMock).toHaveBeenCalled();
     });
   });
