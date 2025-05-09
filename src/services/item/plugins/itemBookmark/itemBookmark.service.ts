@@ -6,9 +6,9 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { ItemBookmarkRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { PackedItem } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 
@@ -16,18 +16,18 @@ type PackedBookmarkedItem = ItemBookmarkRaw & { item: PackedItem };
 
 @singleton()
 export class BookmarkService {
-  private readonly basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly itemBookmarkRepository: ItemBookmarkRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
-    basicItemService: BasicItemService,
+    authorizedItemService: AuthorizedItemService,
     itemBookmarkRepository: ItemBookmarkRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemVisibilityRepository: ItemVisibilityRepository,
   ) {
-    this.basicItemService = basicItemService;
+    this.authorizedItemService = authorizedItemService;
     this.itemBookmarkRepository = itemBookmarkRepository;
     this.itemMembershipRepository = itemMembershipRepository;
     this.itemVisibilityRepository = itemVisibilityRepository;
@@ -64,12 +64,11 @@ export class BookmarkService {
 
   async post(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     // get and check permissions
-    const item = await this.basicItemService.get(
-      dbConnection,
-      member,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
       itemId,
-      PermissionLevel.Read,
-    );
+      permission: PermissionLevel.Read,
+    });
     await this.itemBookmarkRepository.post(dbConnection, item.id, member.id);
   }
 

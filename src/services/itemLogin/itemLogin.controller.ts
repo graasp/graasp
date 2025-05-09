@@ -15,8 +15,7 @@ import {
   optionalIsAuthenticated,
 } from '../auth/plugins/passport';
 import { assertIsMember } from '../authentication';
-import { AuthorizationService } from '../authorization';
-import { BasicItemService } from '../item/basic.service';
+import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemRepository } from '../item/item.repository';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
@@ -31,9 +30,8 @@ import { ItemLoginService } from './itemLogin.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemLoginService = resolveDependency(ItemLoginService);
-  const basicItemService = resolveDependency(BasicItemService);
   const itemRepository = resolveDependency(ItemRepository);
-  const authorizationService = resolveDependency(AuthorizationService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
 
   // get login schema type for item
   // used to trigger item login for student
@@ -49,7 +47,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           throw new ItemNotFound(itemId);
         }
         // If item is not visible, throw NOT_FOUND
-        const isVisible = await authorizationService.isItemVisible(tx, user?.account, item.path);
+        const isVisible = await itemLoginService.isItemVisible(tx, user?.account, item.path);
         if (!isVisible) {
           throw new ItemNotFound(itemId);
         }
@@ -70,7 +68,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id: itemId } }, reply) => {
-      const item = await basicItemService.get(db, user?.account, itemId, PermissionLevel.Admin);
+      const item = await authorizedItemService.getItemById(db, {
+        actor: user?.account,
+        itemId,
+        permission: PermissionLevel.Admin,
+      });
       const itemLoginSchema = await itemLoginService.getByItemPath(db, item.path);
       if (!itemLoginSchema) {
         reply.status(StatusCodes.NO_CONTENT);
@@ -114,7 +116,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       await db.transaction(async (tx) => {
-        const item = await basicItemService.get(tx, member, itemId, PermissionLevel.Admin); // Validate permissions
+        const item = await authorizedItemService.getItemById(tx, {
+          actor: member,
+          itemId,
+          permission: PermissionLevel.Admin,
+        });
 
         await itemLoginService.updateOrCreate(tx, item.path, type, status);
       });
@@ -134,7 +140,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       return db.transaction(async (tx) => {
         // Validate permission
-        await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
+        await authorizedItemService.getItemById(tx, {
+          actor: member,
+          itemId,
+          permission: PermissionLevel.Admin,
+        });
         try {
           await itemLoginService.delete(tx, itemId);
           reply.status(StatusCodes.NO_CONTENT);

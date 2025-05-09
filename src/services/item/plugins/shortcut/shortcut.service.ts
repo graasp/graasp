@@ -7,11 +7,10 @@ import { type ItemRaw } from '../../../../drizzle/types';
 import i18next from '../../../../i18n';
 import { BaseLogger } from '../../../../logger';
 import { type MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { ShortcutItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
@@ -26,7 +25,6 @@ import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 @singleton()
 export class ShortcutItemService extends ItemService {
   constructor(
-    basicItemService: BasicItemService,
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
     itemMembershipRepository: ItemMembershipRepository,
@@ -34,7 +32,7 @@ export class ShortcutItemService extends ItemService {
     itemRepository: ItemRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
@@ -48,10 +46,9 @@ export class ShortcutItemService extends ItemService {
       itemRepository,
       itemPublishedRepository,
       itemGeolocationRepository,
-      authorizationService,
+      authorizedItemService,
       itemWrapperService,
       itemVisibilityRepository,
-      basicItemService,
       recycledBinService,
       log,
     );
@@ -70,7 +67,10 @@ export class ShortcutItemService extends ItemService {
     const { target, item, ...properties } = args;
     const { description, name: definedName } = item;
 
-    const targetItem = await this.basicItemService.get(dbConnection, member, target);
+    const targetItem = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
+      itemId: target,
+    });
 
     // generate name from target item if not defined
     const name =

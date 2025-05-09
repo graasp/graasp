@@ -213,7 +213,17 @@ export class ItemRepository {
     };
   }
 
-  async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<ItemWithCreator> {
+  async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<ItemRaw> {
+    const result = await dbConnection.select().from(items).where(eq(items.id, id)).limit(1);
+
+    if (!result.length) {
+      throw new ItemNotFound(id);
+    }
+
+    return result[0];
+  }
+
+  async getOneWithCreatorOrThrow(dbConnection: DBConnection, id: string): Promise<ItemWithCreator> {
     const result = await dbConnection
       .select()
       .from(items)

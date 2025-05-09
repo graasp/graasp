@@ -6,11 +6,10 @@ import { MOCK_LOGGER } from '../../../../../test/app';
 import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
@@ -23,10 +22,6 @@ import { ShortcutItemService } from './shortcut.service';
 const MOCK_ITEM = ItemFactory({ type: ItemType.SHORTCUT });
 const MOCK_MEMBER = MemberFactory({ extra: { lang: 'en' } });
 
-const basicItemService = {
-  get: jest.fn(),
-} as unknown as BasicItemService;
-
 const itemRepository = {
   getOneOrThrow: async () => {
     return MOCK_ITEM;
@@ -34,7 +29,6 @@ const itemRepository = {
 } as unknown as ItemRepository;
 
 const shortcutService = new ShortcutItemService(
-  basicItemService,
   {} as unknown as ThumbnailService,
   {} as unknown as ItemThumbnailService,
   {} as unknown as ItemMembershipRepository,
@@ -42,7 +36,7 @@ const shortcutService = new ShortcutItemService(
   itemRepository,
   {} as unknown as ItemPublishedRepository,
   {} as unknown as ItemGeolocationRepository,
-  {} as unknown as AuthorizationService,
+  {} as unknown as AuthorizedItemService,
   {} as unknown as ItemWrapperService,
   {} as unknown as ItemVisibilityRepository,
   {} as unknown as RecycledBinService,
@@ -113,7 +107,7 @@ describe('Shortcut Service', () => {
     //   });
     // });
     it('throw if target does not exist', async () => {
-      jest.spyOn(BasicItemService.prototype, 'get').mockRejectedValue(new Error());
+      jest.spyOn(AuthorizedItemService.prototype, 'getItemById').mockRejectedValue(new Error());
 
       await expect(() =>
         shortcutService.postWithOptions(db, MOCK_MEMBER, {
