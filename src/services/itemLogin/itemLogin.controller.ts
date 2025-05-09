@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           throw new ItemNotFound(itemId);
         }
         // If item is not visible, throw NOT_FOUND
-        const isVisible = await authorizedItemService.isItemVisible(tx, user?.account, item.path);
+        const isVisible = await itemLoginService.isItemVisible(tx, user?.account, item.path);
         if (!isVisible) {
           throw new ItemNotFound(itemId);
         }

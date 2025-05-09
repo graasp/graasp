@@ -583,7 +583,7 @@ export class ItemService {
     const parents = await this.itemRepository.getAncestors(dbConnection, item);
 
     const { itemMemberships, visibilities } =
-      await this.authorizedItemService.getManyItemsWithProperties(dbConnection, {
+      await this.authorizedItemService.getPropertiesForItems(dbConnection, {
         permission: PermissionLevel.Read,
         actor,
         items: parents,
