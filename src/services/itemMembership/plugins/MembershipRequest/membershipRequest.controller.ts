@@ -34,10 +34,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemLoginService = resolveDependency(ItemLoginService);
   const authorizationService = resolveDependency(AuthorizationService);
 
-  if (fastify.corsPluginOptions) {
-    await fastify.register(fastifyCors, fastify.corsPluginOptions);
-  }
-
   fastify.get(
     '/',
     {

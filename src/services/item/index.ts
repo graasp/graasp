@@ -12,6 +12,7 @@ import {
 } from '../../utils/config';
 import chatController from '../chat/chatMessage.controller';
 import graaspItemLogin from '../itemLogin/itemLogin.controller';
+import itemMembershipsPlugin from '../itemMembership/membership.controller';
 import itemController from './item.controller';
 import actionItemPlugin from './plugins/action/itemAction.controller';
 import graaspApps from './plugins/app/app.controller';
@@ -70,6 +71,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspFavoritePlugin);
 
       fastify.register(graaspItemPublish);
+
+      fastify.register(itemMembershipsPlugin);
 
       fastify.register(graaspShortcutPlugin);
 

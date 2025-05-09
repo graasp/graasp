@@ -97,6 +97,7 @@ export const updateOne = {
 
   params: customType.StrictObject({
     id: customType.UUID(),
+    itemId: customType.UUID(),
   }),
   body: customType.StrictObject({
     permission: customType.EnumString(Object.values(PermissionLevel)),
@@ -116,6 +117,7 @@ export const deleteOne = {
 
   params: customType.StrictObject({
     id: customType.UUID(),
+    itemId: customType.UUID(),
   }),
   querystring: customType.StrictObject({
     purgeBelow: Type.Optional(Type.Boolean()),

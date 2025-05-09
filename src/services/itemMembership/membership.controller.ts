@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
@@ -14,23 +13,16 @@ import { ItemMembershipService } from './membership.service';
 import MembershipRequestAPI from './plugins/MembershipRequest/membershipRequest.controller';
 import { membershipWsHooks } from './ws/hooks';
 
-const ROUTES_PREFIX = '/item-memberships';
-
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
   fastify.register(MembershipRequestAPI, {
-    prefix: '/items/:itemId/memberships/requests',
+    prefix: '/:itemId/memberships/requests',
   });
 
   // routes
   fastify.register(
     async function (fastify: FastifyInstanceTypebox) {
-      // add CORS support
-      if (fastify.corsPluginOptions) {
-        fastify.register(fastifyCors, fastify.corsPluginOptions);
-      }
-
       fastify.register(membershipWsHooks);
 
       // get many item's memberships
@@ -94,7 +86,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
       );
     },
-    { prefix: ROUTES_PREFIX },
+    { prefix: '/:itemId/memberships' },
   );
 };
 
