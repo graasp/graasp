@@ -30,7 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       fastify.get(
         '/',
         { schema: getItemMembershipsForItem, preHandler: optionalIsAuthenticated },
-        async ({ user, query: { itemId } }) => {
+        async ({ user, params: { itemId } }) => {
           return itemMembershipService.getForItem(db, user?.account, itemId);
         },
       );
@@ -42,7 +42,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           schema: create,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
-        async ({ user, query: { itemId }, body }, reply) => {
+        async ({ user, params: { itemId }, body }, reply) => {
           const account = asDefined(user?.account);
           await db.transaction(async (tx) => {
             await itemMembershipService.create(tx, account, {

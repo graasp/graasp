@@ -28,6 +28,7 @@ export const simpleMembershipRequestSchemaRef = registerSchemaAsRef(
 );
 
 export const getAllByItem = {
+  operationId: 'getMembershipRequestsByItemId',
   tags: ['membership-request'],
   summary: 'Get all membership requests for an item',
   description: 'Get all membership requests with member information for an item by its ID',
@@ -42,6 +43,7 @@ export const getAllByItem = {
 } as const satisfies FastifySchema;
 
 export const createOne = {
+  operationId: 'createMembershipRequest',
   tags: ['membership-request'],
   summary: 'Create a membership request',
   description: `Create a membership request for an item with the authenticated member.
@@ -56,6 +58,7 @@ export const createOne = {
 } as const satisfies FastifySchema;
 
 export const getOwn = {
+  operationId: 'getOwnMembershipRequestByItemId',
   tags: ['membership-request'],
   summary: 'Get the status of the membership request for the authenticated member',
   description:
@@ -71,6 +74,7 @@ export const getOwn = {
 } as const satisfies FastifySchema;
 
 export const deleteOne = {
+  operationId: 'deleteMembershipRequest',
   tags: ['membership-request'],
   summary: 'Delete a membership request',
   description: 'Delete a membership request from a member id and an item id.',

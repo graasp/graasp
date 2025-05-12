@@ -13,7 +13,6 @@ import { schemaRegisterPlugin } from './plugins/typebox';
 import authPlugin from './services/auth';
 import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import ItemServiceApi from './services/item';
-import ItemMembershipServiceApi from './services/itemMembership/membership.controller';
 import { maintenancePlugin } from './services/maintenance/maintenance.controller';
 import MemberServiceApi from './services/member';
 import tagPlugin from './services/tag/tag.controller';
