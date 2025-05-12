@@ -1,6 +1,6 @@
 import { NotFound } from '@aws-sdk/client-s3';
 import assert from 'assert';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
@@ -25,8 +25,8 @@ import build, {
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
+import { isDirectChild } from '../../../../drizzle/operations';
 import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
@@ -38,7 +38,7 @@ import {
   UploadFileUnexpectedError,
 } from '../../../file/utils/errors';
 import { ThumbnailSizeFormat } from '../../../thumbnail/constants';
-import { expectItem, expectManyItems } from '../../test/fixtures/items';
+import { expectItem } from '../../test/fixtures/items';
 import { DEFAULT_MAX_STORAGE } from './utils/constants';
 import { StorageExceeded } from './utils/errors';
 
@@ -91,6 +91,18 @@ const createFormData = (form = new FormData(), filepath: string = './test/fixtur
   return form;
 };
 
+const getItemsForActorId = async (actorId: string, parentPath?: string) => {
+  const conditions = [eq(itemsRawTable.creatorId, actorId)];
+
+  if (parentPath) {
+    conditions.push(isDirectChild(itemsRawTable.path, parentPath));
+  }
+
+  return await db.query.itemsRawTable.findMany({
+    where: and(...conditions),
+  });
+};
+
 describe('File Item routes tests', () => {
   let app: FastifyInstance;
 
@@ -137,12 +149,10 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
           // check response value
-          const [newItem] = Object.values(response.json().data) as ItemRaw[];
-          expect(response.statusCode).toBe(StatusCodes.OK);
+          expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
           // check item exists in db
-          const item = await getItemById(newItem.id);
-          expect(item).toBeDefined();
+          const [item] = await getItemsForActorId(actor.id);
 
           // s3 upload function: We expect on image AND the thumbnails
           expect(uploadDoneMock).toHaveBeenCalledTimes(
@@ -154,7 +164,7 @@ describe('File Item routes tests', () => {
           expect(item?.extra[ItemType.FILE]).toBeTruthy();
 
           // a membership is created for this item
-          const membership = await getItemMembershipByPath(newItem.path);
+          const membership = await getItemMembershipByPath(item.path);
           expect(membership?.permission).toEqual(PermissionLevel.Admin);
         });
 
@@ -172,12 +182,10 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
           // check response value
-          const [newItem] = Object.values(response.json().data) as ItemRaw[];
-          expect(response.statusCode).toBe(StatusCodes.OK);
+          expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
           // check item exists in db
-          const item = await getItemById(newItem.id);
-          expectItem(item, newItem);
+          const [item] = await getItemsForActorId(actor.id);
 
           // s3 upload function: We expect on pdf and the thumbnails
           expect(uploadDoneMock).toHaveBeenCalledTimes(
@@ -202,17 +210,11 @@ describe('File Item routes tests', () => {
           });
 
           // check response value
-          const items = Object.values(response.json().data) as ItemRaw[];
-          expect(response.statusCode).toBe(StatusCodes.OK);
+          expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-          // check item exists in db
-          const newItems = await db.query.itemsRawTable.findMany({
-            where: inArray(
-              itemsRawTable.id,
-              items.map(({ id }) => id),
-            ),
-          });
-          expectManyItems(items, newItems);
+          // check items exist in db
+          const newItems = await getItemsForActorId(actor.id);
+          expect(newItems).toHaveLength(2);
 
           // s3 upload function: We expect on image AND the thumbnails
           expect(uploadDoneMock).toHaveBeenCalledTimes(
@@ -228,7 +230,7 @@ describe('File Item routes tests', () => {
           const memberships = await db.query.itemMembershipsTable.findMany({
             where: inArray(
               itemMembershipsTable.itemPath,
-              items.map(({ path }) => path),
+              newItems.map(({ path }) => path),
             ),
           });
           for (const m of memberships) {
@@ -255,12 +257,10 @@ describe('File Item routes tests', () => {
           });
 
           // check response value
-          const [newItem] = Object.values(response.json().data) as ItemRaw[];
-          expect(response.statusCode).toBe(StatusCodes.OK);
+          expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
           // check item exists in db
-          const item = await getItemById(newItem.id);
-          expectItem(item, newItem);
+          const [newItem] = await getItemsForActorId(actor.id, parentItem.path);
 
           // s3 upload function: We expect on image AND the thumbnails
           expect(uploadDoneMock).toHaveBeenCalledTimes(
@@ -269,8 +269,8 @@ describe('File Item routes tests', () => {
 
           // check file properties
           // TODO: more precise check
-          expect(item?.extra[ItemType.FILE]).toBeTruthy();
-          expect(item?.path).toContain(parentItem.path);
+          expect(newItem?.extra[ItemType.FILE]).toBeTruthy();
+          expect(newItem?.path).toContain(parentItem.path);
 
           // a membership is not created for new item because it inherits parent
           const membership = await db.query.itemMembershipsTable.findFirst({
@@ -298,9 +298,9 @@ describe('File Item routes tests', () => {
           });
 
           // check the response value
-          expect(response.statusCode).toBe(StatusCodes.OK);
-          const newItems = Object.values(response.json().data) as ItemRaw[];
-          expect(newItems.length).toBe(2);
+          expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+          const newItems = await getItemsForActorId(actor.id);
+          expect(newItems).toHaveLength(2);
 
           // check that both items exist in db and that their types are correctly interpreted
           const imageItem = await getItemById(newItems[0].id);
@@ -352,7 +352,7 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json().errors[0]).toMatchObject(new StorageExceeded(expect.anything()));
+          expect(response.json()).toMatchObject(new StorageExceeded(expect.anything()));
         });
 
         it('Cannot upload empty file', async () => {
@@ -374,7 +374,7 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json().errors[0].message).toEqual(new UploadEmptyFileError().message);
+          expect(response.json().message).toEqual(new UploadEmptyFileError().message);
           expect(deleteObjectsMock).toHaveBeenCalled();
         });
       });
@@ -404,26 +404,24 @@ describe('File Item routes tests', () => {
             headers: form1.getHeaders(),
           });
 
-          expect(response.statusCode).toEqual(StatusCodes.OK);
+          expect(response.statusCode).not.toBe(StatusCodes.NO_CONTENT);
+
+          // one empty file error
+          expect(response.json().message).toEqual(new UploadEmptyFileError().message);
+
           // upload 2 files and one set of thumbnails
           expect(uploadDoneMock).toHaveBeenCalledTimes(
             Object.values(ThumbnailSizeFormat).length + 2,
           );
           expect(deleteObjectsMock).toHaveBeenCalledTimes(1);
 
-          // one empty file error
-          expect(response.json().errors[0].message).toEqual(new UploadEmptyFileError().message);
-
           // one file has been uploaded
-          const uploadedItems = Object.values<ItemRaw>(response.json().data);
+          const uploadedItems = await getItemsForActorId(actor.id);
           expect(uploadedItems).toHaveLength(1);
 
-          // check item exists in db
-          const item = await getItemById(uploadedItems[0].id);
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          expect(item!.type).toEqual(ItemType.FILE);
+          expect(uploadedItems[0].type).toEqual(ItemType.FILE);
         });
-        it('Gracefully fails if s3 upload throws', async () => {
+        it('Throws if s3 upload throws', async () => {
           uploadDoneMock.mockImplementation(() => {
             throw new Error('putObject throws');
           });
@@ -440,9 +438,7 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json().errors[0]).toMatchObject(
-            new UploadFileUnexpectedError(expect.anything()),
-          );
+          expect(response.json()).toMatchObject(new UploadFileUnexpectedError(expect.anything()));
         });
       });
     });
