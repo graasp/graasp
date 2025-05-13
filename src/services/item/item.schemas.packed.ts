@@ -20,7 +20,7 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       name: Type.String(),
       description: Type.Optional(customType.Nullable(Type.String())),
-      type: Type.String(),
+      type: customType.EnumString(Object.values(ItemType)),
       path: Type.String(),
       lang: Type.String(),
       extra: Type.Object({}, { additionalProperties: true }),

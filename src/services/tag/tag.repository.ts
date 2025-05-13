@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { TagCategory } from '@graasp/sdk';
+import { TagCategoryType } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { tagsTable } from '../../drizzle/schema';
@@ -25,7 +25,7 @@ export class TagRepository {
 
   async addOne(
     dbConnection: DBConnection,
-    tag: { name: string; category: TagCategory },
+    tag: { name: string; category: TagCategoryType },
   ): Promise<TagRaw> {
     const createdTag = await dbConnection
       .insert(tagsTable)
@@ -39,7 +39,7 @@ export class TagRepository {
 
   async addOneIfDoesNotExist(
     dbConnection: DBConnection,
-    tagInfo: { name: string; category: TagCategory },
+    tagInfo: { name: string; category: TagCategoryType },
   ): Promise<TagRaw> {
     const tag = await dbConnection.query.tagsTable.findFirst({
       where: and(

@@ -10,7 +10,14 @@ import {
 } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { IndexItem, ItemType, ItemVisibilityType, MimeTypes, TagCategory } from '@graasp/sdk';
+import {
+  IndexItem,
+  ItemType,
+  ItemVisibilityType,
+  MimeTypes,
+  TagCategory,
+  TagCategoryType,
+} from '@graasp/sdk';
 
 import { DBConnection, db } from '../../../../../../../drizzle/db';
 import { items } from '../../../../../../../drizzle/schema';
@@ -199,7 +206,7 @@ export class MeiliSearchWrapper {
       Object.values(TagCategory).map((c) => {
         return [c, tags.filter(({ category }) => category === c).map(({ name }) => name)];
       }),
-    ) as { [key in TagCategory]: string[] };
+    ) as { [key in TagCategoryType]: string[] };
 
     return {
       id: item.id,
