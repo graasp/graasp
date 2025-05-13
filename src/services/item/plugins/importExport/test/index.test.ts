@@ -452,7 +452,7 @@ describe('ZIP routes tests', () => {
             isDescendantOrSelf(itemsRawTable.path, parentItem.path),
             ne(itemsRawTable.id, parentItem.id),
           ),
-          orderBy: asc(itemsRawTable.order),
+          orderBy: [asc(itemsRawTable.order), asc(itemsRawTable.path)],
         });
         const folderItem = itemsInDB[0];
         const documentItem = itemsInDB[1];

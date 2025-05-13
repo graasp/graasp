@@ -499,7 +499,7 @@ export class ImportExportService {
       archive.addReadStream(thumbnailStream, itemThumbnailPath);
       return filename;
     } catch (_err) {
-      this.log.error(`Thumbnail not found for item ${itemId}`);
+      this.log.debug(`Thumbnail not found for item ${itemId}`);
     }
   }
 
