@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/graasp/graasp/compare/v2.3.0...v2.4.0) (2025-05-13)
+
+
+### Features
+
+* **graasp-import:** export and import the item thumbnails ([#1868](https://github.com/graasp/graasp/issues/1868)) ([0c0eb5a](https://github.com/graasp/graasp/commit/0c0eb5a82ca1766be6f7d84d992510eed67453e2))
+
+
+### Bug Fixes
+
+* **files-upload:** return simple error if exists ([#1866](https://github.com/graasp/graasp/issues/1866)) ([9c48b77](https://github.com/graasp/graasp/commit/9c48b7745cfd6af5686381933271d5a22726955a))
+
 ## [2.3.0](https://github.com/graasp/graasp/compare/v2.2.1...v2.3.0) (2025-05-05)
 
 ### Features
