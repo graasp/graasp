@@ -66,16 +66,12 @@ export class ThumbnailService {
   }
 
   async getFile({ id, size }: { id: string; size: string }) {
-    try {
-      const file = await this.fileService.getFile({
-        path: this.buildFilePath(id, size),
-        id,
-      });
+    const file = await this.fileService.getFile({
+      path: this.buildFilePath(id, size),
+      id,
+    });
 
-      return file;
-    } catch (_err) {
-      return undefined;
-    }
+    return file;
   }
 
   async delete({ id, size }: { size: string; id: string }) {

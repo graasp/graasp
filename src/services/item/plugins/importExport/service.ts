@@ -421,17 +421,13 @@ export class ImportExportService {
     const itemPath = path.join(path.dirname('./'), exportItemId);
 
     // add the thumbnail to export, if present
-    let thumbnailFilename: string | undefined = undefined;
-    const filename = generateThumbnailFilename(exportItemId);
-    const itemThumbnailPath = path.join(path.dirname('./'), filename);
-    const thumbnailStream = await this.itemThumbnailService.getFile(dbConnection, actor, {
-      size: ThumbnailSize.Original,
-      itemId: item.id,
-    });
-    if (thumbnailStream) {
-      archive.addReadStream(thumbnailStream, itemThumbnailPath);
-      thumbnailFilename = filename;
-    }
+    const thumbnailFilename = await this.getAndWriteThumbnail(
+      dbConnection,
+      actor,
+      item.id,
+      exportItemId,
+      archive,
+    );
 
     // TODO EXPORT treat the shortcut items correctly
     // ignore the shortcuts for now
@@ -481,7 +477,31 @@ export class ImportExportService {
     return itemManifest;
   }
 
-  private async getThumbnail() {}
+  /**
+   * Try and get the item thumbnail and write it to the zip archive.
+   * @returns Thumbnail filename, undefined if the thumbnail was not found.
+   */
+  private async getAndWriteThumbnail(
+    dbConnection: DBConnection,
+    actor: MaybeUser,
+    itemId: string,
+    exportItemId: string,
+    archive: ZipFile,
+  ) {
+    const filename = generateThumbnailFilename(exportItemId);
+    const itemThumbnailPath = path.join(path.dirname('./'), filename);
+    try {
+      const thumbnailStream = await this.itemThumbnailService.getFile(dbConnection, actor, {
+        size: ThumbnailSize.Original,
+        itemId,
+      });
+
+      archive.addReadStream(thumbnailStream, itemThumbnailPath);
+      return filename;
+    } catch (_err) {
+      this.log.error(`Thumbnail not found for item ${itemId}`);
+    }
+  }
 
   /**
    * Export the items recursively
