@@ -472,12 +472,10 @@ describe('ZIP routes tests', () => {
         expect(documentItem.extra[ItemType.DOCUMENT].content).toEqual(documentContent);
 
         // Check that all the item properties have been assigned for the file type
-        let fileItemProperties: FileItemProperties;
-        if (fileItem.extra[ItemType.FILE]) {
-          fileItemProperties = fileItem.extra[ItemType.FILE] as FileItemProperties;
-        } else {
-          fileItemProperties = fileItem.extra[ItemType.LOCAL_FILE] as FileItemProperties;
-        }
+        const fileItemProperties: FileItemProperties = fileItem.extra[
+          ItemType.FILE
+        ] as FileItemProperties;
+
         expect(fileItemProperties).toBeDefined();
         expect(fileItemProperties.name).toEqual(pdfName);
         expect(fileItemProperties.path).toBeDefined();

@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 
-import { TagCategory, TagFactory } from '@graasp/sdk';
+import { TagCategory, TagCategoryType, TagFactory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
@@ -92,7 +92,7 @@ describe('Tag Repository', () => {
 
       const result = await repository.addOneIfDoesNotExist(db, {
         name: tag.name,
-        category: tag.category as TagCategory,
+        category: tag.category as TagCategoryType,
       });
 
       expect(result.id).toEqual(tag.id);
