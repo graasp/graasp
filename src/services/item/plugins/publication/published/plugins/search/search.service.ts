@@ -1,7 +1,7 @@
 import { MultiSearchQuery } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { TagCategory, UUID } from '@graasp/sdk';
+import { TagCategory, TagCategoryType, UUID } from '@graasp/sdk';
 
 import { TagRaw } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
@@ -15,7 +15,7 @@ import { MeiliSearchWrapper } from './meilisearch';
 
 type SearchFilters = Partial<{
   query?: string;
-  tags: Partial<{ [key in TagCategory]: TagRaw['name'][] }>;
+  tags: Partial<{ [key in TagCategoryType]: TagRaw['name'][] }>;
   langs: string[];
   isPublishedRoot: boolean;
   creatorId?: UUID;

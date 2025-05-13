@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel, TagCategory, UUID } from '@graasp/sdk';
+import { PermissionLevel, TagCategoryType, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
@@ -36,7 +36,7 @@ export class ItemTagService {
     dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     itemId: UUID,
-    tagInfo: { name: string; category: TagCategory },
+    tagInfo: { name: string; category: TagCategoryType },
   ) {
     // Get item and check permission
     const item = await this.basicItemService.get(
