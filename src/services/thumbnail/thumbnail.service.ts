@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { Readable } from 'stream';
 import { injectable } from 'tsyringe';
 
-import { AuthenticatedUser, MaybeUser } from '../../types';
+import { AuthenticatedUser } from '../../types';
 import FileService from '../file/file.service';
 import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 
@@ -65,12 +65,13 @@ export class ThumbnailService {
     return result;
   }
 
-  async getFile(actor: MaybeUser, { id, size }: { size: string; id: string }) {
-    const result = await this.fileService.getFile(actor, {
+  async getFile({ id, size }: { id: string; size: string }) {
+    const file = await this.fileService.getFile({
       path: this.buildFilePath(id, size),
+      id,
     });
 
-    return result;
+    return file;
   }
 
   async delete({ id, size }: { size: string; id: string }) {

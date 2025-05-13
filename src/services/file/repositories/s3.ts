@@ -188,6 +188,11 @@ export class S3FileRepository implements FileRepository {
       // return readstream of the file saved at given filepath
       // fetch and save file in temporary path
       const res = await fetch(url);
+
+      if (!res.ok) {
+        throw new S3FileNotFound();
+      }
+
       const fileStream = fs.createWriteStream(filepath);
       await new Promise<void>((resolve, reject) => {
         res.body.pipe(fileStream);

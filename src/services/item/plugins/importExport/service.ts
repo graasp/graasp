@@ -1,4 +1,5 @@
 import fs, { existsSync } from 'fs';
+import { createReadStream, exists } from 'fs-extra';
 import { readFile } from 'fs/promises';
 import mimetics from 'mimetics';
 import fetch from 'node-fetch';
@@ -14,6 +15,7 @@ import {
   ItemSettings,
   ItemType,
   ItemTypeUnion,
+  ThumbnailSize,
   getMimetype,
 } from '@graasp/sdk';
 
@@ -21,7 +23,6 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
-import FileService from '../../../file/file.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
@@ -29,6 +30,7 @@ import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
 import { H5PService } from '../html/h5p/h5p.service';
+import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
@@ -39,7 +41,7 @@ import {
   URL_PREFIX,
 } from './constants';
 import { GraaspExportInvalidFileError, UnexpectedExportError } from './errors';
-import { buildTextContent, getFilenameFromItem } from './utils';
+import { buildTextContent, generateThumbnailFilename, getFilenameFromItem } from './utils';
 
 /**
  * Defines the properties of an individual item in the graasp export format.
@@ -60,28 +62,28 @@ export type GraaspExportItem = {
 
 @singleton()
 export class ImportExportService {
-  private readonly fileService: FileService;
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
   private readonly basicItemService: BasicItemService;
   private readonly etherpadService: EtherpadItemService;
+  private readonly itemThumbnailService: ItemThumbnailService;
   private readonly log: BaseLogger;
 
   constructor(
-    fileService: FileService,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
     etherpadService: EtherpadItemService,
+    itemThumbnailService: ItemThumbnailService,
     basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
-    this.fileService = fileService;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
     this.etherpadService = etherpadService;
+    this.itemThumbnailService = itemThumbnailService;
     this.basicItemService = basicItemService;
     this.log = log;
   }
@@ -292,6 +294,13 @@ export class ImportExportService {
           extra = { [ItemType.DOCUMENT]: { content: sanitizedContent } };
         }
 
+        // Find and upload the thumbnail
+        let thumbnail: Readable | undefined = undefined;
+        const itemThumbnailPath = path.join(folderPath, generateThumbnailFilename(item.id));
+        if (await exists(itemThumbnailPath)) {
+          thumbnail = createReadStream(itemThumbnailPath);
+        }
+
         // Handle the file upload
         if (item.type === ItemType.FILE) {
           if (!item.mimetype) {
@@ -312,7 +321,7 @@ export class ImportExportService {
 
         const augmentedItem = { ...item, description: sanitizedDescription, extra };
 
-        return { item: augmentedItem, thumbnail: undefined };
+        return { item: augmentedItem, thumbnail };
       }),
     );
 
@@ -411,6 +420,15 @@ export class ImportExportService {
     const exportItemId = v4();
     const itemPath = path.join(path.dirname('./'), exportItemId);
 
+    // add the thumbnail to export, if present
+    const thumbnailFilename = await this.getAndWriteThumbnail(
+      dbConnection,
+      actor,
+      item.id,
+      exportItemId,
+      archive,
+    );
+
     // TODO EXPORT treat the shortcut items correctly
     // ignore the shortcuts for now
     if (isItemType(item, ItemType.SHORTCUT)) {
@@ -436,6 +454,7 @@ export class ImportExportService {
         type: item.type,
         settings: item.settings,
         extra: item.extra,
+        thumbnailFilename,
         children: childrenManifest,
       });
       return itemManifest;
@@ -451,10 +470,37 @@ export class ImportExportService {
       type: item.type,
       settings: item.settings,
       extra: item.extra,
+      thumbnailFilename,
       mimetype,
     });
     archive.addReadStream(stream, itemPath);
     return itemManifest;
+  }
+
+  /**
+   * Try and get the item thumbnail and write it to the zip archive.
+   * @returns Thumbnail filename, undefined if the thumbnail was not found.
+   */
+  private async getAndWriteThumbnail(
+    dbConnection: DBConnection,
+    actor: MaybeUser,
+    itemId: string,
+    exportItemId: string,
+    archive: ZipFile,
+  ) {
+    const filename = generateThumbnailFilename(exportItemId);
+    const itemThumbnailPath = path.join(path.dirname('./'), filename);
+    try {
+      const thumbnailStream = await this.itemThumbnailService.getFile(dbConnection, actor, {
+        size: ThumbnailSize.Original,
+        itemId,
+      });
+
+      archive.addReadStream(thumbnailStream, itemThumbnailPath);
+      return filename;
+    } catch (_err) {
+      this.log.debug(`Thumbnail not found for item ${itemId}`);
+    }
   }
 
   /**
