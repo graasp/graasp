@@ -151,7 +151,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/item-memberships/${membership.id}`,
+        url: `/items/${item.id}memberships/${membership.id}`,
         payload: { permission: PermissionLevel.Admin },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -196,7 +196,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/item-memberships/${membership.id}`,
+        url: `/items/${item.id}/memberships/${membership.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 

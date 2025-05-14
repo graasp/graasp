@@ -443,7 +443,7 @@ describe('Membership routes tests', () => {
       });
     });
   });
-  describe('PATCH /item-memberships/:id', () => {
+  describe('PATCH /items/:id/memberships/:id', () => {
     it('Throws if signed out', async () => {
       const {
         itemMemberships: [itemMembership],
@@ -665,7 +665,7 @@ describe('Membership routes tests', () => {
       });
     });
   });
-  describe('DELETE /item-memberships/:id?purgeBelow=<boolean>', () => {
+  describe('DELETE /items/:id/memberships/:id?purgeBelow=<boolean>', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
