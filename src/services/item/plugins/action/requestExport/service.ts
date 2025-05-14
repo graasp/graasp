@@ -48,7 +48,6 @@ export class ActionRequestExportService {
   ) {
     this.itemActionService = itemActionService;
     this.authorizedItemService = authorizedItemService;
-    this.authorizedItemService = authorizedItemService;
     this.fileService = fileService;
     this.mailerService = mailerService;
     this.memberService = memberService;

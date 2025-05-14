@@ -13,7 +13,7 @@ import { MentionService } from './plugins/mentions/chatMention.service';
 export class ChatMessageService {
   private readonly mentionService: MentionService;
   private readonly chatMessageRepository: ChatMessageRepository;
-  authorizedItemService: AuthorizedItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
     mentionService: MentionService,

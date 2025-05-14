@@ -144,7 +144,7 @@ export class AppDataService {
   ) {
     // patching requires at least read
     const { itemMembership: inheritedMembership } =
-      await this.authorizedItemService.getItemWithPropertiesById(dbConnection, {
+      await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
         permission: PermissionLevel.Read,
         actor: account,
         itemId,
@@ -199,7 +199,7 @@ export class AppDataService {
   ) {
     // delete an app data is allowed to readers
     const { itemMembership: inheritedMembership } =
-      await this.authorizedItemService.getItemWithPropertiesById(dbConnection, {
+      await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
         permission: PermissionLevel.Read,
         actor: account,
         itemId,
@@ -240,10 +240,11 @@ export class AppDataService {
     item: ItemRaw,
     appDataId: UUID,
   ) {
-    const { itemMembership } = await this.authorizedItemService.getItemWithProperties(
-      dbConnection,
-      { permission: PermissionLevel.Read, actor: account, item },
-    );
+    const { itemMembership } = await this.authorizedItemService.getPropertiesForItem(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: account,
+      item,
+    });
 
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
 
@@ -260,7 +261,7 @@ export class AppDataService {
 
   async getForItem(dbConnection: DBConnection, account: MaybeUser, itemId: string, type?: string) {
     // posting an app data is allowed to readers
-    const { itemMembership } = await this.authorizedItemService.getItemWithPropertiesById(
+    const { itemMembership } = await this.authorizedItemService.getPropertiesForItemById(
       dbConnection,
       { permission: PermissionLevel.Read, actor: account, itemId },
     );

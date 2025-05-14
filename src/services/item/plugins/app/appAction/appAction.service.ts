@@ -70,7 +70,7 @@ export class AppActionService {
     filters: SingleItemGetFilter,
   ) {
     // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizedItemService.getItemWithPropertiesById(
+    const { itemMembership } = await this.authorizedItemService.getPropertiesForItemById(
       dbConnection,
       { permission: PermissionLevel.Read, actor: account, itemId },
     );
