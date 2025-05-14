@@ -154,7 +154,7 @@ export class AuthorizedItemService {
     }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
   ) {
     try {
-      const { itemMembership, visibilities } = await this.getItemWithProperties(dbConnection, {
+      const { itemMembership, visibilities } = await this.getPropertiesForItem(dbConnection, {
         permission,
         actor,
         item,
@@ -172,7 +172,7 @@ export class AuthorizedItemService {
   }
 
   /**
-   * Returns whether the actor can access an item.
+   * Assert the actor can access an item, throws otherwise
    * @returns if the actor has an admin membership
    * @returns if the actor has a write membership
    * @returns if the actor has a read membership and the item is public
@@ -188,7 +188,7 @@ export class AuthorizedItemService {
       item,
     }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
   ) {
-    await this.getItem(dbConnection, { permission, actor, item });
+    await this.getPropertiesForItem(dbConnection, { permission, actor, item });
   }
 
   /**
@@ -204,7 +204,7 @@ export class AuthorizedItemService {
     }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    return await this.assertAccess(dbConnection, { permission, actor, item });
+    await this.assertAccess(dbConnection, { permission, actor, item });
   }
 
   /**
@@ -220,25 +220,15 @@ export class AuthorizedItemService {
     }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    return this.getItem(dbConnection, { permission, actor, item });
+    await this.assertAccess(dbConnection, { permission, actor, item });
+    return item;
   }
 
   /**
    * Returns item if the actor has access to it
-   * @returns item
+   * @returns highest permission and visibilities
    */
-  public async getItem(
-    dbConnection: DBConnection,
-    args: { permission?: PermissionLevelOptions; actor: { id: string } | undefined; item: ItemRaw },
-  ): Promise<ItemRaw> {
-    return (await this.getItemWithProperties(dbConnection, args)).item;
-  }
-
-  /**
-   * Returns item if the actor has access to it
-   * @returns item
-   */
-  public async getItemWithPropertiesById(
+  public async getPropertiesForItemById(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
@@ -250,19 +240,18 @@ export class AuthorizedItemService {
       itemId: ItemRaw['id'];
     },
   ): Promise<{
-    item: ItemRaw;
     itemMembership: ItemMembershipRaw | null;
     visibilities: ItemVisibilityWithItem[];
   }> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    return this.getItemWithProperties(dbConnection, { permission, actor, item });
+    return this.getPropertiesForItem(dbConnection, { permission, actor, item });
   }
 
   /**
    * Returns item and related properties if the actor has access to it
-   * @returns object of item, highest permission and visibilities
+   * @returns highest permission and visibilities
    */
-  public async getItemWithProperties(
+  public async getPropertiesForItem(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
@@ -270,7 +259,6 @@ export class AuthorizedItemService {
       item,
     }: { permission?: PermissionLevelOptions; actor: { id: string } | undefined; item: ItemRaw },
   ): Promise<{
-    item: ItemRaw;
     itemMembership: ItemMembershipRaw | null;
     visibilities: ItemVisibilityWithItem[];
   }> {
@@ -300,12 +288,12 @@ export class AuthorizedItemService {
 
     // correct membership level pass successfully
     if (isValid) {
-      return { item, itemMembership: inheritedMembership, visibilities };
+      return { itemMembership: inheritedMembership, visibilities };
     }
 
     // PUBLIC CHECK
     if (permission === PermissionLevel.Read && isPublic) {
-      return { item, itemMembership: inheritedMembership, visibilities };
+      return { itemMembership: inheritedMembership, visibilities };
     }
 
     if (!inheritedMembership) {

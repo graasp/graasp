@@ -453,7 +453,7 @@ export class ItemService {
     permission: PermissionLevelOptions = PermissionLevel.Read,
   ) {
     const item = await this.itemRepository.getOneWithCreatorOrThrow(dbConnection, id);
-    const { itemMembership, visibilities } = await this.authorizedItemService.getItemWithProperties(
+    const { itemMembership, visibilities } = await this.authorizedItemService.getPropertiesForItem(
       dbConnection,
       {
         item,
