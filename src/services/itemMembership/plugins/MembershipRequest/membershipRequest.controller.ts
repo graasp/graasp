@@ -34,7 +34,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const authorizationService = resolveDependency(AuthorizationService);
 
   fastify.get(
-    '/',
+    '',
     {
       schema: getAllByItem,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -91,7 +91,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.post(
-    '/',
+    '',
     {
       schema: createOne,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],

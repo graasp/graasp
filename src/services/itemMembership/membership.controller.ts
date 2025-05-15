@@ -28,7 +28,7 @@ export const itemMembershipsController: FastifyPluginAsyncTypebox = async (fasti
       // get many item's memberships
       // returns empty for item not found
       fastify.get(
-        '/',
+        '',
         { schema: getItemMembershipsForItem, preHandler: optionalIsAuthenticated },
         async ({ user, params: { itemId } }) => {
           return itemMembershipService.getForItem(db, user?.account, itemId);
@@ -37,7 +37,7 @@ export const itemMembershipsController: FastifyPluginAsyncTypebox = async (fasti
 
       // create item membership
       fastify.post(
-        '/',
+        '',
         {
           schema: create,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
