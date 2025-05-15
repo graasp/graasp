@@ -14,7 +14,7 @@ import { type DBConnection } from '../../../../../drizzle/db';
 import { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemRepository } from '../../../item.repository';
 import { AppDataRepository } from './appData.repository';
 import {
@@ -59,7 +59,7 @@ export class AppDataService {
   private readonly fileItemType: FileItemType;
   private readonly itemRepository: ItemRepository;
   private readonly appDataRepository: AppDataRepository;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   hooks = new HookManager<{
     post: {
@@ -77,12 +77,12 @@ export class AppDataService {
   }>();
 
   constructor(
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemRepository: ItemRepository,
     appDataRepository: AppDataRepository,
   ) {
     this.itemRepository = itemRepository;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.appDataRepository = appDataRepository;
   }
 
@@ -92,16 +92,12 @@ export class AppDataService {
     itemId: string,
     body: InputAppData,
   ) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // posting an app data is allowed to readers
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: account,
+      itemId,
+    });
 
     // any user can write app data for others
     const attachedToMemberId = body.accountId ?? body.memberId ?? account.id;
@@ -146,17 +142,13 @@ export class AppDataService {
     appDataId: string,
     body: Partial<AppDataRaw>,
   ) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // patching requires at least read
     const { itemMembership: inheritedMembership } =
-      await this.authorizationService.validatePermission(
-        dbConnection,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
+      await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
+        permission: PermissionLevel.Read,
+        actor: account,
+        itemId,
+      });
 
     const currentAppData = await this.appDataRepository.getOne(dbConnection, appDataId);
 
@@ -205,17 +197,13 @@ export class AppDataService {
     itemId: string,
     appDataId: string,
   ) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // delete an app data is allowed to readers
     const { itemMembership: inheritedMembership } =
-      await this.authorizationService.validatePermission(
-        dbConnection,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
+      await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
+        permission: PermissionLevel.Read,
+        actor: account,
+        itemId,
+      });
 
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
 
@@ -252,12 +240,11 @@ export class AppDataService {
     item: ItemRaw,
     appDataId: UUID,
   ) {
-    const { itemMembership } = await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
-      account,
+    const { itemMembership } = await this.authorizedItemService.getPropertiesForItem(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: account,
       item,
-    );
+    });
 
     const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
 
@@ -273,15 +260,10 @@ export class AppDataService {
   }
 
   async getForItem(dbConnection: DBConnection, account: MaybeUser, itemId: string, type?: string) {
-    // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // posting an app data is allowed to readers
-    const { itemMembership } = await this.authorizationService.validatePermission(
+    const { itemMembership } = await this.authorizedItemService.getPropertiesForItemById(
       dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
+      { permission: PermissionLevel.Read, actor: account, itemId },
     );
 
     return this.appDataRepository.getForItem(

@@ -479,7 +479,7 @@ describe('MembershipRequest', () => {
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
-    it('creator without membership can request membership', async () => {
+    it('creator without membership can request membership on private item', async () => {
       const {
         actor,
         items: [item],
@@ -487,6 +487,36 @@ describe('MembershipRequest', () => {
         items: [
           {
             creator: 'actor',
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/memberships/requests`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      const membershipRequest = await db.query.membershipRequestsTable.findFirst({
+        where: and(
+          eq(membershipRequestsTable.itemId, item.id),
+          eq(membershipRequestsTable.memberId, actor.id),
+        ),
+      });
+      expect(membershipRequest).toBeDefined();
+      expect(mockSendEmail).toHaveBeenCalledTimes(0); // Because there is no admin to notify
+    });
+    it('creator without membership can request membership on public item', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            creator: 'actor',
+            isPublic: true,
           },
         ],
       });

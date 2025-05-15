@@ -10,7 +10,6 @@ import {
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MimeTypes,
-  PermissionLevel,
   getFileExtension,
 } from '@graasp/sdk';
 
@@ -18,7 +17,7 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import FileService from '../../../file/file.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
@@ -26,7 +25,6 @@ import { StorageService } from '../../../member/plugins/storage/memberStorage.se
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { randomHexOf4 } from '../../../utils';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -50,14 +48,13 @@ class FileItemService extends ItemService {
     meilisearchWrapper: MeiliSearchWrapper,
     @inject(delay(() => ItemThumbnailService))
     itemThumbnailService: ItemThumbnailService,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemRepository: ItemRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
-    basicItemService: BasicItemService,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
   ) {
@@ -69,10 +66,9 @@ class FileItemService extends ItemService {
       itemRepository,
       itemPublishedRepository,
       itemGeolocationRepository,
-      authorizationService,
+      authorizedItemService,
       itemWrapperService,
       itemVisibilityRepository,
-      basicItemService,
       recycledBinService,
       log,
     );
@@ -200,13 +196,10 @@ class FileItemService extends ItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
       actor,
-      item,
-    );
+      itemId,
+    });
     const extraData = item.extra[ItemType.FILE] as FileItemProperties;
     const result = await this.fileService.getFile({
       id: itemId,
@@ -227,13 +220,10 @@ class FileItemService extends ItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
       actor,
-      item,
-    );
+      itemId,
+    });
     const extraData = item.extra[ItemType.FILE] as FileItemProperties | undefined;
 
     const result = await this.fileService.getUrl({

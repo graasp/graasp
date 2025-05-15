@@ -3,8 +3,8 @@ import { singleton } from 'tsyringe';
 import { type DBConnection } from '../../../../drizzle/db';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -12,7 +12,7 @@ import { ItemLikeRepository } from './itemLike.repository';
 
 @singleton()
 export class ItemLikeService {
-  private basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private itemLikeRepository: ItemLikeRepository;
   private itemPublishedRepository: ItemPublishedRepository;
   private readonly meilisearchClient: MeiliSearchWrapper;
@@ -20,14 +20,14 @@ export class ItemLikeService {
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
-    basicItemService: BasicItemService,
+    authorizedItemService: AuthorizedItemService,
     itemLikeRepository: ItemLikeRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemVisibilityRepository: ItemVisibilityRepository,
     meilisearchClient: MeiliSearchWrapper,
   ) {
-    this.basicItemService = basicItemService;
+    this.authorizedItemService = authorizedItemService;
     this.itemLikeRepository = itemLikeRepository;
     this.itemPublishedRepository = itemPublishedRepository;
     this.meilisearchClient = meilisearchClient;
@@ -56,14 +56,17 @@ export class ItemLikeService {
   }
 
   async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
-    await this.basicItemService.get(dbConnection, actor, itemId);
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
 
     return this.itemLikeRepository.getByItemId(dbConnection, itemId);
   }
 
   async removeOne(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
-    const item = await this.basicItemService.get(dbConnection, member, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
+      itemId,
+    });
 
     const result = await this.itemLikeRepository.deleteOneByCreatorAndItem(
       dbConnection,
@@ -83,7 +86,10 @@ export class ItemLikeService {
 
   async post(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
-    const item = await this.basicItemService.get(dbConnection, member, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
+      itemId,
+    });
     const result = await this.itemLikeRepository.addOne(dbConnection, {
       creatorId: member.id,
       itemId: item.id,

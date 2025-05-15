@@ -4,7 +4,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../types';
-import { BasicItemService } from '../item/basic.service';
+import { AuthorizedItemService } from '../authorizedItem.service';
 import { ChatMessageRepository } from './chatMessage.repository';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/chatMention.service';
@@ -12,22 +12,22 @@ import { MentionService } from './plugins/mentions/chatMention.service';
 @singleton()
 export class ChatMessageService {
   private readonly mentionService: MentionService;
-  private readonly basicItemService: BasicItemService;
   private readonly chatMessageRepository: ChatMessageRepository;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
-    basicItemService: BasicItemService,
     mentionService: MentionService,
+    authorizedItemService: AuthorizedItemService,
     chatMessageRepository: ChatMessageRepository,
   ) {
-    this.basicItemService = basicItemService;
     this.mentionService = mentionService;
     this.chatMessageRepository = chatMessageRepository;
+    this.authorizedItemService = authorizedItemService;
   }
 
   async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
     // check permission
-    await this.basicItemService.get(dbConnection, actor, itemId);
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
 
     return await this.chatMessageRepository.getByItem(dbConnection, itemId);
   }
@@ -39,7 +39,7 @@ export class ChatMessageService {
     data: { body: string; mentions?: string[] },
   ) {
     // check permission
-    await this.basicItemService.get(dbConnection, actor, itemId);
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
 
     const message = await this.chatMessageRepository.addOne(dbConnection, {
       itemId,
@@ -65,7 +65,10 @@ export class ChatMessageService {
     message: { body: string },
   ) {
     // check permission
-    await this.basicItemService.get(dbConnection, authenticatedUser, itemId);
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      actor: authenticatedUser,
+      itemId,
+    });
 
     // check right to make sure that the user is editing his own message
     const messageContent = await this.chatMessageRepository.getOne(dbConnection, messageId);
@@ -95,7 +98,10 @@ export class ChatMessageService {
     messageId: string,
   ) {
     // check permission
-    await this.basicItemService.get(dbConnection, authenticatedUser, itemId);
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      actor: authenticatedUser,
+      itemId,
+    });
 
     const messageContent = await this.chatMessageRepository.getOne(dbConnection, messageId);
     if (!messageContent) {
@@ -114,7 +120,11 @@ export class ChatMessageService {
   async clear(dbConnection: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    await this.basicItemService.get(dbConnection, authenticatedUser, itemId, PermissionLevel.Admin);
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      actor: authenticatedUser,
+      itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     await this.chatMessageRepository.deleteByItem(dbConnection, itemId);
   }

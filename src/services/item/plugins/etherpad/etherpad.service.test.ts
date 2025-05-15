@@ -1,24 +1,20 @@
 import { v4 } from 'uuid';
 
-import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
+import Etherpad from '@graasp/etherpad-api';
 import {
   EtherpadItemFactory,
   EtherpadPermission,
   FolderItemFactory,
-  ItemType,
   PermissionLevel,
 } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { ItemMembershipWithItemAndAccount, ItemRaw, MemberRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { BasicItemService } from '../../basic.service';
 import { EtherpadItem } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from './etherpad.service';
@@ -31,11 +27,6 @@ const padNameFactory = {
   getName: () => 'padName',
 } as PadNameFactory;
 const etherPadConfig = resolveDependency(EtherpadServiceConfig);
-const itemService = new BasicItemService(
-  {} as ItemRepository,
-  {} as AuthorizationService,
-  MOCK_LOGGER,
-);
 const etherpad = {
   getReadOnlyID: () => {},
   createAuthorIfNotExistsFor: () => {},
@@ -54,6 +45,7 @@ const etherpadService = new EtherpadItemService(
   {} as ItemRepository,
   {} as ItemMembershipRepository,
   MOCK_LOGGER,
+  {} as AuthorizedItemService,
 );
 const id = v4();
 const MOCK_ITEM = EtherpadItemFactory({

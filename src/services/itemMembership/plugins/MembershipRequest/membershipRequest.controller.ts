@@ -11,8 +11,7 @@ import { asDefined } from '../../../../utils/assertions';
 import { ItemNotFound } from '../../../../utils/errors';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
-import { AuthorizationService } from '../../../authorization';
-import { BasicItemService } from '../../../item/basic.service';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemRepository } from '../../../item/item.repository';
 import { ItemLoginSchemaExists } from '../../../itemLogin/errors';
 import { ItemLoginService } from '../../../itemLogin/itemLogin.service';
@@ -29,10 +28,9 @@ import { MembershipRequestService } from './membershipRequest.service';
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const membershipRequestService = resolveDependency(MembershipRequestService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
-  const basicItemService = resolveDependency(BasicItemService);
   const itemRepository = resolveDependency(ItemRepository);
   const itemLoginService = resolveDependency(ItemLoginService);
-  const authorizationService = resolveDependency(AuthorizationService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
 
   if (fastify.corsPluginOptions) {
     await fastify.register(fastifyCors, fastify.corsPluginOptions);
@@ -50,7 +48,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       await db.transaction(async (tx) => {
         // Check if the Item exists and the member has the required permission.
-        await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
+        await authorizedItemService.assertAccessForItemId(tx, {
+          actor: member,
+          itemId,
+          permission: PermissionLevel.Admin,
+        });
 
         const requests = await membershipRequestService.getAllByItem(tx, itemId);
         reply.send(requests);
@@ -118,8 +120,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           throw new ItemLoginSchemaExists();
         }
 
-        // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error
-        if (await authorizationService.hasPermission(tx, PermissionLevel.Read, member, item)) {
+        // Check if the member already has an access to the item (from membership), if so, throw an error
+        if (
+          await authorizedItemService.hasPermission(tx, {
+            permission: PermissionLevel.Read,
+            actor: member,
+            item,
+          })
+        ) {
           throw new ItemMembershipAlreadyExists();
         }
 
@@ -142,7 +150,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       await db.transaction(async (tx) => {
         // Check if the item exists and the member has the required permission
-        await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
+        await authorizedItemService.assertAccessForItemId(tx, {
+          actor: member,
+          itemId,
+          permission: PermissionLevel.Admin,
+        });
 
         const result = await membershipRequestService.deleteOne(tx, memberId, itemId);
 

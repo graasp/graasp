@@ -9,7 +9,7 @@ import { AuthenticatedUser } from '../../../../types';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ActionDateFilters } from '../../../item/plugins/action/itemAction.repository';
 
 export const getPreviousMonthFromNow = () => {
@@ -32,15 +32,15 @@ export const actionTypesWithoutNeedOfPermission: string[] = [
 export class ActionMemberService {
   private readonly actionService: ActionService;
   private readonly actionRepository: ActionRepository;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
     actionService: ActionService,
     actionRepository: ActionRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
   ) {
     this.actionService = actionService;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.actionRepository = actionRepository;
   }
 
@@ -71,11 +71,13 @@ export class ActionMemberService {
       new Map(actionsNeedPermission.map(({ item }) => [item?.id, item])).values(),
     ).filter(Boolean);
 
-    const { itemMemberships } = await this.authorizationService.validatePermissionMany(
+    const { itemMemberships } = await this.authorizedItemService.getPropertiesForItems(
       dbConnection,
-      PermissionLevel.Read,
-      authenticatedUser,
-      setOfItemsToCheckPermission as ItemRaw[],
+      {
+        permission: PermissionLevel.Read,
+        actor: authenticatedUser,
+        items: setOfItemsToCheckPermission as ItemRaw[],
+      },
     );
 
     const filteredActionsWithAccessPermission = actionsNeedPermission.filter((g) => {

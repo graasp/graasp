@@ -9,7 +9,7 @@ import { type ItemRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { FolderItem } from '../../../discrimination';
 import { ItemRepository } from '../../../item.repository';
 import { ItemPublishedService } from '../published/itemPublished.service';
@@ -21,7 +21,7 @@ import { ValidationQueue } from './validationQueue';
 export class ItemValidationService {
   private readonly itemPublishedService: ItemPublishedService;
   private readonly contentModerator: ItemValidationModerator;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly validationQueue: ValidationQueue;
   private readonly itemValidationGroupRepository: ItemValidationGroupRepository;
   private readonly itemRepository: ItemRepository;
@@ -30,7 +30,7 @@ export class ItemValidationService {
   constructor(
     itemPublishedService: ItemPublishedService,
     contentModerator: ItemValidationModerator,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     validationQueue: ValidationQueue,
     itemValidationGroupRepository: ItemValidationGroupRepository,
     itemRepository: ItemRepository,
@@ -38,7 +38,7 @@ export class ItemValidationService {
   ) {
     this.itemPublishedService = itemPublishedService;
     this.contentModerator = contentModerator;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.itemValidationGroupRepository = itemValidationGroupRepository;
     this.validationQueue = validationQueue;
     this.itemRepository = itemRepository;
@@ -59,12 +59,11 @@ export class ItemValidationService {
     const group = await this.itemValidationGroupRepository.getLastForItem(dbConnection, item.id);
 
     // check permissions
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      member,
+    await this.authorizedItemService.assertAccess(dbConnection, {
+      permission: PermissionLevel.Admin,
+      actor: member,
       item,
-    );
+    });
 
     return group;
   }

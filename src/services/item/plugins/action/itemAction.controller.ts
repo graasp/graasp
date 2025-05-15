@@ -12,6 +12,7 @@ import { ALLOWED_ORIGINS } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -46,7 +47,7 @@ export interface GraaspActionsOptions {
 const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
   const { websockets } = fastify;
 
-  const itemService = resolveDependency(ItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
   const actionService = resolveDependency(ActionService);
   const itemActionService = resolveDependency(ItemActionService);
   const requestExportService = resolveDependency(ActionRequestExportService);
@@ -74,7 +75,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       }
 
       await db.transaction(async (tx) => {
-        const item = await itemService.basicItemService.get(tx, member, itemId);
+        const item = await authorizedItemService.getItemById(tx, { actor: member, itemId });
         await actionService.postMany(tx, member, request, [
           {
             item,
