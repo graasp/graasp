@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
@@ -34,12 +33,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemLoginService = resolveDependency(ItemLoginService);
   const authorizationService = resolveDependency(AuthorizationService);
 
-  if (fastify.corsPluginOptions) {
-    await fastify.register(fastifyCors, fastify.corsPluginOptions);
-  }
-
   fastify.get(
-    '/',
+    '',
     {
       schema: getAllByItem,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -96,7 +91,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.post(
-    '/',
+    '',
     {
       schema: createOne,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],

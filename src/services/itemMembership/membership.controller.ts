@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
@@ -14,43 +13,36 @@ import { ItemMembershipService } from './membership.service';
 import MembershipRequestAPI from './plugins/MembershipRequest/membershipRequest.controller';
 import { membershipWsHooks } from './ws/hooks';
 
-const ROUTES_PREFIX = '/item-memberships';
-
-const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+export const itemMembershipsController: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemMembershipService = resolveDependency(ItemMembershipService);
-
-  fastify.register(MembershipRequestAPI, {
-    prefix: '/items/:itemId/memberships/requests',
-  });
 
   // routes
   fastify.register(
     async function (fastify: FastifyInstanceTypebox) {
-      // add CORS support
-      if (fastify.corsPluginOptions) {
-        fastify.register(fastifyCors, fastify.corsPluginOptions);
-      }
-
       fastify.register(membershipWsHooks);
+
+      fastify.register(MembershipRequestAPI, {
+        prefix: '/requests',
+      });
 
       // get many item's memberships
       // returns empty for item not found
       fastify.get(
-        '/',
+        '',
         { schema: getItemMembershipsForItem, preHandler: optionalIsAuthenticated },
-        async ({ user, query: { itemId } }) => {
+        async ({ user, params: { itemId } }) => {
           return itemMembershipService.getForItem(db, user?.account, itemId);
         },
       );
 
       // create item membership
       fastify.post(
-        '/',
+        '',
         {
           schema: create,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
-        async ({ user, query: { itemId }, body }, reply) => {
+        async ({ user, params: { itemId }, body }, reply) => {
           const account = asDefined(user?.account);
           await db.transaction(async (tx) => {
             await itemMembershipService.create(tx, account, {
@@ -94,8 +86,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
       );
     },
-    { prefix: ROUTES_PREFIX },
+    { prefix: '/:itemId/memberships' },
   );
 };
-
-export default plugin;
