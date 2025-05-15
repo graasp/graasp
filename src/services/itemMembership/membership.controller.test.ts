@@ -166,7 +166,7 @@ describe('Membership routes tests', () => {
       });
     });
   });
-  describe('POST /item-memberships', () => {
+  describe('POST /items/:id/memberships', () => {
     it('Throws if signed out', async () => {
       const {
         members: [member],

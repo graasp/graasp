@@ -13,17 +13,17 @@ import { ItemMembershipService } from './membership.service';
 import MembershipRequestAPI from './plugins/MembershipRequest/membershipRequest.controller';
 import { membershipWsHooks } from './ws/hooks';
 
-const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+export const itemMembershipsController: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemMembershipService = resolveDependency(ItemMembershipService);
-
-  fastify.register(MembershipRequestAPI, {
-    prefix: '/:itemId/memberships/requests',
-  });
 
   // routes
   fastify.register(
     async function (fastify: FastifyInstanceTypebox) {
       fastify.register(membershipWsHooks);
+
+      fastify.register(MembershipRequestAPI, {
+        prefix: '/requests',
+      });
 
       // get many item's memberships
       // returns empty for item not found
@@ -89,5 +89,3 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { prefix: '/:itemId/memberships' },
   );
 };
-
-export default plugin;
