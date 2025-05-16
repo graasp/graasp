@@ -425,6 +425,7 @@ describe('ZIP routes tests', () => {
       const pdfName = 'output.pdf';
       const pdfSize = 10024;
       const pdfContent = 'This is a real document.';
+      const h5pFilename = 'test-05-collage-54.h5p';
 
       // Create the actor and the parent item
       const {
@@ -457,12 +458,14 @@ describe('ZIP routes tests', () => {
         const folderItem = itemsInDB[0];
         const documentItem = itemsInDB[1];
         const fileItem = itemsInDB[2];
+        const h5pItem = itemsInDB[3];
 
         // Check that all the items have been imported and that their order is correct
-        expect(itemsInDB.length).toEqual(3);
+        expect(itemsInDB.length).toEqual(4);
         expect(folderItem.type).toEqual(ItemType.FOLDER);
         expect(documentItem.type).toEqual(ItemType.DOCUMENT);
         expect(fileItem.type).toEqual(ItemType.FILE);
+        expect(h5pItem.type).toEqual(ItemType.H5P);
         expect(Number(itemsInDB[1].order)).toBeLessThan(Number(itemsInDB[2].order));
 
         // Check that all the item properties have been assigned for the document type
@@ -489,6 +492,8 @@ describe('ZIP routes tests', () => {
         });
 
         expect(thumbnailURLResponse.statusCode).toBe(StatusCodes.OK);
+
+        expect(h5pItem.name).toEqual(h5pFilename);
       });
     });
   });
