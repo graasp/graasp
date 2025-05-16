@@ -301,6 +301,20 @@ export class ImportExportService {
           thumbnail = createReadStream(itemThumbnailPath);
         }
 
+        // Handle the H5P file upload
+        if (item.type === ItemType.H5P) {
+          const pathToGraaspFile = path.join(folderPath, item.id);
+          const h5pFileStream = createReadStream(pathToGraaspFile);
+          const h5pFileInfo = await this.h5pService.uploadH5PFile(
+            dbConnection,
+            actor,
+            item.id,
+            h5pFileStream,
+          );
+
+          extra = h5pFileInfo;
+        }
+
         // Handle the file upload
         if (item.type === ItemType.FILE) {
           if (!item.mimetype) {

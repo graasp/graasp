@@ -35,8 +35,8 @@ The `description` field for all items is sanitized before item creation.
 - `FOLDER` - The children are recursively imported, if present.
 - `LINK` - Not currently supported.
 - `FILE` - The file is imported with the same procedure as in the raw file import. The item is then created with the `extra` field based on the properties extracted from the file.
+- `H5P` - The file is imported with the same procedure as the normal H5P upload. The `extra` field in the item is based on the properties extracted from the H5P file.
 - `SHORTCUT` - Not currently supported.
-- `H5P` - Not currently supported.
 - `ETHERPAD` - Not currently supported.
 
 # Raw ZIP Import

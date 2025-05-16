@@ -19,10 +19,10 @@ import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../utils/config';
 import { H5PItem } from '../../../discrimination';
-import { ItemService } from '../../../item.service';
 import { HtmlImportError } from '../errors';
 import { H5P_FILE_DOT_EXTENSION } from './constants';
 import { H5PInvalidManifestError } from './errors';
+import { H5PService } from './h5p.service';
 import { H5P_PACKAGES } from './test/fixtures';
 import { expectH5PFiles, injectH5PImport } from './test/helpers';
 
@@ -302,9 +302,9 @@ describe('Service plugin', () => {
     });
     it('returns error and deletes extracted files on item creation failure', async () => {
       const { storageRootPath } = H5P_LOCAL_CONFIG.local;
-      const createItem = jest.spyOn(resolveDependency(ItemService), 'post');
-      createItem.mockImplementationOnce(() => {
-        throw new Error('mock error on create item');
+      const uploadPackage = jest.spyOn(resolveDependency(H5PService), 'uploadPackage');
+      uploadPackage.mockImplementationOnce(() => {
+        throw new Error('mock error on HTML package upload');
       });
 
       const {
