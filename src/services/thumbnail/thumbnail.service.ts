@@ -3,6 +3,7 @@ import sharp from 'sharp';
 import { Readable } from 'stream';
 import { injectable } from 'tsyringe';
 
+import { BaseLogger } from '../../logger';
 import { AuthenticatedUser } from '../../types';
 import FileService from '../file/file.service';
 import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
@@ -13,10 +14,12 @@ export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';
 @injectable()
 export class ThumbnailService {
   private readonly fileService: FileService;
+  private readonly logger: BaseLogger;
   private _prefix: string = ITEM_THUMBNAIL_PREFIX;
 
-  constructor(fileService: FileService) {
+  constructor(fileService: FileService, log: BaseLogger) {
     this.fileService = fileService;
+    this.logger = log;
   }
 
   public set prefix(prefix: string) {
@@ -33,7 +36,7 @@ export class ThumbnailService {
 
   async upload(authenticatedUser: AuthenticatedUser, id: string, file: Readable) {
     // upload all thumbnails in parallel
-    await Promise.all(
+    const filesToUpload = await Promise.all(
       Object.entries(ThumbnailSizeFormat).map(async ([sizeName, width]) => {
         // create thumbnail from image stream
         const pipeline = sharp().resize({ width }).toFormat(THUMBNAIL_FORMAT);
@@ -47,14 +50,20 @@ export class ThumbnailService {
             .on('error', reject),
         );
 
-        // upload file
-        await this.fileService.upload(authenticatedUser, {
+        return {
           file: pipeline,
           filepath: this.buildFilePath(id, sizeName),
           mimetype: THUMBNAIL_MIMETYPE,
-        });
+        };
       }),
     );
+
+    // upload the thumbnails
+    try {
+      await this.fileService.uploadMany(authenticatedUser, filesToUpload);
+    } catch (_err) {
+      this.logger.debug(`Could not upload the ${id} item thumbnails`);
+    }
   }
 
   async getUrl({ id, size }: { size: string; id: string }) {
