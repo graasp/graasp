@@ -138,7 +138,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
             // othwerwise, we save it as a generic file
             let item: ItemRaw;
             if (getFileExtension(filename) === H5P_FILE_EXTENSION) {
-              item = await h5pService.createH5PItem(
+              item = await h5pService.uploadFileAndCreateItem(
                 tx,
                 member,
                 filename,

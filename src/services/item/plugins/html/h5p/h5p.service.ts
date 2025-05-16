@@ -120,7 +120,25 @@ export class H5PService extends HtmlService {
     });
   }
 
-  async createH5PItem(
+  /**
+   * Upload an H5P file.
+   * @returns The H5P file metadata.
+   */
+  async uploadH5PFile(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    filename: string,
+    stream: Readable,
+    log?: FastifyBaseLogger,
+  ) {
+    return await super.uploadFile(dbConnection, actor, filename, stream, log);
+  }
+
+  /**
+   * Upload the H5P file and create an item associated with it.
+   * @returns The newly created item.
+   */
+  async uploadFileAndCreateItem(
     dbConnection: DBConnection,
     actor: MinimalMember,
     filename: string,
@@ -129,48 +147,37 @@ export class H5PService extends HtmlService {
     previousItemId?: ItemRaw['id'],
     log?: FastifyBaseLogger,
   ): Promise<H5PItem> {
-    const item = await super.createItem(
+    const { remoteRootPath, baseName, contentId } = await this.uploadH5PFile(
       dbConnection,
       actor,
       filename,
       stream,
-      this.createItemForH5PFile,
-      parentId,
-      previousItemId,
       log,
     );
-    if (!isItemType(item, ItemType.H5P)) {
-      throw new Error('Expected item to be H5P but it was something else');
-    }
-    return item;
-  }
 
-  /**
-   * Creates a Graasp item for the uploaded H5P package
-   * @param filename Name of the original H5P file WITHOUT EXTENSION
-   * @param contentId Storage ID of the remote content
-   * @param remoteRootPath Root path on the remote storage
-   * @param member Actor member
-   * @param parentId Optional parent id of the newly created item
-   * !! it's important to keep this syntax because of the reference to this
-   */
-  private createItemForH5PFile = async (
-    dbConnection: DBConnection,
-    member: MinimalMember,
-    filename: string,
-    contentId: string,
-    parentId?: string,
-    previousItemId?: string,
-  ): Promise<ItemRaw> => {
     const metadata = {
-      name: this.buildH5PPath('', filename),
+      name: this.buildH5PPath('', baseName),
       type: ItemType.H5P,
-      extra: this.buildH5PExtra(contentId, filename),
+      extra: this.buildH5PExtra(contentId, baseName),
     };
-    return this.itemService.post(dbConnection, member, {
-      item: metadata,
-      parentId,
-      previousItemId,
-    });
-  };
+
+    try {
+      const item = await this.itemService.post(dbConnection, actor, {
+        item: metadata,
+        parentId,
+        previousItemId,
+      });
+
+      if (!isItemType(item, ItemType.H5P)) {
+        throw new Error('Expected item to be H5P but it was something else');
+      }
+      return item;
+    } catch (error) {
+      // delete storage folder of this html package if upload or creation fails
+      await this.fileService.deleteFolder(remoteRootPath);
+      // rethrow above
+      log?.error(error);
+      throw error;
+    }
+  }
 }
