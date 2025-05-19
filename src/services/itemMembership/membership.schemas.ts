@@ -63,7 +63,7 @@ export const create = {
   summary: 'Create access to item for account',
   description: 'Create access to item for account, given permission',
 
-  querystring: customType.StrictObject({
+  params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   body: createItemMembershipSchema,
@@ -79,7 +79,7 @@ export const getItemMembershipsForItem = {
   summary: 'Get memberships for one item',
   description: 'Get memberships for one item',
 
-  querystring: customType.StrictObject({
+  params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   response: {
@@ -97,6 +97,7 @@ export const updateOne = {
 
   params: customType.StrictObject({
     id: customType.UUID(),
+    itemId: customType.UUID(),
   }),
   body: customType.StrictObject({
     permission: customType.EnumString(Object.values(PermissionLevel)),
@@ -116,6 +117,7 @@ export const deleteOne = {
 
   params: customType.StrictObject({
     id: customType.UUID(),
+    itemId: customType.UUID(),
   }),
   querystring: customType.StrictObject({
     purgeBelow: Type.Optional(Type.Boolean()),
