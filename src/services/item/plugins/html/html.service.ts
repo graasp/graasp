@@ -112,7 +112,7 @@ export abstract class HtmlService {
    * are uploaded in parallel as soon as possible). Results aggregation can however
    * await in parallel (note: await in a map fn does not block the map iteration).
    */
-  async upload(
+  async uploadPackage(
     member: MinimalMember,
     folder: string,
     uploadPath: string,
@@ -128,7 +128,7 @@ export abstract class HtmlService {
 
       if (stats.isDirectory()) {
         // recursively upload child folder
-        return await this.upload(member, childPath, childUploadPath, log);
+        return await this.uploadPackage(member, childPath, childUploadPath, log);
       } else {
         // ignore this file if extension is not allowed
         const ext = path.extname(childPath);
@@ -154,24 +154,16 @@ export abstract class HtmlService {
     return (await Promise.all(uploads)).flat();
   }
 
-  async createItem(
+  /**
+   * Upload the HTML file and get the metadata of the file.
+   */
+  async uploadFile(
     dbConnection: DBConnection,
     actor: MinimalMember,
     filename: string,
     stream: Readable,
-    onComplete: (
-      dbConnection: DBConnection,
-      actor: MinimalMember,
-      baseName: string,
-      contentId: string,
-      parentId?: ItemRaw['id'],
-      previousItemId?: ItemRaw['id'],
-      log?: FastifyBaseLogger,
-    ) => Promise<ItemRaw>,
-    parentId?: ItemRaw['id'],
-    previousItemId?: ItemRaw['id'],
     log?: FastifyBaseLogger,
-  ): Promise<ItemRaw> {
+  ): Promise<{ remoteRootPath: string; baseName: string; contentId: string }> {
     // check member storage limit
     await this.storageService.checkRemainingStorage(dbConnection, actor);
     const contentId = v4();
@@ -197,17 +189,8 @@ export abstract class HtmlService {
       // try-catch block for remote storage cleanup
       try {
         // upload whole folder to public storage
-        await this.upload(actor, targetFolder, remoteRootPath, log);
-        const item = await onComplete(
-          dbConnection,
-          actor,
-          baseName,
-          contentId,
-          parentId,
-          previousItemId,
-          log,
-        );
-        return item;
+        await this.uploadPackage(actor, targetFolder, remoteRootPath, log);
+        return { remoteRootPath, baseName, contentId };
       } catch (error) {
         // delete storage folder of this html package if upload or creation fails
         await this.fileService.deleteFolder(remoteRootPath);

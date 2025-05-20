@@ -122,7 +122,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
 
         const { filename, file: stream } = h5pFile;
 
-        return await h5pService.createH5PItem(
+        return await h5pService.uploadFileAndCreateItem(
           tx,
           member,
           filename,
