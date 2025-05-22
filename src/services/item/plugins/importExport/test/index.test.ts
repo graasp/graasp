@@ -19,7 +19,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { isDescendantOrSelf, isDirectChild } from '../../../../../drizzle/operations';
-import { itemsRawTable } from '../../../../../drizzle/schema';
+import { appSettingsTable, itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { LocalFileRepository } from '../../../../file/repositories/local';
@@ -68,13 +68,18 @@ const setupActorAndItems = async () => {
       order: i,
     };
   });
+  const appItem = {
+    type: ItemType.APP,
+    name: `secondLevelItemApp`,
+    appSettings: [{ creator: { name: 'bob' }, name: 'app-setting' }],
+  };
   const firstLevelChildren = Array.from({ length: 15 }).map((_val, i) => {
     if (i === 0) {
       return {
         name: `folderItem1`,
         type: ItemType.FOLDER,
         order: i,
-        children: secondLevelChildren,
+        children: [...secondLevelChildren, appItem],
       };
     }
     return {
@@ -108,6 +113,7 @@ const setupActorAndItems = async () => {
     firstLevelFolderItem,
     firstLevelItems,
     secondLevelItems,
+    appItem,
   };
 };
 
@@ -423,9 +429,10 @@ describe('ZIP routes tests', () => {
       const folderDescription = '<p>A Graasp export folder</p>';
       const documentContent = '<p>Hello.</p>';
       const pdfName = 'output.pdf';
-      const pdfSize = 10024;
       const pdfContent = 'This is a real document.';
       const h5pFilename = 'test-05-collage-54.h5p';
+      const appUrl = 'https://justinjackson.ca/words.html';
+      const appName = 'My App';
 
       // Create the actor and the parent item
       const {
@@ -459,13 +466,15 @@ describe('ZIP routes tests', () => {
         const documentItem = itemsInDB[1];
         const fileItem = itemsInDB[2];
         const h5pItem = itemsInDB[3];
+        const appItem = itemsInDB[4];
 
         // Check that all the items have been imported and that their order is correct
-        expect(itemsInDB.length).toEqual(4);
+        expect(itemsInDB.length).toEqual(5);
         expect(folderItem.type).toEqual(ItemType.FOLDER);
         expect(documentItem.type).toEqual(ItemType.DOCUMENT);
         expect(fileItem.type).toEqual(ItemType.FILE);
         expect(h5pItem.type).toEqual(ItemType.H5P);
+        expect(appItem.type).toEqual(ItemType.APP);
         expect(Number(itemsInDB[1].order)).toBeLessThan(Number(itemsInDB[2].order));
 
         // Check that all the item properties have been assigned for the document type
@@ -485,15 +494,23 @@ describe('ZIP routes tests', () => {
 
         // Check the the file item thumbnail has been imported correctly
         expect(fileItem.settings.hasThumbnail).toBeTruthy();
-
         const thumbnailURLResponse = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${fileItem.id}${THUMBNAILS_ROUTE_PREFIX}/${ThumbnailSize.Original}`,
         });
-
         expect(thumbnailURLResponse.statusCode).toBe(StatusCodes.OK);
 
+        // Check the H5P item
         expect(h5pItem.name).toEqual(h5pFilename);
+
+        // Check the APP item
+        expect(appItem.extra[ItemType.APP]).toBeDefined();
+        expect(appItem.extra[ItemType.APP].url).toEqual(appUrl);
+        const appSetting = await db.query.appSettingsTable.findFirst({
+          where: eq(appSettingsTable.itemId, appItem.id),
+        });
+        expect(appSetting).toBeDefined();
+        expect(appSetting!.name).toEqual(appName);
       });
     });
   });
@@ -582,7 +599,8 @@ describe('ZIP routes tests', () => {
     });
 
     it('Graasp export recreates the file structure', async () => {
-      const { actor, folderItem, firstLevelItems, secondLevelItems } = await setupActorAndItems();
+      const { actor, folderItem, firstLevelItems, secondLevelItems, appItem } =
+        await setupActorAndItems();
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
@@ -609,6 +627,11 @@ describe('ZIP routes tests', () => {
       expect(foundSecondLevelChildren?.map((x) => x.name)).toEqual(
         secondLevelItems.map((x) => x.name),
       );
+
+      const foundAppItem = foundSecondLevelChildren?.find((i) => i.type === ItemType.APP);
+      expect(foundAppItem).toBeDefined();
+      expect(foundAppItem!.appSettings).toBeDefined();
+      expect(foundAppItem!.appSettings![0].name).toEqual(appItem.appSettings[0].name);
 
       // delete the folder in which the files were unzipped
       fs.rmSync(targetFolder, { recursive: true });

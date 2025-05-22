@@ -62,6 +62,7 @@ describe('Apps Settings Tests', () => {
       it('Get app setting throws without token', async () => {
         const {
           items: [item],
+          appSettings,
         } = await seedFromJson({
           actor: null,
           items: [
