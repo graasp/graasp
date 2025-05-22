@@ -388,9 +388,13 @@ export class ImportExportService {
         if (uploadedItem.type === ItemType.APP) {
           const appSettings = items[idx].appSettings;
           return Promise.all(
-            appSettings!.map((appSetting) =>
-              this.appSettingService.post(dbConnection, actor, uploadedItem.id, appSetting),
-            ),
+            appSettings!.map((appSetting) => {
+              // Remove the id property from the imported app settings as a precaution. Remove this condition as soon as the id is stripped directly in the post function.
+              if (appSetting['id']) {
+                delete appSetting['id'];
+              }
+              return this.appSettingService.post(dbConnection, actor, uploadedItem.id, appSetting);
+            }),
           );
         }
       }),
