@@ -20,13 +20,14 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { AppSettingRaw, type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
+import { AppSettingService } from '../app/appSetting/appSetting.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
 import { H5PService } from '../html/h5p/h5p.service';
@@ -58,6 +59,7 @@ export type GraaspExportItem = {
   thumbnailFilename?: string;
   children?: GraaspExportItem[];
   mimetype?: string;
+  appSettings?: Omit<AppSettingRaw, 'id'>[];
 };
 
 @singleton()
@@ -68,6 +70,7 @@ export class ImportExportService {
   private readonly basicItemService: BasicItemService;
   private readonly etherpadService: EtherpadItemService;
   private readonly itemThumbnailService: ItemThumbnailService;
+  private readonly appSettingService: AppSettingService;
   private readonly log: BaseLogger;
 
   constructor(
@@ -76,6 +79,7 @@ export class ImportExportService {
     h5pService: H5PService,
     etherpadService: EtherpadItemService,
     itemThumbnailService: ItemThumbnailService,
+    appSettingService: AppSettingService,
     basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
@@ -84,6 +88,7 @@ export class ImportExportService {
     this.itemService = itemService;
     this.etherpadService = etherpadService;
     this.itemThumbnailService = itemThumbnailService;
+    this.appSettingService = appSettingService;
     this.basicItemService = basicItemService;
     this.log = log;
   }
@@ -312,7 +317,12 @@ export class ImportExportService {
             h5pFileStream,
           );
 
-          extra = h5pFileInfo;
+          extra = { [ItemType.H5P]: h5pFileInfo };
+        }
+
+        // Handle the APP item extra
+        if (item.type === ItemType.APP) {
+          extra = { [ItemType.APP]: item.extra[ItemType.APP] };
         }
 
         // Handle the file upload
@@ -345,6 +355,9 @@ export class ImportExportService {
       parentId: parentId,
     });
 
+    // Create the app settings for the APP items
+    await this.insertAppSettings(dbConnection, actor, uploadedItems, items);
+
     // Recursively handle the children items
     for (let i = 0; i < items.length; i++) {
       if (items[i].type === ItemType.FOLDER) {
@@ -359,6 +372,33 @@ export class ImportExportService {
         }
       }
     }
+  }
+
+  /**
+   * Extract the app settings from the export items and attach them to the existing items in the DB.
+   */
+  private async insertAppSettings(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    uploadedItems: ItemRaw[],
+    items: GraaspExportItem[],
+  ) {
+    await Promise.all(
+      uploadedItems.map((uploadedItem, idx) => {
+        if (uploadedItem.type === ItemType.APP) {
+          const appSettings = items[idx].appSettings;
+          return Promise.all(
+            appSettings!.map((appSetting) => {
+              // Remove the id property from the imported app settings as a precaution. Remove this condition as soon as the id is stripped directly in the post function.
+              if (appSetting['id']) {
+                delete appSetting['id'];
+              }
+              return this.appSettingService.post(dbConnection, actor, uploadedItem.id, appSetting);
+            }),
+          );
+        }
+      }),
+    );
   }
 
   /**
@@ -443,6 +483,16 @@ export class ImportExportService {
       archive,
     );
 
+    // Get the app settings if an item is an APP
+    let appSettings: Omit<AppSettingRaw, 'id'>[] | undefined = undefined;
+    if (isItemType(item, ItemType.APP)) {
+      const itemAppSettings = await this.appSettingService.getForItem(dbConnection, actor, item.id);
+
+      appSettings = itemAppSettings.map((appSetting) => {
+        return { ...appSetting, id: undefined, itemId: exportItemId };
+      });
+    }
+
     // TODO EXPORT treat the shortcut items correctly
     // ignore the shortcuts for now
     if (isItemType(item, ItemType.SHORTCUT)) {
@@ -486,6 +536,7 @@ export class ImportExportService {
       extra: item.extra,
       thumbnailFilename,
       mimetype,
+      appSettings,
     });
     archive.addReadStream(stream, itemPath);
     return itemManifest;
