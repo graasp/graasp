@@ -9,7 +9,7 @@ import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sd
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
-import { asDefined } from '../../../../utils/assertions';
+import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
@@ -17,6 +17,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
+import { ItemExportRequestService, ItemRequestExportType } from './itemExportRequest.service';
 import { graaspZipExport, zipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
 import { prepareZip } from './utils';
@@ -30,6 +31,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const authorizedItemService = resolveDependency(AuthorizedItemService);
   const actionService = resolveDependency(ActionService);
   const importExportService = resolveDependency(ImportExportService);
+  const itemExportRequestService = resolveDependency(ItemExportRequestService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -94,7 +96,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:itemId/export',
     {
       schema: zipExport,
-      preHandler: optionalIsAuthenticated,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
       const {
@@ -102,6 +104,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         params: { itemId },
       } = request;
       const member = user?.account;
+      assertIsDefined(member);
+      assertIsMember(member);
       const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
 
       // trigger download action for a collection
@@ -134,18 +138,18 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return stream;
       }
 
-      // generate archive stream
-      const archiveStream = await importExportService.exportRaw(db, member, item);
+      // will generate archive in the background
+      reply.status(StatusCodes.ACCEPTED).send();
 
-      try {
-        reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);
-      } catch (e) {
-        // TODO: send sentry error
-        log?.error(e);
-        reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
-      }
-      reply.type('application/octet-stream');
-      return archiveStream.outputStream;
+      // generate archive stream and send by email
+      const archive = await importExportService.exportRaw(db, member, item);
+      await itemExportRequestService.uploadAndSendDownloadLink(
+        db,
+        member,
+        item,
+        archive,
+        ItemRequestExportType.Raw,
+      );
     },
   );
 

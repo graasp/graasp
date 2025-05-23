@@ -37,6 +37,7 @@ export const actionRequestExportFormatEnum = pgEnum('action_request_export_forma
   'json',
   'csv',
 ]);
+export const itemRequestExportTypeEnum = pgEnum('item_request_export_type_enum', ['raw', 'graasp']);
 export const chatMentionStatusEnum = pgEnum('chat_mention_status_enum', ['unread', 'read']);
 export const shortLinkPlatformEnum = pgEnum('short_link_platform_enum', [
   'builder',
@@ -807,6 +808,33 @@ export const actionRequestExportsTable = pgTable(
       columns: [table.memberId],
       foreignColumns: [accountsTable.id],
       name: 'FK_bc85ef3298df8c7974b33081b47',
+    }).onDelete('cascade'),
+  ],
+);
+
+export const itemRequestExportsTable = pgTable(
+  'item_request_export',
+  {
+    id: uuid().primaryKey().defaultRandom().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    memberId: uuid('member_id'),
+    itemId: uuid('item_id'),
+    type: itemRequestExportTypeEnum().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.itemId],
+      foreignColumns: [itemsRawTable.id],
+      name: 'FK_item_request_export_item_id',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+    foreignKey({
+      columns: [table.memberId],
+      foreignColumns: [accountsTable.id],
+      name: 'FK_item_request_export_member_id',
     }).onDelete('cascade'),
   ],
 );

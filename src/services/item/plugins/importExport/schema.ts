@@ -37,6 +37,7 @@ export const zipExport = {
   response: {
     // return a stream
     [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the export zip content' }),
+    [StatusCodes.ACCEPTED]: Type.Null({ description: 'email with download link has been sent' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
