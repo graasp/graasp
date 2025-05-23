@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/graasp/graasp/compare/v2.3.0...v2.4.0) (2025-05-23)
+
+
+### Features
+
+* **graasp-import:** export and import the item thumbnails ([#1868](https://github.com/graasp/graasp/issues/1868)) ([0c0eb5a](https://github.com/graasp/graasp/commit/0c0eb5a82ca1766be6f7d84d992510eed67453e2))
+* move membership endpoints ([#1873](https://github.com/graasp/graasp/issues/1873)) ([72a2aba](https://github.com/graasp/graasp/commit/72a2abac820ae9103c86baedc4f20e785ff5bbac))
+
+
+### Bug Fixes
+
+* allow to post twice a like on an item ([#1864](https://github.com/graasp/graasp/issues/1864)) ([b5b2180](https://github.com/graasp/graasp/commit/b5b21807e3d78f328bfcf1086b1c67d24ad6311d))
+* **files-upload:** return simple error if exists ([#1866](https://github.com/graasp/graasp/issues/1866)) ([9c48b77](https://github.com/graasp/graasp/commit/9c48b7745cfd6af5686381933271d5a22726955a))
+* improve schemas for item_packed.thumbnails and search hits ([#1869](https://github.com/graasp/graasp/issues/1869)) ([5f33206](https://github.com/graasp/graasp/commit/5f332062f913e301a96bc03fdfd54994f2add9a0))
+
 ## [2.3.0](https://github.com/graasp/graasp/compare/v2.2.1...v2.3.0) (2025-05-05)
 
 ### Features

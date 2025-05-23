@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "engines": {
     "node": ">=22.0.0"
   },
