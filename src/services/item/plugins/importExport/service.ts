@@ -520,7 +520,7 @@ export class ImportExportService {
    * @param item The root item
    * @returns A zip file promise
    */
-  async exportRaw(dbConnection: DBConnection, actor: MaybeUser, item: ItemRaw) {
+  async exportRaw(dbConnection: DBConnection, actor: MinimalMember, item: ItemRaw) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -537,8 +537,8 @@ export class ImportExportService {
     }).catch((error) => {
       throw new UnexpectedExportError(error);
     });
-
     archive.end();
+
     return archive;
   }
 
