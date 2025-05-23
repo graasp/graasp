@@ -1,3 +1,4 @@
+import { isAfter } from 'date-fns';
 import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
@@ -323,6 +324,40 @@ describe('Item Like', () => {
         const savedLikes = await getItemLikesByItem(item.id);
         expect(savedLikes).toHaveLength(2);
         expect(savedLikes[1].creatorId).toEqual(actor.id);
+      });
+
+      it('Allows to override like if already exist', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              likes: ['actor'],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+        const [initialLike] = await getItemLikesByItem(item.id);
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items/${item.id}/like`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        // the creatorId should be the same
+        const result = await res.json();
+        expect(result.creatorId).toEqual(actor.id);
+
+        // check received item like
+        // since we don't have full item, deduce from saved value
+        const savedLikes = await getItemLikesByItem(item.id);
+        expect(savedLikes).toHaveLength(1);
+        expect(savedLikes[0].creatorId).toEqual(actor.id);
+        expect(isAfter(savedLikes[0].createdAt, initialLike.createdAt)).toBeTruthy();
       });
 
       it('Cannot like item if does not have rights', async () => {

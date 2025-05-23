@@ -60,6 +60,22 @@ export const getLikesForItem = {
   },
 };
 
+const rawItemLikeSchemaRef = registerSchemaAsRef(
+  'rawItemLike',
+  'Raw Item Like',
+  customType.StrictObject(
+    {
+      id: customType.UUID(),
+      itemId: customType.UUID(),
+      creatorId: customType.UUID(),
+      createdAt: customType.DateTime(),
+    },
+    {
+      description: 'Raw Like entry created when a member likes an item.',
+    },
+  ),
+);
+
 export const create = {
   operationId: 'createItemLike',
   tags: ['like'],
@@ -70,7 +86,7 @@ export const create = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: itemLikeSchemaRef,
+    [StatusCodes.OK]: rawItemLikeSchemaRef,
     '4xx': errorSchemaRef,
   },
 };
