@@ -71,7 +71,7 @@ const rawItemLikeSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
     },
     {
-      description: 'Raw Like entry created when a member likes a published collection.',
+      description: 'Raw Like entry created when a member likes an item.',
     },
   ),
 );
