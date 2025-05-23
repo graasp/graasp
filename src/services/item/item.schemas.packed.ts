@@ -34,8 +34,8 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       thumbnails: Type.Optional(
         customType.StrictObject(
           {
-            small: Type.String(),
-            medium: Type.String(),
+            small: Type.String({ format: 'uri' }),
+            medium: Type.String({ format: 'uri' }),
           },
           { additionalProperties: true },
         ),
