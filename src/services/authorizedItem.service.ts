@@ -1,12 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import {
-  ItemVisibilityType,
-  PermissionLevel,
-  PermissionLevelCompare,
-  PermissionLevelOptions,
-  ResultOf,
-} from '@graasp/sdk';
+import { ItemVisibilityType, PermissionLevel, PermissionLevelOptions, ResultOf } from '@graasp/sdk';
 
 import { DBConnection } from '../drizzle/db';
 import { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
@@ -17,6 +11,7 @@ import {
   MemberCannotReadItem,
   MemberCannotWriteItem,
 } from '../utils/errors';
+import { ItemRepository } from './item/item.repository';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
@@ -27,31 +22,36 @@ const permissionMapping: { [K in PermissionLevelOptions]: PermissionLevelOptions
 };
 
 @singleton()
-export class AuthorizationService {
+export class AuthorizedItemService {
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemRepository: ItemRepository;
 
   constructor(
     itemMembershipRepository: ItemMembershipRepository,
     itemVisibilityRepository: ItemVisibilityRepository,
+    itemRepository: ItemRepository,
   ) {
     this.itemMembershipRepository = itemMembershipRepository;
     this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemRepository = itemRepository;
   }
 
+  // TODO: use this function to filter out directly, as it seems the usual use case of this function
   /**
-   * Verify if actor has access (or has the necessary rights) to a given item
-   * This function checks the member's memberships, if the item is public and if it is hidden.
+   * Returns hightest membership and visibilities for each item if the user has access to it
    * @param permission minimum permission required
    * @param actor member that tries to access the item
-   * @param item
-   * @throws if the user cannot access the item
+   * @param items items to get properties for
+   * @returns result of the highest item membership for each item, result of visibilities for each item
    */
-  public async validatePermissionMany(
+  public async getPropertiesForItems(
     dbConnection: DBConnection,
-    permission: PermissionLevelOptions,
-    actor: { id: string } | undefined,
-    items: ItemRaw[],
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      items,
+    }: { permission: PermissionLevelOptions; actor: { id: string } | undefined; items: ItemRaw[] },
   ): Promise<{
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
@@ -136,25 +136,128 @@ export class AuthorizationService {
     return { itemMemberships: resultOfMemberships, visibilities };
   }
 
+  /**
+   * Returns whether the actor has a membership on the item and can access it.
+   * Having an admin membership returns true.
+   * Having a write membership returns true.
+   * Having a read membership and the item is hidden returns false.
+   * Having a read membership and the item is public returns true.
+   * Having no membership and public returns false.
+   * @returns whether the member has permission and can access the item
+   */
   public async hasPermission(
     dbConnection: DBConnection,
-    permission: PermissionLevelOptions,
-    actor: MaybeUser,
-    item: ItemRaw,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      item,
+    }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
   ) {
     try {
-      await this.validatePermission(dbConnection, permission, actor, item);
+      const { itemMembership, visibilities } = await this.getPropertiesForItem(dbConnection, {
+        permission,
+        actor,
+        item,
+      });
+
+      // returns false if does not have membership and item is public
+      if (!itemMembership && visibilities.find(({ type }) => type === ItemVisibilityType.Public)) {
+        return false;
+      }
+
       return true;
-    } catch (err: unknown) {
+    } catch (_e) {
       return false;
     }
   }
 
-  public async validatePermission(
+  /**
+   * Assert the actor can access an item, throws otherwise
+   * @returns if the actor has an admin membership
+   * @returns if the actor has a write membership
+   * @returns if the actor has a read membership and the item is public
+   * @returns if the actor has no membership and the item is public
+   * @throws if the actor has a read membership and the item is hidden
+   * @throws if the actor has no membership for a private item
+   */
+  public async assertAccess(
     dbConnection: DBConnection,
-    permission: PermissionLevelOptions,
-    actor: { id: string } | undefined,
-    item: ItemRaw,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      item,
+    }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
+  ) {
+    await this.getPropertiesForItem(dbConnection, { permission, actor, item });
+  }
+
+  /**
+   * Returns whether the actor can access an item.
+   * refer to assertAccess
+   */
+  public async assertAccessForItemId(
+    dbConnection: DBConnection,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      itemId,
+    }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
+  ) {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    await this.assertAccess(dbConnection, { permission, actor, item });
+  }
+
+  /**
+   * Returns item if the actor has access to it
+   * @returns item
+   */
+  public async getItemById(
+    dbConnection: DBConnection,
+    {
+      permission,
+      actor,
+      itemId,
+    }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
+  ) {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    await this.assertAccess(dbConnection, { permission, actor, item });
+    return item;
+  }
+
+  /**
+   * Returns item if the actor has access to it
+   * @returns highest permission and visibilities
+   */
+  public async getPropertiesForItemById(
+    dbConnection: DBConnection,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      itemId,
+    }: {
+      permission?: PermissionLevelOptions;
+      actor: { id: string } | undefined;
+      itemId: ItemRaw['id'];
+    },
+  ): Promise<{
+    itemMembership: ItemMembershipRaw | null;
+    visibilities: ItemVisibilityWithItem[];
+  }> {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    return this.getPropertiesForItem(dbConnection, { permission, actor, item });
+  }
+
+  /**
+   * Returns item and related properties if the actor has access to it
+   * @returns highest permission and visibilities
+   */
+  public async getPropertiesForItem(
+    dbConnection: DBConnection,
+    {
+      permission = PermissionLevel.Read,
+      actor,
+      item,
+    }: { permission?: PermissionLevelOptions; actor: { id: string } | undefined; item: ItemRaw },
   ): Promise<{
     itemMembership: ItemMembershipRaw | null;
     visibilities: ItemVisibilityWithItem[];
@@ -208,32 +311,5 @@ export class AuthorizationService {
       default:
         throw new Error(`${permission} is not a valid permission`);
     }
-  }
-
-  async isItemVisible(dbConnection: DBConnection, actor: MaybeUser, itemPath: ItemRaw['path']) {
-    const isHidden = await this.itemVisibilityRepository.getType(
-      dbConnection,
-      itemPath,
-      ItemVisibilityType.Hidden,
-    );
-    // If the item is hidden AND there is no membership with the user, then throw an error
-    if (isHidden) {
-      if (!actor) {
-        // If actor is not provided, then there is no membership
-        return false;
-      }
-
-      // Check if the actor has at least write permission
-      const membership = await this.itemMembershipRepository.getByAccountAndItemPath(
-        dbConnection,
-        actor?.id,
-        itemPath,
-      );
-      if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
-        return false;
-      }
-    }
-
-    return true;
   }
 }

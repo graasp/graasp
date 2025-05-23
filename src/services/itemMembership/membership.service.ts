@@ -15,18 +15,16 @@ import { MailerService } from '../../plugins/mailer/mailer.service';
 import { AccountType, AuthenticatedUser, MaybeUser, MemberInfo } from '../../types';
 import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
 import HookManager from '../../utils/hook';
-import { AuthorizationService } from '../authorization';
-import { BasicItemService } from '../item/basic.service';
+import { AuthorizedItemService } from '../authorizedItem.service';
 import { MemberRepository } from '../member/member.repository';
 import { ItemMembershipRepository } from './membership.repository';
 import { MembershipRequestRepository } from './plugins/MembershipRequest/membershipRequest.repository';
 
 @singleton()
 export class ItemMembershipService {
-  private readonly basicItemService: BasicItemService;
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly memberRepository: MemberRepository;
   private readonly membershipRequestRepository: MembershipRequestRepository;
 
@@ -40,18 +38,16 @@ export class ItemMembershipService {
   }>();
 
   constructor(
-    basicItemService: BasicItemService,
     mailerService: MailerService,
     itemMembershipRepository: ItemMembershipRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     memberRepository: MemberRepository,
     membershipRequestRepository: MembershipRequestRepository,
   ) {
-    this.basicItemService = basicItemService;
     this.mailerService = mailerService;
     this.itemMembershipRepository = itemMembershipRepository;
     this.memberRepository = memberRepository;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.membershipRequestRepository = membershipRequestRepository;
   }
 
@@ -87,7 +83,10 @@ export class ItemMembershipService {
   }
 
   async getForItem(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: ItemRaw['id']) {
-    const item = await this.basicItemService.get(dbConnection, maybeUser, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: maybeUser,
+      itemId,
+    });
     const result = await this.itemMembershipRepository.getForItem(dbConnection, item);
 
     return result;
@@ -125,12 +124,11 @@ export class ItemMembershipService {
     membership: { permission: PermissionLevelOptions; itemId: UUID; memberId: UUID },
   ) {
     // check memberships
-    const item = await this.basicItemService.get(
-      dbConnection,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
       actor,
-      membership.itemId,
-      PermissionLevel.Admin,
-    );
+      itemId: membership.itemId,
+      permission: PermissionLevel.Admin,
+    });
 
     return this._create(dbConnection, actor, item, membership.memberId, membership.permission);
   }
@@ -142,12 +140,11 @@ export class ItemMembershipService {
     itemId: UUID,
   ) {
     // check memberships
-    const item = await this.basicItemService.get(
-      dbConnection,
-      authenticatedUser,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: authenticatedUser,
       itemId,
-      PermissionLevel.Admin,
-    );
+      permission: PermissionLevel.Admin,
+    });
 
     return Promise.all(
       memberships.map(async ({ accountId, permission }) => {
@@ -167,12 +164,11 @@ export class ItemMembershipService {
     if (membership.account.type === AccountType.Guest) {
       throw new CannotModifyGuestItemMembership();
     }
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      authenticatedUser,
-      membership.item,
-    );
+    await this.authorizedItemService.assertAccess(dbConnection, {
+      permission: PermissionLevel.Admin,
+      actor: authenticatedUser,
+      item: membership.item,
+    });
 
     await this.hooks.runPreHooks('update', authenticatedUser, dbConnection, membership);
 
@@ -196,12 +192,11 @@ export class ItemMembershipService {
     // check memberships
     const membership = await this.itemMembershipRepository.get(dbConnection, itemMembershipId);
     const { item } = membership;
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
+    await this.authorizedItemService.assertAccess(dbConnection, {
+      permission: PermissionLevel.Admin,
       actor,
       item,
-    );
+    });
 
     // check if last admin, in which case prevent deletion
     const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);

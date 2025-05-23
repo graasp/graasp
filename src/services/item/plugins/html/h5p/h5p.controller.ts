@@ -15,7 +15,7 @@ import { asDefined } from '../../../../../utils/assertions';
 import { H5P_FILE_STORAGE_TYPE } from '../../../../../utils/config';
 import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../../authentication';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { FileStorage } from '../../../../file/types';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { isItemType } from '../../../discrimination';
@@ -37,7 +37,7 @@ import { H5PPluginOptions } from './types';
 const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   const itemService = resolveDependency(ItemService);
   const h5pService = resolveDependency(H5PService);
-  const authorizationService = resolveDependency(AuthorizationService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
 
   /**
    * In local storage mode, proxy serve h5p files
@@ -107,8 +107,11 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       return await db.transaction(async (tx) => {
         // validate write permission in parent if it exists
         if (parentId) {
-          const item = await itemService.basicItemService.get(tx, member, parentId);
-          await authorizationService.validatePermission(tx, PermissionLevel.Write, member, item);
+          await authorizedItemService.assertAccessForItemId(tx, {
+            permission: PermissionLevel.Write,
+            actor: member,
+            itemId: parentId,
+          });
         }
 
         // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally

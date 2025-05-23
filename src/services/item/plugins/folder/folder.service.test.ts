@@ -7,11 +7,10 @@ import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { db } from '../../../../drizzle/db';
 import { ItemWithCreator } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
@@ -29,10 +28,9 @@ const folderService = new FolderItemService(
   {} as ItemRepository,
   {} as ItemPublishedRepository,
   {} as ItemGeolocationRepository,
-  {} as AuthorizationService,
+  {} as AuthorizedItemService,
   {} as ItemWrapperService,
   {} as ItemVisibilityRepository,
-  {} as BasicItemService,
   {} as RecycledBinService,
   MOCK_LOGGER,
 );
@@ -94,7 +92,7 @@ describe('Folder Service', () => {
 
     it('throw if item is not a folder', async () => {
       const appItem = AppItemFactory() as ItemWithCreator;
-      jest.spyOn(BasicItemService.prototype, 'get').mockImplementation(async () => {
+      jest.spyOn(AuthorizedItemService.prototype, 'getItemById').mockImplementation(async () => {
         return appItem;
       });
 

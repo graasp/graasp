@@ -5,10 +5,10 @@ import { buildPathFromIds } from '@graasp/sdk';
 import { MOCK_LOGGER } from '../../../../../../test/app';
 import { db } from '../../../../../drizzle/db';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../../itemMembership/membership.repository';
 import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
-import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../item.repository';
 import { ItemActionService } from '../../action/itemAction.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
@@ -23,7 +23,7 @@ const meiliSearchWrapper = {
 const itemPublishedRepository = new ItemPublishedRepository();
 
 const itemPublishedService = new ItemPublishedService(
-  {} as BasicItemService,
+  {} as AuthorizedItemService,
   {} as MailerService,
   meiliSearchWrapper,
   {} as ItemVisibilityRepository,

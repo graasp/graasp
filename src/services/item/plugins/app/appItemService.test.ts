@@ -6,11 +6,10 @@ import { MOCK_LOGGER } from '../../../../../test/app';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
 import { AppItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -36,10 +35,9 @@ const appService = new AppItemService(
   itemRepository,
   {} as ItemPublishedRepository,
   {} as ItemGeolocationRepository,
-  {} as AuthorizationService,
+  {} as AuthorizedItemService,
   {} as ItemWrapperService,
   {} as ItemVisibilityRepository,
-  {} as BasicItemService,
   {} as RecycledBinService,
   MOCK_LOGGER,
 );
@@ -129,9 +127,7 @@ describe('App Service', () => {
       ).rejects.toThrow();
     });
     it('patch item settings', async () => {
-      jest
-        .spyOn(itemRepository, 'getOneOrThrow')
-        .mockResolvedValue({ ...MOCK_ITEM, creator: null });
+      jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(MOCK_ITEM);
 
       const itemServicePatchMock = jest
         .spyOn(ItemService.prototype, 'patch')

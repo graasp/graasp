@@ -13,9 +13,8 @@ import {
   matchOne,
 } from '../../../../auth/plugins/passport';
 import { assertIsMember } from '../../../../authentication';
-import { AuthorizationService } from '../../../../authorization';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { BasicItemService } from '../../../basic.service';
 import { ItemService } from '../../../item.service';
 import { AppSettingEvent, appSettingsTopic } from '../ws/events';
 import { checkItemIsApp } from '../ws/utils';
@@ -27,13 +26,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;
   const itemService = resolveDependency(ItemService);
   const appSettingService = resolveDependency(AppSettingService);
-  const basicItemService = resolveDependency(BasicItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
 
-  const authorizationService = resolveDependency(AuthorizationService);
   websockets.register(appSettingsTopic, async (req) => {
     const { channel: id, member } = req;
-    const item = await basicItemService.get(db, member, id);
-    await authorizationService.validatePermission(db, PermissionLevel.Read, member, item);
+    const item = await authorizedItemService.getItemById(db, { actor: member, itemId: id });
     checkItemIsApp(item);
   });
 

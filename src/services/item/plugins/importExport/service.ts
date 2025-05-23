@@ -23,8 +23,8 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
@@ -65,7 +65,7 @@ export class ImportExportService {
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
-  private readonly basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly etherpadService: EtherpadItemService;
   private readonly itemThumbnailService: ItemThumbnailService;
   private readonly log: BaseLogger;
@@ -75,16 +75,14 @@ export class ImportExportService {
     itemService: ItemService,
     h5pService: H5PService,
     etherpadService: EtherpadItemService,
-    itemThumbnailService: ItemThumbnailService,
-    basicItemService: BasicItemService,
+    authorizedItemService: AuthorizedItemService,
     log: BaseLogger,
   ) {
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
     this.etherpadService = etherpadService;
-    this.itemThumbnailService = itemThumbnailService;
-    this.basicItemService = basicItemService;
+    this.authorizedItemService = authorizedItemService;
     this.log = log;
   }
 
@@ -679,7 +677,10 @@ export class ImportExportService {
   ): Promise<void> {
     if (parentId) {
       // check item permission
-      await this.basicItemService.get(dbConnection, actor, parentId);
+      await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+        actor,
+        itemId: parentId,
+      });
     }
 
     await this._import(dbConnection, actor, { parentId, folderPath });

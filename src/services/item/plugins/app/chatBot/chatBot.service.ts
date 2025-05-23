@@ -4,18 +4,15 @@ import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
-import { AuthorizationService } from '../../../../authorization';
-import { ItemRepository } from '../../../item.repository';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { fetchOpenAI } from './utils';
 
 @singleton()
 export class ChatBotService {
-  private readonly authorizationService: AuthorizationService;
-  private readonly itemRepository: ItemRepository;
+  private readonly authorizedItemService: AuthorizedItemService;
 
-  constructor(authorizationService: AuthorizationService, itemRepository: ItemRepository) {
-    this.authorizationService = authorizationService;
-    this.itemRepository = itemRepository;
+  constructor(authorizedItemService: AuthorizedItemService) {
+    this.authorizedItemService = authorizedItemService;
   }
 
   async post(
@@ -26,15 +23,12 @@ export class ChatBotService {
     gptVersion: GPTVersion,
     temperature: number,
   ) {
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
     // check that the member can read the item to be allowed to interact with the chat
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      permission: PermissionLevel.Read,
+      actor: account,
+      itemId,
+    });
 
     return fetchOpenAI(body, gptVersion, temperature);
   }

@@ -4,7 +4,7 @@ import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import {
   CannotEnrollFrozenItemLoginSchema,
   CannotEnrollItemWithoutItemLoginSchema,
@@ -18,18 +18,18 @@ import { ItemRepository } from '../../item.repository';
 export class EnrollService {
   private readonly itemLoginService: ItemLoginService;
   private readonly itemRepository: ItemRepository;
-  private readonly authorizationService: AuthorizationService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
 
   constructor(
     itemLoginService: ItemLoginService,
     itemRepository: ItemRepository,
-    authorizationService: AuthorizationService,
+    authorizedItemService: AuthorizedItemService,
     itemMembershipRepository: ItemMembershipRepository,
   ) {
     this.itemLoginService = itemLoginService;
     this.itemRepository = itemRepository;
-    this.authorizationService = authorizationService;
+    this.authorizedItemService = authorizedItemService;
     this.itemMembershipRepository = itemMembershipRepository;
   }
 
@@ -43,14 +43,13 @@ export class EnrollService {
       throw new CannotEnrollFrozenItemLoginSchema();
     }
 
-    // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error
+    // Check if the member already has an permission over the item, if so, throw an error
     if (
-      await this.authorizationService.hasPermission(
-        dbConnection,
-        PermissionLevel.Read,
-        member,
+      await this.authorizedItemService.hasPermission(dbConnection, {
+        permission: PermissionLevel.Read,
+        actor: member,
         item,
-      )
+      })
     ) {
       throw new ItemMembershipAlreadyExists();
     }

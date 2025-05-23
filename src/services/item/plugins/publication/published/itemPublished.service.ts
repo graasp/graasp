@@ -19,10 +19,10 @@ import { MaybeUser, MinimalMember } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { isMember } from '../../../../authentication';
 import { filterOutHiddenItems } from '../../../../authorization.utils';
+import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../../itemMembership/membership.repository';
 import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
-import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../item.repository';
 import { ItemActionService } from '../../action/itemAction.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
@@ -37,7 +37,7 @@ import { MeiliSearchWrapper } from './plugins/search/meilisearch';
 @singleton()
 export class ItemPublishedService {
   private readonly log: BaseLogger;
-  private readonly basicItemService: BasicItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
@@ -57,7 +57,7 @@ export class ItemPublishedService {
   }>();
 
   constructor(
-    basicItemService: BasicItemService,
+    authorizedItemService: AuthorizedItemService,
     mailerService: MailerService,
     meilisearchWrapper: MeiliSearchWrapper,
     itemVisibilityRepository: ItemVisibilityRepository,
@@ -70,7 +70,7 @@ export class ItemPublishedService {
     log: BaseLogger,
   ) {
     this.log = log;
-    this.basicItemService = basicItemService;
+    this.authorizedItemService = authorizedItemService;
     this.meilisearchWrapper = meilisearchWrapper;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemPublishedRepository = itemPublishedRepository;
@@ -121,7 +121,7 @@ export class ItemPublishedService {
   }
 
   async get(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
-    const item = await this.basicItemService.get(dbConnection, actor, itemId);
+    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
     // item should be public first
     await this.itemVisibilityRepository.getType(
@@ -157,12 +157,11 @@ export class ItemPublishedService {
     itemId: string,
     publicationStatus: PublicationStatus,
   ) {
-    const item = await this.basicItemService.get(
-      dbConnection,
-      member,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
       itemId,
-      PermissionLevel.Admin,
-    );
+      permission: PermissionLevel.Admin,
+    });
 
     const itemPublished = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
 
@@ -240,12 +239,11 @@ export class ItemPublishedService {
   }
 
   async delete(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
-    const item = await this.basicItemService.get(
-      dbConnection,
-      member,
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      actor: member,
       itemId,
-      PermissionLevel.Admin,
-    );
+      permission: PermissionLevel.Admin,
+    });
 
     await this.hooks.runPreHooks('delete', member, dbConnection, { item });
 

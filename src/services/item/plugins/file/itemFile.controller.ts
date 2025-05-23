@@ -11,11 +11,10 @@ import { type ItemRaw } from '../../../../drizzle/types';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';
-import { AuthorizationService } from '../../../authorization';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import FileService from '../../../file/file.service';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { H5PService } from '../html/h5p/h5p.service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
@@ -38,8 +37,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   const storageService = resolveDependency(StorageService);
   const fileItemService = resolveDependency(FileItemService);
   const h5pService = resolveDependency(H5PService);
-  const itemRepository = resolveDependency(ItemRepository);
-  const authorizationService = resolveDependency(AuthorizationService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -117,8 +115,11 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
       // check rights
       if (parentId) {
-        const item = await itemRepository.getOneOrThrow(db, parentId);
-        await authorizationService.validatePermission(db, PermissionLevel.Write, member, item);
+        await authorizedItemService.assertAccessForItemId(db, {
+          permission: PermissionLevel.Write,
+          actor: member,
+          itemId: parentId,
+        });
       }
 
       // upload file one by one
