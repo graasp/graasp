@@ -20,7 +20,7 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       name: Type.String(),
       description: Type.Optional(customType.Nullable(Type.String())),
-      type: Type.String(),
+      type: customType.EnumString(Object.values(ItemType)),
       path: Type.String(),
       lang: Type.String(),
       extra: Type.Object({}, { additionalProperties: true }),
@@ -31,7 +31,15 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       permission: customType.Nullable(customType.EnumString(Object.values(PermissionLevel))),
       hidden: Type.Optional(itemVisibilitySchemaRef),
       public: Type.Optional(itemVisibilitySchemaRef),
-      thumbnails: Type.Optional(Type.Object({}, { additionalProperties: true })),
+      thumbnails: Type.Optional(
+        customType.StrictObject(
+          {
+            small: Type.String({ format: 'uri' }),
+            medium: Type.String({ format: 'uri' }),
+          },
+          { additionalProperties: true },
+        ),
+      ),
     },
     {
       description: 'Item with additional information',

@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 
-import { FolderItemFactory, TagCategory } from '@graasp/sdk';
+import { FolderItemFactory, TagCategory, TagCategoryType } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
@@ -18,7 +18,7 @@ jest.retryTimes(3, { logErrorsBeforeRetry: true });
 
 const repository = new ItemTagRepository();
 
-async function saveTag(t: { name?: string; category: TagCategory }) {
+async function saveTag(t: { name?: string; category: TagCategoryType }) {
   const {
     tags: [tag],
   } = await seedFromJson({ actor: null, tags: [t] });
