@@ -27,9 +27,8 @@ export const zipImport = {
 export const zipExport = {
   operationId: 'exportZip',
   tags: ['item', 'export'],
-  summary: 'Export content',
-  description:
-    'Export content. Return raw file for single item, or a ZIP with structure and items for a folder.',
+  summary: 'Export non-folder content',
+  description: 'Export non-folder content. Return raw file for single item.',
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
@@ -37,6 +36,22 @@ export const zipExport = {
   response: {
     // return a stream
     [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the export zip content' }),
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const zipFolderExport = {
+  operationId: 'exportZip',
+  tags: ['item', 'export'],
+  summary: 'Export content',
+  description:
+    'Export content. Send an email with a link to download a ZIP with structure and items for a folder.',
+
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
+  response: {
+    // return a stream
     [StatusCodes.ACCEPTED]: Type.Null({ description: 'email with download link has been sent' }),
     '4xx': errorSchemaRef,
   },

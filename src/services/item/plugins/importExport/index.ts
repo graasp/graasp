@@ -15,10 +15,11 @@ import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../aut
 import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { WrongItemTypeError } from '../../errors';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { ItemExportRequestService, ItemRequestExportType } from './itemExportRequest.service';
-import { graaspZipExport, zipExport, zipImport } from './schema';
+import { graaspZipExport, zipExport, zipFolderExport, zipImport } from './schema';
 import { ImportExportService } from './service';
 import { prepareZip } from './utils';
 
@@ -91,7 +92,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // export item as a zip containing raw files
+  // export non-folder item as a zip containing raw files
   fastify.get(
     '/:itemId/export',
     {
@@ -108,6 +109,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
 
+      // do not allow folders
+      if (item.type === ItemType.FOLDER) {
+        throw new WrongItemTypeError(item.type);
+      }
+
       // trigger download action for a collection
       const action = {
         itemId: item.id,
@@ -118,28 +124,52 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       };
       await actionService.postMany(db, member, request, [action]);
 
+      // return single file
+      const { stream, mimetype, name } = await importExportService.fetchItemData(db, member, item);
+
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
+      reply.raw.setHeader('Content-Disposition', `attachment; filename="${encodeFilename(name)}"`);
+      reply.type(mimetype);
 
-      // return single file
+      return stream;
+    },
+  );
+
+  // export folder as a zip containing raw files
+  fastify.get(
+    '/:itemId/folder/export',
+    {
+      schema: zipFolderExport,
+      preHandler: isAuthenticated,
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { itemId },
+      } = request;
+      const member = user?.account;
+      assertIsDefined(member);
+      assertIsMember(member);
+      const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
+
+      // only allow folders
       if (item.type !== ItemType.FOLDER) {
-        const { stream, mimetype, name } = await importExportService.fetchItemData(
-          db,
-          member,
-          item,
-        );
-
-        reply.raw.setHeader(
-          'Content-Disposition',
-          `attachment; filename="${encodeFilename(name)}"`,
-        );
-        reply.type(mimetype);
-
-        return stream;
+        throw new WrongItemTypeError(item.type);
       }
 
       // will generate archive in the background
       reply.status(StatusCodes.ACCEPTED).send();
+
+      // trigger download action for a collection
+      const action = {
+        itemId: item.id,
+        type: ActionTriggers.ItemDownload,
+        extra: JSON.stringify({ itemId: item?.id }),
+        // FIX: this should be infered from the request ! add a parameter in the request
+        view: Context.Builder,
+      };
+      await actionService.postMany(db, member, request, [action]);
 
       // generate archive stream and send by email
       const archive = await importExportService.exportRaw(db, member, item);
