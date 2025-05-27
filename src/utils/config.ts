@@ -331,6 +331,10 @@ if (!process.env.APPS_PUBLISHER_ID) {
   throw new Error('APPS_PUBLISHER_ID is not defined');
 }
 export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
+if (!process.env.GRAASPER_CREATOR_ID) {
+  throw new Error('GRAASPER_CREATOR_ID is not defined');
+}
+export const GRAASPER_CREATOR_ID = process.env.GRAASPER_CREATOR_ID;
 
 // used for hashing password
 export const SALT_ROUNDS = 10;
@@ -345,7 +349,7 @@ export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_K
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
 export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 
-// todo: use env var?
+export const GET_FEATURED_ITEMS_MAXIMUM = 50;
 export const GET_MOST_LIKED_ITEMS_MAXIMUM = 50;
 export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
 

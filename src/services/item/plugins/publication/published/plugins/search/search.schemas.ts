@@ -98,6 +98,23 @@ export const search = {
   },
 } as const satisfies FastifySchema;
 
+export const getFeatured = {
+  operationId: 'getFeaturedCollections',
+  tags: ['collection'],
+  summary: 'Get featured collections',
+  description: 'Get collections that we want to feature on the library home page.',
+
+  querystring: customType.StrictObject({
+    limit: Type.Optional(
+      Type.Number({ minimum: 1, maximum: GET_MOST_LIKED_ITEMS_MAXIMUM, default: 12 }),
+    ),
+  }),
+  response: {
+    [StatusCodes.OK]: meilisearchSearchResponseSchema,
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
 export const getMostLiked = {
   operationId: 'getMostLikedCollections',
   tags: ['collection', 'like'],

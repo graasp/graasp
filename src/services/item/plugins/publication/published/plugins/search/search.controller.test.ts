@@ -18,7 +18,7 @@ import { db } from '../../../../../../../drizzle/db';
 import { itemsRawTable } from '../../../../../../../drizzle/schema';
 import { type ItemRaw } from '../../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
+import { GRAASPER_CREATOR_ID, ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
 import { MeiliSearchWrapper } from './meilisearch';
 
 jest.mock('./meilisearch');
@@ -495,6 +495,117 @@ describe('Collection Search endpoints', () => {
 
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.json()).toEqual(fakeResponse.results[0].facetDistribution.discipline);
+    });
+  });
+
+  describe('GET /collections/featured', () => {
+    it('get featured collections', async () => {
+      // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
+      const fakeResponse = {
+        results: [
+          {
+            indexUid: 'index',
+            hits: [
+              {
+                name: 'Geogebra',
+                description: 'Interactive tools from geogebra for mathematics.',
+                content: '',
+                creator: {
+                  id: GRAASPER_CREATOR_ID,
+                  name: 'Graasper',
+                },
+                level: [],
+                discipline: [],
+                'resource-type': [],
+                id: v4(),
+                type: 'folder',
+                isPublishedRoot: true,
+                isHidden: false,
+                publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                createdAt: '2021-10-20T13:12:47.821Z',
+                updatedAt: '2021-10-23T09:25:39.798Z',
+                lang: 'en',
+                likes: 9,
+                _formatted: {
+                  name: 'Geogebra',
+                  description: 'Interactive tools from geogebra for mathematics.',
+                  content: '',
+                  creator: {
+                    id: GRAASPER_CREATOR_ID,
+                    name: 'Graasper',
+                  },
+                  level: [],
+                  discipline: [],
+                  'resource-type': [],
+                  id: v4(),
+                  type: 'folder',
+                  isPublishedRoot: true,
+                  isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                  createdAt: '2021-10-20T13:12:47.821Z',
+                  updatedAt: '2021-10-23T09:25:39.798Z',
+                  lang: 'en',
+                  likes: 9,
+                },
+              },
+              {
+                name: 'PhET',
+                content: '',
+                description: '',
+                creator: {
+                  id: GRAASPER_CREATOR_ID,
+                  name: 'Graasper',
+                },
+                level: [],
+                discipline: [],
+                'resource-type': [],
+                id: v4(),
+                type: 'folder',
+                isPublishedRoot: true,
+                isHidden: false,
+                publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                createdAt: '2021-10-20T13:03:42.712Z',
+                updatedAt: '2021-11-10T10:49:39.296Z',
+                lang: 'en',
+                likes: 7,
+                _formatted: {
+                  name: 'PhET',
+                  description: '',
+                  content: '',
+                  creator: {
+                    id: GRAASPER_CREATOR_ID,
+                    name: 'Graasper',
+                  },
+                  level: [],
+                  discipline: [],
+                  'resource-type': [],
+                  id: v4(),
+                  type: 'folder',
+                  isPublishedRoot: true,
+                  isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                  createdAt: '2021-10-20T13:03:42.712Z',
+                  updatedAt: '2021-11-10T10:49:39.296Z',
+                  lang: 'en',
+                  likes: 7,
+                },
+              },
+            ] as never[],
+            processingTimeMs: 123,
+            query: '',
+          },
+        ],
+      };
+      jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
+      const res = await app.inject({
+        method: HttpMethod.Get,
+        url: `${ITEMS_ROUTE_PREFIX}/collections/featured`,
+      });
+      expect(res.statusCode).toBe(StatusCodes.OK);
+      // The creator should be Graasp (GRAASPER_CREATOR_ID)
+      res.json().hits.forEach(({ creator }) => {
+        expect(creator.id).toEqual(GRAASPER_CREATOR_ID);
+      });
     });
   });
 

@@ -77,6 +77,17 @@ export class SearchService {
     return filters;
   }
 
+  async getFeatured(creatorId: string, limit: number = GET_MOST_LIKED_ITEMS_MAXIMUM) {
+    return await this.search({
+      creatorId,
+      limit,
+      // order by most recently updated first
+      sort: ['publicationUpdatedAt:desc'],
+      // only include top level content
+      isPublishedRoot: true,
+    });
+  }
+
   async getMostLiked(limit: number = GET_MOST_LIKED_ITEMS_MAXIMUM) {
     return await this.search({ sort: ['likes:desc'], limit });
   }
