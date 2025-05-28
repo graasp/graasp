@@ -83,7 +83,7 @@ export class SearchService {
       creatorId,
       hitsPerPage: limit,
       // order by most recently updated first
-      sort: ['publicationUpdatedAt:desc'],
+      sort: ['name:asc'],
       // only include top level content
       isPublishedRoot: true,
     });
