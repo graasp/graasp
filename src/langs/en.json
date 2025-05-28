@@ -5,7 +5,7 @@
   "IGNORE_EMAIL_IF_NOT_REQUESTED": "If you are not the author of this action, you can just ignore this email.",
   "SIGN_IN_BUTTON_TEXT": "Sign In",
   "SIGN_UP_BUTTON_TEXT": "Register",
-  "SIGN_IN_TEXT": "You asked us to send you a magic link for quickly signing in to your account. Here your go:",
+  "SIGN_IN_TEXT": "You asked us to send you a magic link for quickly signing in to your account. Here you go:",
   "SIGN_IN_NOT_REQUESTED": "If you haven't requested the link, no further action is required. It will expire soon, don't worry your account and data are safe.",
   "EXPORT_ACTIONS_TEXT": "You requested to download actions from item {{itemName}} as {{exportFormat}} files, here is the link to download the files. It will be available for {{days}} days",
   "EXPORT_ACTIONS_BUTTON_TEXT": "Download",

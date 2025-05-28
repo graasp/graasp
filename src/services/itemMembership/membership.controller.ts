@@ -25,7 +25,7 @@ export const itemMembershipsController: FastifyPluginAsyncTypebox = async (fasti
         prefix: '/requests',
       });
 
-      // get many item's memberships
+      // get item's memberships
       // returns empty for item not found
       fastify.get(
         '',

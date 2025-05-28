@@ -646,7 +646,11 @@ describe('ZIP routes tests', () => {
       const {
         actor,
         items: [{ id: documentId }],
-      } = await seedFromJson({ items: [ItemFactory({ type: ItemType.DOCUMENT })] });
+      } = await seedFromJson({
+        items: [
+          { ...ItemFactory({ type: ItemType.DOCUMENT }), memberships: [{ account: 'actor' }] },
+        ],
+      });
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
