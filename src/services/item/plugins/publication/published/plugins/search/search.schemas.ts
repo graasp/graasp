@@ -8,6 +8,7 @@ import { ItemType, TagCategory } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
 import {
+  GET_FEATURED_ITEMS_MAXIMUM,
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
@@ -106,7 +107,7 @@ export const getFeatured = {
 
   querystring: customType.StrictObject({
     limit: Type.Optional(
-      Type.Number({ minimum: 1, maximum: GET_MOST_LIKED_ITEMS_MAXIMUM, default: 12 }),
+      Type.Number({ minimum: 1, maximum: GET_FEATURED_ITEMS_MAXIMUM, default: 12 }),
     ),
   }),
   response: {
