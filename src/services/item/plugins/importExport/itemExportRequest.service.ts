@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
 import { ZipFile } from 'yazl';
@@ -124,7 +123,7 @@ export class ItemExportRequestService {
       throw e;
     } finally {
       // remove tmp file
-      fs.unlink(filepath, (err) => {
+      fs.unlink(tmpFilepath, (err) => {
         if (err) {
           this.logger.error(err);
         }

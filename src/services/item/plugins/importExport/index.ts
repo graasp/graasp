@@ -12,7 +12,7 @@ import { BaseLogger } from '../../../../logger';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
+import { assertIsMember, isMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { WrongItemTypeError } from '../../errors';
@@ -127,8 +127,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // return single file
       const { stream, mimetype, name } = await importExportService.fetchItemData(db, member, item);
 
-      console.log(name);
-
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
       reply.raw.setHeader('Content-Disposition', `attachment; filename="${encodeFilename(name)}"`);
@@ -144,7 +142,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:itemId/export',
     {
       schema: exportZip,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
       const {
