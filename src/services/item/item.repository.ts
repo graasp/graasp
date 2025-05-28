@@ -74,7 +74,6 @@ import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
-import { mapById } from '../utils';
 import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
 import { FolderItem, isItemType } from './discrimination';
 import { ItemOrderingError } from './errors';

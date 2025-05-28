@@ -8,7 +8,7 @@ import { appActionsTable } from '../../../../../drizzle/schema';
 import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
-import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
+import { SingleItemGetFilter } from '../interfaces/request';
 import { InputAppAction } from './appAction.interface';
 import { AppActionRepository } from './appAction.repository';
 import { AppActionNotAccessible } from './errors';

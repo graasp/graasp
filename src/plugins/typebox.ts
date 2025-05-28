@@ -3,9 +3,7 @@ import {
   Static,
   StringOptions,
   TProperties,
-  TRef,
   TSchema,
-  TUnsafe,
   Type,
   UnsafeOptions,
 } from '@sinclair/typebox';

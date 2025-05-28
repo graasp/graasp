@@ -134,7 +134,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: deleteLoginSchema,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params: { id: itemId } }, reply) => {
+    async ({ user, params: { id: itemId }, log }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
@@ -149,6 +149,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           await itemLoginService.delete(tx, itemId);
           reply.status(StatusCodes.NO_CONTENT);
         } catch (e: unknown) {
+          log.error(e);
           throw new ItemLoginSchemaNotFound({ itemId });
         }
       });

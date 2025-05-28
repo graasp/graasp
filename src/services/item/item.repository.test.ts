@@ -70,7 +70,7 @@ const getOrderForItemId = async (itemId: ItemRaw['id']): Promise<number | null> 
   try {
     const res = await db.select().from(items).where(eq(items.id, itemId));
     return res[0].order;
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 };

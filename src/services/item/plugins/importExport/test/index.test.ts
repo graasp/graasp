@@ -423,7 +423,6 @@ describe('ZIP routes tests', () => {
       const folderDescription = '<p>A Graasp export folder</p>';
       const documentContent = '<p>Hello.</p>';
       const pdfName = 'output.pdf';
-      const pdfSize = 10024;
       const pdfContent = 'This is a real document.';
       const h5pFilename = 'test-05-collage-54.h5p';
 

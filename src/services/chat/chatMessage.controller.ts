@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
         try {
           websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('publish', message));
         } catch (e) {
-          fastify.log.error(e);
+          request.log.error(e);
         }
 
         return message;
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
         try {
           websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('update', message));
         } catch (e) {
-          fastify.log.error(e);
+          request.log.error(e);
         }
 
         return message;
@@ -149,7 +149,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
         try {
           websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('delete', message));
         } catch (e) {
-          fastify.log.error(e);
+          request.log.error(e);
         }
 
         return message;
@@ -179,7 +179,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
         try {
           websockets.publish(itemChatTopic, itemId, ItemChatEvent('clear'));
         } catch (e) {
-          fastify.log.error(e);
+          request.log.error(e);
         }
       },
     );

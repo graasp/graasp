@@ -39,6 +39,7 @@ export default (
             return done(spreadException ? new ChallengeFailed() : new UnauthorizedMember(), false);
           }
         } catch (err) {
+          console.error(err);
           // Exception occurred while comparing challenge
           return done(spreadException ? new ChallengeFailed() : new UnauthorizedMember(), false);
         }

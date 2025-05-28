@@ -33,7 +33,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       try {
         await shortLinkService.getOne(db, alias);
         return { available: false };
-      } catch (e) {
+      } catch (_e) {
         return { available: true };
       }
     });
