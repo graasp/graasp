@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
 import { ZipFile } from 'yazl';
@@ -15,34 +16,34 @@ import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { TMP_FOLDER } from '../../../../utils/config';
 import FileService from '../../../file/file.service';
 import { MemberService } from '../../../member/member.service';
-import { ItemRequestExportRepository } from './itemExportRequest.repository';
+import { ItemExportRequestRepository } from './itemExportRequest.repository';
 
 const EXPORT_ITEM_EXPIRATION_DAYS = 7;
 const EXPORT_ITEM_EXPIRATION = 3600 * 24 * EXPORT_ITEM_EXPIRATION_DAYS; // max value: one week
 
-export const ItemRequestExportType = {
+export const ItemExportRequestType = {
   Raw: 'raw',
   Graasp: 'graasp',
 } as const;
-type ItemRequestExportTypeOptions = UnionOfConst<typeof ItemRequestExportType>;
+type ItemExportRequestTypeOptions = UnionOfConst<typeof ItemExportRequestType>;
 
 @singleton()
 export class ItemExportRequestService {
   private readonly fileService: FileService;
-  private readonly itemRequestExportRepository: ItemRequestExportRepository;
+  private readonly itemExportRequestRepository: ItemExportRequestRepository;
   private readonly mailerService: MailerService;
   private readonly memberService: MemberService;
   private readonly logger: BaseLogger;
 
   constructor(
     fileService: FileService,
-    itemRequestExportRepository: ItemRequestExportRepository,
+    itemExportRequestRepository: ItemExportRequestRepository,
     mailerService: MailerService,
     memberService: MemberService,
     logger: BaseLogger,
   ) {
     this.fileService = fileService;
-    this.itemRequestExportRepository = itemRequestExportRepository;
+    this.itemExportRequestRepository = itemExportRequestRepository;
     this.mailerService = mailerService;
     this.memberService = memberService;
     this.logger = logger;
@@ -69,13 +70,14 @@ export class ItemExportRequestService {
     actor: MinimalAccount,
     item: ItemRaw,
     archive: ZipFile,
-    type: ItemRequestExportTypeOptions,
+    type: ItemExportRequestTypeOptions,
   ) {
     // upload zip
     const filepath = await this.uploadZip(dbConnection, actor, item, archive, type);
 
     // send email
-    const memberWithEmail = (await this.memberService.get(dbConnection, actor.id)).toMemberInfo();
+    const fullMember = await this.memberService.get(dbConnection, actor.id);
+    const memberWithEmail = fullMember.toMemberInfo();
     await this.sendExportRawLinkInMail(memberWithEmail.email, memberWithEmail.lang, filepath, item);
   }
 
@@ -92,9 +94,9 @@ export class ItemExportRequestService {
     actor,
     item,
     archive: ZipFile,
-    type: ItemRequestExportTypeOptions,
+    type: ItemExportRequestTypeOptions,
   ) {
-    const request = await this.itemRequestExportRepository.addOne(dbConnection, {
+    const request = await this.itemExportRequestRepository.create(dbConnection, {
       memberId: actor.id,
       itemId: item.id,
       type,
@@ -107,7 +109,7 @@ export class ItemExportRequestService {
     const tmpFilepath = path.join(tmpFolder, request.id);
 
     try {
-      // save archive content to stream
+      // save temporary zip because archive.outputStream is NodeJS.ReadableStream
       await pipeline(archive.outputStream, fs.createWriteStream(tmpFilepath));
       const readFile = fs.createReadStream(tmpFilepath);
 
@@ -160,7 +162,7 @@ export class ItemExportRequestService {
       .addText(TRANSLATIONS.EXPORT_RAW_ITEM_TEXT, {
         itemName: item.name,
         days: EXPORT_ITEM_EXPIRATION_DAYS.toString(),
-        exportFormat: ItemRequestExportType.Raw,
+        exportFormat: ItemExportRequestType.Raw,
       })
       .addButton(TRANSLATIONS.EXPORT_RAW_ITEM_BUTTON_TEXT, link)
       .build();

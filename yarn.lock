@@ -4421,12 +4421,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yazl@npm:2.4.6":
-  version: 2.4.6
-  resolution: "@types/yazl@npm:2.4.6"
+"@types/yazl@npm:3.3.0":
+  version: 3.3.0
+  resolution: "@types/yazl@npm:3.3.0"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/639b3d86749cfb92f4804261683eaa948e50e4bb8388746e4ac9607350e559bdf249bb400135868a545af8a6f749807ac6e9003b7bf65ccb9643dcedb7835efe
+  checksum: 10/d7795b49d93d8ca42fbe073c19b6f6af130ee665975637974f5ee29cfc9ac493c52321d0aa142edc147d5cf5f2c115b17c7c63c3ee336a04e965859a9828147e
   languageName: node
   linkType: hard
 
@@ -8102,7 +8102,7 @@ __metadata:
     "@types/sanitize-html": "npm:2.15.0"
     "@types/uuid": "npm:10.0.0"
     "@types/ws": "npm:8.18.1"
-    "@types/yazl": "npm:2.4.6"
+    "@types/yazl": "npm:3.3.0"
     "@typescript-eslint/eslint-plugin": "npm:8.31.1"
     "@typescript-eslint/parser": "npm:8.31.1"
     ajv: "npm:8.17.1"
@@ -8171,7 +8171,7 @@ __metadata:
     uuid: "npm:11.1.0"
     wait-for-expect: "npm:3.0.2"
     ws: "npm:8.18.1"
-    yazl: "npm:2.5.1"
+    yazl: "npm:3.3.1"
   languageName: unknown
   linkType: soft
 
@@ -14147,12 +14147,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yazl@npm:2.5.1":
-  version: 2.5.1
-  resolution: "yazl@npm:2.5.1"
+"yazl@npm:3.3.1":
+  version: 3.3.1
+  resolution: "yazl@npm:3.3.1"
   dependencies:
-    buffer-crc32: "npm:~0.2.3"
-  checksum: 10/498ea4c6bca26130608c44db166e2f63b3437b94b7ad020ca0c161268d29517e8517146e91e51b78da100ad62feadc1a1a85aaa94aab0b2dc29b355ec75bc8f0
+    buffer-crc32: "npm:^1.0.0"
+  checksum: 10/021e6c553ea826b90bd20a109ec293f2c2a02ac7c3c361f637e49c4c746b554a0c8e9380b984e12dfee66ca40894836dd8389bec83de2224eafa2eee8cf7be42
   languageName: node
   linkType: hard
 

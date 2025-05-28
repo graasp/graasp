@@ -24,28 +24,31 @@ export const zipImport = {
   },
 } as const satisfies FastifySchema;
 
-export const zipExport = {
-  operationId: 'exportZip',
+export const downloadFile = {
+  operationId: 'downloadFile',
   tags: ['item', 'export'],
-  summary: 'Export non-folder content',
-  description: 'Export non-folder content. Return raw file for single item.',
+  summary: 'Download non-folder content',
+  description: 'Download non-folder content. Return raw file for single item.',
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   response: {
     // return a stream
-    [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the export zip content' }),
+    [StatusCodes.OK]: Type.Object(
+      { data: Type.String() },
+      { description: 'a stream of data for the export zip content' },
+    ),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-export const zipFolderExport = {
+export const exportZip = {
   operationId: 'exportZip',
   tags: ['item', 'export'],
-  summary: 'Export content',
+  summary: 'Export folder content as zip archive',
   description:
-    'Export content. Send an email with a link to download a ZIP with structure and items for a folder.',
+    "Export the folder's content as a ZIP archive. The user will receive an email with a link to download the ZIP archive.",
 
   params: customType.StrictObject({
     itemId: customType.UUID(),

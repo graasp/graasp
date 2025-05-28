@@ -18,8 +18,8 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { WrongItemTypeError } from '../../errors';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
-import { ItemExportRequestService, ItemRequestExportType } from './itemExportRequest.service';
-import { graaspZipExport, zipExport, zipFolderExport, zipImport } from './schema';
+import { ItemExportRequestService, ItemExportRequestType } from './itemExportRequest.service';
+import { downloadFile, exportZip, graaspZipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
 import { prepareZip } from './utils';
 
@@ -92,12 +92,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // export non-folder item as a zip containing raw files
-  fastify.get(
-    '/:itemId/export',
+  // export non-folder item as raw file
+  fastify.post(
+    '/:itemId/download-file',
     {
-      schema: zipExport,
-      preHandler: isAuthenticated,
+      schema: downloadFile,
+      preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {
       const {
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         itemId: item.id,
         type: ActionTriggers.ItemDownload,
         extra: JSON.stringify({ itemId: item?.id }),
-        // FIX: this should be infered from the request ! add a parameter in the request
+        // FIXME: this should be infered from the request ! add a parameter in the request
         view: Context.Builder,
       };
       await actionService.postMany(db, member, request, [action]);
@@ -127,20 +127,23 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // return single file
       const { stream, mimetype, name } = await importExportService.fetchItemData(db, member, item);
 
+      console.log(name);
+
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
       reply.raw.setHeader('Content-Disposition', `attachment; filename="${encodeFilename(name)}"`);
       reply.type(mimetype);
 
-      return stream;
+      // BUG: cast because validation does not match
+      return stream as never;
     },
   );
 
   // export folder as a zip containing raw files
-  fastify.get(
-    '/:itemId/folder/export',
+  fastify.post(
+    '/:itemId/export',
     {
-      schema: zipFolderExport,
+      schema: exportZip,
       preHandler: isAuthenticated,
     },
     async (request, reply) => {
@@ -166,7 +169,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         itemId: item.id,
         type: ActionTriggers.ItemDownload,
         extra: JSON.stringify({ itemId: item?.id }),
-        // FIX: this should be infered from the request ! add a parameter in the request
+        // FIXME: this should be infered from the request ! add a parameter in the request
         view: Context.Builder,
       };
       await actionService.postMany(db, member, request, [action]);
@@ -178,13 +181,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         member,
         item,
         archive,
-        ItemRequestExportType.Raw,
+        ItemExportRequestType.Raw,
       );
     },
   );
 
   // export item in graasp format
-  fastify.get(
+  fastify.post(
     '/:itemId/graasp-export',
     {
       schema: graaspZipExport,

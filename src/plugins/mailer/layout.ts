@@ -200,6 +200,15 @@ export const applyLayout = (body: string, footer: string) => {
       color: #ffffff;
     }
 
+    .btn-readable-link {
+      display:inline-block;
+      word-break: break-all;
+      padding-bottom: 16px;
+      padding-top: 16px;
+      font-size: 10px;
+    }
+ 
+
     /* -------------------------------------
             OTHER STYLES THAT MIGHT BE USEFUL
         ------------------------------------- */

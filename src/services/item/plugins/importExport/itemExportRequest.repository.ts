@@ -1,22 +1,22 @@
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { itemRequestExportsTable } from '../../../../drizzle/schema';
-import { ItemRequestExportRaw } from '../../../../drizzle/types';
+import { itemExportRequestsTable } from '../../../../drizzle/schema';
+import { ItemExportRequestRaw } from '../../../../drizzle/types';
 
 @singleton()
-export class ItemRequestExportRepository {
+export class ItemExportRequestRepository {
   /**
    * Create given request export and return it.
    * @param requestExport RequestExport to create
    */
-  async addOne(
+  async create(
     dbConnection: DBConnection,
-    requestExport: Omit<ItemRequestExportRaw, 'id' | 'createdAt'>,
-  ): Promise<ItemRequestExportRaw> {
+    requestExport: Omit<ItemExportRequestRaw, 'id' | 'createdAt'>,
+  ): Promise<ItemExportRequestRaw> {
     const { memberId, itemId, type } = requestExport;
     const res = await dbConnection
-      .insert(itemRequestExportsTable)
+      .insert(itemExportRequestsTable)
       .values({
         memberId,
         itemId,

@@ -27,11 +27,11 @@ export const upload = {
   },
 };
 
-export const download = {
-  operationId: 'downloadFile',
+export const getUrl = {
+  operationId: 'getUrl',
   tags: ['item', 'file'],
-  summary: 'Download file',
-  description: 'Download file.',
+  summary: 'Get file URL',
+  description: 'Get file URL.',
 
   params: customType.StrictObject({
     id: customType.UUID(),
