@@ -97,7 +97,7 @@ export class SearchService {
   }
 
   async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
-    const { tags, langs, isPublishedRoot, query, creatorId, ...q } = body;
+    const { tags, langs, isPublishedRoot, query, creatorId, limit, ...q } = body;
     const filters = this.buildFilters({
       creatorId,
       tags,
@@ -112,6 +112,7 @@ export class SearchService {
           indexUid: this.meilisearchClient.getActiveIndexName(),
           attributesToHighlight: ['*'],
           ...q,
+          hitsPerPage: limit,
           q: query,
           filter: filters,
         },
