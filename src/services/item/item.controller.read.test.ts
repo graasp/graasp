@@ -3,13 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel, ResultOf } from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
-import { ItemMembershipRaw, ItemVisibilityRaw } from '../../drizzle/types';
-import { MinimalMember } from '../../types';
 import { assertIsDefined } from '../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
