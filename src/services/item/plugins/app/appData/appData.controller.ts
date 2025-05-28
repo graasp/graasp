@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { AppDataVisibility, PermissionLevel } from '@graasp/sdk';
+import { AppDataVisibility } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';

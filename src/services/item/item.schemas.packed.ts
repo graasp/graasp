@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { ItemType, MAX_TARGETS_FOR_READ_REQUEST, PermissionLevel } from '@graasp/sdk';
+import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';

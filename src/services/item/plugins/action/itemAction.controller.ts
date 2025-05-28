@@ -18,7 +18,6 @@ import {
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../item.service';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,

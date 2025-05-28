@@ -26,7 +26,6 @@ import { SeedActor, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { isDirectChild } from '../../drizzle/operations';
 import { itemGeolocationsTable, itemMembershipsTable, itemsRawTable } from '../../drizzle/schema';
-import { BaseLogger } from '../../logger';
 import { assertIsDefined } from '../../utils/assertions';
 import {
   HierarchyTooDeep,

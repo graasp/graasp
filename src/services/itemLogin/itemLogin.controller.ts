@@ -149,6 +149,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           await itemLoginService.delete(tx, itemId);
           reply.status(StatusCodes.NO_CONTENT);
         } catch (e: unknown) {
+          fastify.log.error(e);
           throw new ItemLoginSchemaNotFound({ itemId });
         }
       });

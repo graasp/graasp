@@ -435,6 +435,7 @@ export class ItemService {
       // update index
       await this.meilisearchWrapper.index(dbConnection, Object.values(publishedInfo));
     } catch (e) {
+      this.log.error(e);
       this.log.error('Error during indexation, Meilisearch may be down');
     }
   }
@@ -622,6 +623,7 @@ export class ItemService {
         await this.meilisearchWrapper.indexOne(dbConnection, published);
       }
     } catch (e) {
+      this.log.error(e);
       this.log.error('Error during indexation, Meilisearch may be down');
     }
 

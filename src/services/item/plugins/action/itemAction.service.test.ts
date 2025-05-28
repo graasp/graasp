@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { and, eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 
 import { FastifyInstance, FastifyRequest } from 'fastify';
@@ -14,7 +13,6 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { actionsTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
@@ -51,12 +49,6 @@ const service = new ItemActionService(
   new ItemVisibilityRepository(),
   new ItemActionRepository(),
 );
-
-const getActionsByItemForType = async (itemId, type) => {
-  return await db.query.actionsTable.findMany({
-    where: and(eq(actionsTable.itemId, itemId), eq(actionsTable.type, type)),
-  });
-};
 
 const MOCK_REQUEST = {
   headers: { origin: 'https://origin.com' },

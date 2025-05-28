@@ -17,36 +17,6 @@ import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { expectManyPackedItems, expectPackedItem, expectThumbnails } from './test/fixtures/items';
 import { Ordering, SortBy } from './types';
 
-/**
- *
- * @param resultItems ResultOf items
- * @param correctItems
- * @param itemMemberships we suppose item memberships is ordered in the same order as correctItems
- * @param creator
- * @param itemVisibilities
- */
-const expectResultOfPackedItems = (
-  resultItems: ResultOf<PackedItem>,
-  correctItems,
-  itemMemberships?: ItemMembershipRaw[],
-  creator?: MinimalMember,
-  itemVisibilities?: ItemVisibilityRaw[],
-) => {
-  correctItems.forEach(({ id, path }) => {
-    const idx = correctItems.findIndex(({ id: thisId }) => thisId === id);
-    const item = resultItems[id];
-    expectPackedItem(
-      item,
-      new ItemWrapper(
-        { ...correctItems[idx], creator },
-        itemMemberships?.[idx],
-        itemVisibilities?.filter((iv) => path.includes(iv.itemPath)),
-      ).packed(),
-      creator,
-    );
-  });
-};
-
 // Mock S3 libraries
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));

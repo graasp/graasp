@@ -1,5 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
-
 import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 

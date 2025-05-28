@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { DBConnection, db } from '../../../../../drizzle/db';

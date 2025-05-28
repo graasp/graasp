@@ -64,7 +64,7 @@ export class ItemTagRepository {
   async create(dbConnection: DBConnection, itemId: UUID, tagId: TagRaw['id']): Promise<void> {
     try {
       await dbConnection.insert(itemTagsTable).values({ itemId, tagId });
-    } catch (e) {
+    } catch (_e) {
       throw new ItemTagAlreadyExists({ itemId, tagId });
     }
   }
