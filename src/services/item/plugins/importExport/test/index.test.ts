@@ -674,7 +674,7 @@ describe('ZIP routes tests', () => {
       mockAuthenticate(actor);
 
       const response = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: `/items/${items[0].id}/graasp-export`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -687,7 +687,7 @@ describe('ZIP routes tests', () => {
       mockAuthenticate(actor);
 
       const response = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: `/items/${folderItem!.id}/graasp-export`,
       });
 
