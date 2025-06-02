@@ -1,5 +1,5 @@
 # -----> Build image
-FROM node:latest AS build
+FROM node:22.14.0-bookworm AS build
 # update packages and install the minimal init system "dumb-init"
 RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
 
