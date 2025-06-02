@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  app:
-    container_name: graasp-core
+  core:
+    hostname: core
     build:
       context: .
       dockerfile: Dockerfile
@@ -43,7 +43,7 @@ services:
       # the Localstack config is set by the "localstack" service below
       S3_FILE_ITEM_HOST: http://localstack:4566
       # the Iframely config is set by the "iframely" service below
-      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://graasp-iframely:8061
+      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
 
     volumes:
       - ..:/workspace:cached
@@ -54,7 +54,7 @@ services:
       - 3000:3000
 
   db:
-    container_name: db
+    hostname: db
     image: postgres:15.8-alpine
     restart: on-failure
     ports:
@@ -73,12 +73,12 @@ services:
       retries: 5
 
   redis:
-    container_name: graasp-redis
+    hostname: redis
     image: redis
     restart: on-failure
 
   etherpad:
-    container_name: graasp-etherpad
+    hostname: etherpad
     image: etherpad/etherpad
     # start the server with dev API key
     # https://hub.docker.com/r/etherpad/etherpad/dockerfile
@@ -105,7 +105,7 @@ services:
       - db
 
   meilisearch:
-    container_name: graasp-meilisearch
+    hostname: meilisearch
     image: getmeili/meilisearch:v1.8
     restart: on-failure
     environment:
@@ -121,7 +121,7 @@ services:
       - ./meilisearch_data:/meili_data
 
   umami:
-    container_name: umami
+    hostname: umami
     image: ghcr.io/umami-software/umami:postgresql-latest
     environment:
       DATABASE_URL: postgresql://umami:umami@db:5432/umami
@@ -141,7 +141,7 @@ services:
 
   # Localstack is used to test aws services locally
   localstack:
-    container_name: graasp-localstack
+    hostname: localstack
     image: localstack/localstack
     volumes:
       - ../tmp:/tmp/graasp-localstack
@@ -156,7 +156,7 @@ services:
       - 4566-4583:4566-4583
 
   localfile:
-    container_name: localfile
+    hostname: localfile
     image: joseluisq/static-web-server:2
     environment:
       # Note: those envs are customizable but also optional
@@ -170,7 +170,7 @@ services:
 
   # necessary for graasp-embedded-link-item
   iframely:
-    container_name: graasp-iframely
+    hostname: iframely
     image: graasp/iframely:latest
     environment:
       NODE_ENV: production # required in order for the responses to not timeout
@@ -180,7 +180,7 @@ services:
 
   # necessary for validation
   nudenet:
-    container_name: graasp-nudenet
+    hostname: nudenet
     image: notaitech/nudenet:classifier
     # exposing these ports is not necessary
     # ports:
@@ -188,7 +188,7 @@ services:
 
   # a mock mailbox on port 1025 (web UI at http://localhost:1080)
   mailer:
-    container_name: mailer
+    hostname: mailer
     image: schickling/mailcatcher
     ports:
       - "1080:1080"
