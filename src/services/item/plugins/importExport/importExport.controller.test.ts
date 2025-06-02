@@ -22,21 +22,21 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ItemFactory } from '../../../../../../test/factories/item.factory';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { isDescendantOrSelf, isDirectChild } from '../../../../../drizzle/operations';
-import { appSettingsTable, itemsRawTable } from '../../../../../drizzle/schema';
-import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { LocalFileRepository } from '../../../../file/repositories/local';
-import { GRAASP_MANIFEST_FILENAME } from '../constants';
-import type { GraaspExportItem } from '../service';
-import { prepareZip } from '../utils';
-import * as ARCHIVE_CONTENT from './fixtures/archive';
+} from '../../../../../test/app';
+import { ItemFactory } from '../../../../../test/factories/item.factory';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
+import { isDescendantOrSelf, isDirectChild } from '../../../../drizzle/operations';
+import { appSettingsTable, itemsRawTable } from '../../../../drizzle/schema';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
+import { LocalFileRepository } from '../../../file/repositories/local';
+import { GRAASP_MANIFEST_FILENAME } from './constants';
+import { GraaspExportItem } from './import.service';
+import * as ARCHIVE_CONTENT from './test/fixtures/archive';
+import { prepareZip } from './utils';
 
 // note: some tests are flacky
 jest.retryTimes(3, { logErrorsBeforeRetry: true });
