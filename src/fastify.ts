@@ -16,6 +16,7 @@ import {
   PROD,
 } from './utils/config';
 import { GREETING } from './utils/constants';
+import { queueDashboardPlugin } from './workers/dashboard.controller';
 
 export const instance = fastify({
   // allows to remove logging of incomming requests
@@ -62,6 +63,10 @@ const start = async () => {
   }
 
   await registerAppPlugins(instance);
+
+  instance.register(queueDashboardPlugin);
+
+  // --------
 
   try {
     await instance.listen({ port: PORT, host: HOST_LISTEN_ADDRESS });

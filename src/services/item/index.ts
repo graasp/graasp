@@ -27,7 +27,7 @@ import graaspFileItem from './plugins/file/itemFile.controller';
 import graaspFolderItem from './plugins/folder/folder.controller';
 import itemGeolocationPlugin from './plugins/geolocation/itemGeolocation.controller';
 import graaspH5PPlugin from './plugins/html/h5p/h5p.controller';
-import graaspZipPlugin from './plugins/importExport';
+import graaspImportExportPlugin from './plugins/importExport/importExport.controller';
 import graaspInvitationsPlugin from './plugins/invitation/invitation.controller';
 import graaspFavoritePlugin from './plugins/itemBookmark/itemBookmark.controller';
 import graaspItemFlags from './plugins/itemFlag/itemFlag.controller';
@@ -101,7 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspEtherpadPlugin);
 
-        fastify.register(graaspZipPlugin);
+        fastify.register(graaspImportExportPlugin);
 
         fastify.register(graaspEmbeddedLinkItem, {
           prefix: PREFIX_EMBEDDED_LINK,
