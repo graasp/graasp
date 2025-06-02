@@ -185,7 +185,7 @@ describe('getFeatured', () => {
     expect(creatorId).toEqual(GRAASPER_CREATOR_ID);
     // verify arguments passed to the meilisearch API
     const { sort, hitsPerPage } = spy.mock.calls[0][0].queries[0];
-    expect(sort).toEqual(['publicationUpdatedAt:desc']);
+    expect(sort).toEqual(['name:asc']);
     expect(hitsPerPage).toEqual(4);
   });
 });
