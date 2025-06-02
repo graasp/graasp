@@ -6,6 +6,7 @@ import { TagCategory, TagCategoryType, UUID } from '@graasp/sdk';
 import { TagRaw } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
 import {
+  GET_FEATURED_ITEMS_MAXIMUM,
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
@@ -77,6 +78,17 @@ export class SearchService {
     return filters;
   }
 
+  async getFeatured(creatorId: string, limit: number = GET_FEATURED_ITEMS_MAXIMUM) {
+    return await this.search({
+      creatorId,
+      hitsPerPage: limit,
+      // order by most recently updated first
+      sort: ['name:asc'],
+      // only include top level content
+      isPublishedRoot: true,
+    });
+  }
+
   async getMostLiked(limit: number = GET_MOST_LIKED_ITEMS_MAXIMUM) {
     return await this.search({ sort: ['likes:desc'], limit });
   }
@@ -86,7 +98,16 @@ export class SearchService {
   }
 
   async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
-    const { tags, langs, isPublishedRoot, query, creatorId, ...q } = body;
+    const { tags, langs, isPublishedRoot, query, creatorId, limit, page, ...q } = body;
+    // should allways use pagination arguments together
+    // page + hitsPerPage
+    // limit + offset
+    if (limit && page) {
+      throw new Error(
+        "'page' used together with 'limit'. Use 'page' in combination with 'hitsPerPage'. Otherwise use 'limit' with 'offset'. For more information see: https://www.meilisearch.com/docs/guides/front_end/pagination",
+      );
+    }
+
     const filters = this.buildFilters({
       creatorId,
       tags,
@@ -101,6 +122,8 @@ export class SearchService {
           indexUid: this.meilisearchClient.getActiveIndexName(),
           attributesToHighlight: ['*'],
           ...q,
+          limit,
+          page,
           q: query,
           filter: filters,
         },

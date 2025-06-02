@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 
 import { MOCK_LOGGER } from '../../../../../../../../test/app';
+import { GRAASPER_CREATOR_ID } from '../../../../../../../utils/config';
 import HookManager from '../../../../../../../utils/hook';
 import { ItemService } from '../../../../../item.service';
 import { ItemPublishedService } from '../../itemPublished.service';
@@ -162,6 +163,30 @@ describe('getMostRecent', () => {
     const { sort, limit } = spy.mock.calls[0][0].queries[0];
     expect(sort).toEqual(['publicationUpdatedAt:desc']);
     expect(limit).toEqual(4);
+  });
+});
+
+describe('getFeatured', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+  it('apply creator and sort by publication updatedAt', async () => {
+    const MOCK_RESULT = { hits: [] } as never;
+    const spy = jest
+      .spyOn(meilisearchClient, 'search')
+      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const serviceSpy = jest.spyOn(searchService, 'search');
+
+    const results = await searchService.getFeatured(GRAASPER_CREATOR_ID, 4);
+    expect(results).toEqual(MOCK_RESULT);
+
+    // verify the arguments passed to the search function inside the service
+    const { creatorId } = serviceSpy.mock.calls[0][0];
+    expect(creatorId).toEqual(GRAASPER_CREATOR_ID);
+    // verify arguments passed to the meilisearch API
+    const { sort, hitsPerPage } = spy.mock.calls[0][0].queries[0];
+    expect(sort).toEqual(['name:asc']);
+    expect(hitsPerPage).toEqual(4);
   });
 });
 

@@ -8,6 +8,7 @@ import { ItemType, TagCategory } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
 import {
+  GET_FEATURED_ITEMS_MAXIMUM,
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
@@ -92,6 +93,23 @@ export const search = {
       creatorId: customType.UUID(),
     }),
   ),
+  response: {
+    [StatusCodes.OK]: meilisearchSearchResponseSchema,
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const getFeatured = {
+  operationId: 'getFeaturedCollections',
+  tags: ['collection'],
+  summary: 'Get featured collections',
+  description: 'Get collections that we want to feature on the library home page.',
+
+  querystring: customType.StrictObject({
+    limit: Type.Optional(
+      Type.Number({ minimum: 1, maximum: GET_FEATURED_ITEMS_MAXIMUM, default: 12 }),
+    ),
+  }),
   response: {
     [StatusCodes.OK]: meilisearchSearchResponseSchema,
     '4xx': errorSchemaRef,

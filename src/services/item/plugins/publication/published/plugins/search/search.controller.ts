@@ -6,10 +6,10 @@ import { ActionTriggers } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { db } from '../../../../../../../drizzle/db';
-import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
+import { GRAASPER_CREATOR_ID, MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
 import { ActionService } from '../../../../../../action/action.service';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
-import { getFacets, getMostLiked, getMostRecent, search } from './search.schemas';
+import { getFacets, getFeatured, getMostLiked, getMostRecent, search } from './search.schemas';
 import { SearchService } from './search.service';
 
 export type SearchFields = {
@@ -48,6 +48,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async (request) => {
       const { body, query } = request;
       const searchResults = await searchService.getFacets(query.facetName, body);
+      return searchResults;
+    },
+  );
+
+  fastify.get(
+    '/collections/featured',
+    { preHandler: optionalIsAuthenticated, schema: getFeatured },
+    async ({ query }) => {
+      const searchResults = await searchService.getFeatured(GRAASPER_CREATOR_ID, query.limit);
       return searchResults;
     },
   );
