@@ -9,15 +9,17 @@ import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sd
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
-import { asDefined } from '../../../../utils/assertions';
+import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
+import { assertIsMember, isMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { WrongItemTypeError } from '../../errors';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
-import { graaspZipExport, zipExport, zipImport } from './schema';
+import { ItemExportRequestService, ItemExportRequestType } from './itemExportRequest.service';
+import { downloadFile, exportZip, graaspZipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
 import { prepareZip } from './utils';
 
@@ -30,6 +32,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const authorizedItemService = resolveDependency(AuthorizedItemService);
   const actionService = resolveDependency(ActionService);
   const importExportService = resolveDependency(ImportExportService);
+  const itemExportRequestService = resolveDependency(ItemExportRequestService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -89,11 +92,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // export item as a zip containing raw files
-  fastify.get(
-    '/:itemId/export',
+  // export non-folder item as raw file
+  fastify.post(
+    '/:itemId/download-file',
     {
-      schema: zipExport,
+      schema: downloadFile,
       preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {
@@ -104,53 +107,83 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = user?.account;
       const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
 
+      // do not allow folders
+      if (item.type === ItemType.FOLDER) {
+        throw new WrongItemTypeError(item.type);
+      }
+
       // trigger download action for a collection
       const action = {
         itemId: item.id,
         type: ActionTriggers.ItemDownload,
         extra: JSON.stringify({ itemId: item?.id }),
-        // FIX: this should be infered from the request ! add a parameter in the request
+        // FIXME: this should be infered from the request ! add a parameter in the request
         view: Context.Builder,
       };
       await actionService.postMany(db, member, request, [action]);
 
+      // return single file
+      const { stream, mimetype, name } = await importExportService.fetchItemData(db, member, item);
+
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
+      reply.raw.setHeader('Content-Disposition', `attachment; filename="${encodeFilename(name)}"`);
+      reply.type(mimetype);
 
-      // return single file
+      // BUG: cast because validation does not match
+      return stream as never;
+    },
+  );
+
+  // export folder as a zip containing raw files
+  fastify.post(
+    '/:itemId/export',
+    {
+      schema: exportZip,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { itemId },
+      } = request;
+      const member = user?.account;
+      assertIsDefined(member);
+      assertIsMember(member);
+      const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
+
+      // only allow folders
       if (item.type !== ItemType.FOLDER) {
-        const { stream, mimetype, name } = await importExportService.fetchItemData(
-          db,
-          member,
-          item,
-        );
-
-        reply.raw.setHeader(
-          'Content-Disposition',
-          `attachment; filename="${encodeFilename(name)}"`,
-        );
-        reply.type(mimetype);
-
-        return stream;
+        throw new WrongItemTypeError(item.type);
       }
 
-      // generate archive stream
-      const archiveStream = await importExportService.exportRaw(db, member, item);
+      // will generate archive in the background
+      reply.status(StatusCodes.ACCEPTED).send();
 
-      try {
-        reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);
-      } catch (e) {
-        // TODO: send sentry error
-        log?.error(e);
-        reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
-      }
-      reply.type('application/octet-stream');
-      return archiveStream.outputStream;
+      // trigger download action for a collection
+      const action = {
+        itemId: item.id,
+        type: ActionTriggers.ItemDownload,
+        extra: JSON.stringify({ itemId: item?.id }),
+        // FIXME: this should be infered from the request ! add a parameter in the request
+        view: Context.Builder,
+      };
+      await actionService.postMany(db, member, request, [action]);
+
+      // generate archive stream and send by email
+      const archive = await importExportService.exportRaw(db, member, item);
+      await itemExportRequestService.uploadAndSendDownloadLink(
+        db,
+        member,
+        item,
+        archive,
+        ItemExportRequestType.Raw,
+      );
     },
   );
 
   // export item in graasp format
-  fastify.get(
+  fastify.post(
     '/:itemId/graasp-export',
     {
       schema: graaspZipExport,

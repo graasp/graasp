@@ -9,17 +9,27 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { FileItemProperties, HttpMethod, ItemType, MimeTypes, ThumbnailSize } from '@graasp/sdk';
+import {
+  FileItemProperties,
+  HttpMethod,
+  ItemType,
+  MimeTypes,
+  PermissionLevel,
+  ThumbnailSize,
+} from '@graasp/sdk';
 
 import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
+import { ItemFactory } from '../../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
 import { isDescendantOrSelf, isDirectChild } from '../../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../../drizzle/schema';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { LocalFileRepository } from '../../../../file/repositories/local';
@@ -498,21 +508,77 @@ describe('ZIP routes tests', () => {
     });
   });
 
-  describe('POST /export', () => {
-    it('Export successfully if signed in', async () => {
+  describe('POST /download-file', () => {
+    it('Export successfully if has access', async () => {
       const {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ name: 'item-name', memberships: [{ account: 'actor' }] }],
+        items: [
+          {
+            name: 'item-name',
+            type: ItemType.DOCUMENT,
+            extra: { document: { content: 'my text', isRaw: false } },
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
-        method: HttpMethod.Get,
-        url: `/items/${item.id}/export`,
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/download-file`,
       });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.headers['content-disposition']).toContain(item.name);
+    });
+    it('Export successfully for guest', async () => {
+      const {
+        guests: [guest],
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            name: 'item-name',
+            type: ItemType.DOCUMENT,
+            extra: { document: { content: 'my text', isRaw: false } },
+            itemLoginSchema: { guests: [{}] },
+          },
+        ],
+      });
+      mockAuthenticate(guest);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/download-file`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.headers['content-disposition']).toContain(item.name);
+    });
+    it('Export successfully for public item', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            name: 'item-name',
+            type: ItemType.DOCUMENT,
+            extra: { document: { content: 'my text', isRaw: false } },
+            isPublic: true,
+          },
+        ],
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/download-file`,
+      });
+
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.headers['content-disposition']).toContain(item.name);
     });
@@ -547,8 +613,8 @@ describe('ZIP routes tests', () => {
       const { id: h5pId, name: h5pName } = h5pUploadResponse.json();
 
       const response = await app.inject({
-        method: HttpMethod.Get,
-        url: `/items/${h5pId}/export`,
+        method: HttpMethod.Post,
+        url: `/items/${h5pId}/download-file`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -556,6 +622,91 @@ describe('ZIP routes tests', () => {
       expect(response.headers['content-disposition']).toContain(h5pName);
       expect(response.headers['content-disposition']).toContain('.h5p');
       expect(response.headers['content-disposition']).not.toContain('.zip');
+    });
+    it('Throw for folder', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/download-file`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    });
+  });
+
+  describe('POST /export', () => {
+    it('Export successfully if signed in', async () => {
+      const mailerService = resolveDependency(MailerService);
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
+
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ name: 'item-name', memberships: [{ account: 'actor' }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/export`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
+      });
+    });
+
+    it('Throw if member is guest', async () => {
+      const {
+        items: [item],
+        guests: [guest],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            name: 'item-name',
+            itemLoginSchema: { guests: [{}] },
+          },
+        ],
+      });
+      mockAuthenticate(guest);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/export`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+    });
+
+    it('Throw for document item', async () => {
+      const {
+        actor,
+        items: [{ id: documentId }],
+      } = await seedFromJson({
+        items: [
+          { ...ItemFactory({ type: ItemType.DOCUMENT }), memberships: [{ account: 'actor' }] },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${documentId}/export`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
   });
 
@@ -574,7 +725,7 @@ describe('ZIP routes tests', () => {
       mockAuthenticate(actor);
 
       const response = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: `/items/${items[0].id}/graasp-export`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -587,7 +738,7 @@ describe('ZIP routes tests', () => {
       mockAuthenticate(actor);
 
       const response = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: `/items/${folderItem!.id}/graasp-export`,
       });
 

@@ -18,7 +18,7 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { ItemService } from '../../item.service';
 import { H5PService } from '../html/h5p/h5p.service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
-import { download, updateFile, upload } from './itemFile.schema';
+import { getUrl, updateFile, upload } from './itemFile.schema';
 import FileItemService from './itemFile.service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
@@ -189,7 +189,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   fastify.get(
     '/:id/download',
     {
-      schema: download,
+      schema: getUrl,
       preHandler: optionalIsAuthenticated,
     },
     async (request) => {

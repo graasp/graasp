@@ -26,6 +26,7 @@ import {
   guestsView,
   invitationsTable,
   itemBookmarksTable,
+  itemExportRequestsTable,
   itemGeolocationsTable,
   itemLikesTable,
   itemLoginSchemasTable,
@@ -333,6 +334,8 @@ export type MemberProfileRaw = typeof memberProfilesTable.$inferSelect;
 export type MemberProfileInsertDTO = typeof memberProfilesTable.$inferInsert;
 
 export type ActionRequestExportRaw = typeof actionRequestExportsTable.$inferSelect;
+
+export type ItemExportRequestRaw = typeof itemExportRequestsTable.$inferSelect;
 
 export type MembershipRequestRaw = typeof membershipRequestsTable.$inferSelect;
 export type MembershipRequestWithMember = MembershipRequestRaw & { member: MemberRaw };
