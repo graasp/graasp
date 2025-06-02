@@ -16,13 +16,6 @@ export class AppSettingService {
   private readonly appSettingRepository: AppSettingRepository;
 
   hooks = new HookManager<{
-    post: {
-      pre: {
-        appSetting: Omit<AppSettingInsertDTO, 'itemId' | 'memberId'>;
-        itemId: string;
-      };
-      post: { appSetting: AppSettingRaw; itemId: string };
-    };
     patch: {
       pre: { appSetting: Partial<AppSettingRaw>; itemId: string };
       post: { appSetting: AppSettingRaw; itemId: string };
@@ -66,20 +59,12 @@ export class AppSettingService {
       permission: PermissionLevel.Admin,
     });
 
-    await this.hooks.runPreHooks('post', member, dbConnection, {
-      appSetting: body,
-      itemId,
-    });
-
     const appSetting = await this.appSettingRepository.addOne(dbConnection, {
       ...body,
       itemId,
       creatorId: member.id,
     });
-    await this.hooks.runPostHooks('post', member, dbConnection, {
-      appSetting,
-      itemId,
-    });
+
     return appSetting;
   }
 

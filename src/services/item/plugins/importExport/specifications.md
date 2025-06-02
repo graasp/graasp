@@ -31,7 +31,7 @@ The `description` field for all items is sanitized before item creation.
 
 ### Item type-specific treatment
 
-- `APP` - The app item extras are imported as-is. The app settings are also imported.
+- `APP` - The app item extras are imported as-is. The app settings are also imported (ignoring files).
 - `DOCUMENT` - The `name` and `content` fields are sanitized.
 - `FOLDER` - The children are recursively imported, if present.
 - `LINK` - Not currently supported.

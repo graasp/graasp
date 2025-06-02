@@ -19,6 +19,11 @@ export class AppSettingRepository {
     return res[0];
   }
 
+  async createMany(dbConnection: DBConnection, appSettings: AppSettingInsertDTO[]): Promise<void> {
+    const d = await dbConnection.insert(appSettingsTable).values(appSettings).returning();
+    console.log(d);
+  }
+
   async updateOne(
     dbConnection: DBConnection,
     appSettingId: string,

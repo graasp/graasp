@@ -20,13 +20,14 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { AppSettingRaw, type ItemRaw } from '../../../../drizzle/types';
+import { AppSettingInsertDTO, AppSettingRaw, type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
+import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { AppSettingService } from '../app/appSetting/appSetting.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
@@ -71,6 +72,7 @@ export class ImportExportService {
   private readonly etherpadService: EtherpadItemService;
   private readonly itemThumbnailService: ItemThumbnailService;
   private readonly appSettingService: AppSettingService;
+  private readonly appSettingRepository: AppSettingRepository;
   private readonly log: BaseLogger;
 
   constructor(
@@ -81,6 +83,7 @@ export class ImportExportService {
     authorizedItemService: AuthorizedItemService,
     itemThumbnailService: ItemThumbnailService,
     appSettingService: AppSettingService,
+    appSettingRepository: AppSettingRepository,
     log: BaseLogger,
   ) {
     this.fileItemService = fileItemService;
@@ -90,6 +93,7 @@ export class ImportExportService {
     this.authorizedItemService = authorizedItemService;
     this.itemThumbnailService = itemThumbnailService;
     this.appSettingService = appSettingService;
+    this.appSettingRepository = appSettingRepository;
     this.log = log;
   }
 
@@ -322,7 +326,7 @@ export class ImportExportService {
 
         // Handle the APP item extra
         if (item.type === ItemType.APP) {
-          extra = { [ItemType.APP]: item.extra[ItemType.APP] };
+          extra = item.extra;
         }
 
         // Handle the file upload
@@ -382,23 +386,37 @@ export class ImportExportService {
     actor: MinimalMember,
     uploadedItems: ItemRaw[],
     items: GraaspExportItem[],
-  ) {
-    await Promise.all(
-      uploadedItems.map((uploadedItem, idx) => {
-        if (uploadedItem.type === ItemType.APP) {
-          const appSettings = items[idx].appSettings;
-          return Promise.all(
-            appSettings!.map((appSetting) => {
-              // Remove the id property from the imported app settings as a precaution. Remove this condition as soon as the id is stripped directly in the post function.
-              if (appSetting['id']) {
-                delete appSetting['id'];
-              }
-              return this.appSettingService.post(dbConnection, actor, uploadedItem.id, appSetting);
-            }),
-          );
+  ): Promise<void> {
+    const appSettings = uploadedItems.reduce<Omit<AppSettingInsertDTO[], 'id'>>(
+      (arr, uploadedItem, idx) => {
+        const settings = items[idx].appSettings;
+        if (uploadedItem.type !== ItemType.APP || !settings) {
+          return arr;
         }
-      }),
+
+        return arr.concat(
+          settings.reduce<Omit<AppSettingInsertDTO[], 'id'>>((arr, appSetting) => {
+            // ignore app setting file
+            // if (appSetting.data[ItemType.FILE]) {
+            //   return arr;
+            // }
+
+            // Remove the id property from the imported app settings as a precaution. Remove this condition as soon as the id is stripped directly in the post function.
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, creatorId, itemId, ...appSettingData } = appSetting;
+
+            return arr.concat([
+              { creatorId: actor.id, itemId: uploadedItem.id, ...appSettingData },
+            ]);
+          }, []),
+        );
+      },
+      [],
     );
+
+    await this.appSettingRepository.createMany(dbConnection, appSettings);
   }
 
   /**
