@@ -122,6 +122,8 @@ export class SearchService {
           indexUid: this.meilisearchClient.getActiveIndexName(),
           attributesToHighlight: ['*'],
           ...q,
+          limit,
+          page,
           q: query,
           filter: filters,
         },

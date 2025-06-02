@@ -141,9 +141,9 @@ describe('getMostLiked', () => {
     const results = await searchService.getMostLiked(4);
     expect(results).toEqual(MOCK_RESULT);
 
-    const { sort, hitsPerPage } = spy.mock.calls[0][0].queries[0];
+    const { sort, limit } = spy.mock.calls[0][0].queries[0];
     expect(sort).toEqual(['likes:desc']);
-    expect(hitsPerPage).toEqual(4);
+    expect(limit).toEqual(4);
   });
 });
 
@@ -160,9 +160,9 @@ describe('getMostRecent', () => {
     const results = await searchService.getMostRecent(4);
     expect(results).toEqual(MOCK_RESULT);
 
-    const { sort, hitsPerPage } = spy.mock.calls[0][0].queries[0];
+    const { sort, limit } = spy.mock.calls[0][0].queries[0];
     expect(sort).toEqual(['publicationUpdatedAt:desc']);
-    expect(hitsPerPage).toEqual(4);
+    expect(limit).toEqual(4);
   });
 });
 
