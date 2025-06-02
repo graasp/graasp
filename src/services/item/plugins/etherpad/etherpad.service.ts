@@ -15,7 +15,7 @@ import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { AuthenticatedUser, MinimalMember } from '../../../../types';
+import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
@@ -381,13 +381,13 @@ export class EtherpadItemService {
    * Retrieves the Etherpad html content for a given item
    * useful for exporting data
    *
-   * @param {AuthenticatedUser} account user retrieving the content
+   * @param {MaybeUser} account user retrieving the content
    * @param {string} itemId item to retrieve the content of
    * @returns {string} html content of the etherpad
    */
   public async getEtherpadContentFromItem(
     dbConnection: DBConnection,
-    account: AuthenticatedUser,
+    account: MaybeUser,
     itemId: string,
   ): Promise<string> {
     const item = await this.authorizedItemService.getItemById(dbConnection, {

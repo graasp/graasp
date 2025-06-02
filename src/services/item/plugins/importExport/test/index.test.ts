@@ -1,4 +1,3 @@
-import { Permission } from '@aws-sdk/client-s3';
 import { and, asc, eq, ne } from 'drizzle-orm';
 import FormData, { Readable } from 'form-data';
 import fs from 'fs';
@@ -526,6 +525,54 @@ describe('ZIP routes tests', () => {
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/download-file`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.headers['content-disposition']).toContain(item.name);
+    });
+    it('Export successfully for guest', async () => {
+      const {
+        guests: [guest],
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            name: 'item-name',
+            type: ItemType.DOCUMENT,
+            extra: { document: { content: 'my text', isRaw: false } },
+            itemLoginSchema: { guests: [{}] },
+          },
+        ],
+      });
+      mockAuthenticate(guest);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${item.id}/download-file`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.headers['content-disposition']).toContain(item.name);
+    });
+    it('Export successfully for public item', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            name: 'item-name',
+            type: ItemType.DOCUMENT,
+            extra: { document: { content: 'my text', isRaw: false } },
+            isPublic: true,
+          },
+        ],
+      });
 
       const response = await app.inject({
         method: HttpMethod.Post,

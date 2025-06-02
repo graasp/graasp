@@ -105,8 +105,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         params: { itemId },
       } = request;
       const member = user?.account;
-      assertIsDefined(member);
-      assertIsMember(member);
       const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
 
       // do not allow folders

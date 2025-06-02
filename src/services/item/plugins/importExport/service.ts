@@ -691,8 +691,8 @@ export class ImportExportService {
 
   async fetchItemData(
     dbConnection: DBConnection,
-    actor,
-    item,
+    actor: MaybeUser,
+    item: ItemRaw,
   ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
     switch (true) {
       case isItemType(item, ItemType.FILE): {
