@@ -12,7 +12,7 @@ import { BaseLogger } from '../../../../logger';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember, isMember } from '../../../authentication';
+import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { WrongItemTypeError } from '../../errors';
@@ -100,6 +100,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {
+      throw new Error('yo');
       const {
         user,
         params: { itemId },
