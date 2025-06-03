@@ -397,9 +397,9 @@ export class ImportExportService {
         return arr.concat(
           settings.reduce<Omit<AppSettingInsertDTO[], 'id'>>((arr, appSetting) => {
             // ignore app setting file
-            // if (appSetting.data[ItemType.FILE]) {
-            //   return arr;
-            // }
+            if (appSetting.data[ItemType.FILE]) {
+              return arr;
+            }
 
             // Remove the id property from the imported app settings as a precaution. Remove this condition as soon as the id is stripped directly in the post function.
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -415,8 +415,9 @@ export class ImportExportService {
       },
       [],
     );
-
-    await this.appSettingRepository.createMany(dbConnection, appSettings);
+    if (appSettings.length) {
+      await this.appSettingRepository.createMany(dbConnection, appSettings);
+    }
   }
 
   /**
@@ -434,6 +435,7 @@ export class ImportExportService {
     },
   ) {
     const { item, archiveRootPath, archive } = args;
+    console.log('jh5645gef');
 
     // save description in file
     if (item.description) {
@@ -442,6 +444,7 @@ export class ImportExportService {
         path.join(archiveRootPath, `${item.name}${DESCRIPTION_EXTENSION}`),
       );
     }
+    console.log('34tegrf');
 
     if (isItemType(item, ItemType.FOLDER)) {
       // append description
@@ -462,6 +465,7 @@ export class ImportExportService {
       }
       return;
     }
+    console.log('htregf');
 
     // save single item
     const { stream, name } = await this.fetchItemData(dbConnection, actor, item);
@@ -592,6 +596,8 @@ export class ImportExportService {
    * @returns A zip file promise
    */
   async exportRaw(dbConnection: DBConnection, actor: MinimalMember, item: ItemRaw) {
+    console.log('wepfojiwlkem');
+
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -599,6 +605,7 @@ export class ImportExportService {
     });
     // path used to index files in archive
     const rootPath = path.dirname('./');
+    console.log('hzrtegfs');
 
     // import items in zip recursively
     await this._addItemToZip(dbConnection, actor, {
@@ -606,6 +613,8 @@ export class ImportExportService {
       archiveRootPath: rootPath,
       archive,
     }).catch((error) => {
+      console.log('6zrthgdf');
+
       throw new UnexpectedExportError(error);
     });
     archive.end();
