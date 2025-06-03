@@ -100,7 +100,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {
-      throw new Error('yo');
       const {
         user,
         params: { itemId },
