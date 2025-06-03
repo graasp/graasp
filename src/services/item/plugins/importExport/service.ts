@@ -28,7 +28,6 @@ import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
-import { AppSettingService } from '../app/appSetting/appSetting.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
 import { H5PService } from '../html/h5p/h5p.service';
@@ -71,7 +70,6 @@ export class ImportExportService {
   private readonly authorizedItemService: AuthorizedItemService;
   private readonly etherpadService: EtherpadItemService;
   private readonly itemThumbnailService: ItemThumbnailService;
-  private readonly appSettingService: AppSettingService;
   private readonly appSettingRepository: AppSettingRepository;
   private readonly log: BaseLogger;
 
@@ -82,7 +80,6 @@ export class ImportExportService {
     etherpadService: EtherpadItemService,
     authorizedItemService: AuthorizedItemService,
     itemThumbnailService: ItemThumbnailService,
-    appSettingService: AppSettingService,
     appSettingRepository: AppSettingRepository,
     log: BaseLogger,
   ) {
@@ -92,7 +89,6 @@ export class ImportExportService {
     this.etherpadService = etherpadService;
     this.authorizedItemService = authorizedItemService;
     this.itemThumbnailService = itemThumbnailService;
-    this.appSettingService = appSettingService;
     this.appSettingRepository = appSettingRepository;
     this.log = log;
   }
@@ -505,7 +501,7 @@ export class ImportExportService {
     // Get the app settings if an item is an APP
     let appSettings: Omit<AppSettingRaw, 'id'>[] | undefined = undefined;
     if (isItemType(item, ItemType.APP)) {
-      const itemAppSettings = await this.appSettingService.getForItem(dbConnection, actor, item.id);
+      const itemAppSettings = await this.appSettingRepository.getForItem(dbConnection, item.id);
 
       appSettings = itemAppSettings.map((appSetting) => {
         return { ...appSetting, id: undefined, itemId: exportItemId };
