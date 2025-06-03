@@ -16,6 +16,7 @@ The export operation produces a single zip file. This file is a simple zip file 
 - thumbnailFilename (item thumbnail in the original size, if present)
 - children (item children, in case of a folder item)
 - mimetype (item file mimetype, in case there's a file attached to the item)
+- appSettings (app settings for the APP items)
 ```
 
 ### Files and thumbnails
@@ -30,7 +31,7 @@ The `description` field for all items is sanitized before item creation.
 
 ### Item type-specific treatment
 
-- `APP` - Not currently supported.
+- `APP` - The app item extras are imported as-is. The app settings are also imported (ignoring files).
 - `DOCUMENT` - The `name` and `content` fields are sanitized.
 - `FOLDER` - The children are recursively imported, if present.
 - `LINK` - Not currently supported.

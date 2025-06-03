@@ -20,13 +20,14 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { AppSettingInsertDTO, AppSettingRaw, type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
+import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
 import { H5PService } from '../html/h5p/h5p.service';
@@ -58,6 +59,7 @@ export type GraaspExportItem = {
   thumbnailFilename?: string;
   children?: GraaspExportItem[];
   mimetype?: string;
+  appSettings?: Omit<AppSettingRaw, 'id'>[];
 };
 
 @singleton()
@@ -68,6 +70,7 @@ export class ImportExportService {
   private readonly authorizedItemService: AuthorizedItemService;
   private readonly etherpadService: EtherpadItemService;
   private readonly itemThumbnailService: ItemThumbnailService;
+  private readonly appSettingRepository: AppSettingRepository;
   private readonly log: BaseLogger;
 
   constructor(
@@ -76,6 +79,8 @@ export class ImportExportService {
     h5pService: H5PService,
     etherpadService: EtherpadItemService,
     authorizedItemService: AuthorizedItemService,
+    itemThumbnailService: ItemThumbnailService,
+    appSettingRepository: AppSettingRepository,
     log: BaseLogger,
   ) {
     this.fileItemService = fileItemService;
@@ -83,6 +88,8 @@ export class ImportExportService {
     this.itemService = itemService;
     this.etherpadService = etherpadService;
     this.authorizedItemService = authorizedItemService;
+    this.itemThumbnailService = itemThumbnailService;
+    this.appSettingRepository = appSettingRepository;
     this.log = log;
   }
 
@@ -310,7 +317,12 @@ export class ImportExportService {
             h5pFileStream,
           );
 
-          extra = h5pFileInfo;
+          extra = { [ItemType.H5P]: h5pFileInfo };
+        }
+
+        // Handle the APP item extra
+        if (item.type === ItemType.APP) {
+          extra = item.extra;
         }
 
         // Handle the file upload
@@ -343,6 +355,9 @@ export class ImportExportService {
       parentId: parentId,
     });
 
+    // Create the app settings for the APP items
+    await this.insertAppSettings(dbConnection, actor, uploadedItems, items);
+
     // Recursively handle the children items
     for (let i = 0; i < items.length; i++) {
       if (items[i].type === ItemType.FOLDER) {
@@ -356,6 +371,48 @@ export class ImportExportService {
           });
         }
       }
+    }
+  }
+
+  /**
+   * Extract the app settings from the export items and attach them to the existing items in the DB.
+   */
+  private async insertAppSettings(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    uploadedItems: ItemRaw[],
+    items: GraaspExportItem[],
+  ): Promise<void> {
+    const appSettings = uploadedItems.reduce<Omit<AppSettingInsertDTO[], 'id'>>(
+      (arr, uploadedItem, idx) => {
+        const settings = items[idx].appSettings;
+        if (uploadedItem.type !== ItemType.APP || !settings) {
+          return arr;
+        }
+
+        return arr.concat(
+          settings.reduce<Omit<AppSettingInsertDTO[], 'id'>>((arr, appSetting) => {
+            // ignore app setting file
+            if (appSetting.data[ItemType.FILE]) {
+              return arr;
+            }
+
+            // Remove the id property from the imported app settings as a precaution. Remove this condition as soon as the id is stripped directly in the post function.
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, creatorId, itemId, ...appSettingData } = appSetting;
+
+            return arr.concat([
+              { creatorId: actor.id, itemId: uploadedItem.id, ...appSettingData },
+            ]);
+          }, []),
+        );
+      },
+      [],
+    );
+    if (appSettings.length) {
+      await this.appSettingRepository.createMany(dbConnection, appSettings);
     }
   }
 
@@ -441,6 +498,16 @@ export class ImportExportService {
       archive,
     );
 
+    // Get the app settings if an item is an APP
+    let appSettings: Omit<AppSettingRaw, 'id'>[] | undefined = undefined;
+    if (isItemType(item, ItemType.APP)) {
+      const itemAppSettings = await this.appSettingRepository.getForItem(dbConnection, item.id);
+
+      appSettings = itemAppSettings.map((appSetting) => {
+        return { ...appSetting, id: undefined, itemId: exportItemId };
+      });
+    }
+
     // TODO EXPORT treat the shortcut items correctly
     // ignore the shortcuts for now
     if (isItemType(item, ItemType.SHORTCUT)) {
@@ -484,6 +551,7 @@ export class ImportExportService {
       extra: item.extra,
       thumbnailFilename,
       mimetype,
+      appSettings,
     });
     archive.addReadStream(stream, itemPath);
     return itemManifest;
