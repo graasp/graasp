@@ -19,10 +19,10 @@ import { ItemService } from '../services/item/item.service';
 import { DESCRIPTION_EXTENSION } from '../services/item/plugins/importExport/constants';
 import { UnexpectedExportError } from '../services/item/plugins/importExport/errors';
 import { ItemExportService } from '../services/item/plugins/importExport/itemExport.service';
-import { ItemExportRequestRepository } from '../services/item/plugins/importExport/itemExportRequest.repository';
 import { MemberService } from '../services/member/member.service';
 import { MaybeUser, MinimalMember } from '../types';
 import { TMP_FOLDER } from '../utils/config';
+import { ItemExportRequestRepository } from './itemExportRequest.repository';
 
 const EXPORT_ITEM_EXPIRATION_DAYS = 7;
 const EXPORT_ITEM_EXPIRATION = 3600 * 24 * EXPORT_ITEM_EXPIRATION_DAYS; // max value: one week

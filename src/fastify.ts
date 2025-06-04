@@ -59,8 +59,6 @@ const start = async () => {
 
   instance.register(queueDashboardPlugin);
 
-  // --------
-
   try {
     await instance.listen({ port: PORT, host: HOST_LISTEN_ADDRESS });
     instance.log.info('App is running version %s in %s mode', APP_VERSION, NODE_ENV);
