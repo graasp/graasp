@@ -404,7 +404,7 @@ export class ItemMembershipRepository {
     inputItems: ItemRaw[],
     accountId: AccountId,
     considerLocal = false,
-  ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
+  ): Promise<ResultOf<ItemMembershipWithItem>> {
     if (inputItems.length === 0) {
       return { data: {}, errors: [] };
     }
@@ -423,12 +423,12 @@ export class ItemMembershipRepository {
       .select({
         ...getTableColumns(itemMembershipsTable),
         item: getTableColumns(itemsRawTable),
-        account: getTableColumns(accountsTable),
+        // account: getTableColumns(accountsTable),
         // Keep only closest membership per descendant
         descendantId: itemsRawTable.id,
       })
       .from(itemMembershipsTable)
-      .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
+      // .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
       // Map each membership to the item it can affect
       .innerJoin(itemsRawTable, isAncestorOrSelf(itemMembershipsTable.itemPath, itemsRawTable.path))
       .where(and(...andConditions))
