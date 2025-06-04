@@ -1,11 +1,10 @@
 import { Redis } from 'ioredis';
 import { MeiliSearch } from 'meilisearch';
 
-import { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { FastifyBaseLogger } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/mailer.service';
 import { CachingService } from '../services/caching/service';
@@ -14,7 +13,6 @@ import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
 import { RandomPadNameFactory } from '../services/item/plugins/etherpad/etherpad.service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/search.service';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
