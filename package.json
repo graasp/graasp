@@ -35,7 +35,6 @@
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\"",
     "hooks:uninstall": "husky uninstall",
     "hooks:install": "node .husky/install.mjs",
-    "postinstall": "node .husky/install.mjs",
     "pre-commit": "yarn prettier:check && yarn lint",
     "openapi:generate": "node dist/scripts/generateOpenAPI.js",
     "openapi:lint": "vacuum lint ./openapi.json",
