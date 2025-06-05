@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/graasp/graasp/compare/v2.3.0...v2.4.0) (2025-06-05)
+
+
+### Features
+
+* **graasp-export:** import and export the APP items ([#1877](https://github.com/graasp/graasp/issues/1877)) ([feafca6](https://github.com/graasp/graasp/commit/feafca6cf28987eeaf786d83f2e6e1b13ca1ddc8))
+* **graasp-import:** export and import the item thumbnails ([#1868](https://github.com/graasp/graasp/issues/1868)) ([0c0eb5a](https://github.com/graasp/graasp/commit/0c0eb5a82ca1766be6f7d84d992510eed67453e2))
+* move membership endpoints ([#1873](https://github.com/graasp/graasp/issues/1873)) ([72a2aba](https://github.com/graasp/graasp/commit/72a2abac820ae9103c86baedc4f20e785ff5bbac))
+* send email for export raw ([#1881](https://github.com/graasp/graasp/issues/1881)) ([5a1d3e4](https://github.com/graasp/graasp/commit/5a1d3e43f3d97ec2134e5c3f76edf2e753c8d46a))
+
+
+### Bug Fixes
+
+* add endpoint for featured collections ([#1883](https://github.com/graasp/graasp/issues/1883)) ([2823b78](https://github.com/graasp/graasp/commit/2823b784642adf0e45dfbfe75013c41f619c6ccc))
+* allow to post twice a like on an item ([#1864](https://github.com/graasp/graasp/issues/1864)) ([b5b2180](https://github.com/graasp/graasp/commit/b5b21807e3d78f328bfcf1086b1c67d24ad6311d))
+* **files-upload:** return simple error if exists ([#1866](https://github.com/graasp/graasp/issues/1866)) ([9c48b77](https://github.com/graasp/graasp/commit/9c48b7745cfd6af5686381933271d5a22726955a))
+* improve schemas for item_packed.thumbnails and search hits ([#1869](https://github.com/graasp/graasp/issues/1869)) ([5f33206](https://github.com/graasp/graasp/commit/5f332062f913e301a96bc03fdfd54994f2add9a0))
+* on save organize imports ([#1888](https://github.com/graasp/graasp/issues/1888)) ([6de5039](https://github.com/graasp/graasp/commit/6de5039c465dc1258cc348f6d45ba41ead67ec09))
+* **opti:** remove join on accountsTable for `getInheritedMany` ([#1890](https://github.com/graasp/graasp/issues/1890)) ([5202de9](https://github.com/graasp/graasp/commit/5202de9f0805167b863be3225cdf27e3eeff9f93))
+* use hostnames instead of container names ([#1880](https://github.com/graasp/graasp/issues/1880)) ([db1acb0](https://github.com/graasp/graasp/commit/db1acb06163700b1f97a07dad0d0db8da10375d5))
+
 ## [2.3.0](https://github.com/graasp/graasp/compare/v2.2.1...v2.3.0) (2025-05-05)
 
 ### Features
