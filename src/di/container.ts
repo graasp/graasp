@@ -1,11 +1,10 @@
 import { Redis } from 'ioredis';
 import { MeiliSearch } from 'meilisearch';
 
-import { FastifyInstance } from 'fastify';
+import { FastifyBaseLogger } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/mailer.service';
 import { CachingService } from '../services/caching/service';
@@ -14,7 +13,6 @@ import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
 import { RandomPadNameFactory } from '../services/item/plugins/etherpad/etherpad.service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/search.service';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -39,10 +37,8 @@ import {
 } from './constants';
 import { registerValue, resolveDependency } from './utils';
 
-export const registerDependencies = (instance: FastifyInstance) => {
-  const { log } = instance;
-
-  // register FastifyBasLogger as a value to allow BaseLogger to be injected automatically.
+export const registerDependencies = (log: FastifyBaseLogger) => {
+  // register FastifyBaseLogger as a value to allow BaseLogger to be injected automatically.
   registerValue(FASTIFY_LOGGER_DI_KEY, log);
 
   // register file storage type for the StorageService.
@@ -86,15 +82,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
       apiKey: MEILISEARCH_MASTER_KEY,
     }),
   );
-
-  // Launch Job workers
-  const jobServiceBuilder = new JobServiceBuilder(resolveDependency(BaseLogger));
-  jobServiceBuilder
-    .registerTask('rebuild-index', {
-      handler: () => resolveDependency(SearchService).rebuildIndex(),
-      pattern: CRON_3AM_MONDAY,
-    })
-    .build();
 
   // Register EtherPad
   const etherPadConfig = resolveDependency(EtherpadServiceConfig);
