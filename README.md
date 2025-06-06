@@ -6,33 +6,33 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-[![GitHub Release](https://img.shields.io/github/release/graasp/graasp)]()
+[![GitHub Release](https://img.shields.io/github/release/graasp/graasp)](https://github.com/graasp/graasp/releases/latest)
 ![Test CI](https://github.com/graasp/graasp/actions/workflows/test.yml/badge.svg?branch=main)
 ![typescript version](https://img.shields.io/github/package-json/dependency-version/graasp/graasp/dev/typescript)
-<a href="https://gitlocalize.com/repo/9284?utm_source=badge"> <img src="https://gitlocalize.com/repo/9284/whole_project/badge.svg" /> </a>
+[![Translations](https://gitlocalize.com/repo/9284/whole_project/badge.svg)](https://gitlocalize.com/repo/9284?utm_source=badge)
 
-This repository contains the source code and confgurations for the Graasp Backend. Visit the Graasp Platform at [graasp.org](https://graasp.org)
+This repository contains the source code and configurations for the Graasp backend. Visit the Graasp Platform at [graasp.org](https://graasp.org)
 
-❓Looking for our client applications/frontends ?
-Head over to: [Builder](https://github.com/graasp/graasp-builder), [Player](https://github.com/graasp/graasp-player), [Library](https://github.com/graasp/graasp-library), [Analytics](https://github.com/graasp/graasp-analytics) or [Account](https://github.com/graasp/graasp-account)
+❓Looking for our client applications/front-ends ?
+Head over to: [Client](https://github.com/graasp/client), [Library](https://github.com/graasp/graasp-library)
 
 ## Requirements
 
 In order to run the Graasp backend, it requires:
 
-- Node v20
-- NPM v10
+- Node version 22
+- NPM version 10
 - Yarn (can be installed through [`nvm`](https://github.com/nvm-sh/nvm))
-- [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/) : Docker is not necessary, it is possible to install everything locally. However it is strongly recommanded to use the Docker installation guide.
+- [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/): Docker is not necessary, it is possible to install everything locally. However it is strongly recommended to use the Docker installation guide.
 
 ## Recommended Tools
 
-- [NVM](https://github.com/nvm-sh/nvm) or [Volta (recommended)](https://volta.sh/) : CLI to manage multiple versions of Node.js and NPM.
+- [NVM](https://github.com/nvm-sh/nvm) or [Volta (recommended)](https://volta.sh/) : CLI to manage multiple versions of NodeJs and NPM.
 - [Postman](https://www.postman.com) : Application to explore and test your APIs.
-- [Starship](https://starship.rs/): A shell prompt enhancer that shows you the current git branch nvm version and package version, very usefull for quick look at your environment (works on all shells and is super fast), requires you to use a [NerdFont](https://www.nerdfonts.com/)
+- [Starship](https://starship.rs/): A shell prompt enhancer that shows you the current git branch nvm version and package version, very useful for quick look at your environment (works on all shells and is super fast), requires you to use a [NerdFont](https://www.nerdfonts.com/)
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
 
-  - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environnement.
+  - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environment.
 
   - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
 
@@ -40,12 +40,12 @@ In order to run the Graasp backend, it requires:
 
 Graasp offers two ways to install the Graasp backend :
 
-- [Docker](#docker-installation) (recommended) : this allows you to run a preconfigured environnement
+- [Docker](#docker-installation) (recommended) : this allows you to run a preconfigured environment
 - [Local](#local-installation) : you'll need to install and configure all the required services
 
 ### Docker installation
 
-We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
+We recommend to set up the development environment using Docker, as it allows to use a preconfigured development environment.
 
 First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd> (or <kbd>ctrl</kbd> instead of <kbd>cmd</kbd>), and typing `Open Folder in Container`.
 
@@ -62,7 +62,7 @@ This will create 10 containers :
 - `mailer` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
 
 > **Important**
-> To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://localstack` hostname.
+> To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the development machine cannot resolve the `http://localstack` hostname.
 
 Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
 
@@ -80,7 +80,7 @@ It will create 4 roles with their associated database for the services that need
 
 - Graasp: the db for the backend
 - Umami: google analytics replacement
-- Etherpad: realtime documents
+- Etherpad: real-time documents
 - Test: a test database that will be wiped during tests
 
 ### Local Installation
@@ -132,16 +132,16 @@ SECURE_SESSION_SECRET_KEY=<secret-key>
 JWT_SECRET=<secret-key>
 # Auth JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 AUTH_TOKEN_JWT_SECRET=<secret-key>
-AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
+# AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
 # Refresh JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 REFRESH_TOKEN_JWT_SECRET=<secret-key>
-REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
+# REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 # Password reset JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 PASSWORD_RESET_JWT_SECRET=<secret-key>
-PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES=1440
+# PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES=1440
 # Email change JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 EMAIL_CHANGE_JWT_SECRET=<secret-key>
-EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES=1440
+# EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES=1440
 
 
 ### Mail server configuration
@@ -181,7 +181,7 @@ H5P_FILE_STORAGE_HOST=http://localhost:1081
 ### External services configuration
 
 # Graasp Etherpad (set by ./.devcontainer/docker-compose.yml)
-# ETHERPAD_URL=http://etherpad:9001
+# ETHERPAD_URL=http://etherpad:9001
 # Optional, if the etherpad server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
 # ETHERPAD_PUBLIC_URL=http://localhost:9001
 # Optional, if the etherpad cookie domain is different from the domain of the public URL
@@ -196,6 +196,8 @@ H5P_FILE_STORAGE_HOST=http://localhost:1081
 # Graasp apps
 APPS_JWT_SECRET=<secret-key>
 APPS_PUBLISHER_ID=<id>
+
+GRAASPER_CREATOR_ID=<id>
 
 # Graasp websockets
 # Redis config set by ./.devcontainer/docker-compose.yml
@@ -218,7 +220,7 @@ GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 # get a recaptcha secret access key for your hostname at http://www.google.com/recaptcha/admin
 RECAPTCHA_SECRET_ACCESS_KEY=<google-recaptcha-key>
 # Graasp search
-MEILISEARCH_URL=http://graasp-meilisearch:7700
+MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=masterKey
 MEILISEARCH_REBUILD_SECRET=secret
 
@@ -236,7 +238,7 @@ GEOLOCATION_API_KEY=
 ### Umami
 
 To log into umami in your local instance:
-https://umami.is/docs/login
+<https://umami.is/docs/login>
 
 The first time you log in use username: `admin` and password: `umami`. It is recommended to change these.
 
