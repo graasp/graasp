@@ -25,10 +25,6 @@
     "**/coverage": true
   },
   "typescript.referencesCodeLens.enabled": false,
-  "appService.zipIgnorePattern": [
-    ".vscode{,/**}"
-  ],
-  "appService.deploySubpath": "",
   "jest.runMode": "on-demand",
   "sqltools.connections": [
     {

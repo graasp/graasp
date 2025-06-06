@@ -4,7 +4,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MAX_USERNAME_LENGTH, MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
@@ -14,7 +14,7 @@ import { mockCaptchaValidation } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { accountsTable, invitationsTable, itemMembershipsTable } from '../../../../drizzle/schema';
-import { MemberRaw } from '../../../../drizzle/types';
+import type { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { expectMember } from '../../../member/test/fixtures/members';

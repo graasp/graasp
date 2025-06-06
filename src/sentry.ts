@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import {
   APP_VERSION,

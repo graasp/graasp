@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import waitForExpect from 'wait-for-expect';
-import { CLOSED, OPEN, WebSocket } from 'ws';
+import { WebSocket } from 'ws';
 
 import { createServerInfo } from '../message';
 import {
@@ -96,7 +96,7 @@ test("client without mapping gc'd by heartbeat", async () => {
   channels.subscriptions.forEach((_, ws) => channels.subscriptions.delete(ws));
   await waitForExpect(() => {
     // client connection should be eventually terminated
-    expect(client.readyState).toEqual(CLOSED);
+    expect(client.readyState).toEqual(WebSocket.CLOSED);
   });
   // server should not have client anymore
   expect(channels.wsServer.clients.size).toEqual(0);
@@ -118,7 +118,7 @@ test('send to non-ready client', async () => {
   expect(channels.clientSend(client, createServerInfo('hello world'))).toEqual(false);
   await waitForExpect(() => {
     // wait for client to be ready for proper teardown
-    expect(client.readyState).toEqual(OPEN);
+    expect(client.readyState).toEqual(WebSocket.OPEN);
   });
   client.close();
   wss.close();

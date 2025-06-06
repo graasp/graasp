@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { v4 } from 'uuid';
 
-import { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { Context, PermissionLevel } from '@graasp/sdk';
 

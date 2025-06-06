@@ -6,7 +6,7 @@ import { withFile as withTmpFile } from 'tmp-promise';
 import { delay, inject, singleton } from 'tsyringe';
 
 import {
-  FileItemProperties,
+  type FileItemProperties,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MimeTypes,
@@ -16,7 +16,7 @@ import {
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { MaybeUser, MinimalMember } from '../../../../types';
+import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import FileService from '../../../file/file.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';

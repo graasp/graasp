@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyPassport from '@fastify/passport';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { PassportUser } from 'fastify';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { PassportUser } from 'fastify';
 
 import { ClientManager, Context, RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -17,7 +17,7 @@ import { MemberService } from '../../../member/member.service';
 import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha/captcha';
 import { PassportStrategy } from '../passport/strategies';
-import { PassportInfo } from '../passport/types';
+import type { PassportInfo } from '../passport/types';
 import { auth, login, register } from './magicLink.schemas';
 import { MagicLinkService } from './magicLink.service';
 

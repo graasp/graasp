@@ -3,10 +3,10 @@ import { singleton } from 'tsyringe';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
-import { AccountRaw } from '../../drizzle/types';
-import { AccountType, MaybeUser } from '../../types';
+import type { AccountRaw } from '../../drizzle/types';
+import { AccountType, type MaybeUser } from '../../types';
 
 export class AccountDTO {
   private readonly account: AccountRaw | undefined;

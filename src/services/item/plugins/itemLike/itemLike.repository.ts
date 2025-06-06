@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { itemLikesTable } from '../../../../drizzle/schema';
-import {
+import type {
   ItemLikeRaw,
   ItemLikeWithItem,
   ItemLikeWithItemAndAccount,

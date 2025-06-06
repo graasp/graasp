@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
 

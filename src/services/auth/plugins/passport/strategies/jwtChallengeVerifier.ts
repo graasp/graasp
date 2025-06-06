@@ -9,7 +9,7 @@ import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../..
 import { AccountRepository } from '../../../../account/account.repository';
 import { SHORT_TOKEN_PARAM } from '../constants';
 import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import type { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,

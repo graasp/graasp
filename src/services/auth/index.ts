@@ -1,5 +1,5 @@
 import { fastifyCors } from '@fastify/cors';
-import { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 
 import magicLinkController from './plugins/magicLink/magicLink.controller';
 import passwordController from './plugins/password/password.controller';

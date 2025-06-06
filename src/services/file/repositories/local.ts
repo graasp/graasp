@@ -4,9 +4,9 @@ import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
-import { LocalFileConfiguration } from '../interfaces/configuration';
-import { FileRepository, FileUpload } from '../interfaces/fileRepository';
-import { FileStorageType } from '../types';
+import type { LocalFileConfiguration } from '../interfaces/configuration';
+import type { FileRepository, FileUpload } from '../interfaces/fileRepository';
+import type { FileStorageType } from '../types';
 import { LocalFileNotFound } from '../utils/errors';
 
 export class LocalFileRepository implements FileRepository {

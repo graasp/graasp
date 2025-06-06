@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
@@ -14,7 +14,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { memberProfilesTable } from '../../../../drizzle/schema';
-import { MemberProfileRaw } from '../../../../drizzle/types';
+import type { MemberProfileRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../utils/config';
 

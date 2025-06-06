@@ -1,7 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { v4 as uuidv4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
@@ -11,7 +11,7 @@ import { db } from '../../drizzle/db';
 import { assertIsDefined } from '../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
-import { ItemWrapper, PackedItem } from './ItemWrapper';
+import { ItemWrapper, type PackedItem } from './ItemWrapper';
 import { expectManyPackedItems, expectPackedItem, expectThumbnails } from './test/fixtures/items';
 import { Ordering, SortBy } from './types';
 

@@ -1,5 +1,5 @@
 import { fastifyHelmet } from '@fastify/helmet';
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from './app';

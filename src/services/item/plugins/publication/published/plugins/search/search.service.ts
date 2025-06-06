@@ -1,9 +1,9 @@
-import { MultiSearchQuery } from 'meilisearch';
+import type { MultiSearchQuery } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { TagCategory, TagCategoryType, UUID } from '@graasp/sdk';
+import { TagCategory, type TagCategoryType, type UUID } from '@graasp/sdk';
 
-import { TagRaw } from '../../../../../../../drizzle/types';
+import type { TagRaw } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
 import {
   GET_FEATURED_ITEMS_MAXIMUM,

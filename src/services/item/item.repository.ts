@@ -19,12 +19,12 @@ import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
 import {
-  ItemSettings,
+  type ItemSettings,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
-  Paginated,
-  Pagination,
+  type Paginated,
+  type Pagination,
   PermissionLevel,
   buildPathFromIds,
   getChildFromPath,
@@ -32,7 +32,7 @@ import {
 } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import {
   isAncestorOrSelf,
   isDescendantOrSelf,
@@ -49,15 +49,15 @@ import {
   membersView,
   publishedItemsTable,
 } from '../../drizzle/schema';
-import {
-  type ItemRaw,
+import type {
+  ItemRaw,
   ItemTypeUnion,
-  type ItemWithCreator,
-  type MemberRaw,
+  ItemWithCreator,
+  MemberRaw,
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
-import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import { getSearchLang } from '../../utils/config';
 import {
   HierarchyTooDeep,
@@ -75,11 +75,11 @@ import {
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
 import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
-import { FolderItem, isItemType } from './discrimination';
+import { type FolderItem, isItemType } from './discrimination';
 import { ItemOrderingError } from './errors';
 import {
-  ItemChildrenParams,
-  ItemSearchParams,
+  type ItemChildrenParams,
+  type ItemSearchParams,
   Ordering,
   SortBy,
   orderingToUpperCase,

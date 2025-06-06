@@ -1,12 +1,12 @@
 import groupby from 'lodash.groupby';
 import { singleton } from 'tsyringe';
 
-import { MultipartFile } from '@fastify/multipart';
+import type { MultipartFile } from '@fastify/multipart';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import {
+import type {
   InvitationInsertDTO,
   InvitationRaw,
   InvitationWithItem,
@@ -17,7 +17,7 @@ import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { AuthenticatedUser, MaybeUser, MinimalMember, NonEmptyArray } from '../../../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember, NonEmptyArray } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ItemMembershipService } from '../../../itemMembership/membership.service';
@@ -37,7 +37,7 @@ import {
   NoDataInFile,
   TemplateItemDoesNotExist,
 } from './utils/errors';
-import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils/utils';
+import { type CSVInvite, parseCSV, verifyCSVFileFormat } from './utils/utils';
 
 @singleton()
 export class InvitationService {

@@ -1,10 +1,10 @@
-import { Data, WebSocket } from 'ws';
+import { type Data, WebSocket } from 'ws';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import { Websocket as GraaspWS } from '@graasp/sdk';
 
-import { MaybeUser } from '../../types';
+import type { MaybeUser } from '../../types';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,

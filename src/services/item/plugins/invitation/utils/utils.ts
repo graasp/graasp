@@ -1,9 +1,9 @@
 import { Readable } from 'node:stream';
 import { parse } from 'papaparse';
 
-import { MultipartFile } from '@fastify/multipart';
+import type { MultipartFile } from '@fastify/multipart';
 
-import { PermissionLevelOptions } from '@graasp/sdk';
+import type { PermissionLevelOptions } from '@graasp/sdk';
 
 import { CSV_MIMETYPE, EMAIL_COLUMN_NAME } from './constants';
 

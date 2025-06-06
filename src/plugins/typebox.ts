@@ -1,15 +1,18 @@
 import {
-  SchemaOptions,
-  Static,
-  StringOptions,
-  TProperties,
-  TSchema,
+  type SchemaOptions,
+  type Static,
+  type StringOptions,
+  type TProperties,
+  type TSchema,
   Type,
-  UnsafeOptions,
+  type UnsafeOptions,
 } from '@sinclair/typebox';
 
-import { FastifyPluginAsyncTypebox, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import {
+import type {
+  FastifyPluginAsyncTypebox,
+  TypeBoxTypeProvider,
+} from '@fastify/type-provider-typebox';
+import type {
   FastifyBaseLogger,
   FastifyInstance,
   RawReplyDefaultExpression,

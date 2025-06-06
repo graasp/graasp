@@ -1,8 +1,8 @@
-import { Static } from '@sinclair/typebox';
+import type { Static } from '@sinclair/typebox';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
-import { ClientManager, Context, HttpMethod, UUID } from '@graasp/sdk';
+import { ClientManager, Context, HttpMethod, type UUID } from '@graasp/sdk';
 
 import { createShortLink, updateShortLink } from '../shortlink.schemas';
 import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../shortlink.service';

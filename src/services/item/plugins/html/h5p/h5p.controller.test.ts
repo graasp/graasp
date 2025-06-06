@@ -1,4 +1,4 @@
-import { Options, compare as dircompare, fileCompareHandlers } from 'dir-compare';
+import { type Options, compare as dircompare, fileCompareHandlers } from 'dir-compare';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';
 import fsp from 'fs/promises';
@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
@@ -18,7 +18,7 @@ import { isDirectChild } from '../../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../utils/config';
-import { H5PItem } from '../../../discrimination';
+import type { H5PItem } from '../../../discrimination';
 import { HtmlImportError } from '../errors';
 import { H5P_FILE_DOT_EXTENSION } from './constants';
 import { H5PInvalidManifestError } from './errors';

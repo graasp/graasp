@@ -1,5 +1,5 @@
 import { fastifyCors } from '@fastify/cors';
-import { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../utils/config';
 import memberController from './member.controller';

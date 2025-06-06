@@ -4,8 +4,8 @@ import { v4 } from 'uuid';
 import { TagFactory } from '@graasp/sdk';
 
 import { db } from '../../../../drizzle/db';
-import { ItemPublishedWithItemWithCreator, ItemRaw, TagRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { ItemPublishedWithItemWithCreator, ItemRaw, TagRaw } from '../../../../drizzle/types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { TagRepository } from '../../../tag/tag.repository';

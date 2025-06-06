@@ -7,7 +7,7 @@ import { Readable } from 'stream';
 import { MimeTypes } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
-import { MinimalMember } from '../../types';
+import type { MinimalMember } from '../../types';
 import { CachingService } from '../caching/service';
 import FileService from './file.service';
 import { LocalFileRepository } from './repositories/local';

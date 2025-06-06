@@ -1,7 +1,4 @@
-/**
- * Chat websocket events are registered under these topics
- */
-import { ChatMentionRaw } from '../../../../../drizzle/types';
+import type { ChatMentionRaw } from '../../../../../drizzle/types';
 
 // chat mentions topic
 export const chatMentionTopic = 'mentions';

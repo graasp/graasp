@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory, ItemTypeUnion } from '@graasp/sdk';
+import { ErrorFactory, type ItemTypeUnion } from '@graasp/sdk';
 
 const PLUGIN_NAME = 'graasp-plugin-item';
 

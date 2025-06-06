@@ -2,20 +2,20 @@ import { isBefore } from 'date-fns';
 import { and, count, eq } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 
-import { ItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemType, PermissionLevel, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
-import {
+import type {
   ActionWithItem,
   AppActionRaw,
   AppDataRaw,
   AppSettingRaw,
   ItemRaw,
 } from '../../../../drizzle/types';
-import { AuthenticatedUser, MaybeUser } from '../../../../types';
+import type { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
@@ -36,7 +36,7 @@ import { AppDataRepository } from '../app/appData/appData.repository';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { type ActionDateFilters, ItemActionRepository } from './itemAction.repository';
-import { View, ViewOptions } from './itemAction.schemas';
+import { View, type ViewOptions } from './itemAction.schemas';
 import { ItemActionType } from './utils';
 
 @singleton()

@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import type { MemberStorage, Pagination } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { ItemRepository } from '../../../item/item.repository';
 import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
 import { StorageExceeded } from '../../../item/plugins/file/utils/errors';

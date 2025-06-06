@@ -1,7 +1,7 @@
 /**
  * Membership websocket events are registered under these topics
  */
-import { ItemMembershipRaw } from '../../../drizzle/types';
+import type { ItemMembershipRaw } from '../../../drizzle/types';
 
 // memberships of a given item
 export const itemMembershipsTopic = 'memberships/item';

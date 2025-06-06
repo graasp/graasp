@@ -1,4 +1,4 @@
-import { PassportUser } from 'fastify';
+import type { PassportUser } from 'fastify';
 
 // Info parameter type can be specified if needed.
 export type StrictVerifiedCallback = (

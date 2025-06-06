@@ -1,11 +1,11 @@
 import { and, eq, inArray } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { AccountType, ResultOf, UUID } from '@graasp/sdk';
+import { AccountType, type ResultOf, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
 import { accountsTable, membersView } from '../../drizzle/schema';
-import { AccountInsertDTO, MemberCreationDTO } from '../../drizzle/types';
+import type { AccountInsertDTO, MemberCreationDTO } from '../../drizzle/types';
 import { MemberNotFound } from '../../utils/errors';
 import { mapById } from '../utils';
 import { MemberDTO } from './types';

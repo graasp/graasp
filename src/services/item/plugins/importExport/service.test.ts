@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import build, { clearDatabase, unmockAuthenticate } from '../../../../../test/app';
 import { db } from '../../../../drizzle/db';

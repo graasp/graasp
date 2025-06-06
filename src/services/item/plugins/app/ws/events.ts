@@ -1,7 +1,4 @@
-/**
- * App websocket events are registered under these topics
- */
-import { AppActionRaw, AppDataRaw, AppSettingRaw } from '../../../../../drizzle/types';
+import type { AppActionRaw, AppDataRaw, AppSettingRaw } from '../../../../../drizzle/types';
 
 // changes on app entities
 export const appDataTopic = 'app-data';

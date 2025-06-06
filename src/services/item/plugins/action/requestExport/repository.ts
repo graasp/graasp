@@ -1,11 +1,11 @@
 import { and, eq, gte } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { ExportActionsFormatting, UUID } from '@graasp/sdk';
+import { ExportActionsFormatting, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { actionRequestExportsTable } from '../../../../../drizzle/schema';
-import { ActionRequestExportRaw } from '../../../../../drizzle/types';
+import type { ActionRequestExportRaw } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants';
 

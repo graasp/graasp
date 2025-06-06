@@ -1,9 +1,13 @@
 import { asc, eq, inArray } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { chatMessagesTable } from '../../drizzle/schema';
-import { ChatMessageInsertDTO, ChatMessageRaw, ChatMessageWithCreator } from '../../drizzle/types';
+import type {
+  ChatMessageInsertDTO,
+  ChatMessageRaw,
+  ChatMessageWithCreator,
+} from '../../drizzle/types';
 import { DeleteException } from '../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../repositories/utils';
 import { assertIsError } from '../../utils/assertions';

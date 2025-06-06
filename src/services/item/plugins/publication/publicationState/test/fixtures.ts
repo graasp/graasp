@@ -8,8 +8,8 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { ItemVisibilityRaw } from '../../../../../../drizzle/types';
-import { ItemMetadata, ItemValidationGroupStatus } from '../types';
+import type { ItemVisibilityRaw } from '../../../../../../drizzle/types';
+import type { ItemMetadata, ItemValidationGroupStatus } from '../types';
 
 export const ItemMetadataFactory = (
   item?: Partial<ItemMetadata> & { parentItem?: ItemMetadata },

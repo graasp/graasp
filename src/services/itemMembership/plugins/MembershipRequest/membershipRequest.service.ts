@@ -8,7 +8,7 @@ import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { AccountType, MinimalMember } from '../../../../types';
+import { AccountType, type MinimalMember } from '../../../../types';
 import { ItemMembershipRepository } from '../../membership.repository';
 import { MembershipRequestRepository } from './membershipRequest.repository';
 

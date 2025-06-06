@@ -1,9 +1,9 @@
-import { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 
 import { getIdsFromPath } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../di/utils';
-import { DBConnection, db } from '../../../drizzle/db';
+import { type DBConnection, db } from '../../../drizzle/db';
 import { AuthorizedItemService } from '../../authorizedItem.service';
 import { WebsocketService } from '../../websockets/ws-service';
 import { ItemMembershipService } from '../membership.service';

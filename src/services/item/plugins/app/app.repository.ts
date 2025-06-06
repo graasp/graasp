@@ -1,10 +1,10 @@
 import { and, arrayContains, count, desc, eq, sql } from 'drizzle-orm/sql';
 
-import { AuthTokenSubject } from '@graasp/sdk';
+import type { AuthTokenSubject } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { appsTable, items, publishersTable } from '../../../../drizzle/schema';
-import { AppRaw } from '../../../../drizzle/types';
+import type { AppRaw } from '../../../../drizzle/types';
 import { InvalidApplicationOrigin } from './errors';
 
 export class AppRepository {

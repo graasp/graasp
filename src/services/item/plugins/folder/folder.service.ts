@@ -1,17 +1,22 @@
 import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import { ItemGeolocation, ItemType, PermissionLevelOptions, UUID } from '@graasp/sdk';
+import {
+  type ItemGeolocation,
+  ItemType,
+  type PermissionLevelOptions,
+  type UUID,
+} from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { MaybeUser, MinimalMember } from '../../../../types';
+import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { FolderItem, isItemType } from '../../discrimination';
+import { type FolderItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';

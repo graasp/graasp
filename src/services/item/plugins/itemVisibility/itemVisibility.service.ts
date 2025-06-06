@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
+import { type ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';

@@ -1,14 +1,14 @@
 import { singleton } from 'tsyringe';
 
 import { forwarded } from '@fastify/forwarded';
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 
 import { ClientManager } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import { ItemRaw } from '../../drizzle/types';
+import type { ItemRaw } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { AccountType, MaybeUser } from '../../types';
+import { AccountType, type MaybeUser } from '../../types';
 import { View } from '../item/plugins/action/itemAction.schemas';
 import { MemberRepository } from '../member/member.repository';
 import { ActionRepository } from './action.repository';

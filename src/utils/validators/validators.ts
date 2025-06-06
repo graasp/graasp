@@ -1,5 +1,5 @@
 import { InvalidUrlError, RegexValidatorError, UrlMissingProtocolError } from './errors';
-import { Validator, Variable } from './types';
+import type { Validator, Variable } from './types';
 import { urlContainsProtocol, valueShouldBeDefined } from './utils';
 
 export class UrlValidator implements Validator {

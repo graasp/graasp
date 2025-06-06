@@ -1,6 +1,6 @@
 import { type Lookup, lookup } from 'geoip-lite';
 
-import { AggregateFunction, AggregateMetric, UnionOfConst } from '@graasp/sdk';
+import { AggregateFunction, AggregateMetric, type UnionOfConst } from '@graasp/sdk';
 
 export const getGeolocationIp = (ip: string | number): Lookup | null => lookup(ip);
 

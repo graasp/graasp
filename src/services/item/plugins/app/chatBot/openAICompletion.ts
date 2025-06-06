@@ -1,6 +1,6 @@
 import { OpenAI } from 'openai';
 
-import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
+import { type ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
 import { OPENAI_API_KEY, OPENAI_ORG_ID } from '../../../../../utils/config';
 import { OpenAIBadVersion } from '../../../../../utils/errors';

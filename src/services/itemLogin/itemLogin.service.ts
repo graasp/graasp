@@ -5,12 +5,12 @@ import {
   ItemVisibilityType,
   PermissionLevel,
   PermissionLevelCompare,
-  UUID,
+  type UUID,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
-import { ItemRaw, MinimalAccount } from '../../drizzle/types';
-import { MaybeUser } from '../../types';
+import type { DBConnection } from '../../drizzle/db';
+import type { ItemRaw, MinimalAccount } from '../../drizzle/types';
+import type { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
@@ -24,8 +24,11 @@ import {
 } from './errors';
 import { GuestRepository } from './guest.repository';
 import { GuestPasswordRepository } from './guestPassword.repository';
-import { ItemLoginMemberCredentials } from './interfaces/item-login';
-import { ItemLoginSchemaRepository, ItemSchemaTypeOptions } from './itemLoginSchema.repository';
+import type { ItemLoginMemberCredentials } from './interfaces/item-login';
+import {
+  ItemLoginSchemaRepository,
+  type ItemSchemaTypeOptions,
+} from './itemLoginSchema.repository';
 import { loginSchemaRequiresPassword } from './utils';
 
 @singleton()

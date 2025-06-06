@@ -1,7 +1,7 @@
-/**
- * Item websocket events are registered under these topics
- */
-import { FeedBackOperationType, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
+import type {
+  FeedBackOperationType,
+  ItemOpFeedbackEvent as ItemOpFeedbackEventType,
+} from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../drizzle/types';
 

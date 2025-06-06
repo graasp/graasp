@@ -1,10 +1,10 @@
 import { singleton } from 'tsyringe';
 
-import { ItemType, Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
+import { ItemType, type Paginated, type Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { ItemNotFound } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
 import { AuthorizedItemService } from '../../../authorizedItem.service';

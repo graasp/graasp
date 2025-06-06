@@ -7,7 +7,7 @@ import { sign } from 'jsonwebtoken';
 import nock from 'nock';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance, LightMyRequestResponse } from 'fastify';
+import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
@@ -23,7 +23,7 @@ import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/util
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { memberPasswordsTable } from '../../../../drizzle/schema';
-import { MemberRaw } from '../../../../drizzle/types';
+import type { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {

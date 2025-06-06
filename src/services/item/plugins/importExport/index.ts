@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { default as sanitize } from 'sanitize-filename';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 

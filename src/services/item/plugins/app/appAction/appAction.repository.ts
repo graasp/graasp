@@ -1,14 +1,14 @@
 import { and, eq, inArray } from 'drizzle-orm/sql';
 
-import { ResultOf } from '@graasp/sdk';
+import type { ResultOf } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import type { DBConnection } from '../../../../../drizzle/db';
 import { appActionsTable } from '../../../../../drizzle/schema';
-import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
+import type { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { mapById } from '../../../../utils';
-import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { InputAppAction } from './appAction.interface';
+import type { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
+import type { InputAppAction } from './appAction.interface';
 
 type CreateAppActionBody = {
   appAction: InputAppAction;

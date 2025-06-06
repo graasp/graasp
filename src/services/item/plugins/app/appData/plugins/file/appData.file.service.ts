@@ -2,13 +2,13 @@ import path from 'path';
 import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
-import { MultipartFile } from '@fastify/multipart';
+import type { MultipartFile } from '@fastify/multipart';
 
-import { AppDataVisibility, FileItemProperties, ItemType, UUID } from '@graasp/sdk';
+import { AppDataVisibility, type FileItemProperties, ItemType, type UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../../../drizzle/db';
-import { AppDataRaw, ItemRaw } from '../../../../../../../drizzle/types';
-import { AuthenticatedUser } from '../../../../../../../types';
+import type { DBConnection } from '../../../../../../../drizzle/db';
+import type { AppDataRaw, ItemRaw } from '../../../../../../../drizzle/types';
+import type { AuthenticatedUser } from '../../../../../../../types';
 import FileService from '../../../../../../file/file.service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
 import { AppDataRepository } from '../../appData.repository';

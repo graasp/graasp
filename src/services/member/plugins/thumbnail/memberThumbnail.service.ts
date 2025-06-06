@@ -4,7 +4,7 @@ import { injectWithTransform, singleton } from 'tsyringe';
 import { AccountType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { AccountRepository } from '../../../account/account.repository';
 import { AccountNotFound } from '../../../account/errors';
 import {

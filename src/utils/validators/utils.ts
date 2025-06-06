@@ -1,6 +1,6 @@
 import { asDefined } from '../assertions';
 import { UndefinedVariableError } from './errors';
-import { Validator, Variable } from './types';
+import type { Validator, Variable } from './types';
 
 function readEnv(envName: string): Variable {
   return {

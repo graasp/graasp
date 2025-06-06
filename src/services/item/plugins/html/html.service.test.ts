@@ -3,7 +3,7 @@ import { FileStorage } from '../../../file/types';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { ItemRepository } from '../../item.repository';
 import { HtmlService } from './html.service';
-import { HtmlValidator } from './validator';
+import type { HtmlValidator } from './validator';
 
 class MockValidator implements HtmlValidator {
   isExtensionAllowed() {

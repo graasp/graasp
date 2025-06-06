@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createError } from '@fastify/error';
 
-import { ErrorFactory, ItemTypeUnion, PublishableItemTypeChecker } from '@graasp/sdk';
+import { ErrorFactory, type ItemTypeUnion, PublishableItemTypeChecker } from '@graasp/sdk';
 
 export const GraaspPublishedError = ErrorFactory('graasp-plugin-published-item');
 

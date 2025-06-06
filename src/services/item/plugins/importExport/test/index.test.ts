@@ -7,10 +7,10 @@ import fetch from 'node-fetch';
 import path from 'path';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import {
-  FileItemProperties,
+  type FileItemProperties,
   HttpMethod,
   ItemType,
   MimeTypes,
@@ -34,7 +34,7 @@ import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { LocalFileRepository } from '../../../../file/repositories/local';
 import { GRAASP_MANIFEST_FILENAME } from '../constants';
-import { GraaspExportItem } from '../service';
+import type { GraaspExportItem } from '../service';
 import { prepareZip } from '../utils';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 

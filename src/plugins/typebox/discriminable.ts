@@ -1,4 +1,11 @@
-import { Kind, SchemaOptions, Static, TObject, TSchema, TypeRegistry } from '@sinclair/typebox';
+import {
+  Kind,
+  type SchemaOptions,
+  type Static,
+  type TObject,
+  type TSchema,
+  TypeRegistry,
+} from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 
 interface TDiscriminable<T extends TObject[]> extends TSchema {

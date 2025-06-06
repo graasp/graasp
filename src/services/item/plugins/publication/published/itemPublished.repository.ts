@@ -1,16 +1,16 @@
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import type { DBConnection } from '../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../drizzle/operations';
 import { items, membersView, publishedItemsTable } from '../../../../../drizzle/schema';
-import {
+import type {
   ItemPublishedRaw,
   ItemPublishedWithItemWithCreator,
-  type ItemRaw,
+  ItemRaw,
   MemberRaw,
 } from '../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../types';
+import type { MinimalMember } from '../../../../../types';
 import { ItemPublishedNotFound } from './errors';
 
 @singleton()

@@ -5,7 +5,7 @@ import { ItemVisibilityType } from '@graasp/sdk';
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory';
 import { seedFromJson } from '../../../test/mocks/seed';
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMemberForTest } from '../authentication';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';

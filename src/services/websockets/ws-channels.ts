@@ -6,9 +6,9 @@
  * @author Alexandre CHAU
  */
 import util from 'util';
-import { Data, Server, WebSocket } from 'ws';
+import { type Data, type Server, WebSocket } from 'ws';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 

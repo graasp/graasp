@@ -5,11 +5,11 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { appActionsTable } from '../../../../../drizzle/schema';
-import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
-import { AuthenticatedUser } from '../../../../../types';
+import type { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
+import type { AuthenticatedUser } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
-import { SingleItemGetFilter } from '../interfaces/request';
-import { InputAppAction } from './appAction.interface';
+import type { SingleItemGetFilter } from '../interfaces/request';
+import type { InputAppAction } from './appAction.interface';
 import { AppActionRepository } from './appAction.repository';
 import { AppActionNotAccessible } from './errors';
 

@@ -1,6 +1,6 @@
-import { ShortLink } from '@graasp/sdk';
+import type { ShortLink } from '@graasp/sdk';
 
-import { ShortLinkRaw } from '../../../../../drizzle/types';
+import type { ShortLinkRaw } from '../../../../../drizzle/types';
 
 export class ShortLinkDTO {
   /**

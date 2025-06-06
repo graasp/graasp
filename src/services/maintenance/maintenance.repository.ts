@@ -1,7 +1,7 @@
 import { asc, gte } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { maintenanceTable } from '../../drizzle/schema';
 
 @singleton()

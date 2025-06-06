@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemVisibilityType } from '@graasp/sdk';
 

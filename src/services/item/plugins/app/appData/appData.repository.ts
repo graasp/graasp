@@ -1,17 +1,22 @@
 import { SQL } from 'drizzle-orm';
 import { and, eq, or } from 'drizzle-orm/sql';
 
-import { AppDataVisibility, ItemType, PermissionLevel, PermissionLevelOptions } from '@graasp/sdk';
-
-import { DBConnection } from '../../../../../drizzle/db';
-import { appDataTable } from '../../../../../drizzle/schema';
 import {
+  AppDataVisibility,
+  ItemType,
+  PermissionLevel,
+  type PermissionLevelOptions,
+} from '@graasp/sdk';
+
+import type { DBConnection } from '../../../../../drizzle/db';
+import { appDataTable } from '../../../../../drizzle/schema';
+import type {
   AppDataRaw,
   AppDataWithItemAndAccountAndCreator,
   MinimalAccount,
 } from '../../../../../drizzle/types';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
-import { InputAppData } from './interfaces/app-data';
+import type { InputAppData } from './interfaces/app-data';
 
 type CreateAppDataBody = { appData: InputAppData; itemId: string; actorId: MinimalAccount['id'] };
 

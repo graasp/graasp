@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { Context } from '@graasp/sdk';
 
 import { ActionFactory } from '../../../test/factories/action.factory';
-import { SeedActor, seedFromJson } from '../../../test/mocks/seed';
+import { type SeedActor, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { actionsTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';

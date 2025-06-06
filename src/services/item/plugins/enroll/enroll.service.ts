@@ -1,9 +1,9 @@
 import { singleton } from 'tsyringe';
 
-import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, PermissionLevel, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import {
   CannotEnrollFrozenItemLoginSchema,

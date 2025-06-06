@@ -1,6 +1,6 @@
 import { sign } from 'jsonwebtoken';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import { ClientManager, Context } from '@graasp/sdk';
 

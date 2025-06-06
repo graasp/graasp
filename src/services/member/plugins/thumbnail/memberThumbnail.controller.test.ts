@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 

@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import build from '../../../../test/app';
 import { HOST_LISTEN_ADDRESS } from '../../../utils/config';

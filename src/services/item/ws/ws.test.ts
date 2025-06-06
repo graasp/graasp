@@ -6,7 +6,7 @@ import { type FastifyInstance } from 'fastify';
 
 import {
   HttpMethod,
-  ItemOpFeedbackEvent as ItemOpFeedbackEventType,
+  type ItemOpFeedbackEvent as ItemOpFeedbackEventType,
   PermissionLevel,
 } from '@graasp/sdk';
 

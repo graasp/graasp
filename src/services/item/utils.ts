@@ -1,14 +1,14 @@
-import { ValidateFunction } from 'ajv';
+import type { ValidateFunction } from 'ajv';
 import { Readable } from 'node:stream';
 import { readPdfText } from 'pdf-text-reader';
 
-import { MultipartFields, MultipartFile } from '@fastify/multipart';
+import type { MultipartFields, MultipartFile } from '@fastify/multipart';
 
-import { ItemGeolocation, ItemType, ItemTypeUnion, isChildOf } from '@graasp/sdk';
+import { type ItemGeolocation, ItemType, type ItemTypeUnion, isChildOf } from '@graasp/sdk';
 
-import { ItemRaw } from '../../drizzle/types';
+import type { ItemRaw } from '../../drizzle/types';
 import { NoFileProvided } from '../../utils/errors';
-import { FolderItem, isItemType } from './discrimination';
+import { type FolderItem, isItemType } from './discrimination';
 import { validateGeolocation, validateSettings } from './validation';
 
 const itemOrderFn = (a: ItemRaw, b: ItemRaw) => {

@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { SignOptions, sign } from 'jsonwebtoken';
+import { type SignOptions, sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
@@ -10,7 +10,7 @@ import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { AuthenticatedUser, MemberInfo } from '../../../../types';
+import type { AuthenticatedUser, MemberInfo } from '../../../../types';
 import {
   JWT_SECRET,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,

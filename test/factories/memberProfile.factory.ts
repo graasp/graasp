@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { v4 } from 'uuid';
 
-import { MemberProfileRaw } from '../../src/drizzle/types';
+import type { MemberProfileRaw } from '../../src/drizzle/types';
 
 export const MemberProfileFactory = (
   options: Partial<MemberProfileRaw> & Pick<MemberProfileRaw, 'memberId'>,

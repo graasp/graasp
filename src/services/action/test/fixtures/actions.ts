@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
-import {
+import type {
   ActionRaw,
   ActionWithItem,
   ActionWithItemAndAccount,

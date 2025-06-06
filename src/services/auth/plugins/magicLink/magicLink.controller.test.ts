@@ -5,14 +5,14 @@ import { sign } from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import {
   ClientManager,
   Context,
   HttpMethod,
   RecaptchaAction,
-  RecaptchaActionType,
+  type RecaptchaActionType,
 } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 

@@ -4,8 +4,8 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import { ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
-import { MaybeUser, MinimalMember } from '../../../../types';
+import type { ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
+import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';

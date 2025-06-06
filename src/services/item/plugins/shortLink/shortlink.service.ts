@@ -4,14 +4,14 @@ import {
   ClientManager,
   Context,
   PermissionLevel,
-  ShortLink,
+  type ShortLink,
   ShortLinkPlatform,
-  ShortLinksOfItem,
-  UpdateShortLink,
+  type ShortLinksOfItem,
+  type UpdateShortLink,
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { AuthenticatedUser, MinimalMember } from '../../../../types';
+import type { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';

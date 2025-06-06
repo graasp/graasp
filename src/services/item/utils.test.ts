@@ -1,5 +1,5 @@
 import { ItemFactory } from '../../../test/factories/item.factory';
-import { FolderItem } from './discrimination';
+import type { FolderItem } from './discrimination';
 import { sortChildrenForTreeWith } from './utils';
 
 const buildFolderItem = (args: { parentItem?: FolderItem; order: number }) => {

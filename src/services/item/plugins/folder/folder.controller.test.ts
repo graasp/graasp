@@ -7,7 +7,7 @@ import path from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import {
   DescriptionPlacement,

@@ -1,17 +1,22 @@
 import sanitize from 'sanitize-html';
 import { singleton } from 'tsyringe';
 
-import { DocumentItemExtraProperties, ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
+import {
+  type DocumentItemExtraProperties,
+  type ItemGeolocation,
+  ItemType,
+  type UUID,
+} from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { DocumentItem, isItemType } from '../../discrimination';
+import { type DocumentItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';

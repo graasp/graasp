@@ -2,7 +2,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
@@ -14,8 +14,8 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
-import { AccountRaw, ChatMentionRaw, ChatMessageRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { AccountRaw, ChatMentionRaw, ChatMessageRaw } from '../../../../drizzle/types';
+import type { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccessMention } from '../../errors';

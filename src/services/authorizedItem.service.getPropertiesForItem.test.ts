@@ -1,9 +1,9 @@
-import { ItemVisibilityType, PermissionLevel, PermissionLevelOptions } from '@graasp/sdk';
+import { ItemVisibilityType, PermissionLevel, type PermissionLevelOptions } from '@graasp/sdk';
 
 import { ItemFactory } from '../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../test/factories/itemVisibility.factory';
-import { DBConnection } from '../drizzle/db';
-import { ItemMembershipWithItemAndAccount, ItemRaw } from '../drizzle/types';
+import type { DBConnection } from '../drizzle/db';
+import type { ItemMembershipWithItemAndAccount, ItemRaw } from '../drizzle/types';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { AuthorizedItemService } from './authorizedItem.service';
 import { ItemRepository } from './item/item.repository';

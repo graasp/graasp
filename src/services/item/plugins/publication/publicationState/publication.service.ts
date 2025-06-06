@@ -2,8 +2,8 @@ import { singleton } from 'tsyringe';
 
 import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { AuthenticatedUser } from '../../../../../types';
+import type { DBConnection } from '../../../../../drizzle/db';
+import type { AuthenticatedUser } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemRepository } from '../../../item.repository';

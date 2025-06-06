@@ -2,15 +2,15 @@ import { mkdirSync } from 'fs';
 import path from 'path';
 import { singleton } from 'tsyringe';
 
-import { ItemValidationStatus, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemValidationStatus, PermissionLevel, type UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import type { DBConnection } from '../../../../../drizzle/db';
 import { type ItemRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
-import { MinimalMember } from '../../../../../types';
+import type { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
-import { FolderItem } from '../../../discrimination';
+import type { FolderItem } from '../../../discrimination';
 import { ItemRepository } from '../../../item.repository';
 import { ItemPublishedService } from '../published/itemPublished.service';
 import { ItemValidationGroupRepository } from './ItemValidationGroup.repository';

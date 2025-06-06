@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { ResultOf } from '@graasp/sdk';
+import type { ResultOf } from '@graasp/sdk';
 
 export function mapById<T>({
   keys,

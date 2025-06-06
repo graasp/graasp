@@ -1,6 +1,6 @@
 import { AggregateBy, AggregateFunction, AggregateMetric } from '@graasp/sdk';
 
-import { CountGroupByOptions } from '../types';
+import type { CountGroupByOptions } from '../types';
 import {
   AggregateByCannotIncludeAggregateMetricError,
   AggregateByCannotUserError,

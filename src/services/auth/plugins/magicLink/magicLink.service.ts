@@ -4,7 +4,7 @@ import { ActionTriggers } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
-import { MemberInfo } from '../../../../types';
+import type { MemberInfo } from '../../../../types';
 import { MemberNotSignedUp } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { View } from '../../../item/plugins/action/itemAction.schemas';

@@ -4,16 +4,16 @@ import {
   ItemVisibilityType,
   PackedFolderItemFactory,
   PermissionLevel,
-  PermissionLevelOptions,
+  type PermissionLevelOptions,
 } from '@graasp/sdk';
 
 import { ItemFactory } from '../../test/factories/item.factory';
 import { MemberFactory } from '../../test/factories/member.factory';
-import { DBConnection } from '../drizzle/db';
-import { ItemVisibilityWithItem } from '../drizzle/types';
+import type { DBConnection } from '../drizzle/db';
+import type { ItemVisibilityWithItem } from '../drizzle/types';
 import { AccountType } from '../types';
 import { filterOutPackedDescendants } from './authorization.utils';
-import { PackedItem } from './item/ItemWrapper';
+import type { PackedItem } from './item/ItemWrapper';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { expectPackedItem } from './item/test/fixtures/items';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';

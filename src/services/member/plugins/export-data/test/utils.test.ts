@@ -1,5 +1,5 @@
 import {
-  BuildSchemaOptions,
+  type BuildSchemaOptions,
   DATE_TYPE,
   NULLABLE_TYPE,
   OBJECT_TYPE,

@@ -6,16 +6,16 @@ import {
   ItemVisibilityType,
   PermissionLevel,
   PublicationStatus,
-  UUID,
+  type UUID,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { ItemPublishedRaw, type ItemRaw } from '../../../../../drizzle/types';
+import type { DBConnection } from '../../../../../drizzle/db';
+import type { ItemPublishedRaw, ItemRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { MaybeUser, MinimalMember } from '../../../../../types';
+import type { MaybeUser, MinimalMember } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { isMember } from '../../../../authentication';
 import { filterOutHiddenItems } from '../../../../authorization.utils';

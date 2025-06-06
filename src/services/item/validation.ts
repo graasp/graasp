@@ -1,6 +1,6 @@
 import { Ajv } from 'ajv';
 
-import { ItemGeolocation } from '@graasp/sdk';
+import type { ItemGeolocation } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../drizzle/types';
 import { settingsSchema } from './item.schemas';

@@ -1,7 +1,7 @@
 import nock from 'nock';
 import fetch from 'node-fetch';
 
-import { RecaptchaActionType } from '@graasp/sdk';
+import type { RecaptchaActionType } from '@graasp/sdk';
 
 export function mockCaptchaValidation(action: RecaptchaActionType) {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {

@@ -1,13 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-import { FastifyInstance } from 'fastify';
-
-import build, { clearDatabase } from '../../../../../../test/app';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { ExportDataRepository } from '../memberExportData.repository';
 import { ExportMemberDataService } from '../memberExportData.service';
-import { DataArchiver, RequestDataExportService } from '../utils/export.utils';
+import { RequestDataExportService } from '../utils/export.utils';
 
 const storageFolder = path.join(TMP_FOLDER, 'export-data');
 const archiveFileName = 'test-archiver';

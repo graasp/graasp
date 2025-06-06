@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { subMinutes, subMonths } from 'date-fns';
 import geoip from 'geoip-lite';
 
-import { ActionRaw } from '../../src/drizzle/types';
+import type { ActionRaw } from '../../src/drizzle/types';
 import { View } from '../../src/services/item/plugins/action/itemAction.schemas';
 
 export const ActionFactory = (a: Partial<ActionRaw> = {}): ActionRaw => {

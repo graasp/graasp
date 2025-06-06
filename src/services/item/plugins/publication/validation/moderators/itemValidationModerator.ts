@@ -2,13 +2,13 @@ import { singleton } from 'tsyringe';
 
 import { ItemValidationReviewStatus, ItemValidationStatus } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../../drizzle/db';
-import { type ItemRaw, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
+import type { DBConnection } from '../../../../../../drizzle/db';
+import type { ItemRaw, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
 import { ProcessExecutionError } from '../errors';
 import { ItemValidationRepository } from '../itemValidation.repository';
 import { ItemValidationReviewRepository } from '../itemValidationReview.repository';
 import { StrategyExecutorFactory } from './strategyExecutorFactory';
-import { StrategyExecutor } from './types';
+import type { StrategyExecutor } from './types';
 
 @singleton()
 export class ItemValidationModerator {

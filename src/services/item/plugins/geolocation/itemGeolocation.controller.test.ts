@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import nock from 'nock';
 import { v4 as uuid } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 

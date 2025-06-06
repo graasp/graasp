@@ -2,7 +2,7 @@ import { and, eq, isNotNull, isNull } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
@@ -14,7 +14,7 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { TestWsClient } from '../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../websockets/test/ws-app';
 import {
-  ItemEvent,
+  type ItemEvent,
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,

@@ -5,7 +5,7 @@ import { fastify } from 'fastify';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
-import { DBConnection } from '../src/drizzle/db';
+import type { DBConnection } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';

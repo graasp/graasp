@@ -3,7 +3,7 @@
  *
  * Mock instances for testing in graasp-plugin-websockets
  */
-import { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 import { MemberFactory } from '@graasp/sdk';
 

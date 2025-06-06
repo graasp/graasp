@@ -3,19 +3,26 @@ import {
   EnqueuedTask,
   Index,
   MeiliSearch,
-  MultiSearchParams,
-  MultiSearchResponse,
+  type MultiSearchParams,
+  type MultiSearchResponse,
   Task,
   TaskStatus,
 } from 'meilisearch';
 import { v4 } from 'uuid';
 
-import { IndexItem, ItemType, ItemVisibilityType, MimeTypes, TagCategory, UUID } from '@graasp/sdk';
+import {
+  type IndexItem,
+  ItemType,
+  ItemVisibilityType,
+  MimeTypes,
+  TagCategory,
+  type UUID,
+} from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import { ItemFactory } from '../../../../../../../../test/factories/item.factory';
-import { DBConnection, db } from '../../../../../../../drizzle/db';
-import {
+import { type DBConnection, db } from '../../../../../../../drizzle/db';
+import type {
   ItemPublishedWithItem,
   ItemPublishedWithItemWithCreator,
   ItemRaw,

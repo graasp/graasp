@@ -1,9 +1,9 @@
 import { singleton } from 'tsyringe';
 
-import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
+import { type ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { AuthenticatedUser } from '../../../../../types';
+import type { AuthenticatedUser } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { fetchOpenAI } from './utils';
 

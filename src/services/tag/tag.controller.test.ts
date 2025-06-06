@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, TagCategory } from '@graasp/sdk';
 

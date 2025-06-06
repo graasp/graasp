@@ -3,12 +3,12 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { ItemBookmarkRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { ItemBookmarkRaw } from '../../../../drizzle/types';
+import type { MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { PackedItem } from '../../ItemWrapper';
+import type { PackedItem } from '../../ItemWrapper';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 

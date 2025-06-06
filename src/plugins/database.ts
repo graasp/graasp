@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-import { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 
 import { client } from '../drizzle/db';
 

@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import { AuthenticatedUser, MaybeUser } from '../../types';
+import type { AuthenticatedUser, MaybeUser } from '../../types';
 import { AuthorizedItemService } from '../authorizedItem.service';
 import { ChatMessageRepository } from './chatMessage.repository';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
