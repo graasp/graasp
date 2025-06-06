@@ -87,7 +87,7 @@ export class ItemExportRequestService {
    * @returns
    */
   private buildExportPath(requestId: string) {
-    return `item-export/${requestId}`;
+    return `item-export/${requestId}.zip`;
   }
 
   /**
@@ -233,6 +233,7 @@ export class ItemExportRequestService {
       archiveRootPath: rootPath,
       archive,
     }).catch((error) => {
+      this.logger.error(error);
       throw new UnexpectedExportError(error);
     });
     archive.end();
