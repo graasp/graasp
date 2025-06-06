@@ -7,6 +7,7 @@ import {
   type MinimalGuest,
   type MinimalMember,
 } from '../types';
+import { NotMemberOrGuest } from './account/errors';
 import { NotMember } from './member/error';
 
 // TODO: allow AccountRow or apply DTO on all relations?
@@ -47,6 +48,20 @@ export function assertIsMemberForTest<Err extends Error, Args extends unknown[]>
       const defaultError = new NotMember();
       defaultError.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
       throw defaultError;
+    }
+  }
+}
+
+export function assertIsMemberOrGuest<Err extends Error, Args extends unknown[]>(
+  account: AuthenticatedUser,
+  error?: new (...args: Args) => Err,
+  ...args: Args
+): asserts account is MinimalMember | MinimalGuest {
+  if (!(isMember(account) || isGuest(account))) {
+    if (error) {
+      throw new error(...args);
+    } else {
+      throw new NotMemberOrGuest();
     }
   }
 }

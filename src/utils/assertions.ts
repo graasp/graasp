@@ -1,6 +1,3 @@
-import { NotMemberOrGuest } from '../services/account/errors';
-import { isGuest, isMember } from '../services/authentication';
-import type { AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
 import { UnexpectedError } from './errors';
 
 export type Nullable<T> = T | null | undefined;
@@ -44,20 +41,6 @@ export function assertIsDefined<T, Err extends Error, Args extends unknown[]>(
 ): asserts object is NonNullable<T> {
   if (!isDefined(object)) {
     throw error ? new error(...args) : new UnexpectedError();
-  }
-}
-
-export function assertIsMemberOrGuest<Err extends Error, Args extends unknown[]>(
-  account: AuthenticatedUser,
-  error?: new (...args: Args) => Err,
-  ...args: Args
-): asserts account is MinimalMember | MinimalGuest {
-  if (!(isMember(account) || isGuest(account))) {
-    if (error) {
-      throw new error(...args);
-    } else {
-      throw new NotMemberOrGuest();
-    }
   }
 }
 

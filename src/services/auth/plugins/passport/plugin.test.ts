@@ -9,16 +9,16 @@ import { HttpMethod } from '@graasp/sdk';
 
 import build from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import type { ItemRaw, MemberRaw } from '../../../../drizzle/types';
-import { assertIsDefined } from '../../../../utils/assertions';
 import {
   APPS_JWT_SECRET,
   EMAIL_CHANGE_JWT_SECRET,
   JWT_SECRET,
   PASSWORD_RESET_JWT_SECRET,
-} from '../../../../utils/config';
+} from '../../../../config/secrets';
+import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
+import { ItemRaw, MemberRaw } from '../../../../drizzle/types';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../../item/test/fixtures/items';
 import { MemberPasswordService } from '../password/password.service';
