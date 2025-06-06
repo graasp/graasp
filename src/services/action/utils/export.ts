@@ -6,7 +6,7 @@ import path from 'path';
 
 import { ExportActionsFormatting } from '@graasp/sdk';
 
-import { AppActionRaw, AppDataRaw, AppSettingRaw } from '../../../drizzle/types';
+import type { AppActionRaw, AppDataRaw, AppSettingRaw } from '../../../drizzle/types';
 import { TMP_FOLDER } from '../../../utils/config';
 import { CannotWriteFileError } from './errors';
 

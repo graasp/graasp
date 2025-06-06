@@ -3,21 +3,21 @@ import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
-import { H5PItemExtra, ItemType } from '@graasp/sdk';
+import { type H5PItemExtra, ItemType } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { type ItemRaw, ItemWithType } from '../../../../../drizzle/types';
+import type { DBConnection } from '../../../../../drizzle/db';
+import type { ItemRaw, ItemWithType } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
-import { MinimalMember } from '../../../../../types';
+import type { MinimalMember } from '../../../../../types';
 import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
   H5P_PATH_PREFIX,
 } from '../../../../../utils/config';
 import { StorageService } from '../../../../member/plugins/storage/memberStorage.service';
-import { H5PItem, isItemType } from '../../../discrimination';
+import { type H5PItem, isItemType } from '../../../discrimination';
 import { ItemRepository } from '../../../item.repository';
 import { ItemService } from '../../../item.service';
 import { HtmlService } from '../html.service';

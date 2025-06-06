@@ -2,24 +2,24 @@ import { add, isBefore } from 'date-fns';
 import { inject, singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
-import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
+import Etherpad, { type AuthorSession } from '@graasp/etherpad-api';
 import {
-  EtherpadItemExtra,
+  type EtherpadItemExtra,
   EtherpadPermission,
-  EtherpadPermissionType,
+  type EtherpadPermissionType,
   ItemType,
   PermissionLevel,
 } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw, MinimalAccount } from '../../../../drizzle/types';
+import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { EtherpadItem, isItemType } from '../../discrimination';
+import { type EtherpadItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';

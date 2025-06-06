@@ -7,7 +7,7 @@ import path from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import {
   DescriptionPlacement,
@@ -22,7 +22,7 @@ import {
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../test/constants';
-import { SeedActor, seedFromJson } from '../../../test/mocks/seed';
+import { type SeedActor, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { isDirectChild } from '../../drizzle/operations';
 import { itemGeolocationsTable, itemMembershipsTable, itemsRawTable } from '../../drizzle/schema';

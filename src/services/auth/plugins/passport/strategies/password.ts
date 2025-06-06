@@ -6,7 +6,7 @@ import { db } from '../../../../../drizzle/db';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberPasswordService } from '../../password/password.service';
 import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions } from '../types';
+import type { CustomStrategyOptions } from '../types';
 
 export default (
   passport: Authenticator,

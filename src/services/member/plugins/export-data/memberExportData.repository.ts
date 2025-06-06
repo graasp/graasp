@@ -15,7 +15,7 @@ import {
   itemMembershipsTable,
   itemsRawTable,
 } from '../../../../drizzle/schema';
-import {
+import type {
   ActionRaw,
   AppActionRaw,
   AppDataRaw,
@@ -24,7 +24,7 @@ import {
   ChatMessageRaw,
   ItemLikeWithItem,
   ItemMembershipRaw,
-  type ItemRaw,
+  ItemRaw,
 } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';

@@ -1,9 +1,9 @@
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
+import { ItemVisibilityType, type ResultOf, type ThumbnailsBySize } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
-import {
+import type { DBConnection } from '../../drizzle/db';
+import type {
   ItemMembershipRaw,
   ItemRaw,
   ItemVisibilityRaw,
@@ -13,7 +13,7 @@ import {
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
-import { ItemsThumbnails } from './plugins/thumbnail/types';
+import type { ItemsThumbnails } from './plugins/thumbnail/types';
 
 type GraaspItem = Pick<
   ItemRaw,

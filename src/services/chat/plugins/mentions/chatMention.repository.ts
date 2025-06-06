@@ -5,7 +5,7 @@ import { MentionStatus } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
-import { ChatMentionRaw, ChatMentionWithMessageAndCreator } from '../../../../drizzle/types';
+import type { ChatMentionRaw, ChatMentionWithMessageAndCreator } from '../../../../drizzle/types';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 
 @singleton()

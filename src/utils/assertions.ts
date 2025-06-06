@@ -1,6 +1,6 @@
 import { NotMemberOrGuest } from '../services/account/errors';
 import { isGuest, isMember } from '../services/authentication';
-import { AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
+import type { AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
 import { UnexpectedError } from './errors';
 
 export type Nullable<T> = T | null | undefined;

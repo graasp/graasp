@@ -1,4 +1,4 @@
-import { ConnectionOptions, Queue, Worker } from 'bullmq';
+import { type ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { BaseLogger } from './logger';
 import {

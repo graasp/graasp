@@ -2,26 +2,26 @@ import { captureException } from '@sentry/node';
 import fetch from 'node-fetch';
 import { inject, singleton } from 'tsyringe';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import {
-  ItemGeolocation,
+  type ItemGeolocation,
   ItemType,
-  LinkItemExtra,
-  LinkItemExtraProperties,
-  UUID,
+  type LinkItemExtra,
+  type LinkItemExtraProperties,
+  type UUID,
 } from '@graasp/sdk';
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { EmbeddedLinkItem, isItemType } from '../../discrimination';
+import { type EmbeddedLinkItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';

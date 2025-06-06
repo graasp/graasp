@@ -2,13 +2,13 @@ import { getTableColumns } from 'drizzle-orm';
 import { and, asc, desc, eq, ilike } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { UUID } from '@graasp/sdk';
+import type { UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { itemTagsTable, tagsTable } from '../../../../drizzle/schema';
 import { type ItemRaw, type TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
-import { TagCategoryOptions, TagCount } from '../../../tag/tag.schemas';
+import type { TagCategoryOptions, TagCount } from '../../../tag/tag.schemas';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 

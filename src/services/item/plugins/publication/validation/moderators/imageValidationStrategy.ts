@@ -8,7 +8,7 @@ import FileService from '../../../../../file/file.service';
 import { InvalidFileItemError } from '../errors';
 import { classifyImage } from '../processes/imageClassification';
 import { isImage } from '../utils';
-import { ValidationProcessResult, ValidationStrategy } from './types';
+import type { ValidationProcessResult, ValidationStrategy } from './types';
 
 @singleton()
 export class ImageValidationStrategy implements ValidationStrategy {

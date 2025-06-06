@@ -8,7 +8,7 @@ import { UnauthorizedMember } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/account.repository';
 import { ItemRepository } from '../../../../item/item.repository';
 import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import type { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,

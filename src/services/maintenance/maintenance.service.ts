@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { MaintenanceRepository } from './maintenance.repository';
 
 @singleton()

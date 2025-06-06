@@ -4,10 +4,10 @@ import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
 import { ZipFile } from 'yazl';
 
-import { UnionOfConst } from '@graasp/sdk';
+import type { UnionOfConst } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw, MinimalAccount } from '../../../../drizzle/types';
+import type { DBConnection } from '../../../../drizzle/db';
+import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';

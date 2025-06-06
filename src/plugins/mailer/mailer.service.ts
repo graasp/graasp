@@ -1,4 +1,4 @@
-import { Transporter, createTransport } from 'nodemailer';
+import { type Transporter, createTransport } from 'nodemailer';
 import { singleton } from 'tsyringe';
 
 import { applyLayout } from './layout';

@@ -1,13 +1,13 @@
 import { addMonths, formatISO } from 'date-fns';
 import { and, between, desc, eq } from 'drizzle-orm/sql';
 
-import { UUID } from '@graasp/sdk';
+import type { UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
 import { isDescendantOrSelf } from '../../drizzle/operations';
 import { actionsTable, items } from '../../drizzle/schema';
-import { ActionInsertDTO, ActionWithItem } from '../../drizzle/types';
-import { ViewOptions } from '../item/plugins/action/itemAction.schemas';
+import type { ActionInsertDTO, ActionWithItem } from '../../drizzle/types';
+import type { ViewOptions } from '../item/plugins/action/itemAction.schemas';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
 

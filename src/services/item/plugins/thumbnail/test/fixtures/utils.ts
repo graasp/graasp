@@ -1,6 +1,6 @@
-import { ThumbnailSizeType } from '@graasp/sdk';
+import type { ThumbnailSizeType } from '@graasp/sdk';
 
-import { ItemsThumbnails } from '../../types';
+import type { ItemsThumbnails } from '../../types';
 
 export const constructMockedUrl = ({ size, id }: { size: string; id: string }) =>
   `mocked-url/${id}?${size}`;

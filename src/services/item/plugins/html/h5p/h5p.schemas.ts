@@ -1,8 +1,8 @@
 import { Type } from '@sinclair/typebox';
-import { JSONSchemaType } from 'ajv';
+import type { JSONSchemaType } from 'ajv';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';

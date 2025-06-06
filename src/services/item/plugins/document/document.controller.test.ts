@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { DocumentItemExtraFlavor, HttpMethod, ItemType } from '@graasp/sdk';
 

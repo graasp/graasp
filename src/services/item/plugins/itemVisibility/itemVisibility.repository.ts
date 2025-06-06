@@ -2,13 +2,13 @@ import { inArray, isNull, or } from 'drizzle-orm';
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/sdk';
+import { type ItemVisibilityOptionsType, type ResultOf, getChildFromPath } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import { itemVisibilitiesTable, items, itemsRawTable } from '../../../../drizzle/schema';
-import { type ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
+import type { MinimalMember } from '../../../../types';
 import { mapById } from '../../../utils';
 import {
   CannotModifyParentVisibility,

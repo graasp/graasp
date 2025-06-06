@@ -16,7 +16,7 @@ import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { items, publishedItemsTable } from '../../drizzle/schema';
-import { ItemRaw } from '../../drizzle/types';
+import type { ItemRaw } from '../../drizzle/types';
 import { assertIsDefined } from '../../utils/assertions';
 import {
   HierarchyTooDeep,
@@ -29,7 +29,7 @@ import { assertIsMember } from '../authentication';
 import { expectMember } from '../member/test/fixtures/members';
 import { MemberDTO } from '../member/types';
 import { DEFAULT_ORDER } from './constants';
-import { FolderItem } from './discrimination';
+import type { FolderItem } from './discrimination';
 import { ItemRepository } from './item.repository';
 import { expectItem, expectManyItems } from './test/fixtures/items';
 

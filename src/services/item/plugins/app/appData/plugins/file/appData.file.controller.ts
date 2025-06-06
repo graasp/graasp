@@ -1,10 +1,10 @@
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../../../di/utils';
-import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { AppDataRaw } from '../../../../../../../drizzle/types';
-import { AuthenticatedUser } from '../../../../../../../types';
+import { type DBConnection, db } from '../../../../../../../drizzle/db';
+import type { AppDataRaw } from '../../../../../../../drizzle/types';
+import type { AuthenticatedUser } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import {

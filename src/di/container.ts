@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
 import { MeiliSearch } from 'meilisearch';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 

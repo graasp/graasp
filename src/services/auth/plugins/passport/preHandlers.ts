@@ -1,5 +1,5 @@
 import fastifyPassport from '@fastify/passport';
-import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
+import type { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
 
 import { InsufficientPermission } from '../../../../utils/errors';
 import { PassportStrategy } from './strategies';

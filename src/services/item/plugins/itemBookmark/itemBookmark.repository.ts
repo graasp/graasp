@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { itemBookmarksTable, items, membersView } from '../../../../drizzle/schema';
-import {
+import type {
   ItemBookmarkInsertDTO,
   ItemBookmarkRawWithItemAndAccount,
   ItemBookmarkRawWithItemWithCreator,

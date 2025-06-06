@@ -1,11 +1,11 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { TagCategoryType } from '@graasp/sdk';
+import type { TagCategoryType } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { tagsTable } from '../../drizzle/schema';
-import { TagRaw } from '../../drizzle/types';
+import type { TagRaw } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 
 @singleton()

@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
@@ -21,7 +21,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { accountsTable, invitationsTable, itemMembershipsTable } from '../../../../drizzle/schema';
-import { InvitationRaw } from '../../../../drizzle/types';
+import type { InvitationRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';

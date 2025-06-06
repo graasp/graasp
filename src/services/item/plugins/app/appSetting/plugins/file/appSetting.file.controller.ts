@@ -1,10 +1,14 @@
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../../../di/utils';
-import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { AppSettingRaw, AppSettingWithItem, ItemType } from '../../../../../../../drizzle/types';
-import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
+import { type DBConnection, db } from '../../../../../../../drizzle/db';
+import {
+  type AppSettingRaw,
+  type AppSettingWithItem,
+  ItemType,
+} from '../../../../../../../drizzle/types';
+import type { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import {
   authenticateAppsJWT,

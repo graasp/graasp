@@ -1,8 +1,8 @@
-import { FileServiceConfig } from '../file.service';
-import { LocalFileConfiguration, S3FileConfiguration } from '../interfaces/configuration';
+import type { FileServiceConfig } from '../file.service';
+import type { LocalFileConfiguration, S3FileConfiguration } from '../interfaces/configuration';
 import { LocalFileRepository } from '../repositories/local';
 import { S3FileRepository } from '../repositories/s3';
-import { FileStorage, FileStorageType } from '../types';
+import { FileStorage, type FileStorageType } from '../types';
 import { MalformedFileConfigError } from './errors';
 
 const verifyLocalConfig = (config?: LocalFileConfiguration) => {

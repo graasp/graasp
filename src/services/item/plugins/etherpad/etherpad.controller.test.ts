@@ -5,7 +5,7 @@ import { cleanAll } from 'nock';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { EtherpadPermission, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
@@ -21,7 +21,7 @@ import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ETHERPAD_PUBLIC_URL } from '../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../utils/errors';
-import { EtherpadItem } from '../../discrimination';
+import type { EtherpadItem } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { MAX_SESSIONS_IN_COOKIE } from './constants';
 import { ItemMissingExtraError } from './errors';

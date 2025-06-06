@@ -5,16 +5,16 @@ import { v4 } from 'uuid';
 import {
   AppDataVisibility,
   ExportActionsFormatting,
-  FileItemProperties,
+  type FileItemProperties,
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
   ItemValidationProcess,
   ItemValidationStatus,
-  ItemVisibilityOptionsType,
+  type ItemVisibilityOptionsType,
   ItemVisibilityType,
   PermissionLevel,
-  PermissionLevelOptions,
+  type PermissionLevelOptions,
   ShortLinkPlatform,
   buildPathFromIds,
   getIdsFromPath,
@@ -52,7 +52,7 @@ import {
   shortLinksTable,
   tagsTable,
 } from '../../src/drizzle/schema';
-import {
+import type {
   AccountRaw,
   ActionRaw,
   ActionRequestExportRaw,

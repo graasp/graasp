@@ -4,7 +4,7 @@ import { ItemType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { appSettingsTable } from '../../../../../drizzle/schema';
-import { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types';
+import type { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types';
 import { ItemNotFound } from '../../../../../utils/errors';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 

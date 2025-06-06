@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';
 
-import { FastifyInstance, PassportUser } from 'fastify';
+import type { FastifyInstance, PassportUser } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
@@ -11,7 +11,7 @@ import build from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { ItemRaw, MemberRaw } from '../../../../drizzle/types';
+import type { ItemRaw, MemberRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   APPS_JWT_SECRET,

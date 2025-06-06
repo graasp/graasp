@@ -5,7 +5,7 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify';
 
 import { MentionStatus } from '@graasp/sdk';
 

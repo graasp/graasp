@@ -2,7 +2,7 @@ import { isAfter } from 'date-fns';
 import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
@@ -14,12 +14,12 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemLikesTable } from '../../../../drizzle/schema';
-import { ItemLikeRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { ItemLikeRaw } from '../../../../drizzle/types';
+import type { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAccess } from '../../../../utils/errors';
 import { assertIsMember } from '../../../authentication';
-import { ItemWrapper, PackedItem } from '../../ItemWrapper';
+import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
 import { expectManyPackedItems } from '../../test/fixtures/items';
 import { ItemLikeNotFound } from './utils/errors';
 

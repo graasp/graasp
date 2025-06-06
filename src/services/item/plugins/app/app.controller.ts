@@ -1,11 +1,11 @@
 import { fastifyCors } from '@fastify/cors';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { AuthTokenSubject } from '@graasp/sdk';
+import type { AuthTokenSubject } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
+import type { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
 import {
   guestAuthenticateAppsJWT,
@@ -18,7 +18,7 @@ import appActionPlugin from './appAction/appAction.controller';
 import appDataPlugin from './appData/appData.controller';
 import appSettingPlugin from './appSetting/appSetting.controller';
 import chatBotPlugin from './chatBot/chatBot.controller';
-import { AppsPluginOptions } from './types';
+import type { AppsPluginOptions } from './types';
 
 const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, options) => {
   const { jwtSecret, publisherId } = options;

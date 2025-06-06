@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemValidationStatus, PermissionLevel, PublicationStatus } from '@graasp/sdk';
 
@@ -15,7 +15,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { itemValidationsTable } from '../../../../../drizzle/schema';
-import {
+import type {
   ItemRaw,
   ItemValidationGroupRaw,
   ItemValidationGroupWithItemAndValidations,
@@ -25,7 +25,7 @@ import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';
 import { ItemValidationService } from './itemValidation.service';
-import { ItemModeratorValidate, stubItemModerator } from './test/utils';
+import { type ItemModeratorValidate, stubItemModerator } from './test/utils';
 
 const VALIDATION_LOADING_TIME = 2000;
 

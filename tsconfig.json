@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
-    "lib": ["es2021", "es6", "esnext.asynciterable"],
+    "lib": [
+      "es2021",
+      "es6",
+      "esnext.asynciterable"
+    ],
     "target": "es6",
-    "module": "Node16",
+    "module": "node16",
     // "strict": true, // TODO: enable
     "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
     "checkJs": false,
@@ -15,9 +19,18 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     "strictNullChecks": true,
+    // for running typescript with tsx without the need to build and watch
+    // "isolatedModules": true, // enable for running the code with tsx
+    // "verbatimModuleSyntax": true, // TODO: enable when we want to move to ESM
     "strictPropertyInitialization": false, // disable because of entities,
-    "typeRoots": ["./node_modules/@types", "./src/@types/*"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types/*"
+    ],
     "sourceMap": true
   },
-  "include": ["src/**/*", "test"]
+  "include": [
+    "src/**/*",
+    "test"
+  ]
 }

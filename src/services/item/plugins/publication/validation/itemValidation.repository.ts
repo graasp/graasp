@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm';
 
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import type { DBConnection } from '../../../../../drizzle/db';
 import { itemValidationsTable } from '../../../../../drizzle/schema';
-import { ItemValidationRaw } from '../../../../../drizzle/types';
+import type { ItemValidationRaw } from '../../../../../drizzle/types';
 
 export class ItemValidationRepository {
   /**

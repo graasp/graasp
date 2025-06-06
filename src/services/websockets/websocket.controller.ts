@@ -6,10 +6,10 @@
  * Integrates the {@link WebSocketChannels} abstraction
  * in a fastify server plugin with @fastify/websocket
  */
-import { RedisOptions } from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 
 import fws from '@fastify/websocket';
-import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
+import type { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 
 import { NODE_ENV } from '../../utils/config';
 import { optionalIsAuthenticated } from '../auth/plugins/passport';

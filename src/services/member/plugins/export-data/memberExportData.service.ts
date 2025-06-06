@@ -1,8 +1,8 @@
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { ItemRaw } from '../../../../drizzle/types';
-import { MemberInfo, MinimalMember } from '../../../../types';
+import type { ItemRaw } from '../../../../drizzle/types';
+import type { MemberInfo, MinimalMember } from '../../../../types';
 import { ExportDataRepository } from './memberExportData.repository';
 import { anonymizeMentionsMessage, anonymizeMessages } from './utils/anonymize.utils';
 import { RequestDataExportService } from './utils/export.utils';

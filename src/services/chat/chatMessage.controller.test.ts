@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
@@ -11,7 +11,7 @@ import { seedFromJson } from '../../../test/mocks/seed';
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { chatMentionsTable, chatMessagesTable } from '../../drizzle/schema';
-import { ChatMessageRaw } from '../../drizzle/types';
+import type { ChatMessageRaw } from '../../drizzle/types';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../utils/config';

@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { membershipRequestsTable } from '../../../../drizzle/schema';
-import { MembershipRequestWithMember } from '../../../../drizzle/types';
+import type { MembershipRequestWithMember } from '../../../../drizzle/types';
 import { ItemNotFound, MemberNotFound } from '../../../../utils/errors';
 import { AccountNotFound } from '../../../account/errors';
 

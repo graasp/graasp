@@ -1,7 +1,7 @@
 import { AccountType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MemberRaw, MinimalAccount } from '../../../../drizzle/types';
+import type { MemberRaw, MinimalAccount } from '../../../../drizzle/types';
 
 export const expectMember = (
   m: MemberRaw | undefined | null,

@@ -1,12 +1,12 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 
-import { FolderItemFactory, TagCategory, TagCategoryType } from '@graasp/sdk';
+import { FolderItemFactory, TagCategory, type TagCategoryType } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemTagsTable, itemsRawTable, tagsTable } from '../../../../drizzle/schema';
-import { ItemInsertDTO } from '../../../../drizzle/types';
+import type { ItemInsertDTO } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ItemTagRepository } from './ItemTag.repository';

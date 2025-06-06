@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../../plugins/typebox';
 

@@ -5,7 +5,7 @@ import { ItemType, MimeTypes, getMimetype } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../../../drizzle/types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { FileItem, isItemType } from '../../../discrimination';
+import { type FileItem, isItemType } from '../../../discrimination';
 
 export const stripHtml = (str?: string | null): string => (str ? striptags(str) : '');
 

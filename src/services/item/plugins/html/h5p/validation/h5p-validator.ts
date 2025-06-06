@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import { safeParse } from 'secure-json-parse';
 
-import { HtmlValidator } from '../../validator';
+import type { HtmlValidator } from '../../validator';
 import { H5PInvalidManifestError } from '../errors';
 import { h5pManifestSchema } from '../h5p.schemas';
 import { H5P } from './h5p';

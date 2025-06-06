@@ -15,13 +15,13 @@ import { singleton } from 'tsyringe';
 import {
   PermissionLevel,
   PermissionLevelCompare,
-  PermissionLevelOptions,
-  ResultOf,
-  UUID,
+  type PermissionLevelOptions,
+  type ResultOf,
+  type UUID,
   getChildFromPath,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
 import {
   accountsTable,
@@ -30,15 +30,15 @@ import {
   itemsRawTable,
   membersView,
 } from '../../drizzle/schema';
-import {
+import type {
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
   ItemMembershipWithItemAndCompleteAccount,
-  type ItemRaw,
+  ItemRaw,
   MemberRaw,
 } from '../../drizzle/types';
-import { AuthenticatedUser, MinimalMember } from '../../types';
+import type { AuthenticatedUser, MinimalMember } from '../../types';
 import {
   InvalidMembership,
   InvalidPermissionLevel,

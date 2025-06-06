@@ -1,10 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance, PassportUser } from 'fastify';
+import type { FastifyInstance, PassportUser } from 'fastify';
 
 import build, { mockAuthenticate, unmockAuthenticate } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';

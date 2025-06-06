@@ -7,15 +7,15 @@ import {
   DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
   ExportActionsFormatting,
   PermissionLevel,
-  UUID,
+  type UUID,
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { ActionRequestExportRaw, type ItemRaw } from '../../../../../drizzle/types';
+import type { ActionRequestExportRaw, ItemRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { MemberInfo, MinimalMember } from '../../../../../types';
+import type { MemberInfo, MinimalMember } from '../../../../../types';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
 import {
   buildActionFilePath,

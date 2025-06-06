@@ -10,7 +10,7 @@ import {
   ThumbnailServiceTransformer,
 } from '../../../../../thumbnail/thumbnail.service';
 import { classifyImage } from '../processes/imageClassification';
-import { ValidationProcessResult, ValidationStrategy } from './types';
+import type { ValidationProcessResult, ValidationStrategy } from './types';
 
 @singleton()
 export class ThumbnailValidationStrategy implements ValidationStrategy {

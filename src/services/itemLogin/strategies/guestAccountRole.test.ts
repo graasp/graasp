@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 
 import { AccountType } from '@graasp/sdk';
 

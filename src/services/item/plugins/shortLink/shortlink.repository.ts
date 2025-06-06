@@ -1,16 +1,20 @@
 import { and, asc, count, eq } from 'drizzle-orm';
 
 import {
-  ShortLink as CreateShortLink,
+  type ShortLink as CreateShortLink,
   ShortLinkPlatform,
-  UnionOfConst,
-  UpdateShortLink,
+  type UnionOfConst,
+  type UpdateShortLink,
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { DUPLICATE_ERROR_CODE } from '../../../../drizzle/errorCodes';
 import { shortLinksTable } from '../../../../drizzle/schema';
-import { ShortLinkInsertDTO, ShortLinkRaw, ShortLinkWithItem } from '../../../../drizzle/types';
+import type {
+  ShortLinkInsertDTO,
+  ShortLinkRaw,
+  ShortLinkWithItem,
+} from '../../../../drizzle/types';
 import { UpdateException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { assertIsError } from '../../../../utils/assertions';

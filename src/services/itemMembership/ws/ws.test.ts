@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel, Websocket } from '@graasp/sdk';
 
@@ -13,7 +13,7 @@ import { MemberCannotAccess } from '../../../utils/errors';
 import { expectDeleteMembershipFeedback } from '../../item/plugins/action/test/utils';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
-import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events';
+import { ItemMembershipEvent, type MembershipEvent, itemMembershipsTopic } from '../ws/events';
 
 describe('Item websocket hooks', () => {
   let app: FastifyInstance;

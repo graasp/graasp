@@ -8,13 +8,13 @@ import { MimeTypes, PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { MaybeUser, MinimalMember } from '../../../../types';
+import type { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemService } from '../../item.service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
-import { ItemThumbnailSize, ItemsThumbnails } from './types';
+import type { ItemThumbnailSize, ItemsThumbnails } from './types';
 
 @injectable()
 export class ItemThumbnailService {

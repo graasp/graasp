@@ -1,4 +1,4 @@
-import { RessourceAuthorizationStrategy } from '../../auth/plugins/passport';
+import type { RessourceAuthorizationStrategy } from '../../auth/plugins/passport';
 import { isMember } from '../../authentication';
 import { NotMember } from '../error';
 

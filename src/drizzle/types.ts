@@ -1,4 +1,4 @@
-import {
+import type {
   AppItemExtra,
   DocumentItemExtra,
   EtherpadItemExtra,
@@ -12,7 +12,7 @@ import {
   UnionOfConst,
 } from '@graasp/sdk';
 
-import { MinimalGuest, MinimalMember } from '../types';
+import type { MinimalGuest, MinimalMember } from '../types';
 import {
   accountsTable,
   actionRequestExportsTable,

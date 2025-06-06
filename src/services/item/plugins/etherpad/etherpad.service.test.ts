@@ -11,15 +11,15 @@ import {
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { EtherpadItem } from '../../discrimination';
+import type { EtherpadItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from './etherpad.service';
 import { EtherpadServiceConfig } from './serviceConfig';
-import { PadNameFactory } from './types';
+import type { PadNameFactory } from './types';
 
 jest.mock('node-fetch');
 

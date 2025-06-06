@@ -1,7 +1,7 @@
-import { ItemOpFeedbackEvent } from '@graasp/sdk';
+import type { ItemOpFeedbackEvent } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../../../drizzle/types';
-import { MembershipEvent } from '../../../../itemMembership/ws/events';
+import type { MembershipEvent } from '../../../../itemMembership/ws/events';
 import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 
 export const expectExportFeedbackOp = <

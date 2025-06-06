@@ -1,9 +1,15 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, PermissionLevel, PermissionLevelOptions, UUID } from '@graasp/sdk';
-
-import { DBConnection } from '../../drizzle/db';
 import {
+  ClientManager,
+  Context,
+  PermissionLevel,
+  type PermissionLevelOptions,
+  type UUID,
+} from '@graasp/sdk';
+
+import type { DBConnection } from '../../drizzle/db';
+import type {
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
@@ -12,7 +18,7 @@ import {
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
-import { AccountType, AuthenticatedUser, MaybeUser, MemberInfo } from '../../types';
+import { AccountType, type AuthenticatedUser, type MaybeUser, type MemberInfo } from '../../types';
 import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { AuthorizedItemService } from '../authorizedItem.service';
