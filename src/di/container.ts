@@ -22,11 +22,7 @@ import {
   GEOLOCATION_API_KEY,
   IMAGE_CLASSIFIER_API,
   MAILER_CONFIG_FROM_EMAIL,
-  MAILER_CONFIG_PASSWORD,
-  MAILER_CONFIG_SMTP_HOST,
-  MAILER_CONFIG_SMTP_PORT,
-  MAILER_CONFIG_SMTP_USE_SSL,
-  MAILER_CONFIG_USERNAME,
+  MAILER_CONNECTION,
   MEILISEARCH_MASTER_KEY,
   MEILISEARCH_URL,
   REDIS_CONNECTION,
@@ -120,20 +116,8 @@ export const registerDependencies = (instance: FastifyInstance) => {
   registerValue(
     MailerService,
     new MailerService({
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
+      connection: MAILER_CONNECTION,
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     }),
   );
-  // registerValue('MAIL_KEY', {
-  //   host: MAILER_CONFIG_SMTP_HOST,
-  //   port: MAILER_CONFIG_SMTP_PORT,
-  //   useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-  //   username: MAILER_CONFIG_USERNAME,
-  //   password: MAILER_CONFIG_PASSWORD,
-  //   fromEmail: MAILER_CONFIG_FROM_EMAIL,
-  // });
 };

@@ -161,24 +161,10 @@ export const EMAIL_CHANGE_JWT_SECRET: string = asDefined(
 export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES = 1440;
 
 // Graasp mailer config
-if (
-  !process.env.MAILER_CONFIG_SMTP_HOST ||
-  !process.env.MAILER_CONFIG_USERNAME ||
-  !process.env.MAILER_CONFIG_PASSWORD
-) {
-  throw new Error(
-    `Email config is not fully defined: ${JSON.stringify({
-      host: process.env.MAILER_CONFIG_SMTP_HOST,
-      username: process.env.MAILER_CONFIG_USERNAME,
-      password: process.env.MAILER_CONFIG_PASSWORD,
-    })}`,
-  );
+if (!process.env.MAILER_CONNECTION) {
+  throw new Error(`MAILER_CONNECTION is not defined`);
 }
-export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
-export const MAILER_CONFIG_SMTP_PORT = parseInt(process.env.MAILER_CONFIG_SMTP_PORT ?? '465');
-export const MAILER_CONFIG_SMTP_USE_SSL = process.env.MAILER_CONFIG_SMTP_USE_SSL !== 'false';
-export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
-export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
+export const MAILER_CONNECTION = process.env.MAILER_CONNECTION;
 export const MAILER_CONFIG_FROM_EMAIL =
   process.env.MAILER_CONFIG_FROM_EMAIL ?? 'no-reply@graasp.org';
 
