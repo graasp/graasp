@@ -67,8 +67,12 @@ const redisSerdes = {
 };
 
 // Helper to create a redis client instance
-function createRedisClientInstance(redisConfig: RedisOptions, log?: FastifyBaseLogger): Redis {
-  const redis = new Redis(redisConfig);
+function createRedisClientInstance(
+  redisConnection: string,
+  redisConfig: RedisOptions,
+  log?: FastifyBaseLogger,
+): Redis {
+  const redis = new Redis(redisConnection, redisConfig);
 
   redis.on('error', (err) => {
     log?.error(
@@ -96,6 +100,7 @@ class MultiInstanceChannelsBroker {
   constructor(
     wsChannels: WebSocketChannels,
     redisParams: {
+      connectionString: string;
       config: RedisOptions;
       channelName: string;
     },
@@ -103,8 +108,8 @@ class MultiInstanceChannelsBroker {
   ) {
     this.wsChannels = wsChannels;
     this.notifChannel = redisParams.channelName;
-    this.sub = createRedisClientInstance(redisParams.config, log);
-    this.pub = createRedisClientInstance(redisParams.config, log);
+    this.sub = createRedisClientInstance(redisParams.connectionString, redisParams.config, log);
+    this.pub = createRedisClientInstance(redisParams.connectionString, redisParams.config, log);
 
     this.sub.subscribe(this.notifChannel, (err, _result) => {
       if (err) {

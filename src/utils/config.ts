@@ -114,10 +114,8 @@ if (!process.env.SECURE_SESSION_SECRET_KEY) {
   throw new Error('SECURE_SESSION_SECRET_KEY is not defined');
 }
 export const SECURE_SESSION_SECRET_KEY: string = process.env.SECURE_SESSION_SECRET_KEY!;
-export const SECURE_SESSION_EXPIRATION_IN_SECONDS: number =
-  +process.env.SECURE_SESSION_EXPIRATION_IN_SECONDS! || 604800; // 7days
-export const MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS: number =
-  +process.env.MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS! || 15552000; // 6 * 30days
+export const SECURE_SESSION_EXPIRATION_IN_SECONDS = 604800; // 7days
+export const MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS = 15552000; // 6 * 30days
 /**
  * JWT
  */
@@ -140,13 +138,9 @@ if (!process.env.REFRESH_TOKEN_JWT_SECRET) {
 }
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
-export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES
-  ? +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES
-  : 10080;
+export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = 10080;
 /** Refresh token expiration, in minutes */
-export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
-  ? +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
-  : 86400;
+export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = 86400;
 
 /** Password reset token Secret */
 export const PASSWORD_RESET_JWT_SECRET: string = process.env.PASSWORD_RESET_JWT_SECRET!;
@@ -154,8 +148,7 @@ if (!PASSWORD_RESET_JWT_SECRET) {
   throw new Error('PASSWORD_RESET_JWT_SECRET should be defined');
 }
 /** Password reset token expiration, in minutes */
-export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES: number =
-  Number(process.env.PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES) || 1440;
+export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES = 1440;
 
 /** Email change token Secret */
 export const EMAIL_CHANGE_JWT_SECRET: string = asDefined(
@@ -165,8 +158,7 @@ export const EMAIL_CHANGE_JWT_SECRET: string = asDefined(
 );
 
 /** Email change token expiration, in minutes */
-export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES: number =
-  Number(process.env.EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES) || 1440;
+export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES = 1440;
 
 // Graasp mailer config
 if (
@@ -312,10 +304,12 @@ if (!process.env.APPS_JWT_SECRET) {
 export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
-export const REDIS_HOST = process.env.REDIS_HOST;
-export const REDIS_PORT: number = +process.env.REDIS_PORT! || 6379;
-export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
-export const REDIS_USERNAME = process.env.REDIS_USERNAME;
+// export const REDIS_HOST = process.env.REDIS_HOST;
+// export const REDIS_PORT: number = +process.env.REDIS_PORT! || 6379;
+// export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+// export const REDIS_USERNAME = process.env.REDIS_USERNAME;
+//  redis[s]://[[username][:password]@][host][:port][/db-number]:
+export const REDIS_CONNECTION = 'redis://redis:6379';
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API ?? '';

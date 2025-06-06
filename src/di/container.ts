@@ -29,10 +29,7 @@ import {
   MAILER_CONFIG_USERNAME,
   MEILISEARCH_MASTER_KEY,
   MEILISEARCH_URL,
-  REDIS_HOST,
-  REDIS_PASSWORD,
-  REDIS_PORT,
-  REDIS_USERNAME,
+  REDIS_CONNECTION,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
 import {
@@ -64,15 +61,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
   // register geolocation key for the ItemGeolocationService.
   registerValue(GEOLOCATION_API_KEY_DI_KEY, GEOLOCATION_API_KEY);
 
-  registerValue(
-    Redis,
-    new Redis({
-      host: REDIS_HOST,
-      port: REDIS_PORT,
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-    }),
-  );
+  registerValue(Redis, new Redis(REDIS_CONNECTION));
 
   // Register CachingService for the thumbnails urls.
   registerValue(

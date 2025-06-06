@@ -26,6 +26,7 @@ export interface WebsocketsPluginOptions {
   redis: {
     config: RedisOptions;
     channelName: string;
+    connectionString: string;
   };
 }
 
