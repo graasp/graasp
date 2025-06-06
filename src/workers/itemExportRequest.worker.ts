@@ -12,13 +12,14 @@ type ExportFolderZipJob = Job<{
 
 export class ItemExportRequestWorker {
   private readonly logger: BaseLogger;
+  private worker: Worker;
   itemExportRequestService: ItemExportRequestService;
 
   constructor(itemExportRequestService: ItemExportRequestService, logger: BaseLogger) {
     this.logger = logger;
     this.itemExportRequestService = itemExportRequestService;
 
-    const worker = new Worker(
+    this.worker = new Worker(
       QueueNames.ItemExport,
       async (job: ExportFolderZipJob) => {
         await db.transaction(async (tx) => {
@@ -34,21 +35,21 @@ export class ItemExportRequestWorker {
       },
     );
 
-    worker.on('completed', (job) => {
+    this.worker.on('completed', (job) => {
       this.logger.info(`${job.id} has completed!`);
     });
 
-    worker.on('active', (job) => {
+    this.worker.on('active', (job) => {
       this.logger.info(`${job.id} is now active!`);
     });
 
-    worker.on('failed', (job, err) => {
+    this.worker.on('failed', (job, err) => {
       this.logger.info(`${job?.id ?? 'unknown job'} has failed with ${err.message}`);
     });
 
-    worker.on('error', (err) => {
+    this.worker.on('error', (err) => {
       // log the error
-      console.error(err);
+      this.logger.error(err);
     });
   }
 }
