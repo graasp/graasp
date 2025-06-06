@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.1](https://github.com/graasp/graasp/compare/v2.4.0...v2.4.1) (2025-06-06)
+
+
+### Bug Fixes
+
+* **refactor:** simplify environment variables ([#1897](https://github.com/graasp/graasp/issues/1897)) ([041bcab](https://github.com/graasp/graasp/commit/041bcab7a8ffc6ab14999b9e3fa07df812f5c044))
+* some typo in the readme ([#1894](https://github.com/graasp/graasp/issues/1894)) ([e7ea9be](https://github.com/graasp/graasp/commit/e7ea9beb0f48a0b4f2ed9c36333683aa6355a0db))
+
 ## [2.4.0](https://github.com/graasp/graasp/compare/v2.3.0...v2.4.0) (2025-06-05)
 
 
