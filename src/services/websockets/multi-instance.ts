@@ -9,7 +9,7 @@
  */
 import { JTDSchemaType } from 'ajv/dist/core';
 import { Ajv } from 'ajv/dist/jtd';
-import { Redis, RedisOptions } from 'ioredis';
+import { Redis } from 'ioredis';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -67,8 +67,8 @@ const redisSerdes = {
 };
 
 // Helper to create a redis client instance
-function createRedisClientInstance(redisConfig: RedisOptions, log?: FastifyBaseLogger): Redis {
-  const redis = new Redis(redisConfig);
+function createRedisClientInstance(redisConnection: string, log?: FastifyBaseLogger): Redis {
+  const redis = new Redis(redisConnection);
 
   redis.on('error', (err) => {
     log?.error(
@@ -96,15 +96,15 @@ class MultiInstanceChannelsBroker {
   constructor(
     wsChannels: WebSocketChannels,
     redisParams: {
-      config: RedisOptions;
+      connection: string;
       channelName: string;
     },
     log?: FastifyBaseLogger,
   ) {
     this.wsChannels = wsChannels;
     this.notifChannel = redisParams.channelName;
-    this.sub = createRedisClientInstance(redisParams.config, log);
-    this.pub = createRedisClientInstance(redisParams.config, log);
+    this.sub = createRedisClientInstance(redisParams.connection, log);
+    this.pub = createRedisClientInstance(redisParams.connection, log);
 
     this.sub.subscribe(this.notifChannel, (err, _result) => {
       if (err) {

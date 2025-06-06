@@ -113,9 +113,7 @@ test.skip('incorrect Redis message format', async () => {
   const server = await createWsFastifyInstance(config, async (instance) => {
     logInfoSpy = jest.spyOn(instance.log, 'info');
   });
-  const pub = new Redis({
-    host: config.redis.config.host,
-  });
+  const pub = new Redis(config.redis.connection);
   pub.publish(config.redis.channelName, JSON.stringify('Mock invalid redis message'));
   await waitForExpect(() => {
     expect(logInfoSpy).toHaveBeenCalledWith(

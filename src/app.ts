@@ -17,7 +17,7 @@ import { maintenancePlugin } from './services/maintenance/maintenance.controller
 import MemberServiceApi from './services/member';
 import tagPlugin from './services/tag/tag.controller';
 import websocketsPlugin from './services/websockets/websocket.controller';
-import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from './utils/config';
+import { REDIS_CONNECTION } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   await instance
@@ -48,12 +48,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
         prefix: '/ws',
         redis: {
           channelName: 'graasp-realtime-updates',
-          config: {
-            host: REDIS_HOST,
-            port: REDIS_PORT,
-            username: REDIS_USERNAME,
-            password: REDIS_PASSWORD,
-          },
+          connection: REDIS_CONNECTION,
         },
       })
       .register(fp(MemberServiceApi))

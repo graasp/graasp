@@ -32,14 +32,10 @@ services:
       # Api key is set by ./etherpad/devApiKey.txt
       ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       # the Redis config is set by the "redis" service below
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      # the Mailer config is set by the "mailer" service below
-      MAILER_CONFIG_SMTP_HOST: mailer
-      MAILER_CONFIG_SMTP_PORT: 1025
-      MAILER_CONFIG_SMTP_USE_SSL: 'false' # only for dev purposes
-      MAILER_CONFIG_USERNAME: docker
-      MAILER_CONFIG_PASSWORD: docker
+      REDIS_CONNECTION: redis://redis:6379
+      
+      # the Mailer config is set by the "mailer" service below 
+      MAILER_CONNECTION: smtp://docker:docker@mailer:1025
       # the Localstack config is set by the "localstack" service below
       S3_FILE_ITEM_HOST: http://localstack:4566
       # the Iframely config is set by the "iframely" service below
