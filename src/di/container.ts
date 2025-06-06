@@ -22,17 +22,10 @@ import {
   GEOLOCATION_API_KEY,
   IMAGE_CLASSIFIER_API,
   MAILER_CONFIG_FROM_EMAIL,
-  MAILER_CONFIG_PASSWORD,
-  MAILER_CONFIG_SMTP_HOST,
-  MAILER_CONFIG_SMTP_PORT,
-  MAILER_CONFIG_SMTP_USE_SSL,
-  MAILER_CONFIG_USERNAME,
+  MAILER_CONNECTION,
   MEILISEARCH_MASTER_KEY,
   MEILISEARCH_URL,
-  REDIS_HOST,
-  REDIS_PASSWORD,
-  REDIS_PORT,
-  REDIS_USERNAME,
+  REDIS_CONNECTION,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
 import {
@@ -64,15 +57,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
   // register geolocation key for the ItemGeolocationService.
   registerValue(GEOLOCATION_API_KEY_DI_KEY, GEOLOCATION_API_KEY);
 
-  registerValue(
-    Redis,
-    new Redis({
-      host: REDIS_HOST,
-      port: REDIS_PORT,
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-    }),
-  );
+  registerValue(Redis, new Redis(REDIS_CONNECTION));
 
   // Register CachingService for the thumbnails urls.
   registerValue(
@@ -131,20 +116,8 @@ export const registerDependencies = (instance: FastifyInstance) => {
   registerValue(
     MailerService,
     new MailerService({
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
+      connection: MAILER_CONNECTION,
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     }),
   );
-  // registerValue('MAIL_KEY', {
-  //   host: MAILER_CONFIG_SMTP_HOST,
-  //   port: MAILER_CONFIG_SMTP_PORT,
-  //   useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-  //   username: MAILER_CONFIG_USERNAME,
-  //   password: MAILER_CONFIG_PASSWORD,
-  //   fromEmail: MAILER_CONFIG_FROM_EMAIL,
-  // });
 };

@@ -11,11 +11,7 @@ export interface Mail {
 }
 
 export interface MailerOptions {
-  host: string;
-  port?: number;
-  useSsl?: boolean;
-  username: string;
-  password: string;
+  connection: string;
   fromEmail: string;
 }
 
@@ -24,17 +20,9 @@ export class MailerService {
   private readonly fromEmail: string;
   private readonly transporter: Transporter;
 
-  constructor({ host, port, useSsl, username, password, fromEmail }: MailerOptions) {
+  constructor({ connection, fromEmail }: MailerOptions) {
     this.fromEmail = fromEmail;
-    this.transporter = createTransport({
-      host,
-      port: port ?? 465,
-      secure: useSsl ?? true,
-      auth: {
-        user: username,
-        pass: password,
-      },
-    });
+    this.transporter = createTransport(connection);
   }
 
   /**

@@ -1,19 +1,10 @@
 import { type ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { BaseLogger } from './logger';
-import {
-  JOB_SCHEDULING,
-  REDIS_HOST,
-  REDIS_PASSWORD,
-  REDIS_PORT,
-  REDIS_USERNAME,
-} from './utils/config';
+import { JOB_SCHEDULING, REDIS_CONNECTION } from './utils/config';
 
 const connection: ConnectionOptions = {
-  host: REDIS_HOST,
-  port: REDIS_PORT,
-  username: REDIS_USERNAME,
-  password: REDIS_PASSWORD,
+  url: REDIS_CONNECTION,
 };
 
 export const CRON_3AM_MONDAY = '0 3 * * 1';

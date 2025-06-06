@@ -53,11 +53,7 @@ services:
       APPS_JWT_SECRET:  # replace with your own value
 
       # the Mailer config is set by the "mailer" service below
-      MAILER_CONFIG_SMTP_HOST: mailer
-      MAILER_CONFIG_SMTP_PORT: 1025
-      MAILER_CONFIG_SMTP_USE_SSL: 'false' # enable if your mail server supports SSL (if using the local mailcatcher, disable SSL)
-      MAILER_CONFIG_USERNAME: docker
-      MAILER_CONFIG_PASSWORD: docker
+      MAILER_CONNECTION: smtp://docker:docker@mailer:1025
 
       # H5P configuration
       H5P_FILE_STORAGE_TYPE: local
@@ -80,7 +76,7 @@ services:
       ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
       # Redis
-      REDIS_HOST: redis
+      REDIS_CONNECTION: redis://redis:6379
 
       EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
 

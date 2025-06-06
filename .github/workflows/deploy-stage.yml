@@ -97,8 +97,7 @@ jobs:
           environment-variables: |
             DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }}
             APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
-            APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
-            AUTH_TOKEN_EXPIRATION_IN_MINUTES=${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
+            APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }} 
             AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET }}
             CLIENT_HOST=${{ vars.CLIENT_HOST }}
             COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }}
@@ -127,9 +126,7 @@ jobs:
             LIBRARY_CLIENT_HOST=${{ vars.LIBRARY_CLIENT_HOST }}
             LOG_LEVEL=${{ vars.LOG_LEVEL }}
             MAILER_CONFIG_FROM_EMAIL=${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
-            MAILER_CONFIG_PASSWORD=${{ secrets.MAILER_CONFIG_PASSWORD }}
-            MAILER_CONFIG_SMTP_HOST=${{ secrets.MAILER_CONFIG_SMTP_HOST }}
-            MAILER_CONFIG_USERNAME=${{ secrets.MAILER_CONFIG_USERNAME }}
+            MAILER_CONNECTION=${{ secrets.MAILER_CONNECTION }} 
             MEILISEARCH_MASTER_KEY=${{ secrets.MEILISEARCH_MASTER_KEY }}
             MEILISEARCH_REBUILD_SECRET=${{ secrets.MEILISEARCH_REBUILD_SECRET }}
             MEILISEARCH_URL=${{ secrets.MEILISEARCH_URL }}
@@ -137,11 +134,7 @@ jobs:
             PORT=${{ vars.PORT }}
             PUBLIC_URL=${{ secrets.PUBLIC_URL }}
             RECAPTCHA_SECRET_ACCESS_KEY=${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
-            REDIS_HOST=${{ secrets.REDIS_HOST }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            REDIS_PORT=${{ secrets.REDIS_PORT }}
-            REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
-            REFRESH_TOKEN_EXPIRATION_IN_MINUTES=${{ vars.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
+            REDIS_CONNECTION=${{ secrets.REDIS_CONNECTION }} 
             REFRESH_TOKEN_JWT_SECRET=${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
             S3_FILE_ITEM_ACCESS_KEY_ID=${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
             S3_FILE_ITEM_BUCKET=${{ vars.S3_FILE_ITEM_BUCKET }}

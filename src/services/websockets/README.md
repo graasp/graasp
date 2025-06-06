@@ -44,11 +44,8 @@ The plugin accepts the following options (which all have sane defaults):
     await instance.register(graaspWebSockets, {
         prefix: '/ws',
         redis: {
+            connectionString: <connection-string>
             config: {
-                host: REDIS_HOST,
-                port: +REDIS_PORT,
-                username: REDIS_USERNAME,
-                password: REDIS_PASSWORD,
                 ... // any other RedisOptions property from 'ioredis'
             }
             channelName: 'graasp-notif',

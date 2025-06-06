@@ -6,10 +6,9 @@
  * Integrates the {@link WebSocketChannels} abstraction
  * in a fastify server plugin with @fastify/websocket
  */
-import type { RedisOptions } from 'ioredis';
-
 import fws from '@fastify/websocket';
-import type { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
+
 
 import { NODE_ENV } from '../../utils/config';
 import { optionalIsAuthenticated } from '../auth/plugins/passport';
@@ -24,30 +23,9 @@ import { WebsocketService } from './ws-service';
 export interface WebsocketsPluginOptions {
   prefix: string;
   redis: {
-    config: RedisOptions;
     channelName: string;
+    connection: string;
   };
-}
-
-/**
- * Helper function to log boot message after plugin initialization
- */
-function logBootMessage(log: FastifyBaseLogger, options: WebsocketsPluginOptions) {
-  const { redis, ...rest } = options;
-  const { config, channelName } = redis;
-
-  const loggedOptions = {
-    ...rest,
-    redis: {
-      // don't log password
-      ...config,
-      password: undefined,
-      channelName,
-    },
-  };
-  delete loggedOptions.redis.password;
-
-  log.info('graasp-plugin-websockets: plugin booted with options', loggedOptions);
 }
 
 const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, options) => {
@@ -117,7 +95,7 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
     done();
   });
 
-  logBootMessage(log, options);
+  log.info('graasp-plugin-websockets: plugin booted');
 };
 
 export default plugin;
