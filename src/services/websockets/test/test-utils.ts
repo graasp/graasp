@@ -40,8 +40,7 @@ export function createDefaultLocalConfig(
     port: options.port,
     prefix: options.prefix || '/ws',
     redis: options.redis || {
-      connectionString: REDIS_CONNECTION,
-      config: {},
+      connection: REDIS_CONNECTION,
       channelName: 'notifications',
     },
   };

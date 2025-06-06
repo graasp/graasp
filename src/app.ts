@@ -48,8 +48,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
         prefix: '/ws',
         redis: {
           channelName: 'graasp-realtime-updates',
-          connectionString: REDIS_CONNECTION,
-          config: {},
+          connection: REDIS_CONNECTION,
         },
       })
       .register(fp(MemberServiceApi))

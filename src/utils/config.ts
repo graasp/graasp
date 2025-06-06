@@ -162,7 +162,8 @@ export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES = 1440;
 
 // Graasp mailer config
 if (!process.env.MAILER_CONNECTION) {
-  throw new Error(`MAILER_CONNECTION is not defined`);
+  console.error('MAILER_CONNECTION environment variable missing.');
+  process.exit(1);
 }
 export const MAILER_CONNECTION = process.env.MAILER_CONNECTION;
 export const MAILER_CONFIG_FROM_EMAIL =
