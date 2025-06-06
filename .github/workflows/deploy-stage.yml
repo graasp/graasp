@@ -136,10 +136,7 @@ jobs:
             PORT=${{ vars.PORT }}
             PUBLIC_URL=${{ secrets.PUBLIC_URL }}
             RECAPTCHA_SECRET_ACCESS_KEY=${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
-            REDIS_HOST=${{ secrets.REDIS_HOST }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            REDIS_PORT=${{ secrets.REDIS_PORT }}
-            REDIS_USERNAME=${{ secrets.REDIS_USERNAME }} 
+            REDIS_CONNECTION=${{ secrets.REDIS_CONNECTION }} 
             REFRESH_TOKEN_JWT_SECRET=${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
             S3_FILE_ITEM_ACCESS_KEY_ID=${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
             S3_FILE_ITEM_BUCKET=${{ vars.S3_FILE_ITEM_BUCKET }}

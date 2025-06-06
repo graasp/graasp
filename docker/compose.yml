@@ -80,7 +80,7 @@ services:
       ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
       # Redis
-      REDIS_HOST: redis
+      REDIS_CONNECTION: redis://redis:6379
 
       EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
 

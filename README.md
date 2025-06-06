@@ -197,10 +197,8 @@ GRAASPER_CREATOR_ID=<id>
 
 # Graasp websockets
 # Redis config set by ./.devcontainer/docker-compose.yml
-# REDIS_HOST=redis
-# REDIS_PORT=6379
-# REDIS_USERNAME=
-# REDIS_PASSWORD=
+# redis[s]://[[username][:password]@][host][:port][/db-number]:
+# REDIS_CONNECTION=
 
 # Graasp Actions
 SAVE_ACTIONS=true

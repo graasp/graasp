@@ -304,12 +304,11 @@ if (!process.env.APPS_JWT_SECRET) {
 export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
-// export const REDIS_HOST = process.env.REDIS_HOST;
-// export const REDIS_PORT: number = +process.env.REDIS_PORT! || 6379;
-// export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
-// export const REDIS_USERNAME = process.env.REDIS_USERNAME;
-//  redis[s]://[[username][:password]@][host][:port][/db-number]:
-export const REDIS_CONNECTION = 'redis://redis:6379';
+if (!process.env.REDIS_CONNECTION) {
+  console.error('REDIS_CONNECTION environment variable missing.');
+  process.exit(1);
+}
+export const REDIS_CONNECTION = process.env.REDIS_CONNECTION;
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API ?? '';

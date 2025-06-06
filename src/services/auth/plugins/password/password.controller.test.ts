@@ -28,10 +28,7 @@ import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
-  REDIS_HOST,
-  REDIS_PASSWORD,
-  REDIS_PORT,
-  REDIS_USERNAME,
+  REDIS_CONNECTION,
 } from '../../../../utils/config';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 
@@ -458,12 +455,7 @@ describe('Password', () => {
         // Overwrite the setex method to test the expiration
         jest.spyOn(Redis.prototype, 'setex').mockImplementationOnce((key, seconds, value) => {
           expect(seconds).toBe(PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60);
-          const redis = new Redis({
-            host: REDIS_HOST,
-            port: REDIS_PORT,
-            username: REDIS_USERNAME,
-            password: REDIS_PASSWORD,
-          });
+          const redis = new Redis(REDIS_CONNECTION);
           return redis.setex(key, 1, value);
         });
 

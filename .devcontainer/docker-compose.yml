@@ -32,8 +32,8 @@ services:
       # Api key is set by ./etherpad/devApiKey.txt
       ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       # the Redis config is set by the "redis" service below
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      REDIS_CONNECTION: redis://redis:6379
+      
       # the Mailer config is set by the "mailer" service below
       MAILER_CONFIG_SMTP_HOST: mailer
       MAILER_CONFIG_SMTP_PORT: 1025
