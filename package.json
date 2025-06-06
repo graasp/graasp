@@ -2,7 +2,7 @@
   "name": "graasp",
   "version": "2.4.0",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.14.0"
   },
   "description": "Graasp next level",
   "repository": {
@@ -19,7 +19,7 @@
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch-node:worker": "NODE_PATH=./dist nodemon dist/workers/entrypoint.js",
     "dev": "yarn run watch",
-    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node,Worker\" -c \"cyan.bold,green.bold,yellow.bold\" \"yarn watch-ts\" \"yarn watch-node\" \"yarn watch-node:worker\"",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Server,Worker\" -c \"cyan.bold,green.bold,magenta.bold\" \"yarn watch-ts\" \"yarn watch-node\" \"yarn watch-node:worker\"",
     "seed": "ts-node -e 'import seed from \"./test/mocks/index\";seed();'",
     "test": "jest --forceExit --verbose --runInBand --detectOpenHandles",
     "test:ci": "jest --forceExit --verbose --coverage --silent --detectOpenHandles --maxWorkers=2",
