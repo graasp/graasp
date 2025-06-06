@@ -242,7 +242,7 @@ You can also run `yarn seed` to feed the database with predefined mock data.
 
 ## Utilities
 
-The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080). If you do not want to use mailcatcher, set the `MAILER_CONNECTION` variable in your `.env.development` to some random value (e.g. empty string). This will log the authentication links in the server console instead.
+The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080).
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [static file server](https://static-web-server.net/) for serving files when using the `local` storage option (alternative to the `s3` option). This option has the added benefit of being persistent when used locally in opposition to localstack (see the [known issues section](#known-issues) for more informations). The server is available at `http://localhost:1081`.
 
