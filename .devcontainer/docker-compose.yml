@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # [Choice] Node.js version: 14, 12, 10
+        # [Choice] Node.js version: 22, 24
         VARIANT: 22
         # On Linux, you may need to update USER_UID and USER_GID below if not your local UID is not 1000.
         USER_UID: 1000
@@ -33,8 +33,7 @@ services:
       ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       # the Redis config is set by the "redis" service below
       REDIS_CONNECTION: redis://redis:6379
-      
-      # the Mailer config is set by the "mailer" service below 
+      # the Mailer config is set by the "mailer" service below
       MAILER_CONNECTION: smtp://docker:docker@mailer:1025
       # the Localstack config is set by the "localstack" service below
       S3_FILE_ITEM_HOST: http://localstack:4566
