@@ -16,7 +16,7 @@ const start = async () => {
   registerDependencies(console);
   const logger = resolveDependency(BaseLogger);
 
-  logger.debug('START WORKERS');
+  logger.debug('STARTING WORKERS');
 
   // worker for rebuild meilisearch index
   const jobServiceBuilder = new JobServiceBuilder(resolveDependency(BaseLogger));
@@ -30,6 +30,7 @@ const start = async () => {
   // start item export request worker
   const itemExportRequestService = resolveDependency(ItemExportRequestService);
   new ItemExportRequestWorker(itemExportRequestService, logger);
+  logger.debug('WORKERS READY');
 };
 
 start();
