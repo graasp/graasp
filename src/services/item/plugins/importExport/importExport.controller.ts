@@ -11,7 +11,8 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
-import { QueueNames, REDIS_CONNECTION } from '../../../../workers/config';
+import { REDIS_CONNECTION } from '../../../../utils/config';
+import { QueueNames } from '../../../../workers/config';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
@@ -162,10 +163,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       // add task in queue
-      new Queue(QueueNames.ItemExport, { connection: REDIS_CONNECTION }).add('export-folder-zip', {
-        itemId: item.id,
-        memberId: member.id,
-      });
+      new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } }).add(
+        'export-folder-zip',
+        {
+          itemId: item.id,
+          memberId: member.id,
+        },
+      );
 
       // will generate archive in the background
       reply.status(StatusCodes.ACCEPTED).send();

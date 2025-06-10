@@ -2,7 +2,8 @@ import { type Job, Worker } from 'bullmq';
 
 import { db } from '../drizzle/db';
 import { BaseLogger } from '../logger';
-import { QueueNames, REDIS_CONNECTION } from './config';
+import { REDIS_CONNECTION } from '../utils/config';
+import { QueueNames } from './config';
 import { ItemExportRequestService } from './itemExportRequest.service';
 
 type ExportFolderZipJob = Job<{
@@ -29,7 +30,7 @@ export class ItemExportRequestWorker {
         return 'success';
       },
       {
-        connection: REDIS_CONNECTION,
+        connection: { url: REDIS_CONNECTION },
         removeOnComplete: { count: 30 },
         removeOnFail: { count: 100 },
       },

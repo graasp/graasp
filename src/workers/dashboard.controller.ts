@@ -5,12 +5,13 @@ import { Queue } from 'bullmq';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { QueueNames, REDIS_CONNECTION } from './config';
+import { REDIS_CONNECTION } from '../utils/config';
+import { QueueNames } from './config';
 
 export const queueDashboardPlugin: FastifyPluginAsyncTypebox = async (instance) => {
   const serverAdapter = new FastifyAdapter();
 
-  const queues = [new Queue(QueueNames.ItemExport, { connection: REDIS_CONNECTION })];
+  const queues = [new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } })];
 
   createBullBoard({
     queues: queues.map((q) => new BullMQAdapter(q)),
