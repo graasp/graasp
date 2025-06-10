@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { Context, PermissionLevel, ShortLinkPlatform } from '@graasp/sdk';
 

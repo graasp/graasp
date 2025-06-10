@@ -2,8 +2,8 @@ import groupBy from 'lodash.groupby';
 
 import { ItemValidationStatus, PublicationStatus, PublishableItemTypeChecker } from '@graasp/sdk';
 
-import { ItemTypeUnion } from '../../../../../drizzle/types';
-import { ItemMetadata, ItemValidationGroupStatus, MapByStatus } from './types';
+import type { ItemTypeUnion } from '../../../../../drizzle/types';
+import type { ItemMetadata, ItemValidationGroupStatus, MapByStatus } from './types';
 
 export class PublicationState {
   private readonly item: ItemMetadata;

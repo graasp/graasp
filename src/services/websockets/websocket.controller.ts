@@ -7,7 +7,7 @@
  * in a fastify server plugin with @fastify/websocket
  */
 import fws from '@fastify/websocket';
-import { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 
 import { NODE_ENV } from '../../utils/config';
 import { optionalIsAuthenticated } from '../auth/plugins/passport';

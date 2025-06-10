@@ -1,11 +1,11 @@
 import { singleton } from 'tsyringe';
 
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 
-import { Context, UUID } from '@graasp/sdk';
+import { Context, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { ChatMessageRaw } from '../../../../drizzle/types';
+import type { ChatMessageRaw } from '../../../../drizzle/types';
 import { ActionService } from '../../../action/action.service';
 
 enum ChatActionType {

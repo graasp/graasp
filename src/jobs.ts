@@ -1,4 +1,4 @@
-import { ConnectionOptions, Queue, Worker } from 'bullmq';
+import { type ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { BaseLogger } from './logger';
 import { JOB_SCHEDULING, REDIS_CONNECTION } from './utils/config';

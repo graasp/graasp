@@ -1,10 +1,15 @@
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityType, PermissionLevel, PermissionLevelOptions, ResultOf } from '@graasp/sdk';
+import {
+  ItemVisibilityType,
+  PermissionLevel,
+  type PermissionLevelOptions,
+  type ResultOf,
+} from '@graasp/sdk';
 
-import { DBConnection } from '../drizzle/db';
-import { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
-import { MaybeUser } from '../types';
+import type { DBConnection } from '../drizzle/db';
+import type { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
+import type { MaybeUser } from '../types';
 import {
   MemberCannotAccess,
   MemberCannotAdminItem,

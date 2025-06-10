@@ -1,7 +1,7 @@
-import { Static, Type } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify';
 
 import { ItemType, TagCategory } from '@graasp/sdk';
 

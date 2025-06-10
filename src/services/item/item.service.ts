@@ -9,28 +9,28 @@ import {
   MAX_DESCENDANTS_FOR_MOVE,
   MAX_ITEM_NAME_LENGTH,
   MAX_NUMBER_OF_CHILDREN,
-  Paginated,
-  Pagination,
+  type Paginated,
+  type Pagination,
   PermissionLevel,
   PermissionLevelCompare,
-  PermissionLevelOptions,
-  UUID,
+  type PermissionLevelOptions,
+  type UUID,
   buildPathFromIds,
   getIdsFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import {
+import type {
   ItemGeolocationRaw,
   ItemMembershipRaw,
-  type ItemRaw,
+  ItemRaw,
   ItemTypeUnion,
   ItemWithCreator,
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -49,9 +49,9 @@ import {
 import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
-import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';
+import { ItemWrapper, ItemWrapperService, type PackedItem } from './ItemWrapper';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { FolderItem, isItemType } from './discrimination';
+import { type FolderItem, isItemType } from './discrimination';
 import { ItemRepository } from './item.repository';
 import { ItemGeolocationRepository } from './plugins/geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
@@ -59,7 +59,7 @@ import { ItemPublishedRepository } from './plugins/publication/published/itemPub
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { RecycledBinService } from './plugins/recycled/recycled.service';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
-import { ItemChildrenParams, ItemSearchParams } from './types';
+import type { ItemChildrenParams, ItemSearchParams } from './types';
 
 @singleton()
 export class ItemService {

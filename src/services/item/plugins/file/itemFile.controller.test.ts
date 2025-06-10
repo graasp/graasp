@@ -6,11 +6,11 @@ import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import path from 'path';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import {
   DescriptionPlacement,
-  FileItemExtra,
+  type FileItemExtra,
   HttpMethod,
   ItemType,
   MaxWidth,

@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
@@ -16,7 +16,7 @@ import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { isDirectChild } from '../../../../../drizzle/operations';
 import { appSettingsTable, itemsRawTable } from '../../../../../drizzle/schema';
-import { AppSettingRaw } from '../../../../../drizzle/types';
+import type { AppSettingRaw } from '../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';

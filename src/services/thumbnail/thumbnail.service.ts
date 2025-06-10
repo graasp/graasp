@@ -4,7 +4,7 @@ import { Readable } from 'stream';
 import { injectable } from 'tsyringe';
 
 import { BaseLogger } from '../../logger';
-import { AuthenticatedUser } from '../../types';
+import type { AuthenticatedUser } from '../../types';
 import FileService from '../file/file.service';
 import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 

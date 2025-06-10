@@ -1,4 +1,4 @@
-import { Validator, Variable } from './types';
+import type { Validator, Variable } from './types';
 
 // Defines dummy validators to test chain of validation
 export const ERROR_NUMBER = 'The given value is not a number!';

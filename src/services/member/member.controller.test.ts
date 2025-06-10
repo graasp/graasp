@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemLoginSchemaType, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 

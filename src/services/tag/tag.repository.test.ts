@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 
-import { TagCategory, TagCategoryType, TagFactory } from '@graasp/sdk';
+import { TagCategory, type TagCategoryType, TagFactory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';

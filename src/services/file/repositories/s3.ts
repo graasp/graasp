@@ -1,7 +1,7 @@
 import {
-  CopyObjectCommandInput,
+  type CopyObjectCommandInput,
   GetObjectCommand,
-  HeadObjectOutput,
+  type HeadObjectOutput,
   MetadataDirective,
   S3,
 } from '@aws-sdk/client-s3';
@@ -12,14 +12,14 @@ import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
-import { UUID } from '@graasp/sdk';
+import type { UUID } from '@graasp/sdk';
 
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
-import { S3FileConfiguration } from '../interfaces/configuration';
-import { FileRepository, FileUpload } from '../interfaces/fileRepository';
-import { FileStorageType } from '../types';
+import type { S3FileConfiguration } from '../interfaces/configuration';
+import type { FileRepository, FileUpload } from '../interfaces/fileRepository';
+import type { FileStorageType } from '../types';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import {
   DownloadFileUnexpectedError,

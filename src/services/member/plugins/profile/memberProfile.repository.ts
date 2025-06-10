@@ -5,7 +5,7 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { memberProfilesTable } from '../../../../drizzle/schema';
 import { MemberNotFound } from '../../../../utils/errors';
 import { MemberProfileCreationError, MemberProfilePropertiesEmpty } from './errors';
-import { IMemberProfile } from './types';
+import type { IMemberProfile } from './types';
 
 @singleton()
 export class MemberProfileRepository {

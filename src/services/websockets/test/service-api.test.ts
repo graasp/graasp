@@ -7,7 +7,7 @@
 import waitForExpect from 'wait-for-expect';
 import { WebSocket } from 'ws';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { Websocket as GraaspWebsocket } from '@graasp/sdk';
 
@@ -15,7 +15,7 @@ import '../../auth/plugins/passport/preHandlers';
 import { createServerInfo } from '../message';
 import {
   PortGenerator,
-  TestConfig,
+  type TestConfig,
   clientSend,
   clientWait,
   clientsWait,

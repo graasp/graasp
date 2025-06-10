@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { itemValidationGroupsTable } from '../../../../../drizzle/schema';
-import {
+import type {
   ItemValidationGroupRaw,
   ItemValidationGroupWithItemAndValidations,
 } from '../../../../../drizzle/types';

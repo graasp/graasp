@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { UUID, isPasswordStrong } from '@graasp/sdk';
+import { type UUID, isPasswordStrong } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { MemberPasswordRaw, memberPasswordsTable } from '../../../../drizzle/schema';
+import { type MemberPasswordRaw, memberPasswordsTable } from '../../../../drizzle/schema';
 import { MemberNotFound } from '../../../../utils/errors';
 import { PasswordNotStrong } from './errors';
 import { encryptPassword } from './utils';

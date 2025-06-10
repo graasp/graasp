@@ -1,12 +1,12 @@
 import { and, eq, getTableColumns } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { UnionOfConst } from '@graasp/sdk';
+import type { UnionOfConst } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf } from '../../drizzle/operations';
 import { itemLoginSchemasTable, items } from '../../drizzle/schema';
-import { ItemLoginSchemaRaw, ItemLoginSchemaWithItem } from '../../drizzle/types';
+import type { ItemLoginSchemaRaw, ItemLoginSchemaWithItem } from '../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../repositories/utils';
 import { CannotNestItemLoginSchema } from './errors';
 

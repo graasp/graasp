@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import build from '../../../../../../../test/app';
 import { resolveDependency } from '../../../../../../di/utils';

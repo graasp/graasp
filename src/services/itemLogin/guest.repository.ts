@@ -1,9 +1,9 @@
 import { and, eq } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { UUID } from '@graasp/sdk';
+import type { UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf } from '../../drizzle/operations';
 import { accountsTable, guestsView, itemLoginSchemasTable } from '../../drizzle/schema';
 import { type GuestRaw, type GuestWithItemLoginSchema, type ItemRaw } from '../../drizzle/types';

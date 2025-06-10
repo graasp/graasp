@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm/sql';
 
-import { UUID } from '@graasp/sdk';
+import type { UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import type { DBConnection } from '../../drizzle/db';
 import { guestPasswordsTable } from '../../drizzle/schema';
 import { encryptPassword } from '../auth/plugins/password/utils';
 

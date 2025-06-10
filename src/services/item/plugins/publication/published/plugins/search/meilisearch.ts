@@ -5,23 +5,23 @@ import {
   MeiliSearch,
   MeiliSearchApiError,
   MeiliSearchTimeOutError,
-  MultiSearchParams,
-  TypoTolerance,
+  type MultiSearchParams,
+  type TypoTolerance,
 } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
 import {
-  IndexItem,
+  type IndexItem,
   ItemType,
   ItemVisibilityType,
   MimeTypes,
   TagCategory,
-  TagCategoryType,
+  type TagCategoryType,
 } from '@graasp/sdk';
 
-import { DBConnection, db } from '../../../../../../../drizzle/db';
+import { type DBConnection, db } from '../../../../../../../drizzle/db';
 import { items } from '../../../../../../../drizzle/schema';
-import {
+import type {
   ItemPublishedWithItemWithCreator,
   ItemRaw,
   ItemTypeEnumKeys,
@@ -40,7 +40,7 @@ import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { Hit } from './search.schemas';
+import type { Hit } from './search.schemas';
 
 const ACTIVE_INDEX = 'itemIndex';
 const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing

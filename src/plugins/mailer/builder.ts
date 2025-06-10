@@ -1,4 +1,4 @@
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
@@ -149,7 +149,7 @@ export class MailBuilder {
         <tbody>
           <tr>
             <td align="center" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
-              <a href="${link}" target="_blank">${text}</a> 
+              <a href="${link}" target="_blank">${text}</a>
             </td>
           </tr>
           <tr>

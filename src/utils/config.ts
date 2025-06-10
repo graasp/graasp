@@ -4,11 +4,11 @@ import os from 'os';
 import { ClientManager, Context, GPTVersion } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import {
+import type {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
-import { FileStorage, FileStorageType } from '../services/file/types';
+import { FileStorage, type FileStorageType } from '../services/file/types';
 import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
 import { asDefined } from './assertions';
 import { ExpectedEnvVariable } from './errors';

@@ -3,14 +3,14 @@ import path from 'path';
 
 import { fastifyMultipart } from '@fastify/multipart';
 import { fastifyStatic } from '@fastify/static';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { DBConnection, db } from '../../../../../drizzle/db';
-import { ItemRaw } from '../../../../../drizzle/types';
-import { MaybeUser } from '../../../../../types';
+import { type DBConnection, db } from '../../../../../drizzle/db';
+import type { ItemRaw } from '../../../../../drizzle/types';
+import type { MaybeUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { H5P_FILE_STORAGE_TYPE } from '../../../../../utils/config';
 import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
@@ -20,7 +20,7 @@ import { FileStorage } from '../../../../file/types';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { isItemType } from '../../../discrimination';
 import { ItemService } from '../../../item.service';
-import { FastifyStaticReply } from '../types';
+import type { FastifyStaticReply } from '../types';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
   DEFAULT_H5P_CONTENT_ROUTE,
@@ -32,7 +32,7 @@ import { H5PInvalidFileError } from './errors';
 import { h5pImport } from './h5p.schemas';
 import { H5PService } from './h5p.service';
 import { renderHtml } from './integration';
-import { H5PPluginOptions } from './types';
+import type { H5PPluginOptions } from './types';
 
 const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   const itemService = resolveDependency(ItemService);

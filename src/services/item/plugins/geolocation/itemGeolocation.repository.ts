@@ -17,14 +17,14 @@ import {
   transformLangToReconfigLang,
 } from '../../../../drizzle/operations';
 import { accountsTable, itemGeolocationsTable, items } from '../../../../drizzle/schema';
-import {
+import type {
   ItemGeolocationRaw,
   ItemGeolocationWithItem,
   ItemGeolocationWithItemWithCreator,
   ItemRaw,
   MemberRaw,
 } from '../../../../drizzle/types';
-import { MaybeUser } from '../../../../types';
+import type { MaybeUser } from '../../../../types';
 import { GEOLOCATION_API_HOST, getSearchLang } from '../../../../utils/config';
 import { isMember } from '../../../authentication';
 import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';

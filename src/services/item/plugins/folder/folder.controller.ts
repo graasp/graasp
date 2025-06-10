@@ -1,9 +1,9 @@
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
+import type { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';

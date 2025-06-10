@@ -1,10 +1,10 @@
 import { sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
-import { FastifyBaseLogger, FastifySchema } from 'fastify';
+import { type FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
+import type { FastifyBaseLogger, FastifySchema } from 'fastify';
 
-import { UnionOfConst } from '@graasp/sdk';
+import type { UnionOfConst } from '@graasp/sdk';
 
 import { resolveDependency } from '../di/utils';
 import { db } from '../drizzle/db';

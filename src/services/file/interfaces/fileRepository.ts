@@ -1,6 +1,6 @@
 import { Readable } from 'stream';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 export type FileUpload = {
   fileStream: Readable;

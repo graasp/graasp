@@ -1,11 +1,11 @@
 import { sign as jwtSign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, UUID } from '@graasp/sdk';
+import { ClientManager, Context, type UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { type DBConnection } from '../../drizzle/db';
-import { MemberCreationDTO, MemberRaw } from '../../drizzle/types';
+import type { MemberCreationDTO, MemberRaw } from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';

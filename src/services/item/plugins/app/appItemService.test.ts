@@ -10,7 +10,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { AppItem } from '../../discrimination';
+import type { AppItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';

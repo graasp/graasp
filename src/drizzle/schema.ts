@@ -1,6 +1,6 @@
 import { and, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import {
-  AnyPgColumn,
+  type AnyPgColumn,
   boolean,
   check,
   doublePrecision,
@@ -20,7 +20,12 @@ import {
 import { eq, isNull } from 'drizzle-orm/sql';
 import geoip from 'geoip-lite';
 
-import { AccountType, CompleteMember, ItemSettings, ItemTypeUnion } from '@graasp/sdk';
+import {
+  AccountType,
+  type CompleteMember,
+  type ItemSettings,
+  type ItemTypeUnion,
+} from '@graasp/sdk';
 
 import { customNumeric, ltree } from './customTypes';
 
@@ -28,7 +33,7 @@ export const actionViewEnum = pgEnum('action_view_enum', [
   'builder',
   'player',
   'library',
-  'explorer',
+  'explorer', // TODO: remove this value from the data and migrate to library
   'account',
   'auth',
   'unknown',

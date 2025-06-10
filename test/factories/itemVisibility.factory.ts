@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { ItemVisibilityWithItem } from '../../src/drizzle/types';
+import type { ItemVisibilityWithItem } from '../../src/drizzle/types';
 
 export const ItemVisibilityFactory = (
   itemVisibility: Pick<ItemVisibilityWithItem, 'item' | 'type'>,

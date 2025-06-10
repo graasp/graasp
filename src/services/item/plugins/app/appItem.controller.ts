@@ -1,4 +1,4 @@
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -9,7 +9,7 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { ItemActionService } from '../action/itemAction.service';
 import { createApp, updateApp } from './app.schemas';
 import { AppItemService } from './appItemService';
-import { AppsPluginOptions } from './types';
+import type { AppsPluginOptions } from './types';
 
 export const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify) => {
   // service for item app api

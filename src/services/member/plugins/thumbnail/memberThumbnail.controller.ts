@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { MAX_THUMBNAIL_SIZE } from '@graasp/sdk';
 

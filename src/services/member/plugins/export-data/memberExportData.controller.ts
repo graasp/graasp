@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';

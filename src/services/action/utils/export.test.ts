@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { Context, ExportActionsFormatting } from '@graasp/sdk';
 

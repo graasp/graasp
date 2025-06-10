@@ -1,6 +1,6 @@
 import swaggerPlugin from '@fastify/swagger';
 import swaggerUiPlugin from '@fastify/swagger-ui';
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { APP_VERSION } from '../utils/config';
 

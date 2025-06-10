@@ -1,12 +1,12 @@
 import { v4 } from 'uuid';
 
 import { db } from '../../../../drizzle/db';
-import {
+import type {
   ItemLikeRaw,
   ItemPublishedWithItemWithCreator,
   ItemWithCreator,
 } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';

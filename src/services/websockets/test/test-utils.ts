@@ -3,7 +3,7 @@
  *
  * Test utility functions and configuration
  */
-import { Server, WebSocket } from 'ws';
+import { type Server, WebSocket, WebSocketServer } from 'ws';
 
 import { type FastifyInstance, fastify } from 'fastify';
 import fp from 'fastify-plugin';
@@ -12,7 +12,7 @@ import { Websocket as GraaspWebsocket } from '@graasp/sdk';
 
 import { REDIS_CONNECTION } from '../../../utils/config';
 import { AjvMessageSerializer } from '../message-serializer';
-import graaspWebSockets, { WebsocketsPluginOptions } from '../websocket.controller';
+import graaspWebSockets, { type WebsocketsPluginOptions } from '../websocket.controller';
 import { WebSocketChannels } from '../ws-channels';
 import { mockSessionPreHandler } from './mocks';
 
@@ -75,7 +75,7 @@ export function createWsChannels(
   channels: WebSocketChannels;
   wss: Server;
 } {
-  const server = new Server({ port: config.port });
+  const server = new WebSocketServer({ port: config.port });
   const wsChannels = new WebSocketChannels(
     server,
     serverSerdes.serialize,

@@ -1,4 +1,4 @@
-import { InjectionToken, container } from 'tsyringe';
+import { type InjectionToken, container } from 'tsyringe';
 
 export const resolveDependency = <T>(injectionToken: InjectionToken<T> | string) => {
   return container.resolve<T>(injectionToken);

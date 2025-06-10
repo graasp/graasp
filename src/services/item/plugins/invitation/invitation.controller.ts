@@ -1,12 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
+import type { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { isNonEmptyArray } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';

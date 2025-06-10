@@ -6,13 +6,13 @@ import {
   ItemType,
   PermissionLevel,
   PermissionLevelCompare,
-  PermissionLevelOptions,
-  UUID,
+  type PermissionLevelOptions,
+  type UUID,
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
-import { AuthenticatedUser, MaybeUser } from '../../../../../types';
+import type { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
+import type { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemRepository } from '../../../item.repository';
@@ -23,7 +23,7 @@ import {
   PreventUpdateAppDataFile,
   PreventUpdateOtherAppData,
 } from './errors';
-import { InputAppData } from './interfaces/app-data';
+import type { InputAppData } from './interfaces/app-data';
 
 const ownAppDataAbility = (appData: AppDataRaw, actor: MaybeUser) => {
   if (!actor) {

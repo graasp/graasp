@@ -1,12 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { ActionInsertDTO } from '../../../../drizzle/types';
+import type { ActionInsertDTO } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';

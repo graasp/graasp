@@ -9,13 +9,13 @@ import {
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { db } from '../../../../drizzle/db';
-import { ItemRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import type { ItemRaw } from '../../../../drizzle/types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { DocumentItem } from '../../discrimination';
+import type { DocumentItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';

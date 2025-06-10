@@ -6,7 +6,7 @@ import { isImage } from '../utils';
 import { ImageValidationStrategy } from './imageValidationStrategy';
 import { TextValidationStrategy } from './textValidationStrategy';
 import { ThumbnailValidationStrategy } from './thumbnailValidationStrategy';
-import { StrategyExecutor, ValidationStrategy } from './types';
+import type { StrategyExecutor, ValidationStrategy } from './types';
 
 export const buildStrategyExecutor = (
   strategy: ValidationStrategy,

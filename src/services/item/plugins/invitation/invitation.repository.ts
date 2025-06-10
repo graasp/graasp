@@ -4,14 +4,14 @@ import { singleton } from 'tsyringe';
 import { type DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../drizzle/operations';
 import { invitationsTable, items } from '../../../../drizzle/schema';
-import {
+import type {
   InvitationInsertDTO,
   InvitationRaw,
   InvitationWithItem,
   ItemRaw,
 } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
-import { AuthenticatedUser } from '../../../../types';
+import type { AuthenticatedUser } from '../../../../types';
 
 type ItemPath = ItemRaw['path'];
 type Email = InvitationRaw['email'];

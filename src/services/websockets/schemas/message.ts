@@ -1,4 +1,4 @@
-import { JTDSchemaType } from 'ajv/dist/jtd';
+import type { JTDSchemaType } from 'ajv/dist/jtd';
 
 import { Websocket } from '@graasp/sdk';
 

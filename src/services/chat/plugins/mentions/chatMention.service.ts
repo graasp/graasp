@@ -7,7 +7,7 @@ import { type ChatMessageRaw, type ItemRaw } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { AccountType, AuthenticatedUser } from '../../../../types';
+import { AccountType, type AuthenticatedUser } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberCannotAccessMention } from '../../errors';

@@ -5,7 +5,7 @@ import fsp from 'fs/promises';
 import path from 'path';
 import util from 'util';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { H5P_PACKAGES } from './fixtures';
 

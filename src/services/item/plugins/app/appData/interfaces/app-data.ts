@@ -1,4 +1,4 @@
-import { AppDataVisibility, UUID } from '@graasp/sdk';
+import { AppDataVisibility, type UUID } from '@graasp/sdk';
 
 export interface InputAppData {
   id?: UUID;

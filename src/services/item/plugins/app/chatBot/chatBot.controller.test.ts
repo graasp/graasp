@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance, LightMyRequestResponse } from 'fastify';
+import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { GPTVersion, HttpMethod, ItemType } from '@graasp/sdk';
 

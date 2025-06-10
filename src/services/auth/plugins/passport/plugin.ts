@@ -1,6 +1,6 @@
 import fastifyPassport from '@fastify/passport';
 import { fastifySecureSession } from '@fastify/secure-session';
-import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
+import type { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';

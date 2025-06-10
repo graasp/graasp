@@ -1,4 +1,4 @@
-import { UnionOfConst } from '@graasp/sdk';
+import type { UnionOfConst } from '@graasp/sdk';
 
 export type BuildFilePathFunction = (itemId: string, filename: string) => string;
 

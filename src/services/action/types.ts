@@ -1,4 +1,4 @@
-import { UnionOfConst } from '@graasp/sdk';
+import type { UnionOfConst } from '@graasp/sdk';
 
 export const CountGroupBy = {
   ActionType: 'actionType',

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 as uuid } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
 
@@ -14,7 +14,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemMembershipsTable } from '../../../../drizzle/schema';
-import { ItemMembershipWithItemAndAccountAndCreator } from '../../../../drizzle/types';
+import type { ItemMembershipWithItemAndAccountAndCreator } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMember } from '../../../authentication';
 import {

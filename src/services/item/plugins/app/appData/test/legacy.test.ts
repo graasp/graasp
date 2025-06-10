@@ -4,7 +4,7 @@
  */
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
@@ -15,7 +15,7 @@ import build, {
 } from '../../../../../../../test/app';
 import { seedFromJson } from '../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../drizzle/db';
-import { AccountRaw } from '../../../../../../drizzle/types';
+import type { AccountRaw } from '../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../../authentication';

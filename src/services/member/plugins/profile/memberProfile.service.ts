@@ -1,11 +1,11 @@
 import { singleton } from 'tsyringe';
 
-import { UUID } from '@graasp/sdk';
+import type { UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { MemberProfileRepository } from './memberProfile.repository';
-import { IMemberProfile } from './types';
+import type { IMemberProfile } from './types';
 
 @singleton()
 export class MemberProfileService {

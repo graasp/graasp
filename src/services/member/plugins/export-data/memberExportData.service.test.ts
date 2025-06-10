@@ -1,6 +1,6 @@
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
-import { MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { ChatMessageWithMentionFactory } from '../../../chat/test/fixtures';
 import { ExportDataRepository } from './memberExportData.repository';
 import { ExportMemberDataService } from './memberExportData.service';

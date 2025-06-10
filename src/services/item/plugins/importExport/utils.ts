@@ -7,9 +7,9 @@ import { Readable, Transform } from 'stream';
 import { pipeline } from 'stream/promises';
 import { v4 } from 'uuid';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
-import { ItemType, UnionOfConst, getMimetype } from '@graasp/sdk';
+import { ItemType, type UnionOfConst, getMimetype } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../../drizzle/types';
 import { isItemType } from '../../discrimination';

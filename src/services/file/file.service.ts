@@ -1,11 +1,11 @@
 import { Readable } from 'stream';
 
-import { MinimalAccount } from '../../drizzle/types';
+import type { MinimalAccount } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { MaybeUser, MinimalMember } from '../../types';
+import type { MaybeUser, MinimalMember } from '../../types';
 import { CachingService } from '../caching/service';
-import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
-import { FileRepository } from './interfaces/fileRepository';
+import type { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
+import type { FileRepository } from './interfaces/fileRepository';
 import { createSanitizedFile, sanitizeHtml } from './sanitize';
 import {
   CopyFileInvalidPathError,

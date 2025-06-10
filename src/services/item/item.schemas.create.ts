@@ -1,7 +1,7 @@
-import { TObject, TProperties, Type } from '@sinclair/typebox';
+import { type TObject, type TProperties, Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify';
 
 import { DocumentItemExtraFlavor, ItemType } from '@graasp/sdk';
 

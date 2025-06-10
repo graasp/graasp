@@ -3,7 +3,7 @@ import { Strategy } from 'passport-custom';
 import { Authenticator } from '@fastify/passport';
 
 import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import type { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 /**
  * This strategy is similar to the built-in 'session' strategy, except it throws a 401 error if the user is not authenticated.

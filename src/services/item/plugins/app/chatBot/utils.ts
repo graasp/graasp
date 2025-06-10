@@ -1,6 +1,6 @@
-import { ChatCompletion } from 'openai/resources/chat/index';
+import type { ChatCompletion } from 'openai/resources/chat/index';
 
-import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
+import { type ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
 import {
   OpenAIBaseError,

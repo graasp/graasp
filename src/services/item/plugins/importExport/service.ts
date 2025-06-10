@@ -11,18 +11,18 @@ import { v4 } from 'uuid';
 import { ZipFile } from 'yazl';
 
 import {
-  DocumentItemExtraProperties,
-  ItemSettings,
+  type DocumentItemExtraProperties,
+  type ItemSettings,
   ItemType,
-  ItemTypeUnion,
+  type ItemTypeUnion,
   ThumbnailSize,
   getMimetype,
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { AppSettingInsertDTO, AppSettingRaw, type ItemRaw } from '../../../../drizzle/types';
+import type { AppSettingInsertDTO, AppSettingRaw, ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { MaybeUser, MinimalMember } from '../../../../types';
+import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { isItemType } from '../../discrimination';

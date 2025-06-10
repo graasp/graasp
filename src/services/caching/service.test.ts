@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import build from '../../../test/app';
 import { FILE_SERVICE_URLS_CACHING_DI_KEY } from '../../di/constants';

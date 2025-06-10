@@ -1,9 +1,9 @@
 import { fastifyCors } from '@fastify/cors';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../plugins/typebox';
+import type { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { optionalIsAuthenticated } from '../auth/plugins/passport';
 import { getCountForTags } from './tag.schemas';
 import { TagService } from './tag.service';

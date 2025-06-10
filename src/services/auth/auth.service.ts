@@ -5,7 +5,7 @@ import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
-import { MemberInfo } from '../../types';
+import type { MemberInfo } from '../../types';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,

@@ -1,4 +1,4 @@
-import { ItemVisibilityOptionsType, ItemVisibilityType } from '@graasp/sdk';
+import { type ItemVisibilityOptionsType, ItemVisibilityType } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
