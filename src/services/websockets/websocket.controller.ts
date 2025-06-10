@@ -9,7 +9,6 @@
 import fws from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
 
-
 import { NODE_ENV } from '../../utils/config';
 import { optionalIsAuthenticated } from '../auth/plugins/passport';
 import { AjvMessageSerializer } from './message-serializer';

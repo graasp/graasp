@@ -9,7 +9,6 @@
  */
 import type { JTDSchemaType } from 'ajv/dist/core';
 import { Ajv } from 'ajv/dist/jtd';
-
 import { Redis } from 'ioredis';
 
 import type { FastifyBaseLogger } from 'fastify';
