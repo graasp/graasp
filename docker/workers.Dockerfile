@@ -16,15 +16,20 @@ WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
 # We need a specific command because we need to copy the folder with it, not just the content.
 COPY .yarn/releases ./.yarn/releases/
-CMD sleep 1h
 RUN yarn set version berry && yarn install --immutable
 
 ENV NODE_ENV=production
 COPY . .
 RUN yarn build-ts
 
-# Delete old node_modules and re-install only production dependencies
-RUN rm -rf node_modules && yarn workspaces focus --all --production
+# -------------------------------------------------------
+FROM base AS deps
+
+WORKDIR /app
+COPY package.json yarn.lock .yarnrc.yml ./
+# We need a specific command because we need to copy the folder with it, not just the content.
+COPY .yarn/releases ./.yarn/releases/
+RUN yarn set version berry && yarn workspaces focus --all --production
 
 
 # -------------------------------------------------------
@@ -47,7 +52,7 @@ WORKDIR /app
 COPY --from=tools /usr/bin/dumb-init /usr/bin/dumb-init
 
 # Copy the dependencies and compiled server code
-COPY --chown=node:node --from=build ./app/node_modules ./node_modules
+COPY --chown=node:node --from=deps ./app/node_modules ./node_modules
 COPY --chown=node:node --from=build ./app/dist ./dist
 
 # Set user to be non-root node

@@ -1,34 +1,43 @@
-# Production Docker backend image definition
-# Used in CI for creating images to push on registry
+FROM node:22.15-bookworm AS base
 
-# Update the NODE_VERSION arg in docker-compose.yml to pick a Node version of Docker Image
-ARG NODE_VERSION=22.14.0
 
 ##############################
 ### Build Application Step ###
 ##############################
 # This step will build the application
-FROM node:${NODE_VERSION} AS build
+FROM base AS tools
 
 # update packages and install the minimal init system "dumb-init"
 RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
 
-WORKDIR /app
-COPY . .
-RUN yarn set version berry && yarn install
 
-RUN yarn build-ts
+# -------------------------------------------------------
+FROM base AS build
+
+WORKDIR /app
+COPY package.json yarn.lock .yarnrc.yml ./
+# We need a specific command because we need to copy the folder with it, not just the content.
+COPY .yarn/releases ./.yarn/releases/
+RUN yarn set version berry && yarn install --immutable
 
 ENV NODE_ENV=production
+COPY . .
+RUN yarn build-ts
 
-# Delete old node_modules and re-install only production dependencies
-RUN rm -rf node_modules && yarn workspaces focus --all --production
+# -------------------------------------------------------
+FROM base AS deps
+
+WORKDIR /app
+COPY package.json yarn.lock .yarnrc.yml ./
+# We need a specific command because we need to copy the folder with it, not just the content.
+COPY .yarn/releases ./.yarn/releases/
+RUN yarn set version berry && yarn workspaces focus --all --production
 
 ############################
 ### Run Application Step ###
 ############################
 # Final step that will run the application
-FROM node:${NODE_VERSION}-bookworm-slim AS runner
+FROM node:22.15-bookworm-slim AS runner
 
 # Variable passed as a build arg. Represents the tag or git sha used for the build
 ARG APP_VERSION
@@ -45,10 +54,10 @@ EXPOSE 3000
 WORKDIR /app
 
 # Copy the installed dumb-init system from build image
-COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
+COPY --from=tools /usr/bin/dumb-init /usr/bin/dumb-init
 
 # Copy the dependencies and compiled server code
-COPY --chown=node:node --from=build ./app/node_modules ./node_modules
+COPY --chown=node:node --from=deps ./app/node_modules ./node_modules
 COPY --chown=node:node --from=build ./app/dist ./dist
 
 # Set user to be non-root node
