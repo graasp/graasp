@@ -19,11 +19,11 @@ import { FAILURE_MESSAGES } from '@graasp/translations';
 import build, { MOCK_CAPTCHA, clearDatabase } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { URL_REGEX } from '../../../../../test/utils';
+import { JWT_SECRET } from '../../../../config/secrets';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { accountsTable } from '../../../../drizzle/schema';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { JWT_SECRET } from '../../../../utils/config';
 
 jest.mock('node-fetch');
 

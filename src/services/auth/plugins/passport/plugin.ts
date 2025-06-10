@@ -2,19 +2,18 @@ import fastifyPassport from '@fastify/passport';
 import { fastifySecureSession } from '@fastify/secure-session';
 import type { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { assertIsDefined } from '../../../../utils/assertions';
+import { PROD, STAGING } from '../../../../config/env';
 import {
-  COOKIE_DOMAIN,
   JWT_SECRET,
   MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS,
-  PROD,
   REFRESH_TOKEN_JWT_SECRET,
   SECURE_SESSION_EXPIRATION_IN_SECONDS,
   SECURE_SESSION_SECRET_KEY,
-  STAGING,
-} from '../../../../utils/config';
+} from '../../../../config/secrets';
+import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { COOKIE_DOMAIN } from '../../../../utils/config';
 import { AccountRepository } from '../../../account/account.repository';
 import { ItemRepository } from '../../../item/item.repository';
 import { MemberRepository } from '../../../member/member.repository';

@@ -2,8 +2,8 @@ import { fastifyCors } from '@fastify/cors';
 import type { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { APPS_JWT_SECRET } from '../../config/secrets';
 import {
-  APPS_JWT_SECRET,
   APPS_PUBLISHER_ID,
   APP_ITEMS_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,

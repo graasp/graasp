@@ -3,9 +3,9 @@ import '@sentry/tracing';
 
 import type { FastifyInstance } from 'fastify';
 
+import { NODE_ENV } from './config/env';
 import {
   APP_VERSION,
-  NODE_ENV,
   SENTRY_DSN,
   SENTRY_ENABLE_PERFORMANCE,
   SENTRY_ENABLE_PROFILING,

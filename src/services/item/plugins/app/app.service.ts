@@ -4,10 +4,10 @@ import { singleton } from 'tsyringe';
 
 import { type AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { APPS_JWT_SECRET } from '../../../../config/secrets';
 import { type DBConnection } from '../../../../drizzle/db';
 import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../types';
-import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { WrongItemTypeError } from '../../errors';

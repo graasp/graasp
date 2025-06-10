@@ -6,9 +6,9 @@ import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { asDefined, assertIsMemberOrGuest } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
+import { assertIsMember, assertIsMemberOrGuest } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../item.service';
 import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './etherpad.schemas';

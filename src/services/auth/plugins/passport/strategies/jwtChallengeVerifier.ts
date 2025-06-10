@@ -3,8 +3,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { JWT_SECRET } from '../../../../../config/secrets';
 import { db } from '../../../../../drizzle/db';
-import { JWT_SECRET } from '../../../../../utils/config';
 import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/account.repository';
 import { SHORT_TOKEN_PARAM } from '../constants';

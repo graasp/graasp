@@ -20,16 +20,14 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
+import { REDIS_CONNECTION } from '../../../../config/redis';
+import { PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES } from '../../../../config/secrets';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { memberPasswordsTable } from '../../../../drizzle/schema';
 import type { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
-import {
-  PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
-  REDIS_CONNECTION,
-} from '../../../../utils/config';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 
 async function login(

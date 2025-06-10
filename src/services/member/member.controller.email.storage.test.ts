@@ -11,12 +11,12 @@ import { type FileItemExtra, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
+import { EMAIL_CHANGE_JWT_SECRET } from '../../config/secrets';
 import { db } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
 import type { ItemRaw } from '../../drizzle/types';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
-import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
 import { assertIsMember } from '../authentication';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
