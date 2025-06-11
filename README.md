@@ -216,9 +216,6 @@ MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=masterKey
 MEILISEARCH_REBUILD_SECRET=secret
 
-# Enable job scheduling (for cron based tasks)
-JOB_SCHEDULING=true
-
 # OPEN AI
 # OPENAI_GPT_VERSION=<DEFAULT_GPT_VERSION> # valid values are gpt-4 or gpt-3.5-turbo
 OPENAI_API_KEY=<openai-api-key>

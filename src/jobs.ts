@@ -2,7 +2,6 @@ import { type ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { REDIS_CONNECTION } from './config/redis';
 import { BaseLogger } from './logger';
-import { JOB_SCHEDULING } from './utils/config';
 
 const connection: ConnectionOptions = {
   url: REDIS_CONNECTION,
@@ -64,10 +63,8 @@ export class JobService {
       },
     });
 
-    if (JOB_SCHEDULING) {
-      this.setupWorker();
-      this.setupJobs();
-    }
+    this.setupWorker();
+    this.setupJobs();
   }
 
   private setupWorker() {

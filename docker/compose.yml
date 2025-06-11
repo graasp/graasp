@@ -25,7 +25,6 @@ x-shared_environment: &shared_environment
 
 x-core_environment: &core_environment
   # file storage
-  FILE_STORAGE_ROOT_PATH: /tmp
   FILE_STORAGE_HOST: http://localfile:1081
 
   # the Mailer config is set by the "mailer" service below
@@ -50,8 +49,6 @@ x-core_environment: &core_environment
   ETHERPAD_COOKIE_DOMAIN: localhost
   # this should be the same as the content of the "./etherpad/devApiKey.txt" file
   ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-
-  JOB_SCHEDULING: true
 
   # below are env that are not necessary for the worker but we need to include them for now
   COOKIE_DOMAIN: localhost
