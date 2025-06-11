@@ -5,17 +5,17 @@ import { v4 as uuid } from 'uuid';
 
 import { ClientManager, Context } from '@graasp/sdk';
 
+import {
+  JWT_SECRET,
+  PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
+  PASSWORD_RESET_JWT_SECRET,
+} from '../../../../config/secrets';
 import { type DBConnection } from '../../../../drizzle/db';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import type { AuthenticatedUser, MemberInfo } from '../../../../types';
-import {
-  JWT_SECRET,
-  PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
-  PASSWORD_RESET_JWT_SECRET,
-} from '../../../../utils/config';
 import {
   EmptyCurrentPassword,
   InvalidPassword,

@@ -1,17 +1,17 @@
 import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
+import {
+  JWT_SECRET,
+  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
+  REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
+} from '../../config/secrets';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import type { MemberInfo } from '../../types';
-import {
-  JWT_SECRET,
-  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
-  PUBLIC_URL,
-  REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
-} from '../../utils/config';
+import { PUBLIC_URL } from '../../utils/config';
 import { SHORT_TOKEN_PARAM } from './plugins/passport';
 import { getRedirectionLink } from './utils';
 

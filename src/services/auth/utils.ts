@@ -5,12 +5,12 @@ import type { FastifyBaseLogger } from 'fastify';
 import { ClientManager, Context } from '@graasp/sdk';
 
 import {
-  ALLOWED_ORIGINS,
   AUTH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_TOKEN_JWT_SECRET,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
-} from '../../utils/config';
+} from '../../config/secrets';
+import { ALLOWED_ORIGINS } from '../../utils/config';
 
 const defaultClientHost = ClientManager.getInstance().getLinkByContext(Context.Home);
 

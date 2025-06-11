@@ -4,11 +4,12 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
+import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES } from '../../../../config/secrets';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import type { ActionInsertDTO } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
-import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
+import { PUBLIC_URL } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
 import { View } from '../../../item/plugins/action/itemAction.schemas';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
@@ -55,7 +56,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { url } = body;
       const member = asDefined(user?.account);
 
-      const token = await memberPasswordService.generateToken(
+      const token = memberPasswordService.generateToken(
         { sub: member.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );

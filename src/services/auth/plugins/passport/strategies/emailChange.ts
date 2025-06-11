@@ -2,8 +2,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { EMAIL_CHANGE_JWT_SECRET } from '../../../../../config/secrets';
 import { db } from '../../../../../drizzle/db';
-import { EMAIL_CHANGE_JWT_SECRET } from '../../../../../utils/config';
 import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/member.repository';
 import { PassportStrategy } from '../strategies';

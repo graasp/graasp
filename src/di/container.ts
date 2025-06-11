@@ -5,6 +5,8 @@ import type { FastifyInstance } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 
+import { MAILER_CONFIG_FROM_EMAIL, MAILER_CONNECTION } from '../config/mailer';
+import { REDIS_CONNECTION } from '../config/redis';
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/mailer.service';
@@ -21,11 +23,8 @@ import {
   FILE_STORAGE_TYPE,
   GEOLOCATION_API_KEY,
   IMAGE_CLASSIFIER_API,
-  MAILER_CONFIG_FROM_EMAIL,
-  MAILER_CONNECTION,
   MEILISEARCH_MASTER_KEY,
   MEILISEARCH_URL,
-  REDIS_CONNECTION,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
 import {

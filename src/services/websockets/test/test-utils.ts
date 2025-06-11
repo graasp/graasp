@@ -10,7 +10,7 @@ import fp from 'fastify-plugin';
 
 import { Websocket as GraaspWebsocket } from '@graasp/sdk';
 
-import { REDIS_CONNECTION } from '../../../utils/config';
+import { REDIS_CONNECTION } from '../../../config/redis';
 import { AjvMessageSerializer } from '../message-serializer';
 import graaspWebSockets, { type WebsocketsPluginOptions } from '../websocket.controller';
 import { WebSocketChannels } from '../ws-channels';

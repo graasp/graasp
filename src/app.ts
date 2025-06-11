@@ -5,6 +5,7 @@ import 'reflect-metadata';
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { REDIS_CONNECTION } from './config/redis';
 import { registerDependencies } from './di/container';
 import databasePlugin from './plugins/database';
 import metaPlugin from './plugins/meta';
@@ -17,7 +18,6 @@ import { maintenancePlugin } from './services/maintenance/maintenance.controller
 import MemberServiceApi from './services/member';
 import tagPlugin from './services/tag/tag.controller';
 import websocketsPlugin from './services/websockets/websocket.controller';
-import { REDIS_CONNECTION } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   await instance

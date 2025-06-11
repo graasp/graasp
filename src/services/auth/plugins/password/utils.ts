@@ -1,6 +1,5 @@
 import { compare, hash } from 'bcrypt';
 
-import { SALT_ROUNDS } from '../../../../utils/config';
 import { PasswordNotDefined } from './errors';
 
 export async function verifyCurrentPassword(savedPassword: string, password: string) {
@@ -34,6 +33,7 @@ export async function comparePasswords(password: string, hash: string): Promise<
   return compare(password, hash);
 }
 
+const SALT_ROUNDS = 10;
 export async function encryptPassword(password: string) {
   /* encrypted: stores the output of bcrypt.hash().
   bcrypt.hash() creates the salt and hashes the password.

@@ -2,8 +2,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { APPS_JWT_SECRET } from '../../../../../config/secrets';
 import { db } from '../../../../../drizzle/db';
-import { APPS_JWT_SECRET } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/account.repository';
 import { ItemRepository } from '../../../../item/item.repository';

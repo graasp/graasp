@@ -7,13 +7,6 @@ import { FAILURE_MESSAGES } from '@graasp/translations';
 
 export const ConfigurationError = ErrorFactory('config');
 
-export class ExpectedEnvVariable extends Error {
-  constructor(envVarName: string) {
-    super(`Expected to find env variable "${envVarName}" but it was undefined.`);
-    this.name = 'MissingEnvVar';
-  }
-}
-
 export const CoreError = ErrorFactory('core');
 
 export const ItemNotFound = createError(

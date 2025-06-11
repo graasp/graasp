@@ -4,6 +4,10 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, type UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import {
+  EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
+  EMAIL_CHANGE_JWT_SECRET,
+} from '../../config/secrets';
 import { type DBConnection } from '../../drizzle/db';
 import type { MemberCreationDTO, MemberRaw } from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
@@ -11,10 +15,6 @@ import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { type MemberInfo } from '../../types';
-import {
-  EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
-  EMAIL_CHANGE_JWT_SECRET,
-} from '../../utils/config';
 import { MemberAlreadySignedUp } from '../../utils/errors';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
 import { MemberRepository } from './member.repository';

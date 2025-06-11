@@ -1,51 +1,19 @@
-import { config } from 'dotenv';
 import os from 'os';
 
 import { ClientManager, Context, GPTVersion } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { requiredEnvVar } from '../config/helpers';
 import type {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
 import { FileStorage, type FileStorageType } from '../services/file/types';
 import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
-import { asDefined } from './assertions';
-import { ExpectedEnvVariable } from './errors';
 import { validateEnv } from './validators/utils';
 import { RegexValidator, UrlValidator } from './validators/validators';
 
-enum Environment {
-  production = 'production',
-  staging = 'staging',
-  development = 'development',
-  test = 'test',
-}
-
 export const LOG_LEVEL: string | undefined = process.env.LOG_LEVEL;
-export const NODE_ENV: string | undefined = process.env.NODE_ENV;
-
-export const ENVIRONMENT: Environment = (() => {
-  switch (NODE_ENV) {
-    case Environment.production:
-      config({ path: '.env.production', override: true });
-      return Environment.production;
-    case Environment.staging:
-      config({ path: '.env.staging', override: true });
-      return Environment.staging;
-    case Environment.test:
-      config({ path: '.env.test', override: true });
-      return Environment.test;
-    default:
-      config({ path: '.env.development', override: true });
-      return Environment.development;
-  }
-})();
-
-export const PROD = ENVIRONMENT === Environment.production;
-export const STAGING = ENVIRONMENT === Environment.staging;
-export const DEV = ENVIRONMENT === Environment.development;
-export const TEST = ENVIRONMENT === Environment.test;
 
 export const APP_VERSION = process.env.APP_VERSION;
 export const BUILD_TIMESTAMP = process.env.BUILD_TIMESTAMP;
@@ -105,69 +73,6 @@ export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
  * >
  */
 export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
-
-// Graasp constants
-/**
- * Session cookie key
- */
-if (!process.env.SECURE_SESSION_SECRET_KEY) {
-  throw new Error('SECURE_SESSION_SECRET_KEY is not defined');
-}
-export const SECURE_SESSION_SECRET_KEY: string = process.env.SECURE_SESSION_SECRET_KEY!;
-export const SECURE_SESSION_EXPIRATION_IN_SECONDS = 604800; // 7days
-export const MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS = 15552000; // 6 * 30days
-/**
- * JWT
- */
-if (!process.env.JWT_SECRET) {
-  throw new Error('process.env.JWT_SECRET should be defined');
-}
-export const JWT_SECRET = process.env.JWT_SECRET;
-/** Register token expiration, in minutes */
-export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
-/** Login token expiration, in minutes */
-export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
-
-// Token based auth
-if (!process.env.AUTH_TOKEN_JWT_SECRET) {
-  throw new Error('process.env.AUTH_TOKEN_JWT_SECRET should be defined');
-}
-export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
-if (!process.env.REFRESH_TOKEN_JWT_SECRET) {
-  throw new Error('process.env.REFRESH_TOKEN_JWT_SECRET should be defined');
-}
-export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
-/** Auth token expiration, in minutes */
-export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = 10080;
-/** Refresh token expiration, in minutes */
-export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = 86400;
-
-/** Password reset token Secret */
-export const PASSWORD_RESET_JWT_SECRET: string = process.env.PASSWORD_RESET_JWT_SECRET!;
-if (!PASSWORD_RESET_JWT_SECRET) {
-  throw new Error('PASSWORD_RESET_JWT_SECRET should be defined');
-}
-/** Password reset token expiration, in minutes */
-export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES = 1440;
-
-/** Email change token Secret */
-export const EMAIL_CHANGE_JWT_SECRET: string = asDefined(
-  process.env.EMAIL_CHANGE_JWT_SECRET,
-  ExpectedEnvVariable,
-  'EMAIL_CHANGE_JWT_SECRET',
-);
-
-/** Email change token expiration, in minutes */
-export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES = 1440;
-
-// Graasp mailer config
-if (!process.env.MAILER_CONNECTION) {
-  console.error('MAILER_CONNECTION environment variable missing.');
-  process.exit(1);
-}
-export const MAILER_CONNECTION = process.env.MAILER_CONNECTION;
-export const MAILER_CONFIG_FROM_EMAIL =
-  process.env.MAILER_CONFIG_FROM_EMAIL ?? 'no-reply@graasp.org';
 
 /**
  * GRAASP FILE STORAGE CONFIG
@@ -259,7 +164,9 @@ export const H5P_S3_CONFIG = {
 
 // ugly runtime type checking since typescript cannot infer types
 if (H5P_FILE_STORAGE_TYPE === FileStorage.Local) {
-  if (!process.env.H5P_STORAGE_ROOT_PATH) throw new Error('H5P local storage root path missing');
+  if (!process.env.H5P_STORAGE_ROOT_PATH) {
+    throw new Error('H5P local storage root path missing');
+  }
 }
 export const H5P_LOCAL_CONFIG = {
   local: {
@@ -272,30 +179,15 @@ export const H5P_LOCAL_CONFIG = {
 export const H5P_FILE_STORAGE_CONFIG =
   H5P_FILE_STORAGE_TYPE === FileStorage.S3 ? H5P_S3_CONFIG : H5P_LOCAL_CONFIG;
 
+// Etherpad
 export const ETHERPAD_URL = validateEnv('ETHERPAD_URL', new UrlValidator());
-
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = validateEnv('ETHERPAD_API_KEY', new RegexValidator(API_KEY_FORMAT));
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
 
-if (!process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN) {
-  throw new Error('EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN is not defined');
-}
-export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN =
-  process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
-
-// Graasp apps
-if (!process.env.APPS_JWT_SECRET) {
-  throw new Error('APPS_JWT_SECRET is not defined');
-}
-export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
-
-// Graasp websockets
-if (!process.env.REDIS_CONNECTION) {
-  console.error('REDIS_CONNECTION environment variable missing.');
-  process.exit(1);
-}
-export const REDIS_CONNECTION = process.env.REDIS_CONNECTION;
+export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = requiredEnvVar(
+  'EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN',
+);
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API ?? '';
@@ -307,25 +199,12 @@ export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
 export const MEMBER_PROFILE_ROUTE_PREFIX = '/profile';
 export const MEMBER_EXPORT_DATA_ROUTE_PREFIX = '/export-data';
 
-if (!process.env.APPS_PUBLISHER_ID) {
-  throw new Error('APPS_PUBLISHER_ID is not defined');
-}
-export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
-if (!process.env.GRAASPER_CREATOR_ID) {
-  throw new Error('GRAASPER_CREATOR_ID is not defined');
-}
-export const GRAASPER_CREATOR_ID = process.env.GRAASPER_CREATOR_ID;
-
-// used for hashing password
-export const SALT_ROUNDS = 10;
+export const APPS_PUBLISHER_ID = requiredEnvVar('APPS_PUBLISHER_ID');
+export const GRAASPER_CREATOR_ID = requiredEnvVar('GRAASPER_CREATOR_ID');
 
 export const TMP_FOLDER = os.tmpdir();
 
-if (!process.env.RECAPTCHA_SECRET_ACCESS_KEY) {
-  console.error('RECAPTCHA_SECRET_ACCESS_KEY environment variable missing.');
-  process.exit(1);
-}
-export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_KEY;
+export const RECAPTCHA_SECRET_ACCESS_KEY = requiredEnvVar('RECAPTCHA_SECRET_ACCESS_KEY');
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
 export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 
@@ -337,7 +216,6 @@ export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
 export const JOB_SCHEDULING: boolean = process.env.JOB_SCHEDULING === 'true';
 
 // Graasp Search
-
 export const MEILISEARCH_URL = process.env.MEILISEARCH_URL || '';
 export const MEILISEARCH_MASTER_KEY = process.env.MEILISEARCH_MASTER_KEY;
 export const MEILISEARCH_REBUILD_SECRET = process.env.MEILISEARCH_REBUILD_SECRET;
