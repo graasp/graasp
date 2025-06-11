@@ -86,7 +86,7 @@
     "h5p-standalone": "3.8.0",
     "http-status-codes": "2.3.0",
     "i18next": "24.2.3",
-    "ioredis": "5.6.0",
+    "ioredis": "5.6.1",
     "jsonwebtoken": "9.0.2",
     "lodash.groupby": "4.6.0",
     "lodash.partition": "4.6.0",
