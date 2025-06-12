@@ -1,3 +1,4 @@
+import { Queue } from 'bullmq';
 import { and, asc, eq, ne } from 'drizzle-orm';
 import FormData, { Readable } from 'form-data';
 import fs from 'fs';
@@ -25,13 +26,13 @@ import build, {
 } from '../../../../../test/app';
 import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../di/utils';
+import { REDIS_CONNECTION } from '../../../../config/redis';
 import { db } from '../../../../drizzle/db';
 import { isDescendantOrSelf, isDirectChild } from '../../../../drizzle/operations';
 import { appSettingsTable, itemsRawTable } from '../../../../drizzle/schema';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
+import { QueueNames } from '../../../../workers/config';
 import { LocalFileRepository } from '../../../file/repositories/local';
 import { GRAASP_MANIFEST_FILENAME } from './constants';
 import { GraaspExportItem } from './import.service';
@@ -50,7 +51,10 @@ const getItemByName = async (itemName: string) => {
 // we need a different form data for each test
 const createFormData = (filename: string) => {
   const form = new FormData();
-  form.append('myfile', fs.createReadStream(path.resolve(__dirname, `./fixtures/${filename}`)));
+  form.append(
+    'myfile',
+    fs.createReadStream(path.resolve(__dirname, `./test/fixtures/${filename}`)),
+  );
 
   return form;
 };
@@ -174,11 +178,17 @@ const iframelyResult = {
   thumbnails: [],
 };
 
+const importExportQueue = new Queue(QueueNames.ItemExport, {
+  connection: { url: REDIS_CONNECTION },
+});
+
 describe('ZIP routes tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
     ({ app } = await build());
+    // clear the jobs from the queue
+    importExportQueue.drain(true);
   });
 
   afterAll(async () => {
@@ -610,7 +620,7 @@ describe('ZIP routes tests', () => {
       jest.spyOn(LocalFileRepository.prototype, 'getUrl').mockImplementation(async () => 'getUrl');
       (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
         return {
-          body: fs.createReadStream(path.resolve(__dirname, './fixtures/accordion.h5p')),
+          body: fs.createReadStream(path.resolve(__dirname, './test/fixtures/accordion.h5p')),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
       });
@@ -618,7 +628,7 @@ describe('ZIP routes tests', () => {
       const form = new FormData();
       form.append(
         'myfile',
-        fs.createReadStream(path.resolve(__dirname, './fixtures/accordion.h5p')),
+        fs.createReadStream(path.resolve(__dirname, './test/fixtures/accordion.h5p')),
       );
 
       const h5pUploadResponse = await app.inject({
@@ -661,8 +671,7 @@ describe('ZIP routes tests', () => {
 
   describe('POST /export', () => {
     it('Export successfully if signed in', async () => {
-      const mailerService = resolveDependency(MailerService);
-      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
+      console.error(REDIS_CONNECTION);
 
       const {
         actor,
@@ -679,9 +688,12 @@ describe('ZIP routes tests', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      await waitForExpect(() => {
-        expect(mockSendEmail).toHaveBeenCalledTimes(1);
-        expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
+      await waitForExpect(async () => {
+        const waitingJobs = await importExportQueue.getWaiting();
+        // we should find a waiting job for our item in the queue
+        const ourJob = waitingJobs.find(({ data }) => data.itemId === item.id);
+        expect(ourJob).toBeTruthy();
+        expect(ourJob.data.memberId).toEqual(actor.id);
       });
     });
 
