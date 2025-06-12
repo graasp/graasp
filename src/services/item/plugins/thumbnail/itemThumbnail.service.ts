@@ -136,7 +136,7 @@ export class ItemThumbnailService {
       }
 
       this.logger.error(
-        `An error occured while fetching the item's thumbnails. The reason: ${res.reason}`,
+        `An error occured while fetching the item's thumbnails. The reason: ${JSON.stringify(res.reason)}`,
       );
       return acc;
     }, {});
