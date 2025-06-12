@@ -19,8 +19,8 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     "strictNullChecks": true,
+    "isolatedModules": true,
     // for running typescript with tsx without the need to build and watch
-    // "isolatedModules": true, // enable for running the code with tsx
     // "verbatimModuleSyntax": true, // TODO: enable when we want to move to ESM
     "strictPropertyInitialization": false, // disable because of entities,
     "typeRoots": [
