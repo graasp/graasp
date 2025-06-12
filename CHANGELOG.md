@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.1](https://github.com/graasp/graasp/compare/v2.4.0...v2.4.1) (2025-06-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/swagger to v9.5.1 ([#1885](https://github.com/graasp/graasp/issues/1885)) ([c037226](https://github.com/graasp/graasp/commit/c03722693c45a9d5985e7deaf31b220147d7d7f6))
+* **deps:** update dependency fastify to v5.3.3 ([#1886](https://github.com/graasp/graasp/issues/1886)) ([4aa8219](https://github.com/graasp/graasp/commit/4aa821937a6028fe6df0d31e009e36407e6153e7))
+* **deps:** update dependency ioredis to v5.6.1 ([#1852](https://github.com/graasp/graasp/issues/1852)) ([cc1a53c](https://github.com/graasp/graasp/commit/cc1a53c880b98e44380cf5a05ee839ed127853df))
+* **deps:** update dependency nodemailer to v6.10.1 ([#1853](https://github.com/graasp/graasp/issues/1853)) ([7ab6cc3](https://github.com/graasp/graasp/commit/7ab6cc3fb17280c5179c06e948d0374544f9d662))
+* display thumbnail failure reason as JSON.stringified ([#1903](https://github.com/graasp/graasp/issues/1903)) ([81f8d4b](https://github.com/graasp/graasp/commit/81f8d4bcc216723e4d431b2f520f9d677d82b6e8))
+* prepare changes for ESM use verbatimSyntax ([#1896](https://github.com/graasp/graasp/issues/1896)) ([311f8e1](https://github.com/graasp/graasp/commit/311f8e124e8d4695825cb8658b61f679173f650a))
+* **refactor:** simplify environment variables ([#1897](https://github.com/graasp/graasp/issues/1897)) ([041bcab](https://github.com/graasp/graasp/commit/041bcab7a8ffc6ab14999b9e3fa07df812f5c044))
+* some typo in the readme ([#1894](https://github.com/graasp/graasp/issues/1894)) ([e7ea9be](https://github.com/graasp/graasp/commit/e7ea9beb0f48a0b4f2ed9c36333683aa6355a0db))
+
 ## [2.4.0](https://github.com/graasp/graasp/compare/v2.3.0...v2.4.0) (2025-06-05)
 
 
