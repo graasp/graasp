@@ -11,6 +11,7 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
+import { pipeline } from 'stream/promises';
 
 import type { FastifyBaseLogger } from 'fastify';
 
@@ -194,12 +195,7 @@ export class S3FileRepository implements FileRepository {
       }
 
       const fileStream = fs.createWriteStream(filepath);
-      await new Promise<void>((resolve, reject) => {
-        res.body.pipe(fileStream);
-        res.body.on('error', reject);
-        fileStream.on('finish', resolve);
-      });
-      fileStream.end();
+      await pipeline(res.body, fileStream);
 
       // create and return read stream (similar to local file service)
       const file = fs.createReadStream(filepath);
