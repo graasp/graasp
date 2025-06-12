@@ -7,11 +7,11 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
+import { REDIS_CONNECTION } from '../../../../config/redis';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
-import { REDIS_CONNECTION } from '../../../../utils/config';
 import { QueueNames } from '../../../../workers/config';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';

@@ -5,7 +5,7 @@ import { Queue } from 'bullmq';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { REDIS_CONNECTION } from '../utils/config';
+import { REDIS_CONNECTION } from '../config/redis';
 import { QueueNames } from './config';
 
 export const queueDashboardPlugin: FastifyPluginAsyncTypebox = async (instance) => {
@@ -19,7 +19,5 @@ export const queueDashboardPlugin: FastifyPluginAsyncTypebox = async (instance) 
   });
 
   serverAdapter.setBasePath('/ui');
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
   instance.register(serverAdapter.registerPlugin(), { prefix: '/ui' });
 };

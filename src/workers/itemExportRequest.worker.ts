@@ -1,8 +1,8 @@
 import { type Job, Worker } from 'bullmq';
 
+import { REDIS_CONNECTION } from '../config/redis';
 import { db } from '../drizzle/db';
 import { BaseLogger } from '../logger';
-import { REDIS_CONNECTION } from '../utils/config';
 import { QueueNames } from './config';
 import { ItemExportRequestService } from './itemExportRequest.service';
 
