@@ -108,6 +108,7 @@
     "pdf-text-reader": "3.0.2",
     "pdf2pic": "3.1.4",
     "pg": "8.14.1",
+    "pino": "9.7.0",
     "reflect-metadata": "0.2.2",
     "sanitize-filename": "1.6.3",
     "sanitize-html": "2.15.0",

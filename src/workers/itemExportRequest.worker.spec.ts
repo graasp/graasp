@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { REDIS_CONNECTION } from '../config/redis';
-import { QueueNames } from './config';
+import { Queues } from './config';
 import { ItemExportRequestService } from './itemExportRequest.service';
 import { ItemExportRequestWorker } from './itemExportRequest.worker';
 
@@ -30,8 +30,8 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
     );
     const itemId = v4();
     const memberId = v4();
-    const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
-    const job = await queue.add('export-folder-zip', {
+    const queue = new Queue(Queues.ItemExport.queueName, { connection: { url: REDIS_CONNECTION } });
+    const job = await queue.add(Queues.ItemExport.jobs.exportFolderZip, {
       itemId,
       memberId,
     });
@@ -39,7 +39,10 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
     await expect
       .poll(async () => {
         const jobs = await queue.getCompleted();
-        const job = jobs.find((job) => job.data.itemId === itemId);
+        const job = jobs.find(
+          (job) =>
+            job.name === Queues.ItemExport.jobs.exportFolderZip && job.data.itemId === itemId,
+        );
         return job;
       })
       .toBeTruthy();
@@ -61,8 +64,8 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
     );
     const itemId = v4();
     const memberId = v4();
-    const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
-    await queue.add('export-folder-zip', {
+    const queue = new Queue(Queues.ItemExport.queueName, { connection: { url: REDIS_CONNECTION } });
+    await queue.add(Queues.ItemExport.jobs.exportFolderZip, {
       itemId,
       memberId,
     });
@@ -70,7 +73,10 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
     await expect
       .poll(async () => {
         const failedJobs = await queue.getFailed();
-        const job = failedJobs.find((job) => job.data.itemId === itemId);
+        const job = failedJobs.find(
+          (job) =>
+            job.name === Queues.ItemExport.jobs.exportFolderZip && job.data.itemId === itemId,
+        );
         return job;
       })
       .toBeTruthy();
@@ -84,15 +90,17 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
       itemExportRequestService,
       new BaseLogger(),
     );
-    const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
-    await queue.add('export-folder-zip', {
+    const queue = new Queue(Queues.ItemExport.queueName, { connection: { url: REDIS_CONNECTION } });
+    await queue.add(Queues.ItemExport.jobs.exportFolderZip, {
       toto: 'tutu',
     });
 
     await expect
       .poll(async () => {
         const jobs = await queue.getFailed();
-        const job = jobs.find((job) => job.data.toto === 'tutu');
+        const job = jobs.find(
+          (job) => job.name === Queues.ItemExport.jobs.exportFolderZip && job.data.toto === 'tutu',
+        );
         return job;
       })
       .toBeTruthy();

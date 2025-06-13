@@ -12,7 +12,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
-import { QueueNames } from '../../../../workers/config';
+import { Queues } from '../../../../workers/config';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
@@ -163,8 +163,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       // add task in queue
-      const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
-      await queue.add('export-folder-zip', {
+      const queue = new Queue(Queues.ItemExport.queueName, {
+        connection: { url: REDIS_CONNECTION },
+      });
+      await queue.add(Queues.ItemExport.jobs.exportFolderZip, {
         itemId: item.id,
         memberId: member.id,
       });

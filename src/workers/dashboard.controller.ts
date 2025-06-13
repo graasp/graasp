@@ -7,13 +7,15 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { DEV } from '../config/env';
 import { REDIS_CONNECTION } from '../config/redis';
-import { QueueNames } from './config';
+import { Queues } from './config';
 
 export const queueDashboardPlugin: FastifyPluginAsyncTypebox = async (instance) => {
   if (DEV) {
     const serverAdapter = new FastifyAdapter();
 
-    const queues = [new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } })];
+    const queues = [
+      new Queue(Queues.ItemExport.queueName, { connection: { url: REDIS_CONNECTION } }),
+    ];
 
     createBullBoard({
       queues: queues.map((q) => new BullMQAdapter(q)),

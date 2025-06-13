@@ -4,13 +4,16 @@ import { validate } from 'uuid';
 import { REDIS_CONNECTION } from '../config/redis';
 import { db } from '../drizzle/db';
 import { BaseLogger } from '../logger';
-import { QueueNames } from './config';
+import { Queues } from './config';
 import { ItemExportRequestService } from './itemExportRequest.service';
 
 type ExportFolderZipJob = Job<{
   itemId: string;
   memberId: string;
 }>;
+
+// define a local alias
+const JobTypes = Queues.ItemExport.jobs;
 
 export class ItemExportRequestWorker {
   private readonly itemExportRequestService: ItemExportRequestService;
@@ -22,10 +25,10 @@ export class ItemExportRequestWorker {
     this.itemExportRequestService = itemExportRequestService;
 
     this.worker = new Worker(
-      QueueNames.ItemExport,
+      Queues.ItemExport.queueName,
       async (job: ExportFolderZipJob) => {
         switch (job.name) {
-          case 'export-folder-zip': {
+          case JobTypes.exportFolderZip: {
             const { itemId, memberId } = job.data;
             if (validate(itemId) && validate(memberId)) {
               await db.transaction(async (tx) => {
@@ -37,8 +40,10 @@ export class ItemExportRequestWorker {
               });
               return 'success';
             } else {
+              this.logger.info(
+                `Worker for "${Queues.ItemExport.queueName}" got an unexpected job name "${job.name}. This job will be removed and not processed."`,
+              );
               await job.remove();
-              // throw new Error('invalid job data, required itemId and memberId as UUID');
             }
           }
           // other job type this worker can handle

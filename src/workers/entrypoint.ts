@@ -1,3 +1,4 @@
+import { pino } from 'pino';
 import 'reflect-metadata';
 
 import { registerDependencies } from '../di/container';
@@ -10,10 +11,7 @@ import { ItemExportRequestWorker } from './itemExportRequest.worker';
 
 const start = async () => {
   // register tsyringe dependencies
-  // FIXME
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  registerDependencies(console);
+  registerDependencies(pino());
   const logger = resolveDependency(BaseLogger);
 
   logger.debug('STARTING WORKERS');
