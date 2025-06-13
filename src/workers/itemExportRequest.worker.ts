@@ -1,4 +1,5 @@
 import { type Job, Worker } from 'bullmq';
+import { validate } from 'uuid';
 
 import { REDIS_CONNECTION } from '../config/redis';
 import { db } from '../drizzle/db';
@@ -23,11 +24,25 @@ export class ItemExportRequestWorker {
     this.worker = new Worker(
       QueueNames.ItemExport,
       async (job: ExportFolderZipJob) => {
-        await db.transaction(async (tx) => {
-          const { itemId, memberId } = job.data;
-          await this.itemExportRequestService.exportFolderZipAndSendByEmail(tx, itemId, memberId);
-        });
-        return 'success';
+        switch (job.name) {
+          case 'export-folder-zip': {
+            const { itemId, memberId } = job.data;
+            if (validate(itemId) && validate(memberId)) {
+              await db.transaction(async (tx) => {
+                await this.itemExportRequestService.exportFolderZipAndSendByEmail(
+                  tx,
+                  itemId,
+                  memberId,
+                );
+              });
+              return 'success';
+            } else {
+              await job.remove();
+              // throw new Error('invalid job data, required itemId and memberId as UUID');
+            }
+          }
+          // other job type this worker can handle
+        }
       },
       {
         connection: { url: REDIS_CONNECTION },

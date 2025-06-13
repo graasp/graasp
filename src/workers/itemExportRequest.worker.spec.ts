@@ -1,43 +1,102 @@
 import { Queue } from 'bullmq';
 import { v4 } from 'uuid';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { REDIS_CONNECTION } from '../config/redis';
 import { QueueNames } from './config';
+import { ItemExportRequestService } from './itemExportRequest.service';
 import { ItemExportRequestWorker } from './itemExportRequest.worker';
 
-describe('ItemExport worker', () => {
-  it('handles jobs', async () => {
-    const ItemExportServiceMock = vi.fn();
-    ItemExportServiceMock.prototype.exportFolderZipAndSendByEmail = vi.fn();
+// mock for the ItemExportRequestService
+const ItemExportRequestServiceMock = vi.fn();
+ItemExportRequestServiceMock.prototype.exportFolderZipAndSendByEmail = vi.fn();
 
-    const BaseLogger = vi.fn();
-    BaseLogger.prototype.debug = vi.fn();
-    BaseLogger.prototype.info = vi.fn();
-    BaseLogger.prototype.warning = vi.fn();
-    BaseLogger.prototype.error = vi.fn();
+// logger mock
+const BaseLogger = vi.fn();
+BaseLogger.prototype.debug = vi.fn();
+BaseLogger.prototype.info = vi.fn();
+BaseLogger.prototype.warning = vi.fn();
+BaseLogger.prototype.error = vi.fn();
 
-    const itemExportServiceMock = new ItemExportServiceMock();
+describe('ItemExportRequest worker', { sequential: true }, () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+  it('handles job', async () => {
+    const itemExportRequestService: ItemExportRequestService = new ItemExportRequestServiceMock();
     const _importExportRequestWorker = new ItemExportRequestWorker(
-      itemExportServiceMock,
+      itemExportRequestService,
       new BaseLogger(),
     );
     const itemId = v4();
     const memberId = v4();
     const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
-    queue.add('export-folder-zip', {
+    const job = await queue.add('export-folder-zip', {
       itemId,
       memberId,
     });
 
     await expect
       .poll(async () => {
-        const completedJobs = await queue.getCompleted();
-        const job = completedJobs.find((job) => job.data.itemId === itemId);
+        const jobs = await queue.getCompleted();
+        const job = jobs.find((job) => job.data.itemId === itemId);
+        return job;
+      })
+      .toBeTruthy();
+    expect(job.isCompleted).toBeTruthy();
+
+    // expect the exportFolder to have been called
+    expect(itemExportRequestService.exportFolderZipAndSendByEmail).toHaveBeenCalled();
+  });
+
+  it('fail if processing throws', async () => {
+    const itemExportRequestService: ItemExportRequestService = new ItemExportRequestServiceMock();
+    // make the export processing fail
+    vi.mocked(itemExportRequestService).exportFolderZipAndSendByEmail.mockRejectedValueOnce(
+      new Error('unexpected precessing error'),
+    );
+    const _importExportRequestWorker = new ItemExportRequestWorker(
+      itemExportRequestService,
+      new BaseLogger(),
+    );
+    const itemId = v4();
+    const memberId = v4();
+    const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
+    await queue.add('export-folder-zip', {
+      itemId,
+      memberId,
+    });
+
+    await expect
+      .poll(async () => {
+        const failedJobs = await queue.getFailed();
+        const job = failedJobs.find((job) => job.data.itemId === itemId);
         return job;
       })
       .toBeTruthy();
     // expect the exportFolder to have been called
-    expect(itemExportServiceMock.exportFolderZipAndSendByEmail).toHaveBeenCalled();
+    expect(itemExportRequestService.exportFolderZipAndSendByEmail).toHaveBeenCalled();
+  });
+
+  it('fail with wrong data', async () => {
+    const itemExportRequestService: ItemExportRequestService = new ItemExportRequestServiceMock();
+    const _importExportRequestWorker = new ItemExportRequestWorker(
+      itemExportRequestService,
+      new BaseLogger(),
+    );
+    const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
+    await queue.add('export-folder-zip', {
+      toto: 'tutu',
+    });
+
+    await expect
+      .poll(async () => {
+        const jobs = await queue.getFailed();
+        const job = jobs.find((job) => job.data.toto === 'tutu');
+        return job;
+      })
+      .toBeTruthy();
+    // expect the exportFolder to not have been called
+    expect(itemExportRequestService.exportFolderZipAndSendByEmail).not.toHaveBeenCalled();
   });
 });
