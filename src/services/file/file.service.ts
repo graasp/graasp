@@ -6,7 +6,7 @@ import type { MaybeUser, MinimalMember } from '../../types';
 import { CachingService } from '../caching/service';
 import type { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import type { FileRepository } from './interfaces/fileRepository';
-import { createSanitizedFile, sanitizeHtml } from './sanitize';
+import { sanitizeDocument, sanitizeHtml } from './sanitize';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -98,7 +98,7 @@ class FileService {
   async sanitizeFile({ file, mimetype }: { file: Readable; mimetype?: string }): Promise<Readable> {
     // sanitize content of html
     if (mimetype === 'text/html') {
-      return await createSanitizedFile(file, sanitizeHtml);
+      return await sanitizeDocument(file, sanitizeHtml);
     }
 
     return file;
