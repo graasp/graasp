@@ -4,17 +4,24 @@ import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
 import { ZipFile } from 'yazl';
 
-import type { UnionOfConst } from '@graasp/sdk';
+import { PermissionLevel, type UnionOfConst } from '@graasp/sdk';
 
-import type { DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
-import { TRANSLATIONS } from '../../../../langs/constants';
-import { BaseLogger } from '../../../../logger';
-import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { TMP_FOLDER } from '../../../../utils/config';
-import FileService from '../../../file/file.service';
-import { MemberService } from '../../../member/member.service';
+import { DBConnection } from '../drizzle/db';
+import { type ItemRaw, ItemType, MinimalAccount } from '../drizzle/types';
+import { TRANSLATIONS } from '../langs/constants';
+import { BaseLogger } from '../logger';
+import { MailBuilder } from '../plugins/mailer/builder';
+import { MailerService } from '../plugins/mailer/mailer.service';
+import { AuthorizedItemService } from '../services/authorizedItem.service';
+import FileService from '../services/file/file.service';
+import { isItemType } from '../services/item/discrimination';
+import { ItemService } from '../services/item/item.service';
+import { DESCRIPTION_EXTENSION } from '../services/item/plugins/importExport/constants';
+import { UnexpectedExportError } from '../services/item/plugins/importExport/errors';
+import { ItemExportService } from '../services/item/plugins/importExport/itemExport.service';
+import { MemberService } from '../services/member/member.service';
+import { MaybeUser, MinimalMember } from '../types';
+import { TMP_FOLDER } from '../utils/config';
 import { ItemExportRequestRepository } from './itemExportRequest.repository';
 
 const EXPORT_ITEM_EXPIRATION_DAYS = 7;
@@ -32,20 +39,45 @@ export class ItemExportRequestService {
   private readonly itemExportRequestRepository: ItemExportRequestRepository;
   private readonly mailerService: MailerService;
   private readonly memberService: MemberService;
+  private readonly itemService: ItemService;
+  private readonly authorizedItemService: AuthorizedItemService;
+
   private readonly logger: BaseLogger;
+  private readonly itemExportService: ItemExportService;
 
   constructor(
     fileService: FileService,
     itemExportRequestRepository: ItemExportRequestRepository,
     mailerService: MailerService,
     memberService: MemberService,
+    itemService: ItemService,
+    authorizedItemService: AuthorizedItemService,
+    itemExportService: ItemExportService,
     logger: BaseLogger,
   ) {
     this.fileService = fileService;
     this.itemExportRequestRepository = itemExportRequestRepository;
     this.mailerService = mailerService;
+    this.itemService = itemService;
+    this.authorizedItemService = authorizedItemService;
     this.memberService = memberService;
+    this.itemExportService = itemExportService;
     this.logger = logger;
+  }
+
+  async exportFolderZipAndSendByEmail(db, itemId, memberId) {
+    const member = await this.memberService.get(db, memberId);
+    const memberInfo = member.toMemberInfo();
+
+    const item = await this.authorizedItemService.getItemById(db, {
+      itemId,
+      permission: PermissionLevel.Admin,
+      actor: memberInfo,
+    });
+
+    // generate archive stream and send by email
+    const archive = await this.exportRaw(db, memberInfo, item);
+    await this.uploadAndSendDownloadLink(db, memberInfo, item, archive, ItemExportRequestType.Raw);
   }
 
   /**
@@ -54,7 +86,7 @@ export class ItemExportRequestService {
    * @returns
    */
   private buildExportPath(requestId: string) {
-    return `item-export/${requestId}`;
+    return `item-export/${requestId}.zip`;
   }
 
   /**
@@ -64,7 +96,7 @@ export class ItemExportRequestService {
    * @param item
    * @param archive zip content of the item to be uploaded
    */
-  async uploadAndSendDownloadLink(
+  private async uploadAndSendDownloadLink(
     dbConnection: DBConnection,
     actor: MinimalAccount,
     item: ItemRaw,
@@ -129,6 +161,83 @@ export class ItemExportRequestService {
         }
       });
     }
+  }
+
+  /**
+   * Add item in archive, recursively add children in folder
+   * @param actor
+   * @param args
+   */
+  private async addItemToZip(
+    dbConnection: DBConnection,
+    actor: MaybeUser,
+    args: {
+      item: ItemRaw;
+      archiveRootPath: string;
+      archive: ZipFile;
+    },
+  ) {
+    const { item, archiveRootPath, archive } = args;
+
+    // save description in file
+    if (item.description) {
+      archive.addBuffer(
+        Buffer.from(item.description),
+        path.join(archiveRootPath, `${item.name}${DESCRIPTION_EXTENSION}`),
+      );
+    }
+
+    if (isItemType(item, ItemType.FOLDER)) {
+      // append description
+      const folderPath = path.join(archiveRootPath, item.name);
+      const children = await this.itemService.getChildren(dbConnection, actor, item.id);
+      const result = await Promise.all(
+        children.map((child) =>
+          this.addItemToZip(dbConnection, actor, {
+            item: child,
+            archiveRootPath: folderPath,
+            archive,
+          }),
+        ),
+      );
+      // add empty folder
+      if (!result.length) {
+        return archive.addEmptyDirectory(folderPath);
+      }
+      return;
+    }
+
+    // save single item
+    const { stream, name } = await this.itemExportService.fetchItemData(dbConnection, actor, item);
+    return archive.addReadStream(stream, path.join(archiveRootPath, name));
+  }
+
+  /**
+   * Export the items recursively
+   * @param item The root item
+   * @returns A zip file promise
+   */
+  private async exportRaw(dbConnection: DBConnection, actor: MinimalMember, item: ItemRaw) {
+    // init archive
+    const archive = new ZipFile();
+    archive.outputStream.on('error', function (err) {
+      throw new UnexpectedExportError(err);
+    });
+    // path used to index files in archive
+    const rootPath = path.dirname('./');
+
+    // import items in zip recursively
+    await this.addItemToZip(dbConnection, actor, {
+      item,
+      archiveRootPath: rootPath,
+      archive,
+    }).catch((error) => {
+      this.logger.error(error);
+      throw new UnexpectedExportError(error);
+    });
+    archive.end();
+
+    return archive;
   }
 
   /**

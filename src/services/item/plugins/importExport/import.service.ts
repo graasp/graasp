@@ -2,33 +2,26 @@ import fs, { existsSync } from 'fs';
 import { createReadStream, exists } from 'fs-extra';
 import { readFile } from 'fs/promises';
 import mimetics from 'mimetics';
-import fetch from 'node-fetch';
 import path from 'path';
 import sanitize from 'sanitize-html';
 import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
-import { v4 } from 'uuid';
-import { ZipFile } from 'yazl';
 
 import {
   type DocumentItemExtraProperties,
   type ItemSettings,
   ItemType,
   type ItemTypeUnion,
-  ThumbnailSize,
-  getMimetype,
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import type { AppSettingInsertDTO, AppSettingRaw, ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import type { MaybeUser, MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
-import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
 import { H5PService } from '../html/h5p/h5p.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
@@ -41,8 +34,9 @@ import {
   TXT_EXTENSION,
   URL_PREFIX,
 } from './constants';
-import { GraaspExportInvalidFileError, UnexpectedExportError } from './errors';
-import { buildTextContent, generateThumbnailFilename, getFilenameFromItem } from './utils';
+import { GraaspExportInvalidFileError } from './errors';
+import { ItemExportService } from './itemExport.service';
+import { generateThumbnailFilename } from './utils';
 
 /**
  * Defines the properties of an individual item in the graasp export format.
@@ -63,32 +57,30 @@ export type GraaspExportItem = {
 };
 
 @singleton()
-export class ImportExportService {
+export class ImportService {
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
   private readonly authorizedItemService: AuthorizedItemService;
-  private readonly etherpadService: EtherpadItemService;
-  private readonly itemThumbnailService: ItemThumbnailService;
   private readonly appSettingRepository: AppSettingRepository;
+
   private readonly log: BaseLogger;
 
   constructor(
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
-    etherpadService: EtherpadItemService,
     authorizedItemService: AuthorizedItemService,
     itemThumbnailService: ItemThumbnailService,
     appSettingRepository: AppSettingRepository,
+    itemExportService: ItemExportService,
+
     log: BaseLogger,
   ) {
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
-    this.etherpadService = etherpadService;
     this.authorizedItemService = authorizedItemService;
-    this.itemThumbnailService = itemThumbnailService;
     this.appSettingRepository = appSettingRepository;
     this.log = log;
   }
@@ -112,7 +104,7 @@ export class ImportExportService {
    * @param {any} options.filename filename of the file to import
    * @returns {any}
    */
-  private async _saveItemFromFilename(
+  private async saveItemFromFilename(
     dbConnection: DBConnection,
     actor: MinimalMember,
     options: {
@@ -416,231 +408,6 @@ export class ImportExportService {
     }
   }
 
-  /**
-   * Add item in archive, recursively add children in folder
-   * @param actor
-   * @param args
-   */
-  private async _addItemToZip(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    args: {
-      item: ItemRaw;
-      archiveRootPath: string;
-      archive: ZipFile;
-    },
-  ) {
-    const { item, archiveRootPath, archive } = args;
-
-    // save description in file
-    if (item.description) {
-      archive.addBuffer(
-        Buffer.from(item.description),
-        path.join(archiveRootPath, `${item.name}${DESCRIPTION_EXTENSION}`),
-      );
-    }
-
-    if (isItemType(item, ItemType.FOLDER)) {
-      // append description
-      const folderPath = path.join(archiveRootPath, item.name);
-      const children = await this.itemService.getChildren(dbConnection, actor, item.id);
-      const result = await Promise.all(
-        children.map((child) =>
-          this._addItemToZip(dbConnection, actor, {
-            item: child,
-            archiveRootPath: folderPath,
-            archive,
-          }),
-        ),
-      );
-      // add empty folder
-      if (!result.length) {
-        return archive.addEmptyDirectory(folderPath);
-      }
-      return;
-    }
-
-    // save single item
-    const { stream, name } = await this.fetchItemData(dbConnection, actor, item);
-    return archive.addReadStream(stream, path.join(archiveRootPath, name));
-  }
-
-  /**
-   * Recursively add items to the Graasp export file.
-   *
-   * Note that the shortcut items are excluded for now, they will be included in a later release.
-   * @param args item - the item to add
-   *             archive - reference to the zip file to which the files will be written
-   *             itemManifest - reference to the item manifest list
-   * @returns A full manifest promise for the given item
-   */
-  private async addItemToGraaspExport(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    args: {
-      item: ItemRaw;
-      archive: ZipFile;
-      itemManifest: GraaspExportItem[];
-    },
-  ) {
-    const { item, archive, itemManifest } = args;
-
-    // assign the uuid to the exported items
-    const exportItemId = v4();
-    const itemPath = path.join(path.dirname('./'), exportItemId);
-
-    // add the thumbnail to export, if present
-    const thumbnailFilename = await this.getAndWriteThumbnail(
-      dbConnection,
-      actor,
-      item.id,
-      exportItemId,
-      archive,
-    );
-
-    // Get the app settings if an item is an APP
-    let appSettings: Omit<AppSettingRaw, 'id'>[] | undefined = undefined;
-    if (isItemType(item, ItemType.APP)) {
-      const itemAppSettings = await this.appSettingRepository.getForItem(dbConnection, item.id);
-
-      appSettings = itemAppSettings.map((appSetting) => {
-        return { ...appSetting, id: undefined, itemId: exportItemId };
-      });
-    }
-
-    // TODO EXPORT treat the shortcut items correctly
-    // ignore the shortcuts for now
-    if (isItemType(item, ItemType.SHORTCUT)) {
-      return itemManifest;
-    }
-
-    // treat folder items recursively
-    const childrenManifest: GraaspExportItem[] = [];
-    if (isItemType(item, ItemType.FOLDER)) {
-      const childrenItems = await this.itemService.getChildren(dbConnection, actor, item.id);
-      for (const child of childrenItems) {
-        await this.addItemToGraaspExport(dbConnection, actor, {
-          item: child,
-          archive,
-          itemManifest: childrenManifest,
-        });
-      }
-
-      itemManifest.push({
-        id: exportItemId,
-        name: item.name,
-        description: item.description,
-        type: item.type,
-        settings: item.settings,
-        extra: item.extra,
-        thumbnailFilename,
-        children: childrenManifest,
-      });
-      return itemManifest;
-    }
-
-    // treat single items
-    const { stream, mimetype } = await this.fetchItemData(dbConnection, actor, item);
-
-    itemManifest.push({
-      id: exportItemId,
-      name: item.name,
-      description: item.description,
-      type: item.type,
-      settings: item.settings,
-      extra: item.extra,
-      thumbnailFilename,
-      mimetype,
-      appSettings,
-    });
-    archive.addReadStream(stream, itemPath);
-    return itemManifest;
-  }
-
-  /**
-   * Try and get the item thumbnail and write it to the zip archive.
-   * @returns Thumbnail filename, undefined if the thumbnail was not found.
-   */
-  private async getAndWriteThumbnail(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    itemId: string,
-    exportItemId: string,
-    archive: ZipFile,
-  ) {
-    const filename = generateThumbnailFilename(exportItemId);
-    const itemThumbnailPath = path.join(path.dirname('./'), filename);
-    try {
-      const thumbnailStream = await this.itemThumbnailService.getFile(dbConnection, actor, {
-        size: ThumbnailSize.Original,
-        itemId,
-      });
-
-      archive.addReadStream(thumbnailStream, itemThumbnailPath);
-      return filename;
-    } catch (_err) {
-      this.log.debug(`Thumbnail not found for item ${itemId}`);
-    }
-  }
-
-  /**
-   * Export the items recursively
-   * @param item The root item
-   * @returns A zip file promise
-   */
-  async exportRaw(dbConnection: DBConnection, actor: MinimalMember, item: ItemRaw) {
-    // init archive
-    const archive = new ZipFile();
-    archive.outputStream.on('error', function (err) {
-      throw new UnexpectedExportError(err);
-    });
-    // path used to index files in archive
-    const rootPath = path.dirname('./');
-
-    // import items in zip recursively
-    await this._addItemToZip(dbConnection, actor, {
-      item,
-      archiveRootPath: rootPath,
-      archive,
-    }).catch((error) => {
-      throw new UnexpectedExportError(error);
-    });
-    archive.end();
-
-    return archive;
-  }
-
-  /**
-   * Export the items recursively in the Graasp export format
-   * @param item The root item
-   * @returns A zip file promise
-   */
-  async exportGraasp(dbConnection: DBConnection, actor: MaybeUser, item: ItemRaw) {
-    // init archive
-    const archive = new ZipFile();
-    archive.outputStream.on('error', function (err) {
-      throw new UnexpectedExportError(err);
-    });
-    // path used to index files in archive
-    const rootPath = path.dirname('./');
-
-    const manifest = await this.addItemToGraaspExport(dbConnection, actor, {
-      item,
-      archive,
-      itemManifest: [],
-    }).catch((error) => {
-      throw new UnexpectedExportError(error);
-    });
-
-    archive.addReadStream(
-      Readable.from(JSON.stringify(manifest)),
-      path.join(rootPath, GRAASP_MANIFEST_FILENAME),
-    );
-
-    archive.end();
-    return archive;
-  }
-
   private async importGraaspFile(
     dbConnection: DBConnection,
     actor: MinimalMember,
@@ -675,7 +442,7 @@ export class ImportExportService {
           // transaction is necessary since we are adding data
           // we don't add it at the very top to allow partial zip to be updated
           await dbConnection.transaction(async (tx) => {
-            const item = await this._saveItemFromFilename(tx, actor, {
+            const item = await this.saveItemFromFilename(tx, actor, {
               filename,
               folderPath,
               parentId,
@@ -755,65 +522,5 @@ export class ImportExportService {
 
     // delete zip and content
     fs.rmSync(targetFolder, { recursive: true });
-  }
-
-  async fetchItemData(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    item: ItemRaw,
-  ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
-    switch (true) {
-      case isItemType(item, ItemType.FILE): {
-        const mimetype = getMimetype(item.extra) || 'application/octet-stream';
-        const url = await this.fileItemService.getUrl(dbConnection, actor, {
-          itemId: item.id,
-        });
-        const res = await fetch(url);
-        const filename = getFilenameFromItem(item);
-        return {
-          name: filename,
-          mimetype,
-          stream: res.body,
-        };
-      }
-      case isItemType(item, ItemType.H5P): {
-        const h5pUrl = await this.h5pService.getUrl(item);
-        const res = await fetch(h5pUrl);
-
-        const filename = getFilenameFromItem(item);
-        return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
-      }
-      case isItemType(item, ItemType.DOCUMENT): {
-        return {
-          stream: Readable.from([item.extra.document?.content]),
-          name: getFilenameFromItem(item),
-          mimetype: item.extra.document.isRaw ? 'text/html' : 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.LINK): {
-        return {
-          stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.APP): {
-        return {
-          stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.ETHERPAD): {
-        return {
-          stream: Readable.from(
-            await this.etherpadService.getEtherpadContentFromItem(dbConnection, actor, item.id),
-          ),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/html',
-        };
-      }
-    }
-    throw new Error(`cannot fetch data for item ${item.id}`);
   }
 }

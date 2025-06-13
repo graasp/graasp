@@ -1,10 +1,8 @@
 FROM node:22.15-bookworm AS base
 
 
-##############################
-### Build Application Step ###
-##############################
-# This step will build the application
+# -------------------------------------------------------
+# get the init system
 FROM base AS tools
 
 # update packages and install the minimal init system "dumb-init"
@@ -33,9 +31,8 @@ COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn/releases ./.yarn/releases/
 RUN yarn set version berry && yarn workspaces focus --all --production
 
-############################
-### Run Application Step ###
-############################
+
+# -------------------------------------------------------
 # Final step that will run the application
 FROM node:22.15-bookworm-slim AS runner
 
@@ -49,8 +46,6 @@ ENV BUILD_TIMESTAMP=${BUILD_TIMESTAMP:-not-provided}
 # Set NODE_ENV to production so we don't trigger .husky/install.mjs
 ENV NODE_ENV=production
 
-EXPOSE 3000
-
 WORKDIR /app
 
 # Copy the installed dumb-init system from build image
@@ -63,4 +58,4 @@ COPY --chown=node:node --from=build ./app/dist ./dist
 # Set user to be non-root node
 USER node
 
-CMD ["dumb-init", "node", "dist/server.js"]
+CMD ["dumb-init", "node", "dist/workers/entrypoint.js"]

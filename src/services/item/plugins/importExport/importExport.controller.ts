@@ -1,3 +1,4 @@
+import { Queue } from 'bullmq';
 import { StatusCodes } from 'http-status-codes';
 import { default as sanitize } from 'sanitize-filename';
 
@@ -6,10 +7,12 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
+import { REDIS_CONNECTION } from '../../../../config/redis';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
+import { Queues } from '../../../../workers/config';
 import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
@@ -18,9 +21,10 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { WrongItemTypeError } from '../../errors';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
-import { ItemExportRequestService, ItemExportRequestType } from './itemExportRequest.service';
-import { downloadFile, exportZip, graaspZipExport, zipImport } from './schema';
-import { ImportExportService } from './service';
+import { GraaspExportService } from './graaspExport.service';
+import { ImportService } from './import.service';
+import { downloadFile, exportZip, graaspZipExport, zipImport } from './importExport.schemas';
+import { ItemExportService } from './itemExport.service';
 import { prepareZip } from './utils';
 
 function encodeFilename(name: string) {
@@ -31,8 +35,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const log = resolveDependency(BaseLogger);
   const authorizedItemService = resolveDependency(AuthorizedItemService);
   const actionService = resolveDependency(ActionService);
-  const importExportService = resolveDependency(ImportExportService);
-  const itemExportRequestService = resolveDependency(ItemExportRequestService);
+  const importService = resolveDependency(ImportService);
+  const itemExportService = resolveDependency(ItemExportService);
+  const graaspExportService = resolveDependency(GraaspExportService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -78,7 +83,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       // create items from folder
       // does not wait
-      importExportService
+      importService
         .import(db, member, {
           folderPath,
           targetFolder,
@@ -123,7 +128,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await actionService.postMany(db, member, request, [action]);
 
       // return single file
-      const { stream, mimetype, name } = await importExportService.fetchItemData(db, member, item);
+      const { stream, mimetype, name } = await itemExportService.fetchItemData(db, member, item);
 
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
@@ -157,28 +162,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw new WrongItemTypeError(item.type);
       }
 
+      // add task in queue
+      const queue = new Queue(Queues.ItemExport.queueName, {
+        connection: { url: REDIS_CONNECTION },
+      });
+      await queue.add(Queues.ItemExport.jobs.exportFolderZip, {
+        itemId: item.id,
+        memberId: member.id,
+      });
+
       // will generate archive in the background
       reply.status(StatusCodes.ACCEPTED).send();
-
-      // trigger download action for a collection
-      const action = {
-        itemId: item.id,
-        type: ActionTriggers.ItemDownload,
-        extra: JSON.stringify({ itemId: item?.id }),
-        // FIXME: this should be infered from the request ! add a parameter in the request
-        view: Context.Builder,
-      };
-      await actionService.postMany(db, member, request, [action]);
-
-      // generate archive stream and send by email
-      const archive = await importExportService.exportRaw(db, member, item);
-      await itemExportRequestService.uploadAndSendDownloadLink(
-        db,
-        member,
-        item,
-        archive,
-        ItemExportRequestType.Raw,
-      );
     },
   );
 
@@ -201,7 +195,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
 
       // generate archive stream
-      const archiveStream = await importExportService.exportGraasp(db, member, item);
+      const archiveStream = await graaspExportService.exportGraasp(db, member, item);
 
       try {
         reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);

@@ -6,7 +6,7 @@
       "esnext.asynciterable"
     ],
     "target": "es6",
-    "module": "node16",
+    "module": "node16", // TODO: use "preserve" when moving to ESM
     // "strict": true, // TODO: enable
     "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
     "checkJs": false,

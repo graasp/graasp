@@ -51,7 +51,6 @@ env:
   SECURE_SESSION_SECRET_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
   MEILISEARCH_URL: fake
   MEILISEARCH_MASTER_KEY: fake
-  JOB_SCHEDULING: false
   GEOLOCATION_API_KEY: geolocation-key
   GEOLOCATION_API_HOST: http://localhost:12345
 
@@ -75,6 +74,20 @@ jobs:
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # Label used to access the service container
+      graasp-redis:
+        # Docker Hub image
+        image: redis
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -112,6 +125,9 @@ jobs:
 
       - name: check migrations are up to date
         run: yarn migration:check
+
+      - name: vitest tests
+        run: yarn vitest
 
   test-node:
     needs: build-node
