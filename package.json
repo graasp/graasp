@@ -171,6 +171,7 @@
     "ts-jest": "29.3.4",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
+    "vitest": "3.2.3",
     "wait-for-expect": "3.0.2"
   },
   "resolutions": {

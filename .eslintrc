@@ -27,7 +27,9 @@
       "error",
       {
         "devDependencies": [
+          "vitest.config.ts",
           "**/*.test.*",
+          "**/*.spec.*",
           "**/test/*",
           "**/test/**/*"
         ]

@@ -12,9 +12,9 @@ type ExportFolderZipJob = Job<{
 }>;
 
 export class ItemExportRequestWorker {
+  private readonly itemExportRequestService: ItemExportRequestService;
   private readonly logger: BaseLogger;
   private worker: Worker;
-  itemExportRequestService: ItemExportRequestService;
 
   constructor(itemExportRequestService: ItemExportRequestService, logger: BaseLogger) {
     this.logger = logger;

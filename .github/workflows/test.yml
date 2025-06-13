@@ -187,5 +187,8 @@ jobs:
       - name: apply migrations on empty database
         run: yarn migration:run
 
+      - name: vitest tests
+        run: yarn vitest
+
       - name: yarn test
         run: yarn test:ci --shard=${{ matrix.shard }}
