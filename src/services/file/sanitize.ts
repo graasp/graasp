@@ -1,36 +1,18 @@
-import { createWriteStream } from 'fs';
-import { readFile, unlink } from 'fs/promises';
-import path from 'path';
 import sanitize from 'sanitize-html';
 import { Readable } from 'stream';
-import { pipeline } from 'stream/promises';
-
-import { TMP_FOLDER } from '../../utils/config';
-import { randomHexOf4 } from '../utils';
+import { text } from 'stream/consumers';
 
 export function sanitizeHtml(content: string): string {
   return sanitize(content);
 }
 
-export async function createSanitizedFile(
+export async function sanitizeDocument(
   file: Readable,
   sanitizeFn: (content: string) => string,
 ): Promise<Readable> {
-  // create tmp file to read
-  const tmpFile = path.join(TMP_FOLDER, `${Date.now().toString()}_${randomHexOf4()}`);
   try {
-    const tmpWriteStream = createWriteStream(tmpFile);
-    await pipeline(file, tmpWriteStream);
-
-    const content = await readFile(tmpFile, {
-      encoding: 'utf8',
-      flag: 'r',
-    });
-
+    const content = await text(file);
     const readable = Readable.from(sanitizeFn(content));
-
-    // delete tmp file
-    unlink(tmpFile).catch((e) => console.error(e));
 
     // return sanitized readable
     return readable;
