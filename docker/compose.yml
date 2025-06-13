@@ -100,7 +100,7 @@ services:
       - meilisearch
 
   workers:
-    image: graasp-workers # public.ecr.aws/graasp/graasp:workers-v2.2.2 # local image or image from aws ECR public
+    image: public.ecr.aws/graasp/graasp:workers-v2.2.2 # local image or image from aws ECR public
     environment:
       <<: [*shared_environment, *core_environment]
 
@@ -112,12 +112,12 @@ services:
       - meilisearch
 
   migrate:
-    image: public.ecr.aws/i3k4i6f8/graasp:migrate-v2.2.2
+    image: public.ecr.aws/graasp/graasp:migrate-v2.2.2
     environment:
       <<: *shared_environment
     deploy:
       # ensures the service is not launched when we run "docker compose up"
-      # you cna run the container with "docker compose run migrate"
+      # you can run the container with "docker compose run migrate"
       replicas: 0
 
   db:

@@ -52,7 +52,6 @@ export class ItemExportRequestService {
     memberService: MemberService,
     itemService: ItemService,
     authorizedItemService: AuthorizedItemService,
-
     itemExportService: ItemExportService,
     logger: BaseLogger,
   ) {

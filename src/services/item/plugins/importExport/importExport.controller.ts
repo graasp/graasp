@@ -163,13 +163,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       // add task in queue
-      new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } }).add(
-        'export-folder-zip',
-        {
-          itemId: item.id,
-          memberId: member.id,
-        },
-      );
+      const queue = new Queue(QueueNames.ItemExport, { connection: { url: REDIS_CONNECTION } });
+      await queue.add('export-folder-zip', {
+        itemId: item.id,
+        memberId: member.id,
+      });
 
       // will generate archive in the background
       reply.status(StatusCodes.ACCEPTED).send();

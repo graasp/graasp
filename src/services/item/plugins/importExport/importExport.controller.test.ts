@@ -671,8 +671,6 @@ describe('ZIP routes tests', () => {
 
   describe('POST /export', () => {
     it('Export successfully if signed in', async () => {
-      console.error(REDIS_CONNECTION);
-
       const {
         actor,
         items: [item],

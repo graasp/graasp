@@ -23,7 +23,7 @@ export const queueDashboardPlugin: FastifyPluginAsyncTypebox = async (instance) 
     serverAdapter.setBasePath('/ui');
     instance.register(serverAdapter.registerPlugin(), { prefix: '/ui' });
   } else {
-    // warn that the dahsboard will not be available.
+    // warn that the dashboard will not be available.
     instance.log.info('Not running in dev mode, the bullmq dashboard will not be available.');
   }
 };
