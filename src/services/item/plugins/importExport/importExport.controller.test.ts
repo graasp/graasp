@@ -32,7 +32,7 @@ import { isDescendantOrSelf, isDirectChild } from '../../../../drizzle/operation
 import { appSettingsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
-import { QueueNames } from '../../../../workers/config';
+import { Queues } from '../../../../workers/config';
 import { LocalFileRepository } from '../../../file/repositories/local';
 import { GRAASP_MANIFEST_FILENAME } from './constants';
 import { GraaspExportItem } from './import.service';
@@ -178,7 +178,7 @@ const iframelyResult = {
   thumbnails: [],
 };
 
-const importExportQueue = new Queue(QueueNames.ItemExport, {
+const importExportQueue = new Queue(Queues.ItemExport.queueName, {
   connection: { url: REDIS_CONNECTION },
 });
 
