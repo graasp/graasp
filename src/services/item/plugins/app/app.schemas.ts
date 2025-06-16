@@ -20,7 +20,7 @@ export const generateToken = {
   }),
   body: customType.StrictObject({
     key: customType.UUID(),
-    origin: Type.String({ format: 'url' }),
+    origin: Type.String({ format: 'url' }), // should be `uri` for http://localhost:3333 to be valid
   }),
   response: {
     [StatusCodes.OK]: Type.Object({ token: Type.String() }),
