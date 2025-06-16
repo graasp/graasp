@@ -24,7 +24,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
         { name: 'current', description: 'Endpoints related to current user' },
         { name: 'email', description: 'Endpoints related to management of emails' },
         { name: 'etherpad', description: 'Endpoints related to etherpad' },
-        { name: 'export', description: 'Endpoints related to exporting and downloading items' },
+        { name: 'export', description: 'Endpoints related to exporting and downloading data' },
         { name: 'favorite', description: 'Endpoints related to bookmarked items' },
         { name: 'file', description: 'Endpoints related to file management' },
         {
