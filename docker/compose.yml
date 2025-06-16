@@ -15,78 +15,79 @@ name: graasp
 volumes:
   postgres-data:
   graasp-files:
-  meilisearch_data:
+  meilisearch-data:
 
 x-shared_environment: &shared_environment
   # shape of the connection string:
   # postgres://user:password@host:port/db_name?sslmode=disable
   DB_CONNECTION: postgres://graasper:graasper@db:5432/graasp?sslmode=disable # update with your own value
 
+
+x-core_environment: &core_environment
+  # file storage
+  FILE_STORAGE_HOST: http://localfile:1081
+
+  # the Mailer config is set by the "mailer" service below
+  MAILER_CONNECTION: smtp://docker:docker@mailer:1025
+  # Redis
+  REDIS_CONNECTION: redis://redis:6379
+
+  # H5P configuration
+  H5P_FILE_STORAGE_TYPE: local
+  H5P_STORAGE_ROOT_PATH: /tmp/graasp-h5p/
+  H5P_PATH_PREFIX: h5p-content/
+  H5P_FILE_STORAGE_HOST: http://localhost:1081
+
+  # Meilisearch configuration
+  MEILISEARCH_URL: http://meilisearch:7700
+  MEILISEARCH_MASTER_KEY: masterKey
+  MEILISEARCH_REBUILD_SECRET: secret  # replace by your own data
+
+  # Etherpad
+  ETHERPAD_URL: http://etherpad:9001
+  ETHERPAD_PUBLIC_URL: http://localhost:9001
+  ETHERPAD_COOKIE_DOMAIN: localhost
+  # this should be the same as the content of the "./etherpad/devApiKey.txt" file
+  ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+  # below are env that are not necessary for the worker but we need to include them for now
+  COOKIE_DOMAIN: localhost
+  # replace all these with fresh values !
+  # to generate values use:
+  #    npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
+  SECURE_SESSION_SECRET_KEY: # replace by your own data
+  JWT_SECRET: # replace by your own data
+  AUTH_TOKEN_JWT_SECRET: # replace by your own data
+  REFRESH_TOKEN_JWT_SECRET: # replace by your own data
+  PASSWORD_RESET_JWT_SECRET: # replace by your own data
+  EMAIL_CHANGE_JWT_SECRET: # replace by your own data
+  APPS_JWT_SECRET: # replace by your own data
+
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
+
+  APPS_PUBLISHER_ID: # replace by your own data
+  GRAASPER_CREATOR_ID: # replace by your own data
+
+  RECAPTCHA_SECRET_ACCESS_KEY: # replace by your own data
+
+
 services:
   core:
-    # image: public.ecr.aws/i3k4i6f8/graasp:core-0.0.1 # local image or image from aws ECR public
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile
+    image: public.ecr.aws/graasp/graasp:core-v2.2.2 # local image or image from aws ECR public
     environment:
-      <<: *shared_environment
+      <<: [*shared_environment, *core_environment]
 
       HOSTNAME: localhost
-      COOKIE_DOMAIN: localhost
+      PUBLIC_URL: http://localhost:3000
       CORS_ORIGIN_REGEX: '^http?:\/\/(localhost)?:[0-9]{4}$'
-
-      FILE_STORAGE_ROOT_PATH: /tmp
-      FILE_STORAGE_HOST: http://localhost:1081
 
       # endpoint of the nudenet model
       IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
 
-      # replace all these with fresh values !
-      # to generate values use:
-      #    npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
-      SECURE_SESSION_SECRET_KEY:  # replace with your own value
-      JWT_SECRET:  # replace with your own value
-      AUTH_TOKEN_JWT_SECRET:  # replace with your own value
-      REFRESH_TOKEN_JWT_SECRET:  # replace with your own value
-      PASSWORD_RESET_JWT_SECRET:  # replace with your own value
-      EMAIL_CHANGE_JWT_SECRET:  # replace with your own value
-      APPS_JWT_SECRET:  # replace with your own value
-
-      # the Mailer config is set by the "mailer" service below
-      MAILER_CONNECTION: smtp://docker:docker@mailer:1025
-
-      # H5P configuration
-      H5P_FILE_STORAGE_TYPE: local
-      H5P_STORAGE_ROOT_PATH: /tmp/graasp-h5p/
-      H5P_PATH_PREFIX: h5p-content/
-      H5P_FILE_STORAGE_HOST: http://localhost:1081
-
-      # Meilisearch configuration
-      MEILISEARCH_URL: http://meilisearch:7700
-      MEILISEARCH_MASTER_KEY: masterKey
-      MEILISEARCH_REBUILD_SECRET: secret
-
-      # Etherpad
-      ETHERPAD_URL: http://etherpad:9001
-      # Optional, if the etherpad server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
-      ETHERPAD_PUBLIC_URL: http://localhost:9001
-      # Optional, if the etherpad cookie domain is different from the domain of the public URL
-      ETHERPAD_COOKIE_DOMAIN: localhost
-      # Api key should be the same as the one mounted inside the etherpad container
-      ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-
-      # Redis
-      REDIS_CONNECTION: redis://redis:6379
-
-      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
-
-      APPS_PUBLISHER_ID: 1234-1234 # replace by your own data
-
-      JOB_SCHEDULING: true
       OPENAI_API_KEY: <token> # replace with your own KEY
 
       GEOLOCATION_API_HOST: https://api.geoapify.com/v1/geocode
-      GEOLOCATION_API_KEY: 12344556899 # replace with your own API key
+      GEOLOCATION_API_KEY: # replace with your own API key
 
       RECAPTCHA_SECRET_ACCESS_KEY:  # replace with a correct value
     ports:
@@ -98,15 +99,25 @@ services:
       - redis
       - meilisearch
 
+  workers:
+    image: public.ecr.aws/graasp/graasp:workers-v2.2.2 # local image or image from aws ECR public
+    environment:
+      <<: [*shared_environment, *core_environment]
+
+    volumes:
+      - graasp-files:/tmp
+    depends_on:
+      - nudenet
+      - redis
+      - meilisearch
+
   migrate:
-    # image: public.ecr.aws/i3k4i6f8/graasp:migrate-0.0.1
-    build:
-      context: ../
-      dockerfile: ./docker/migrate.Dockerfile
+    image: public.ecr.aws/graasp/graasp:migrate-v2.2.2
     environment:
       <<: *shared_environment
     deploy:
       # ensures the service is not launched when we run "docker compose up"
+      # you can run the container with "docker compose run migrate"
       replicas: 0
 
   db:
@@ -146,7 +157,7 @@ services:
     # https://github.com/ether/etherpad-lite/issues/3849
     volumes:
       # bind copy the dev API key
-      - ../.devcontainer/etherpad/devApiKey.txt:/opt/etherpad-lite/APIKEY.txt
+      - ./etherpad/devApiKey.txt:/opt/etherpad-lite/APIKEY.txt
     ports:
       - "9001:9001"
     environment:
@@ -175,7 +186,7 @@ services:
       - MEILI_ENV=development
       - MEILI_LOG_LEVEL
     volumes:
-      - meilisearch_data:/meili_data
+      - meilisearch-data:/meili_data
 
   localfile:
     image: joseluisq/static-web-server:2

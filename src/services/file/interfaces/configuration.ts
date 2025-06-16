@@ -14,5 +14,5 @@ export interface S3FileConfiguration {
 // localFilesHost: host (protocol, domain, and port. Example: http://localhost:3001) of the local server to serve the local files
 export interface LocalFileConfiguration {
   storageRootPath: string;
-  localFilesHost?: string;
+  localFilesHost?: string; // TODO: change this to be baseUrl
 }

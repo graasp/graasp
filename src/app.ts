@@ -28,7 +28,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(databasePlugin));
 
   // register some dependencies manually
-  registerDependencies(instance);
+  registerDependencies(instance.log);
 
   await instance.register(fp(metaPlugin));
 

@@ -97,7 +97,7 @@ jobs:
           environment-variables: |
             DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }}
             APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
-            APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }} 
+            APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
             AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET }}
             CLIENT_HOST=${{ vars.CLIENT_HOST }}
             COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }}
@@ -119,14 +119,13 @@ jobs:
             H5P_PATH_PREFIX=${{ vars.H5P_PATH_PREFIX }}
             HOSTNAME=${{ vars.HOSTNAME }}
             IMAGE_CLASSIFIER_API=${{ vars.IMAGE_CLASSIFIER_API }}
-            JOB_SCHEDULING=${{ vars.JOB_SCHEDULING || false }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             PASSWORD_RESET_JWT_SECRET=${{ secrets.PASSWORD_RESET_JWT_SECRET }}
             EMAIL_CHANGE_JWT_SECRET=${{ secrets.EMAIL_CHANGE_JWT_SECRET }}
             LIBRARY_CLIENT_HOST=${{ vars.LIBRARY_CLIENT_HOST }}
             LOG_LEVEL=${{ vars.LOG_LEVEL }}
             MAILER_CONFIG_FROM_EMAIL=${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
-            MAILER_CONNECTION=${{ secrets.MAILER_CONNECTION }} 
+            MAILER_CONNECTION=${{ secrets.MAILER_CONNECTION }}
             MEILISEARCH_MASTER_KEY=${{ secrets.MEILISEARCH_MASTER_KEY }}
             MEILISEARCH_REBUILD_SECRET=${{ secrets.MEILISEARCH_REBUILD_SECRET }}
             MEILISEARCH_URL=${{ secrets.MEILISEARCH_URL }}
@@ -134,7 +133,7 @@ jobs:
             PORT=${{ vars.PORT }}
             PUBLIC_URL=${{ secrets.PUBLIC_URL }}
             RECAPTCHA_SECRET_ACCESS_KEY=${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
-            REDIS_CONNECTION=${{ secrets.REDIS_CONNECTION }} 
+            REDIS_CONNECTION=${{ secrets.REDIS_CONNECTION }}
             REFRESH_TOKEN_JWT_SECRET=${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
             S3_FILE_ITEM_ACCESS_KEY_ID=${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
             S3_FILE_ITEM_BUCKET=${{ vars.S3_FILE_ITEM_BUCKET }}

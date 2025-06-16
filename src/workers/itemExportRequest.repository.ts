@@ -1,8 +1,8 @@
 import { singleton } from 'tsyringe';
 
-import type { DBConnection } from '../../../../drizzle/db';
-import { itemExportRequestsTable } from '../../../../drizzle/schema';
-import type { ItemExportRequestRaw } from '../../../../drizzle/types';
+import type { DBConnection } from '../drizzle/db';
+import { itemExportRequestsTable } from '../drizzle/schema';
+import type { ItemExportRequestRaw } from '../drizzle/types';
 
 @singleton()
 export class ItemExportRequestRepository {
