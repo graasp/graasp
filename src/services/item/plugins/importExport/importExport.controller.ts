@@ -135,8 +135,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.raw.setHeader('Content-Disposition', `attachment; filename="${encodeFilename(name)}"`);
       reply.type(mimetype);
 
-      // BUG: cast because validation does not match
-      return stream as never;
+      return stream;
     },
   );
 

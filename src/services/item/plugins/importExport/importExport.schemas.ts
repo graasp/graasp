@@ -35,10 +35,7 @@ export const downloadFile = {
   }),
   response: {
     // return a stream
-    [StatusCodes.OK]: Type.Object(
-      { data: Type.String() },
-      { description: 'a stream of data for the export zip content' },
-    ),
+    [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the export zip content' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -54,7 +51,6 @@ export const exportZip = {
     itemId: customType.UUID(),
   }),
   response: {
-    // return a stream
     [StatusCodes.ACCEPTED]: Type.Null({ description: 'email with download link has been sent' }),
     '4xx': errorSchemaRef,
   },
