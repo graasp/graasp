@@ -1,18 +1,20 @@
-import { getViewSelectedFields, or } from 'drizzle-orm';
+import { count, countDistinct, getViewSelectedFields } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
   SQL,
   and,
   asc,
-  count,
   desc,
   eq,
+  gt,
   gte,
   ilike,
   inArray,
   isNotNull,
+  lt,
   lte,
   ne,
+  or,
   sql,
 } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
@@ -57,7 +59,7 @@ import type {
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
-import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
+import type { MaybeUser, MinimalMember } from '../../types';
 import { getSearchLang } from '../../utils/config';
 import {
   HierarchyTooDeep,
@@ -292,12 +294,32 @@ export class ItemRepository {
   /**
    * return children of given parent, ordered by order
    * @param db
+   * @param parent
+   * @returns
+   */
+  async getChildren(dbConnection: DBConnection, parent: ItemRaw): Promise<ItemRaw[]> {
+    if (parent.type !== ItemType.FOLDER) {
+      throw new ItemNotFolder({ id: parent.id });
+    }
+
+    return await dbConnection
+      .select()
+      .from(items)
+      .where(isDirectChild(items.path, parent.path))
+      // use order for ordering
+      // backup order by in case two items has same ordering
+      .orderBy(() => [asc(items.order), asc(items.createdAt)]);
+  }
+
+  /**
+   * return children of given parent, ordered by order, with creator
+   * @param db
    * @param actor
    * @param parent
    * @param params
    * @returns
    */
-  async getChildren(
+  async getChildrenWithCreator(
     dbConnection: DBConnection,
     actor: MaybeUser,
     parent: ItemRaw,
@@ -310,8 +332,6 @@ export class ItemRepository {
     // reunite where conditions
     // is direct child
     const andConditions: (SQL | undefined)[] = [isDirectChild(items.path, parent.path)];
-
-    // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
 
     if (params?.types) {
       const types = params.types;
@@ -336,11 +356,6 @@ export class ItemRepository {
         ),
       );
     }
-
-    // normally no need anymore with typeorm
-    // if (options.withOrder) {
-    //   query.addSelect('item.order');
-    // }
 
     const result = await dbConnection
       .select()
@@ -1002,12 +1017,8 @@ export class ItemRepository {
     return await this.getOneOrThrow(dbConnection, item.id);
   }
 
-  async rescaleOrder(
-    dbConnection: DBConnection,
-    actor: AuthenticatedUser,
-    parentItem: FolderItem,
-  ): Promise<void> {
-    const children = await this.getChildren(dbConnection, actor, parentItem);
+  async rescaleOrder(dbConnection: DBConnection, parentItem: FolderItem): Promise<void> {
+    const children = await this.getChildren(dbConnection, parentItem);
 
     // no need to rescale for less than 2 items
     if (children.length < 2) {
@@ -1167,5 +1178,54 @@ export class ItemRepository {
       })),
       pagination: { page, pageSize },
     };
+  }
+
+  /**
+   * Fix order of tree
+   * @param dbConnection database connection
+   * @param parentPath root of tree to be fixed
+   */
+  async fixOrderForTree(dbConnection: DBConnection, parentPath: string) {
+    // get parents within tree that has corrupted order numbers (eg. twice the same value)
+    const parentsWithSameOrder = dbConnection.$with('parents_with_same_order').as(
+      dbConnection
+        .select({ parent: sql.raw('subpath(path, 0, -1)').as('parent') })
+        .from(itemsRawTable)
+        .where(
+          and(sql.raw('nlevel(path) >= 2'), isDescendantOrSelf(itemsRawTable.path, parentPath)),
+        )
+        .groupBy(sql.raw('parent'))
+        .having(and(gt(count(), 1), lt(countDistinct(itemsRawTable.order), count()))),
+    );
+
+    // for each children under parent, set a row number based on sorted items (by order, by creation date)
+    const siblings = dbConnection.$with('siblings').as(
+      dbConnection
+        .with(parentsWithSameOrder)
+        .select({
+          id: itemsRawTable.id,
+          created_at: itemsRawTable.createdAt,
+          parent: sql.raw('subpath(path, 0, -1)'),
+          newOrder: sql
+            .raw(
+              'CAST(ROW_NUMBER() OVER (PARTITION BY subpath(path, 0, -1) ORDER BY "order", created_at) as INT)',
+            )
+            .as('newOrder'),
+        })
+        .from(itemsRawTable)
+        .innerJoin(
+          parentsWithSameOrder,
+          eq(sql`subpath(${itemsRawTable.path}, 0, -1)`, parentsWithSameOrder.parent),
+        )
+        .where(sql.raw('nlevel(path) >= 2')),
+    );
+
+    // set correct order
+    await dbConnection
+      .with(siblings)
+      .update(itemsRawTable)
+      .set({ order: sql`${siblings.newOrder} * ${DEFAULT_ORDER}` })
+      .from(siblings)
+      .where(eq(itemsRawTable.id, siblings.id));
   }
 }

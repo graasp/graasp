@@ -331,7 +331,7 @@ export class ItemService {
 
     // rescale the item ordering, if there's more than one item
     if (items.length > 1) {
-      await this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
+      await this.itemRepository.rescaleOrder(dbConnection, parentItem);
     }
 
     return createdItems;
@@ -492,7 +492,7 @@ export class ItemService {
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
-    return this.itemRepository.getChildren(dbConnection, actor, item, params);
+    return this.itemRepository.getChildrenWithCreator(dbConnection, actor, item, params);
   }
 
   async getChildren(
@@ -793,7 +793,7 @@ export class ItemService {
 
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
-      await this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
+      await this.itemRepository.rescaleOrder(dbConnection, parentItem);
     }
 
     return {
@@ -869,6 +869,11 @@ export class ItemService {
       item,
       MAX_DESCENDANTS_FOR_COPY,
     );
+
+    // make sure the order of the descendants are correct
+    if (item.type === ItemType.FOLDER) {
+      await this.itemRepository.fixOrderForTree(dbConnection, item.path);
+    }
 
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
@@ -988,7 +993,7 @@ export class ItemService {
 
     // rescale order because copies happen in parallel
     if (parentItem) {
-      await this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
+      await this.itemRepository.rescaleOrder(dbConnection, parentItem);
     }
 
     return {
@@ -1033,7 +1038,7 @@ export class ItemService {
         actor: member,
         itemId: parentId,
       })) as FolderItem;
-      await this.itemRepository.rescaleOrder(dbConnection, member, parentItem);
+      await this.itemRepository.rescaleOrder(dbConnection, parentItem);
     }
   }
 }

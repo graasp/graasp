@@ -15,7 +15,7 @@ import {
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
-import { items, publishedItemsTable } from '../../drizzle/schema';
+import { items, itemsRawTable, publishedItemsTable } from '../../drizzle/schema';
 import type { ItemRaw } from '../../drizzle/types';
 import { assertIsDefined } from '../../utils/assertions';
 import {
@@ -1356,6 +1356,121 @@ describe('Item Repository', () => {
       expect(await getOrderForItemId(item2.id)).toEqual(12);
       expect(await getOrderForItemId(item3.id)).toEqual(14);
       expect(await getOrderForItemId(item4.id)).toEqual(13);
+    });
+  });
+
+  describe('fixOrderForTree', () => {
+    it('fix order of tree', async () => {
+      const {
+        items: [
+          corruptedParent,
+          corr1,
+          corr2,
+          corr3,
+          sc1,
+          sc2,
+          sc3,
+          unt1,
+          unt2,
+          unt3,
+          _untouchedParent,
+          unt4,
+          unt5,
+          unt6,
+        ],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            children: [
+              { order: 1, createdAt: '2012-10-05T14:48:00.000Z' },
+              { order: 20, createdAt: '2013-10-05T14:48:00.000Z' },
+              {
+                order: 20,
+                createdAt: '2010-10-05T14:48:00.000Z',
+                children: [
+                  { order: 20, createdAt: '2013-10-05T14:48:00.000Z' },
+                  { order: 20, createdAt: '2010-10-05T14:48:00.000Z' },
+                  {
+                    order: 20,
+                    createdAt: '2012-10-05T14:48:00.000Z',
+                    // should not change
+                    children: [{ order: 1 }, { order: 2 }, { order: 3 }],
+                  },
+                ],
+              },
+            ],
+          },
+          // should not change
+          { children: [{ order: 1 }, { order: 2 }, { order: 3 }] },
+        ],
+      });
+
+      await itemRepository.fixOrderForTree(db, corruptedParent.path);
+
+      // order are repaired
+      const item = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, corr1.id),
+      });
+      expect(item!.order).toEqual(20);
+      const item1 = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, corr2.id),
+      });
+      expect(item1!.order).toEqual(60);
+      const item2 = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, corr3.id),
+      });
+      expect(item2!.order).toEqual(40);
+
+      // sub children's order are repaired
+      const subitem = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, sc1.id),
+      });
+      expect(subitem!.order).toEqual(60);
+      const subitem1 = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, sc2.id),
+      });
+      expect(subitem1!.order).toEqual(20);
+      const subitem2 = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, sc3.id),
+      });
+      expect(subitem2!.order).toEqual(40);
+
+      // non corrupted children are untouched
+      const u1 = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, unt1.id) });
+      expect(u1!.order).toEqual(1);
+      const u2 = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, unt2.id) });
+      expect(u2!.order).toEqual(2);
+      const u3 = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, unt3.id) });
+      expect(u3!.order).toEqual(3);
+      const u4 = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, unt4.id) });
+      expect(u4!.order).toEqual(1);
+      const u5 = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, unt5.id) });
+      expect(u5!.order).toEqual(2);
+      const u6 = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, unt6.id) });
+      expect(u6!.order).toEqual(3);
+    });
+
+    it('do not throw for non-folder item', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            type: ItemType.DOCUMENT,
+            order: 12,
+          },
+        ],
+      });
+
+      await itemRepository.fixOrderForTree(db, item.path);
+
+      // order are repaired
+      const i = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, item.id),
+      });
+      expect(i!.order).toEqual(12);
     });
   });
 });
