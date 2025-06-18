@@ -444,11 +444,24 @@ export class MeiliSearchWrapper {
 
   // to be executed by async job runner when desired
   async rebuildIndex(pageSize: number = 10) {
-    // TODO: ENSURE that there is an active index before rebuilding
-
     if (MEILISEARCH_STORE_LEGACY_PDF_CONTENT) {
       // Backfill needed pdf data - Probably remove this when everything work well after deployment
       await this.storeMissingPdfContent(db);
+    }
+
+    // Ensure that there is an active index before rebuilding
+    try {
+      const index = await this.meilisearchClient.getIndex(ACTIVE_INDEX);
+      this.indexDictionary[ACTIVE_INDEX] = index;
+    } catch (err) {
+      if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
+        const task = await this.meilisearchClient.createIndex(ACTIVE_INDEX);
+        await this.meilisearchClient.waitForTask(task.taskUid);
+
+        const index = await this.meilisearchClient.getIndex(ACTIVE_INDEX);
+        this.indexDictionary[ACTIVE_INDEX] = index;
+      }
+      throw err;
     }
 
     this.logger.info('REBUILD INDEX: Starting index rebuild...');
