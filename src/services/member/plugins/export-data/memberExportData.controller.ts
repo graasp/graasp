@@ -35,6 +35,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           // reply no content and let the server create the archive and send the mail
           reply.status(StatusCodes.NO_CONTENT);
 
+          // TODO: add in queue
           await db.transaction(async (tx) => {
             await exportMemberDataService.createArchiveAndSendByEmail(tx, member.toMemberInfo());
           });

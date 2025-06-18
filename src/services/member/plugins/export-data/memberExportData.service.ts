@@ -27,14 +27,6 @@ import { anonymizeMentionsMessage, anonymizeMessages } from './utils/anonymize.u
  */
 export type DataToExport = { [dataName: string]: object[] };
 
-export function buildUploadedExportFilePath(
-  uploadedRootFolder: string,
-  exportId: string,
-  datetime: Date,
-) {
-  return `${uploadedRootFolder}/${exportId}/${datetime.toISOString()}`;
-}
-
 @singleton()
 export class ExportMemberDataService {
   private readonly exportDataRepository: ExportDataRepository;
@@ -52,6 +44,14 @@ export class ExportMemberDataService {
     this.exportDataRepository = exportDataRepository;
     this.mailerService = mailerService;
     this.fileService = fileService;
+  }
+
+  private buildUploadedExportFilePath(
+    uploadedRootFolder: string,
+    exportId: string,
+    datetime: Date,
+  ) {
+    return `${uploadedRootFolder}/${exportId}/${datetime.toISOString()}`;
   }
 
   private addDataToArchive(
@@ -83,7 +83,7 @@ export class ExportMemberDataService {
     const readFile = fs.createReadStream(tmpFilepath);
 
     // upload file
-    const filepath = buildUploadedExportFilePath(
+    const filepath = this.buildUploadedExportFilePath(
       this.ROOT_EXPORT_FOLDER,
       exportId,
       archiveCreationTime,
