@@ -25,7 +25,7 @@ import {
   ItemNotFound,
   TooManyDescendants,
 } from '../../utils/errors';
-import { assertIsMember } from '../authentication';
+import { assertIsMember, assertIsMemberForTest } from '../authentication';
 import { expectMember } from '../member/test/fixtures/members';
 import { MemberDTO } from '../member/types';
 import { DEFAULT_ORDER } from './constants';
@@ -320,9 +320,8 @@ describe('Item Repository', () => {
       const children = [child1, child2];
 
       assertIsDefined(actor);
-      const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const data = await itemRepository.getChildren(db, maybeUser, parentItem);
+      const data = await itemRepository.getChildren(db, parentItem);
       expect(data).toHaveLength(children.length);
       expectManyItems(data, children);
     });
@@ -333,9 +332,8 @@ describe('Item Repository', () => {
       } = await seedFromJson({ items: [{}] });
 
       assertIsDefined(actor);
-      const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const response = await itemRepository.getChildren(db, maybeUser, parent);
+      const response = await itemRepository.getChildren(db, parent);
 
       expect(response).toEqual([]);
     });
@@ -350,14 +348,102 @@ describe('Item Repository', () => {
       const children = [child1, child2];
 
       assertIsDefined(actor);
-      const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const data = await itemRepository.getChildren(db, maybeUser, parent);
+      const data = await itemRepository.getChildren(db, parent);
       expect(data).toHaveLength(children.length);
       // verify order and content
       childrenInOrder.forEach((child, idx) => {
         const resultChild = data[idx];
         expectItem(resultChild, child);
+      });
+    });
+
+    it('returns error without leaking information', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ type: ItemType.DOCUMENT }],
+      });
+
+      assertIsDefined(actor);
+
+      await expect(itemRepository.getChildren(db, item)).rejects.toMatchObject(
+        new ItemNotFolder({ id: item.id }),
+      );
+    });
+  });
+
+  describe('getChildrenWithCreator', () => {
+    it('Returns successfully', async () => {
+      const {
+        actor,
+        items: [parentItem, child1, _childOfChild, child2],
+      } = await seedFromJson({
+        items: [
+          {
+            creator: 'actor',
+            children: [
+              { creator: 'actor', children: [{ creator: 'actor' }] },
+              { creator: 'actor' },
+            ],
+          },
+        ],
+      });
+      const children = [child1, child2];
+
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parentItem);
+      expect(data).toHaveLength(children.length);
+      expectManyItems(data, children, actor);
+      data.forEach((d) => expect(d.creator!.name).toEqual(actor.name));
+    });
+    it('Returns successfully empty children', async () => {
+      const {
+        actor,
+        items: [parent],
+      } = await seedFromJson({ items: [{}] });
+
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      const response = await itemRepository.getChildrenWithCreator(db, maybeUser, parent);
+
+      expect(response).toEqual([]);
+    });
+
+    it('Returns ordered children', async () => {
+      const {
+        actor,
+        items: [parent, child1, child2],
+      } = await seedFromJson({
+        items: [
+          {
+            creator: 'actor',
+            children: [
+              { creator: 'actor', order: 2 },
+              { creator: 'actor', order: 1 },
+            ],
+          },
+        ],
+      });
+
+      const childrenInOrder = [child2, child1];
+      const children = [child1, child2];
+
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parent);
+      expect(data).toHaveLength(children.length);
+      // verify order and content
+      childrenInOrder.forEach((child, idx) => {
+        const resultChild = data[idx];
+        expectItem(resultChild, child);
+        expect(resultChild.creator!.name).toEqual(actor.name);
       });
     });
 
@@ -372,7 +458,7 @@ describe('Item Repository', () => {
       const children = [child2];
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
-      const data = await itemRepository.getChildren(db, maybeUser, parent, {
+      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parent, {
         types: [ItemType.FOLDER],
       });
       expect(data).toHaveLength(children.length);
@@ -398,7 +484,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const data = await itemRepository.getChildren(db, maybeUser, parent, {
+      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parent, {
         keywords: ['child'],
       });
       expect(data).toHaveLength(children.length);
@@ -416,9 +502,9 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      await expect(itemRepository.getChildren(db, maybeUser, item)).rejects.toMatchObject(
-        new ItemNotFolder({ id: item.id }),
-      );
+      await expect(
+        itemRepository.getChildrenWithCreator(db, maybeUser, item),
+      ).rejects.toMatchObject(new ItemNotFolder({ id: item.id }));
     });
   });
 
@@ -1223,11 +1309,7 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(
-        db,
-        new MemberDTO(actor).toMinimal(),
-        parentItem as FolderItem,
-      );
+      await itemRepository.rescaleOrder(db, parentItem as FolderItem);
 
       expect(await getOrderForItemId(item1.id)).toEqual(20);
       expect(await getOrderForItemId(item2.id)).toEqual(40);
@@ -1253,11 +1335,7 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(
-        db,
-        new MemberDTO(actor).toMinimal(),
-        parentItem as FolderItem,
-      );
+      await itemRepository.rescaleOrder(db, parentItem as FolderItem);
 
       expect(await getOrderForItemId(item1.id)).toEqual(20);
       // null value is at the end but before item5 because it is the least recent
@@ -1286,11 +1364,7 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(
-        db,
-        new MemberDTO(actor).toMinimal(),
-        parentItem as FolderItem,
-      );
+      await itemRepository.rescaleOrder(db, parentItem as FolderItem);
 
       expect(await getOrderForItemId(item1.id)).toEqual(60);
       // first among duplicata because is more recent
@@ -1319,11 +1393,7 @@ describe('Item Repository', () => {
             throw new Error('mock update error');
           });
 
-          await itemRepository.rescaleOrder(
-            tx,
-            new MemberDTO(actor).toMinimal(),
-            parentItem as FolderItem,
-          );
+          await itemRepository.rescaleOrder(tx, parentItem as FolderItem);
         });
         // function should have rejected
         expect(false).toBeTruthy();
@@ -1346,11 +1416,7 @@ describe('Item Repository', () => {
       });
 
       assertIsDefined(actor);
-      await itemRepository.rescaleOrder(
-        db,
-        new MemberDTO(actor).toMinimal(),
-        parentItem as FolderItem,
-      );
+      await itemRepository.rescaleOrder(db, parentItem as FolderItem);
 
       expect(await getOrderForItemId(item1.id)).toEqual(11);
       expect(await getOrderForItemId(item2.id)).toEqual(12);
