@@ -1,6 +1,7 @@
 import path from 'path';
 import sharp from 'sharp';
 import { Readable } from 'stream';
+import { pipeline as streamPipeline } from 'stream/promises';
 import { injectable } from 'tsyringe';
 
 import { BaseLogger } from '../../logger';
@@ -40,15 +41,7 @@ export class ThumbnailService {
       Object.entries(ThumbnailSizeFormat).map(async ([sizeName, width]) => {
         // create thumbnail from image stream
         const pipeline = sharp().resize({ width }).toFormat(THUMBNAIL_FORMAT);
-        file.pipe(pipeline);
-
-        await new Promise((resolve, reject) =>
-          pipeline
-            .on('finish', () => {
-              resolve(true);
-            })
-            .on('error', reject),
-        );
+        await streamPipeline(file, pipeline);
 
         return {
           file: pipeline,
