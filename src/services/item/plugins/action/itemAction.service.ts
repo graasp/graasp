@@ -18,13 +18,7 @@ import {
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
-import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { ItemService } from '../../item.service';
-import { AppActionRepository } from '../app/appAction/appAction.repository';
-import { AppDataRepository } from '../app/appData/appData.repository';
-import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
-import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { type ActionDateFilters, ItemActionRepository } from './itemAction.repository';
 import { View, type ViewOptions } from './itemAction.schemas';
 import { ItemActionType } from './utils';
@@ -34,13 +28,7 @@ export class ItemActionService {
   private readonly authorizedItemService: AuthorizedItemService;
   private readonly actionService: ActionService;
   private readonly actionRepository: ActionRepository;
-  private readonly appActionRepository: AppActionRepository;
-  private readonly appSettingRepository: AppSettingRepository;
-  private readonly chatMessageRepository: ChatMessageRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
-  private readonly appDataRepository: AppDataRepository;
-  private readonly itemService: ItemService;
-  private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly itemActionRepository: ItemActionRepository;
 
   constructor(
@@ -48,24 +36,12 @@ export class ItemActionService {
     authorizedItemService: AuthorizedItemService,
     actionRepository: ActionRepository,
     itemMembershipRepository: ItemMembershipRepository,
-    appActionRepository: AppActionRepository,
-    appSettingRepository: AppSettingRepository,
-    appDataRepository: AppDataRepository,
-    chatMessageRepository: ChatMessageRepository,
-    itemService: ItemService,
-    itemVisibilityRepository: ItemVisibilityRepository,
     itemActionRepository: ItemActionRepository,
   ) {
     this.actionService = actionService;
     this.authorizedItemService = authorizedItemService;
     this.actionRepository = actionRepository;
     this.itemMembershipRepository = itemMembershipRepository;
-    this.appActionRepository = appActionRepository;
-    this.appSettingRepository = appSettingRepository;
-    this.appDataRepository = appDataRepository;
-    this.chatMessageRepository = chatMessageRepository;
-    this.itemService = itemService;
-    this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemActionRepository = itemActionRepository;
   }
 

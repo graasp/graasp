@@ -86,6 +86,12 @@ export class ActionRequestExportRepository {
     });
   }
 
+  /**
+   * Get accounts who have memberships on tree, from above or below
+   * @param dbConnection
+   * @param itemPath
+   * @returns minimal account data
+   */
   public async getAccountsForTree(
     dbConnection: DBConnection,
     itemPath: string,
@@ -94,9 +100,20 @@ export class ActionRequestExportRepository {
       .selectDistinct({ id: accountsTable.id, name: accountsTable.name })
       .from(itemMembershipsTable)
       .innerJoin(accountsTable, eq(accountsTable.id, itemMembershipsTable.accountId))
-      .where(isDescendantOrSelf(itemMembershipsTable.itemPath, itemPath));
+      .where(
+        and(
+          isDescendantOrSelf(itemMembershipsTable.itemPath, itemPath),
+          isAncestorOrSelf(itemMembershipsTable.itemPath, itemPath),
+        ),
+      );
   }
 
+  /**
+   * Get all items in tree with given item as root
+   * @param dbConnection
+   * @param itemPath
+   * @returns all items in the tree
+   */
   public async getItemTree(
     dbConnection: DBConnection,
     itemPath: string,
@@ -107,6 +124,12 @@ export class ActionRequestExportRepository {
       .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
   }
 
+  /**
+   * Get all memberships on the tree, from above or below
+   * @param dbConnection
+   * @param itemPath
+   * @returns
+   */
   public async getItemMembershipsForTree(
     dbConnection: DBConnection,
     itemPath: string,

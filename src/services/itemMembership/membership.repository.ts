@@ -240,14 +240,6 @@ export class ItemMembershipRepository {
     });
   }
 
-  async getAllBellowItemPath(dbConnection: DBConnection, itemPath: ItemPath) {
-    const membershipsBelowItemPath = await dbConnection.query.itemMembershipsTable.findMany({
-      where: sql`${itemMembershipsTable.itemPath} <@ ${itemPath}`,
-      with: { account: true },
-    });
-    return membershipsBelowItemPath;
-  }
-
   async getAllBellowItemPathForAccount(
     dbConnection: DBConnection,
     itemPath: ItemPath,

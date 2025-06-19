@@ -1,4 +1,4 @@
-import { asc, eq, inArray } from 'drizzle-orm/sql';
+import { asc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import type { DBConnection } from '../../drizzle/db';
@@ -26,20 +26,6 @@ export class ChatMessageRepository {
       with: { creator: true, item: true },
       orderBy: asc(chatMessagesTable.createdAt),
     });
-  }
-
-  /**
-   * Retrieves all the messages related to the given items
-   * @param itemIds Id of items to retrieve messages for
-   */
-  async getByItems(dbConnection: DBConnection, itemIds: string[]): Promise<ChatMessageRaw[]> {
-    throwsIfParamIsInvalid('itemIds', itemIds);
-
-    const messages = await dbConnection.query.chatMessagesTable.findMany({
-      where: inArray(chatMessagesTable.itemId, itemIds),
-      with: { creator: true, item: true },
-    });
-    return messages;
   }
 
   /**
