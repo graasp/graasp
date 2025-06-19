@@ -1,11 +1,31 @@
-import { and, eq, gte } from 'drizzle-orm/sql';
+import { getTableColumns } from 'drizzle-orm';
+import { and, eq, gte, or } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { ExportActionsFormatting, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { actionRequestExportsTable } from '../../../../../drizzle/schema';
-import type { ActionRequestExportRaw } from '../../../../../drizzle/types';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../../drizzle/operations';
+import {
+  accountsTable,
+  actionRequestExportsTable,
+  appActionsTable,
+  appDataTable,
+  appSettingsTable,
+  chatMessagesTable,
+  itemMembershipsTable,
+  itemsRawTable,
+} from '../../../../../drizzle/schema';
+import {
+  type ActionRequestExportRaw,
+  type AppActionRaw,
+  type AppDataRaw,
+  type AppSettingRaw,
+  type ChatMessageRaw,
+  type ItemMembershipRaw,
+  ItemType,
+  type MinimalAccount,
+} from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants';
 
@@ -64,5 +84,150 @@ export class ActionRequestExportRepository {
         gte(actionRequestExportsTable.createdAt, lowerLimitDate.toISOString()),
       ),
     });
+  }
+
+  public async getAccountsForTree(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<MinimalAccount[]> {
+    return await dbConnection
+      .selectDistinct({ id: accountsTable.id, name: accountsTable.name })
+      .from(itemMembershipsTable)
+      .innerJoin(accountsTable, eq(accountsTable.id, itemMembershipsTable.accountId))
+      .where(isDescendantOrSelf(itemMembershipsTable.itemPath, itemPath));
+  }
+
+  public async getItemTree(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<MinimalAccount[]> {
+    return await dbConnection
+      .select()
+      .from(itemsRawTable)
+      .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
+  }
+
+  public async getItemMembershipsForTree(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<ItemMembershipRaw[]> {
+    return await dbConnection
+      .select()
+      .from(itemMembershipsTable)
+      .where(
+        or(
+          isDescendantOrSelf(itemMembershipsTable.itemPath, itemPath),
+          isAncestorOrSelf(itemMembershipsTable.itemPath, itemPath),
+        ),
+      );
+  }
+
+  /**
+   * Get all chat messages in tree
+   * @param dbConnection
+   * @param itemPath
+   * @returns
+   */
+  public async getChatMessagesForTree(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<ChatMessageRaw[]> {
+    return await dbConnection
+      .select(getTableColumns(chatMessagesTable))
+      .from(chatMessagesTable)
+      .innerJoin(
+        itemsRawTable,
+        and(
+          eq(itemsRawTable.id, chatMessagesTable.itemId),
+          isDescendantOrSelf(itemsRawTable.path, itemPath),
+        ),
+      );
+  }
+
+  /**
+   * Get all app data in tree
+   * @param dbConnection
+   * @param itemPath
+   * @returns
+   */
+  public async getAppDataForTree(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<AppDataRaw[]> {
+    const appItemsTable = dbConnection.$with('app_items').as(
+      dbConnection
+        .select()
+        .from(itemsRawTable)
+        .where(
+          and(
+            eq(itemsRawTable.type, ItemType.APP),
+            isDescendantOrSelf(itemsRawTable.path, itemPath),
+          ),
+        ),
+    );
+
+    return await dbConnection
+      .with(appItemsTable)
+      .select(getTableColumns(appDataTable))
+      .from(appDataTable)
+      .innerJoin(appItemsTable, eq(appItemsTable.id, appDataTable.itemId));
+  }
+
+  /**
+   * Get all app actions in tree
+   * @param dbConnection
+   * @param itemPath
+   * @returns
+   */
+  public async getAppActionsForTree(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<AppActionRaw[]> {
+    const appItemsTable = dbConnection.$with('app_items').as(
+      dbConnection
+        .select()
+        .from(itemsRawTable)
+        .where(
+          and(
+            eq(itemsRawTable.type, ItemType.APP),
+            isDescendantOrSelf(itemsRawTable.path, itemPath),
+          ),
+        ),
+    );
+
+    return await dbConnection
+      .with(appItemsTable)
+      .select(getTableColumns(appActionsTable))
+      .from(appActionsTable)
+      .innerJoin(appItemsTable, eq(appItemsTable.id, appActionsTable.itemId));
+  }
+
+  /**
+   * Get all app settings in tree
+   * @param dbConnection
+   * @param itemPath
+   * @returns
+   */
+  public async getAppSettingsForTree(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<AppSettingRaw[]> {
+    const appItemsTable = dbConnection.$with('app_items').as(
+      dbConnection
+        .select()
+        .from(itemsRawTable)
+        .where(
+          and(
+            eq(itemsRawTable.type, ItemType.APP),
+            isDescendantOrSelf(itemsRawTable.path, itemPath),
+          ),
+        ),
+    );
+
+    return await dbConnection
+      .with(appItemsTable)
+      .select(getTableColumns(appSettingsTable))
+      .from(appSettingsTable)
+      .innerJoin(appItemsTable, eq(appItemsTable.id, appSettingsTable.itemId));
   }
 }

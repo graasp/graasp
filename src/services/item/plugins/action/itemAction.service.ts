@@ -1,20 +1,13 @@
-import { isBefore } from 'date-fns';
 import { and, count, eq } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
 import type { FastifyRequest } from 'fastify';
 
-import { ItemType, PermissionLevel, type UUID } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
-import type {
-  ActionWithItem,
-  AppActionRaw,
-  AppDataRaw,
-  AppSettingRaw,
-  ItemRaw,
-} from '../../../../drizzle/types';
+import type { ActionWithItem, ItemRaw } from '../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
@@ -24,12 +17,9 @@ import {
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants';
-import { InvalidAggregationError } from '../../../action/utils/errors';
-import { filterOutItems } from '../../../authorization.utils';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/appData.repository';
@@ -122,129 +112,6 @@ export class ItemActionService {
       view,
       accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
     });
-  }
-
-  async getFilteredDescendants(dbConnection: DBConnection, account: MaybeUser, itemId: UUID) {
-    const { descendants } = await this.itemService.getDescendants(dbConnection, account, itemId);
-    if (!descendants.length) {
-      return [];
-    }
-    // TODO optimize?
-    return filterOutItems(
-      dbConnection,
-      account,
-      {
-        itemMembershipRepository: this.itemMembershipRepository,
-        itemVisibilityRepository: this.itemVisibilityRepository,
-      },
-      descendants,
-    );
-  }
-
-  async getBaseAnalyticsForItem(
-    dbConnection: DBConnection,
-    actor: AuthenticatedUser,
-    payload: {
-      itemId: string;
-      sampleSize?: number;
-      view?: ViewOptions;
-      startDate?: string;
-      endDate?: string;
-    },
-  ) {
-    // prevent access from unautorized members
-    if (!actor) {
-      throw new UnauthorizedMember();
-    }
-
-    // check right and get item
-    const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor,
-      itemId: payload.itemId,
-    });
-
-    // check permission
-    const permission = actor
-      ? (await this.itemMembershipRepository.getInherited(dbConnection, item.path, actor.id, true))
-          ?.permission
-      : null;
-
-    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
-      throw new InvalidAggregationError('start date should be before end date');
-    }
-    // check membership and get actions
-    const actions = await this.actionRepository.getForItem(dbConnection, item.path, {
-      sampleSize: payload.sampleSize,
-      view: payload.view,
-      accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
-      startDate: payload.startDate,
-      endDate: payload.endDate,
-    });
-    // get memberships
-    const inheritedMemberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
-
-    const itemMemberships = await this.itemMembershipRepository.getAllBellowItemPath(
-      dbConnection,
-      item.path,
-    );
-    const allMemberships = [...inheritedMemberships, ...itemMemberships];
-    // get members
-    const members =
-      permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
-
-    // get descendants items
-    let descendants: ItemRaw[] = [];
-    if (isItemType(item, ItemType.FOLDER)) {
-      descendants = await this.getFilteredDescendants(dbConnection, actor, payload.itemId);
-    }
-    // chatbox for all items
-    const chatMessages = await this.chatMessageRepository.getByItems(dbConnection, [
-      payload.itemId,
-      ...descendants.map(({ id }) => id),
-    ]);
-
-    // get for all app-item
-    const apps: {
-      [key: UUID]: {
-        data: AppDataRaw[];
-        settings: AppSettingRaw[];
-        actions: AppActionRaw[];
-      };
-    } = {};
-    const appItems = [item, ...descendants].filter(({ type }) => type === ItemType.APP);
-    for (const { id: appId } of appItems) {
-      const appData = await this.appDataRepository.getForItem(
-        dbConnection,
-        appId,
-        {},
-        // needs investigating: does this mean a reader could export the actions of an item and see all users responses ?
-        PermissionLevel.Admin,
-      );
-      // TODO member id?
-      // todo: create getForItems?
-      const appActions = await this.appActionRepository.getForItem(dbConnection, appId, {});
-      const appSettings = await this.appSettingRepository.getForItem(dbConnection, appId);
-
-      apps[appId] = {
-        data: appData,
-        actions: appActions,
-        settings: appSettings,
-      };
-    }
-
-    return {
-      item,
-      descendants,
-      actions,
-      members,
-      itemMemberships: allMemberships,
-      chatMessages,
-      apps,
-      metadata: {
-        numActionsRetrieved: actions.length,
-        requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
-      },
-    };
   }
 
   async postPostAction(dbConnection: DBConnection, request: FastifyRequest, item: ItemRaw) {

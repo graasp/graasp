@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
+import { ZipFile } from 'yazl';
 
 import {
   Context,
@@ -20,48 +21,43 @@ import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import type { MemberInfo, MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
+import { ActionRepository } from '../../../../action/action.repository';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
-import {
-  buildActionFilePath,
-  buildItemTmpFolder,
-  exportActionsInArchive,
-} from '../../../../action/utils/export';
+import { CannotWriteFileError } from '../../../../action/utils/errors';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import FileService from '../../../../file/file.service';
 import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
-import { ItemActionService } from '../itemAction.service';
 import { ActionRequestExportRepository } from './repository';
-
-const EXPORT_TMP_FOLDER = path.join(TMP_FOLDER, 'item-export');
-fs.mkdirSync(EXPORT_TMP_FOLDER, { recursive: true });
+import { formatData } from './utils';
 
 @singleton()
 export class ActionRequestExportService {
   private readonly fileService: FileService;
-  private readonly itemActionService: ItemActionService;
   private readonly authorizedItemService: AuthorizedItemService;
   private readonly mailerService: MailerService;
   private readonly memberService: MemberService;
   private readonly actionRequestExportRepository: ActionRequestExportRepository;
+  private readonly actionRepository: ActionRepository;
   private readonly logger: BaseLogger;
 
   constructor(
-    itemActionService: ItemActionService,
     authorizedItemService: AuthorizedItemService,
     fileService: FileService,
     mailerService: MailerService,
     memberService: MemberService,
     actionRequestExportRepository: ActionRequestExportRepository,
     logger: BaseLogger,
+    actionRepository: ActionRepository,
   ) {
-    this.itemActionService = itemActionService;
     this.authorizedItemService = authorizedItemService;
     this.fileService = fileService;
     this.mailerService = mailerService;
     this.memberService = memberService;
     this.actionRequestExportRepository = actionRequestExportRepository;
     this.logger = logger;
+    this.actionRepository = actionRepository;
+    this.authorizedItemService = authorizedItemService;
   }
 
   async request(
@@ -109,7 +105,7 @@ export class ActionRequestExportService {
     const requestExport = await this.createAndUploadArchive(
       dbConnection,
       minimalMember,
-      itemId,
+      item,
       format,
     );
 
@@ -118,13 +114,39 @@ export class ActionRequestExportService {
     return item;
   }
 
+  /**
+   * Build file path where the archive should be saved on the server
+   */
+  private buildActionFilePath({
+    itemId,
+    datetime,
+    format,
+  }: {
+    itemId: string;
+    datetime: string;
+    format: ExportActionsFormatting;
+  }): string {
+    return `actions/${itemId}/${format}/${formatDate(datetime, 't')}.zip`;
+  }
+
+  /**
+   * Build name for file within the archive
+   * @param name
+   * @param datetime
+   * @param format
+   * @returns
+   */
+  private buildActionFileName(name: string, datetime: string, format: string): string {
+    return `${name}_${formatDate(datetime, 't')}.${format}`;
+  }
+
   private async sendExportLinkInMail(
     member: MemberInfo,
     item: ItemRaw,
     archiveDate: string,
     format: ExportActionsFormatting,
   ) {
-    const filepath = buildActionFilePath({
+    const filepath = this.buildActionFilePath({
       itemId: item.id,
       datetime: archiveDate,
       format,
@@ -156,51 +178,43 @@ export class ActionRequestExportService {
     });
   }
 
+  /**
+   * Gather data to make an archive, which is uploaded on the server
+   * @param dbConnection
+   * @param actor
+   * @param item
+   * @param format
+   * @returns
+   */
   private async createAndUploadArchive(
     dbConnection,
     actor: MinimalMember,
-    itemId: UUID,
+    item: ItemRaw,
     format: ExportActionsFormatting,
   ): Promise<ActionRequestExportRaw> {
     this.logger.debug('Create item action archive');
 
-    // get actions and more data
-    const baseAnalytics = await this.itemActionService.getBaseAnalyticsForItem(
-      dbConnection,
-      actor,
-      {
-        itemId,
-      },
-    );
-
-    // create archive given base analytics
+    // create archive
     const timestamp = new Date();
-    const archive = await exportActionsInArchive({
-      baseAnalytics,
-      views: [Context.Builder, Context.Player, Context.Library, Context.Unknown],
-      format,
-      timestamp,
-    });
+    const archive = await this.exportActionsInArchive(dbConnection, item, format, timestamp);
 
     // create request row
     const requestExport = await this.actionRequestExportRepository.addOne(dbConnection, {
-      itemPath: baseAnalytics.item.path,
+      itemPath: item.path,
       memberId: actor.id,
       createdAt: timestamp.toISOString(),
       format,
     });
 
     // upload zip
-    // get actions data and create archive in background
-    // create tmp folder to temporaly save files
-    const tmpFolder = buildItemTmpFolder(itemId);
+    const tmpFolder = path.join(TMP_FOLDER, 'export', item.id);
     fs.mkdirSync(tmpFolder, { recursive: true });
     const tmpFilePath = path.join(tmpFolder, requestExport.id);
     await pipeline(archive.outputStream, fs.createWriteStream(tmpFilePath));
     await this.fileService.upload(actor, {
       file: fs.createReadStream(tmpFilePath),
-      filepath: buildActionFilePath({
-        itemId,
+      filepath: this.buildActionFilePath({
+        itemId: item.id,
         datetime: requestExport.createdAt,
         format,
       }),
@@ -212,12 +226,154 @@ export class ActionRequestExportService {
       try {
         fs.rmSync(tmpFilePath, { recursive: true });
       } catch (e) {
-        console.error(e);
+        this.logger.error(e);
       }
     } else {
-      console.error(`${tmpFilePath} was not found, and was not deleted`);
+      this.logger.error(`${tmpFilePath} was not found, and was not deleted`);
     }
 
     return requestExport;
+  }
+
+  /**
+   * Create archive with gathered data for parent item
+   * @param dbConnection
+   * @param item
+   * @param format
+   * @param timestamp
+   * @returns archive
+   */
+  private async exportActionsInArchive(
+    dbConnection: DBConnection,
+    item: ItemRaw,
+    format: ExportActionsFormatting,
+    timestamp: Date,
+  ) {
+    // timestamp and datetime are used to build folder name and human readable filename
+    const archiveDate = timestamp.toISOString();
+    const rootName = `actions_${item.id}_${archiveDate}`;
+
+    const archive = new ZipFile();
+
+    try {
+      // create file for each view
+      const actions = await this.actionRepository.getForItem(dbConnection, item.path);
+
+      const views = [Context.Builder, Context.Player, Context.Library, Context.Unknown];
+      views.forEach((viewName) => {
+        const actionsPerView = actions.filter(({ view }) => view === viewName);
+        const filename = this.buildActionFileName(`actions_${viewName}`, archiveDate, format);
+
+        const actionData = formatData(format, actionsPerView);
+        archive.addBuffer(Buffer.from(actionData), path.join(rootName, filename));
+      });
+
+      // create file for items
+      const items = this.actionRequestExportRepository.getItemTree(dbConnection, item.path);
+      const itemFilename = this.buildActionFileName('items', archiveDate, format);
+      const itemData = formatData(format, items);
+      archive.addBuffer(Buffer.from(itemData), path.join(rootName, itemFilename));
+
+      // create file for the members
+      const accounts = await this.actionRequestExportRepository.getAccountsForTree(
+        dbConnection,
+        item.path,
+      );
+      const membersFilename = this.buildActionFileName('accounts', archiveDate, format);
+      const membersData = formatData(format, accounts);
+      archive.addBuffer(Buffer.from(membersData), path.join(rootName, membersFilename));
+
+      // create file for the memberships
+      const itemMemberships = await this.actionRequestExportRepository.getItemMembershipsForTree(
+        dbConnection,
+        item.path,
+      );
+      const iMembershipsFilename = this.buildActionFileName('memberships', archiveDate, format);
+      const iMData = formatData(format, itemMemberships);
+      archive.addBuffer(Buffer.from(iMData), path.join(rootName, iMembershipsFilename));
+
+      // create file for the chat messages
+      const chatMessages = await this.actionRequestExportRepository.getChatMessagesForTree(
+        dbConnection,
+        item.path,
+      );
+      const chatFilename = this.buildActionFileName('chat', archiveDate, format);
+      const chatData = formatData(format, chatMessages);
+      archive.addBuffer(Buffer.from(chatData), path.join(rootName, chatFilename));
+
+      // create files for the apps
+      await this.exportAppsData(dbConnection, item, archive, format, archiveDate, rootName);
+    } catch (e) {
+      console.error(e);
+      throw new CannotWriteFileError(e);
+    }
+
+    archive.end();
+
+    return archive;
+  }
+
+  /**
+   * Put app related data in given archive, depending on format
+   * @param dbConnection
+   * @param item
+   * @param archive
+   * @param format
+   * @param archiveDate
+   * @param rootName
+   */
+  private async exportAppsData(
+    dbConnection: DBConnection,
+    item: ItemRaw,
+    archive: ZipFile,
+    format: ExportActionsFormatting,
+    archiveDate: string,
+    rootName: string,
+  ) {
+    const appActions = await this.actionRequestExportRepository.getAppActionsForTree(
+      dbConnection,
+      item.path,
+    );
+    const appData = await this.actionRequestExportRepository.getAppDataForTree(
+      dbConnection,
+      item.path,
+    );
+    const appSettings = await this.actionRequestExportRepository.getAppSettingsForTree(
+      dbConnection,
+      item.path,
+    );
+
+    switch (format) {
+      // For JSON format only output a single file
+      case ExportActionsFormatting.JSON: {
+        // create files for the apps
+        const appsFilename = this.buildActionFileName('apps', archiveDate, format);
+        const appsData = formatData(format, {
+          appActions,
+          appData,
+          appSettings,
+        });
+        archive.addBuffer(Buffer.from(appsData), path.join(rootName, appsFilename));
+        break;
+      }
+      // For CSV format there will be one file for actions, one for data and one for settings
+      // with all the apps together.
+      case ExportActionsFormatting.CSV: {
+        // create files for the apps
+        const appActionsFilename = this.buildActionFileName('app_actions', archiveDate, format);
+        const aaData = formatData(format, appActions);
+        archive.addBuffer(Buffer.from(aaData), path.join(rootName, appActionsFilename));
+
+        const appDataFilename = this.buildActionFileName('app_data', archiveDate, format);
+        const adData = formatData(format, appData);
+        archive.addBuffer(Buffer.from(adData), path.join(rootName, appDataFilename));
+
+        const appSettingsFilename = this.buildActionFileName('app_settings', archiveDate, format);
+        const asData = formatData(format, appSettings);
+        archive.addBuffer(Buffer.from(asData), path.join(rootName, appSettingsFilename));
+
+        break;
+      }
+    }
   }
 }

@@ -109,6 +109,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       // reply no content and let the server create the archive and send the mail
       reply.status(StatusCodes.NO_CONTENT);
 
+      // TODO: add in queue
       await db
         .transaction(async (tx) => {
           const item = await requestExportService.request(tx, member, itemId, format);
