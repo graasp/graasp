@@ -28,7 +28,7 @@ import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import FileService from '../../../../file/file.service';
 import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
-import { ActionRequestExportRepository } from './repository';
+import { ActionRequestExportRepository } from './itemAction.requestExport.repository';
 import { formatData } from './utils';
 
 @singleton()

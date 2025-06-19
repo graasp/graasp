@@ -17,7 +17,7 @@ import {
   ItemOpFeedbackEvent,
   memberItemsTopic,
 } from '../../../ws/item.events';
-import { ActionRequestExportRepository } from '../requestExport/repository';
+import { ActionRequestExportRepository } from '../requestExport/itemAction.requestExport.repository';
 import { expectExportFeedbackOp } from './utils';
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));

@@ -32,7 +32,7 @@ import {
   postAction,
 } from './itemAction.schemas';
 import { ItemActionService } from './itemAction.service';
-import { ActionRequestExportService } from './requestExport/service';
+import { ActionRequestExportService } from './requestExport/itemAction.requestExport.service';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;

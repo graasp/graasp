@@ -177,17 +177,13 @@ export class ActionRequestExportRepository {
     dbConnection: DBConnection,
     itemPath: string,
   ): Promise<AppDataRaw[]> {
-    const appItemsTable = dbConnection.$with('app_items').as(
-      dbConnection
-        .select()
-        .from(itemsRawTable)
-        .where(
-          and(
-            eq(itemsRawTable.type, ItemType.APP),
-            isDescendantOrSelf(itemsRawTable.path, itemPath),
-          ),
-        ),
-    );
+    const appItemsTable = dbConnection
+      .select()
+      .from(itemsRawTable)
+      .where(
+        and(eq(itemsRawTable.type, ItemType.APP), isDescendantOrSelf(itemsRawTable.path, itemPath)),
+      )
+      .as('app_items');
 
     return await dbConnection
       .with(appItemsTable)
@@ -206,17 +202,13 @@ export class ActionRequestExportRepository {
     dbConnection: DBConnection,
     itemPath: string,
   ): Promise<AppActionRaw[]> {
-    const appItemsTable = dbConnection.$with('app_items').as(
-      dbConnection
-        .select()
-        .from(itemsRawTable)
-        .where(
-          and(
-            eq(itemsRawTable.type, ItemType.APP),
-            isDescendantOrSelf(itemsRawTable.path, itemPath),
-          ),
-        ),
-    );
+    const appItemsTable = dbConnection
+      .select()
+      .from(itemsRawTable)
+      .where(
+        and(eq(itemsRawTable.type, ItemType.APP), isDescendantOrSelf(itemsRawTable.path, itemPath)),
+      )
+      .as('app_items');
 
     return await dbConnection
       .with(appItemsTable)
@@ -235,17 +227,13 @@ export class ActionRequestExportRepository {
     dbConnection: DBConnection,
     itemPath: string,
   ): Promise<AppSettingRaw[]> {
-    const appItemsTable = dbConnection.$with('app_items').as(
-      dbConnection
-        .select()
-        .from(itemsRawTable)
-        .where(
-          and(
-            eq(itemsRawTable.type, ItemType.APP),
-            isDescendantOrSelf(itemsRawTable.path, itemPath),
-          ),
-        ),
-    );
+    const appItemsTable = dbConnection
+      .select()
+      .from(itemsRawTable)
+      .where(
+        and(eq(itemsRawTable.type, ItemType.APP), isDescendantOrSelf(itemsRawTable.path, itemPath)),
+      )
+      .as('app_items');
 
     return await dbConnection
       .with(appItemsTable)
