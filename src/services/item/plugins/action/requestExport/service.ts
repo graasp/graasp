@@ -1,5 +1,7 @@
 import { format as formatDate } from 'date-fns';
 import fs from 'fs';
+import path from 'path';
+import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
 
 import {
@@ -13,9 +15,11 @@ import {
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { ActionRequestExportRaw, ItemRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
+import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import type { MemberInfo, MinimalMember } from '../../../../../types';
+import { TMP_FOLDER } from '../../../../../utils/config';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
 import {
   buildActionFilePath,
@@ -29,6 +33,9 @@ import { MemberService } from '../../../../member/member.service';
 import { ItemActionService } from '../itemAction.service';
 import { ActionRequestExportRepository } from './repository';
 
+const EXPORT_TMP_FOLDER = path.join(TMP_FOLDER, 'item-export');
+fs.mkdirSync(EXPORT_TMP_FOLDER, { recursive: true });
+
 @singleton()
 export class ActionRequestExportService {
   private readonly fileService: FileService;
@@ -37,6 +44,7 @@ export class ActionRequestExportService {
   private readonly mailerService: MailerService;
   private readonly memberService: MemberService;
   private readonly actionRequestExportRepository: ActionRequestExportRepository;
+  private readonly logger: BaseLogger;
 
   constructor(
     itemActionService: ItemActionService,
@@ -45,6 +53,7 @@ export class ActionRequestExportService {
     mailerService: MailerService,
     memberService: MemberService,
     actionRequestExportRepository: ActionRequestExportRepository,
+    logger: BaseLogger,
   ) {
     this.itemActionService = itemActionService;
     this.authorizedItemService = authorizedItemService;
@@ -52,6 +61,7 @@ export class ActionRequestExportService {
     this.mailerService = mailerService;
     this.memberService = memberService;
     this.actionRequestExportRepository = actionRequestExportRepository;
+    this.logger = logger;
   }
 
   async request(
@@ -78,7 +88,7 @@ export class ActionRequestExportService {
     // check if a previous request already created the file and send it back
     try {
       if (lastRequestExport) {
-        await this._sendExportLinkInMail(
+        await this.sendExportLinkInMail(
           member.toMemberInfo(),
           item,
           lastRequestExport.createdAt,
@@ -96,36 +106,19 @@ export class ActionRequestExportService {
       }
     }
 
-    // get actions data and create archive in background
-    // create tmp folder to temporaly save files
-    const tmpFolder = buildItemTmpFolder(itemId);
-    fs.mkdirSync(tmpFolder, { recursive: true });
-
-    const requestExport = await this._createAndUploadArchive(
+    const requestExport = await this.createAndUploadArchive(
       dbConnection,
       minimalMember,
       itemId,
-      tmpFolder,
       format,
     );
 
-    // delete tmp folder
-    if (fs.existsSync(tmpFolder)) {
-      try {
-        fs.rmSync(tmpFolder, { recursive: true });
-      } catch (e) {
-        console.error(e);
-      }
-    } else {
-      console.error(`${tmpFolder} was not found, and was not deleted`);
-    }
-
-    await this._sendExportLinkInMail(member.toMemberInfo(), item, requestExport.createdAt, format);
+    await this.sendExportLinkInMail(member.toMemberInfo(), item, requestExport.createdAt, format);
 
     return item;
   }
 
-  async _sendExportLinkInMail(
+  private async sendExportLinkInMail(
     member: MemberInfo,
     item: ItemRaw,
     archiveDate: string,
@@ -163,13 +156,14 @@ export class ActionRequestExportService {
     });
   }
 
-  async _createAndUploadArchive(
+  private async createAndUploadArchive(
     dbConnection,
     actor: MinimalMember,
     itemId: UUID,
-    storageFolder: string,
     format: ExportActionsFormatting,
   ): Promise<ActionRequestExportRaw> {
+    this.logger.debug('Create item action archive');
+
     // get actions and more data
     const baseAnalytics = await this.itemActionService.getBaseAnalyticsForItem(
       dbConnection,
@@ -180,25 +174,31 @@ export class ActionRequestExportService {
     );
 
     // create archive given base analytics
+    const timestamp = new Date();
     const archive = await exportActionsInArchive({
-      storageFolder,
       baseAnalytics,
-      // include all actions from any view
-      views: Object.values(Context),
+      views: [Context.Builder, Context.Player, Context.Library, Context.Unknown],
       format,
+      timestamp,
     });
 
     // create request row
     const requestExport = await this.actionRequestExportRepository.addOne(dbConnection, {
       itemPath: baseAnalytics.item.path,
       memberId: actor.id,
-      createdAt: archive.timestamp.toISOString(),
+      createdAt: timestamp.toISOString(),
       format,
     });
 
-    // upload file
+    // upload zip
+    // get actions data and create archive in background
+    // create tmp folder to temporaly save files
+    const tmpFolder = buildItemTmpFolder(itemId);
+    fs.mkdirSync(tmpFolder, { recursive: true });
+    const tmpFilePath = path.join(tmpFolder, requestExport.id);
+    await pipeline(archive.outputStream, fs.createWriteStream(tmpFilePath));
     await this.fileService.upload(actor, {
-      file: fs.createReadStream(archive.filepath),
+      file: fs.createReadStream(tmpFilePath),
       filepath: buildActionFilePath({
         itemId,
         datetime: requestExport.createdAt,
@@ -206,6 +206,17 @@ export class ActionRequestExportService {
       }),
       mimetype: ZIP_MIMETYPE,
     });
+
+    // delete tmp file
+    if (fs.existsSync(tmpFilePath)) {
+      try {
+        fs.rmSync(tmpFilePath, { recursive: true });
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      console.error(`${tmpFilePath} was not found, and was not deleted`);
+    }
 
     return requestExport;
   }

@@ -41,6 +41,7 @@ class FileService {
     account: MinimalAccount,
     data: { file: Readable; filepath: string; mimetype?: string },
   ) {
+    console.log(data.filepath);
     const uploadedFiles = await this.uploadMany(account, [data]);
     return uploadedFiles[0];
   }

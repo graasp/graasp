@@ -284,6 +284,7 @@ export class S3FileRepository implements FileRepository {
 
       return url;
     } catch (e) {
+      log.error(e);
       if (e && typeof e === 'object' && 'name' in e && e.name === 'NotFound') {
         throw new S3FileNotFound({ filepath });
       }
@@ -333,7 +334,10 @@ export class S3FileRepository implements FileRepository {
     try {
       await Promise.all(uploads.map((upload) => upload.done()));
 
-      console.debug('Upload successfully');
+      console.debug(
+        'Upload successfully at',
+        files.map((f) => f.filepath),
+      );
     } catch (err) {
       console.error('Something went wrong:', err);
       throw new UploadFileUnexpectedError(err);
