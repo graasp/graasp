@@ -12,7 +12,6 @@ export enum PassportStrategy {
   EmailChange = 'email-change-jwt',
   DeprecatedEmailChange = 'deprecated-email-change-jwt',
   JwtChallengeVerifier = 'jwt-challenge-verifier',
-  RefreshToken = 'refresh-token',
   AppsJwt = 'apps-jwt',
   OptionalAppsJwt = 'optional-apps-jwt',
 

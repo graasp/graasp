@@ -32,5 +32,3 @@ export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES = 1440; // 24 hours
 
 /** Graasp apps authentication */
 export const APPS_JWT_SECRET = requiredEnvVar('APPS_JWT_SECRET');
-
-export const REFRESH_TOKEN_JWT_SECRET = requiredEnvVar('REFRESH_TOKEN_JWT_SECRET');

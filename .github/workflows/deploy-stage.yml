@@ -133,7 +133,6 @@ jobs:
             PUBLIC_URL=${{ secrets.PUBLIC_URL }}
             RECAPTCHA_SECRET_ACCESS_KEY=${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
             REDIS_CONNECTION=${{ secrets.REDIS_CONNECTION }}
-            REFRESH_TOKEN_JWT_SECRET=${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
             S3_FILE_ITEM_ACCESS_KEY_ID=${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
             S3_FILE_ITEM_BUCKET=${{ vars.S3_FILE_ITEM_BUCKET }}
             FILE_STORAGE_TYPE=${{ vars.FILE_STORAGE_TYPE }}
