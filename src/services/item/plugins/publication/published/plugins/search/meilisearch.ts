@@ -76,16 +76,20 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'isHidden',
   'lang',
   'likes',
-  ...Object.values(TagCategory),
+  TagCategory.Level,
+  TagCategory.Discipline,
+  TagCategory.ResourceType,
 ];
-const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
+export const FILTERABLE_ATTRIBUTES = [
   'isPublishedRoot',
   'isHidden',
   'lang',
   'likes',
   'creator',
-  ...Object.values(TagCategory),
-];
+  TagCategory.Level,
+  TagCategory.Discipline,
+  TagCategory.ResourceType,
+] as const;
 const TYPO_TOLERANCE: TypoTolerance = {
   enabled: true,
   minWordSizeForTypos: {
@@ -451,7 +455,7 @@ export class MeiliSearchWrapper {
     const updateSettings = await tmpIndex.updateSettings({
       searchableAttributes: SEARCHABLE_ATTRIBUTES,
       displayedAttributes: DISPLAY_ATTRIBUTES,
-      filterableAttributes: FILTERABLE_ATTRIBUTES,
+      filterableAttributes: [...FILTERABLE_ATTRIBUTES], // make a shallow copy because the initial parameter is readonly
       sortableAttributes: SORT_ATTRIBUTES,
       typoTolerance: TYPO_TOLERANCE,
     });
