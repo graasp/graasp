@@ -37,14 +37,6 @@ export const isAuthenticated = fastifyPassport.authenticate(
  */
 export const authenticatePassword = fastifyPassport.authenticate(PassportStrategy.Password);
 
-//-- Magic Link Strategies --//
-/**
- * Classic magic link authentication to create a session.
- */
-// export const authenticateMobileMagicLink = fastifyPassport.authenticate(
-//   PassportStrategy.MobileMagicLink,
-// );
-
 //-- JWT Strategies --//
 /**
  * JWT authentication for password reset operation.
@@ -60,22 +52,6 @@ export const authenticatePasswordReset = fastifyPassport.authenticate(
 export const authenticateEmailChange = fastifyPassport.authenticate(PassportStrategy.EmailChange, {
   session: false,
 });
-
-// /**
-//  * Refresh Token for mobile authentication
-//  */
-// export const authenticateRefreshToken = fastifyPassport.authenticate(
-//   PassportStrategy.RefreshToken,
-//   { session: false },
-// );
-
-// /**
-//  * Mobile Authentication
-//  */
-// export const authenticateJWTChallengeVerifier = fastifyPassport.authenticate(
-//   PassportStrategy.JwtChallengeVerifier,
-//   { session: false },
-// );
 
 /**
  * Items app authentication

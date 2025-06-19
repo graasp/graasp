@@ -1,15 +1,7 @@
-import { sign } from 'jsonwebtoken';
-
 import type { FastifyBaseLogger } from 'fastify';
 
 import { ClientManager, Context } from '@graasp/sdk';
 
-import {
-  AUTH_TOKEN_EXPIRATION_IN_MINUTES,
-  AUTH_TOKEN_JWT_SECRET,
-  REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
-  REFRESH_TOKEN_JWT_SECRET,
-} from '../../config/secrets';
 import { ALLOWED_ORIGINS } from '../../utils/config';
 
 const defaultClientHost = ClientManager.getInstance().getLinkByContext(Context.Home);
@@ -33,18 +25,3 @@ export const getRedirectionLink = (log: FastifyBaseLogger, target?: string) => {
 
   return target;
 };
-
-export function generateAuthTokensPair(memberId: string): {
-  authToken: string;
-  refreshToken: string;
-} {
-  const [authToken, refreshToken] = [
-    sign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET, {
-      expiresIn: AUTH_TOKEN_EXPIRATION_IN_MINUTES * 60,
-    }),
-    sign({ sub: memberId }, REFRESH_TOKEN_JWT_SECRET, {
-      expiresIn: REFRESH_TOKEN_EXPIRATION_IN_MINUTES * 60,
-    }),
-  ];
-  return { authToken, refreshToken };
-}

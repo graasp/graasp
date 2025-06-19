@@ -98,7 +98,6 @@ jobs:
             DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }}
             APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
             APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
-            AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET }}
             CLIENT_HOST=${{ vars.CLIENT_HOST }}
             COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }}
             CORS_ORIGIN_REGEX=${{ secrets.CORS_ORIGIN_REGEX }}

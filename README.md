@@ -130,8 +130,6 @@ SECURE_SESSION_SECRET_KEY=<secret-key>
 
 # JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 JWT_SECRET=<secret-key>
-# Auth JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
-AUTH_TOKEN_JWT_SECRET=<secret-key>
 # Refresh JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 REFRESH_TOKEN_JWT_SECRET=<secret-key>
 # Password reset JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)

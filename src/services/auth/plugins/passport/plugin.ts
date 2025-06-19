@@ -64,15 +64,6 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     propagateError: true,
   });
 
-  // //-- Magic Link Strategies (JWT) --//
-  // magicLinkStrategy(
-  //   fastifyPassport,
-  //   memberRepository,
-  //   PassportStrategy.MobileMagicLink,
-  //   TOKEN_PARAM,
-  //   AUTH_TOKEN_JWT_SECRET,
-  //   { propagateError: true },
-  // );
   magicLinkStrategy(
     fastifyPassport,
     memberRepository,
@@ -88,15 +79,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   jwtChallengeVerifierStrategy(fastifyPassport, accountRepository, {
     propagateError: true,
   });
-  // jwtStrategy(
-  //   fastifyPassport,
-  //   accountRepository,
-  //   PassportStrategy.MobileJwt,
-  //   AUTH_TOKEN_JWT_SECRET,
-  //   {
-  //     propagateError: true,
-  //   },
-  // );
+
   jwtStrategy(
     fastifyPassport,
     accountRepository,
