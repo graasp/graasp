@@ -12,6 +12,7 @@ import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
+import { FILTERABLE_ATTRIBUTES } from './meilisearch';
 
 const meilisearchHitRef = registerSchemaAsRef(
   'searchHit',
@@ -160,7 +161,7 @@ export const getFacets = {
     'Get list of facets and how many collections are tagged with those given a facet name.',
 
   querystring: customType.StrictObject({
-    facetName: Type.String(),
+    facetName: Type.Union(FILTERABLE_ATTRIBUTES.map((attribute) => Type.Literal(attribute))),
   }),
   body: Type.Partial(
     customType.StrictObject({
