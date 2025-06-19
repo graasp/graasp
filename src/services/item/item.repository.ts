@@ -306,8 +306,8 @@ export class ItemRepository {
       .select()
       .from(items)
       .where(isDirectChild(items.path, parent.path))
-      // use order for ordering
-      // backup order by in case two items has same ordering
+      // use `order` column for sorting
+      // use `createdAt` column as a backup in case two items have the same `order` value
       .orderBy(() => [asc(items.order), asc(items.createdAt)]);
   }
 
@@ -319,7 +319,7 @@ export class ItemRepository {
    * @param params
    * @returns
    */
-  async getChildrenWithCreator(
+  async getFilteredChildren(
     dbConnection: DBConnection,
     actor: MaybeUser,
     parent: ItemRaw,

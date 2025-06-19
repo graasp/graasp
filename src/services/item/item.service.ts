@@ -492,7 +492,7 @@ export class ItemService {
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
 
-    return this.itemRepository.getChildrenWithCreator(dbConnection, actor, item, params);
+    return this.itemRepository.getFilteredChildren(dbConnection, actor, item, params);
   }
 
   async getChildren(
