@@ -374,7 +374,7 @@ describe('Item Repository', () => {
     });
   });
 
-  describe('getChildrenWithCreator', () => {
+  describe('getFilteredChildren', () => {
     it('Returns successfully', async () => {
       const {
         actor,
@@ -396,7 +396,7 @@ describe('Item Repository', () => {
       assertIsMemberForTest(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parentItem);
+      const data = await itemRepository.getFilteredChildren(db, maybeUser, parentItem);
       expect(data).toHaveLength(children.length);
       expectManyItems(data, children, actor);
       data.forEach((d) => expect(d.creator!.name).toEqual(actor.name));
@@ -410,7 +410,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const response = await itemRepository.getChildrenWithCreator(db, maybeUser, parent);
+      const response = await itemRepository.getFilteredChildren(db, maybeUser, parent);
 
       expect(response).toEqual([]);
     });
@@ -437,7 +437,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parent);
+      const data = await itemRepository.getFilteredChildren(db, maybeUser, parent);
       expect(data).toHaveLength(children.length);
       // verify order and content
       childrenInOrder.forEach((child, idx) => {
@@ -458,7 +458,7 @@ describe('Item Repository', () => {
       const children = [child2];
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
-      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parent, {
+      const data = await itemRepository.getFilteredChildren(db, maybeUser, parent, {
         types: [ItemType.FOLDER],
       });
       expect(data).toHaveLength(children.length);
@@ -484,7 +484,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const data = await itemRepository.getChildrenWithCreator(db, maybeUser, parent, {
+      const data = await itemRepository.getFilteredChildren(db, maybeUser, parent, {
         keywords: ['child'],
       });
       expect(data).toHaveLength(children.length);
@@ -502,9 +502,9 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      await expect(
-        itemRepository.getChildrenWithCreator(db, maybeUser, item),
-      ).rejects.toMatchObject(new ItemNotFolder({ id: item.id }));
+      await expect(itemRepository.getFilteredChildren(db, maybeUser, item)).rejects.toMatchObject(
+        new ItemNotFolder({ id: item.id }),
+      );
     });
   });
 
