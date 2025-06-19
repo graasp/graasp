@@ -334,6 +334,7 @@ export type MemberProfileRaw = typeof memberProfilesTable.$inferSelect;
 export type MemberProfileInsertDTO = typeof memberProfilesTable.$inferInsert;
 
 export type ActionRequestExportRaw = typeof actionRequestExportsTable.$inferSelect;
+export type ActionRequestExportFormat = ActionRequestExportRaw['format'];
 
 export type ItemExportRequestRaw = typeof itemExportRequestsTable.$inferSelect;
 

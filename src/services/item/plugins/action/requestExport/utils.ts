@@ -1,6 +1,6 @@
 import { unparse } from 'papaparse';
 
-import { ExportActionsFormatting } from '@graasp/sdk';
+import { ActionRequestExportFormat } from '../../../../../drizzle/types';
 
 type RecursiveObject = { [key: string]: string | number | RecursiveObject };
 type ReturnObject = { [key: string]: string | number };
@@ -18,11 +18,11 @@ const flattenObject = (obj: RecursiveObject, prefix: string = ''): ReturnObject 
 };
 
 export const formatData = <T extends object>(
-  format: ExportActionsFormatting,
+  format: ActionRequestExportFormat,
   data: T[] | T,
 ): string => {
   switch (format) {
-    case ExportActionsFormatting.CSV: {
+    case 'csv': {
       if (Array.isArray(data)) {
         const newData = data.map((obj) => flattenObject(obj as RecursiveObject));
         const csv = unparse(newData, {
@@ -35,7 +35,7 @@ export const formatData = <T extends object>(
       // default value, the data is empty or is not an array
       return '';
     }
-    case ExportActionsFormatting.JSON:
+    case 'json':
     default: {
       // data can be an object or an array of objects
       if (

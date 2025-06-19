@@ -2,7 +2,7 @@ import { getTableColumns } from 'drizzle-orm';
 import { and, eq, gte, or } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { ExportActionsFormatting, type UUID } from '@graasp/sdk';
+import { type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../../drizzle/operations';
@@ -17,6 +17,7 @@ import {
   itemsRawTable,
 } from '../../../../../drizzle/schema';
 import {
+  ActionRequestExportFormat,
   type ActionRequestExportRaw,
   type AppActionRaw,
   type AppDataRaw,
@@ -72,7 +73,7 @@ export class ActionRequestExportRepository {
     }: {
       memberId: UUID;
       itemPath: string;
-      format: ExportActionsFormatting;
+      format: ActionRequestExportFormat;
     },
   ): Promise<ActionRequestExportRaw | undefined> {
     const lowerLimitDate = new Date(Date.now() - DEFAULT_REQUEST_EXPORT_INTERVAL);

@@ -38,10 +38,11 @@ export const actionViewEnum = pgEnum('action_view_enum', [
   'auth',
   'unknown',
 ]);
-export const actionRequestExportFormatEnum = pgEnum('action_request_export_format_enum', [
-  'json',
-  'csv',
-]);
+export const actionRequestExportFormats = ['json', 'csv'] as const;
+export const actionRequestExportFormatEnum = pgEnum(
+  'action_request_export_format_enum',
+  actionRequestExportFormats,
+);
 export const itemExportRequestTypeEnum = pgEnum('item_export_request_type_enum', ['raw', 'graasp']);
 export const chatMentionStatusEnum = pgEnum('chat_mention_status_enum', ['unread', 'read']);
 export const shortLinkPlatformEnum = pgEnum('short_link_platform_enum', [

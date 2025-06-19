@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
-import { ExportActionsFormatting, type FileItemType } from '@graasp/sdk';
+import { type FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -100,7 +100,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       const {
         user,
         params: { id: itemId },
-        query: { format = ExportActionsFormatting.JSON },
+        query: { format = 'json' },
         log,
       } = request;
       const member = asDefined(user?.account);
