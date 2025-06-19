@@ -16,13 +16,13 @@ import {
 
 export const exportMemberData = {
   operationId: 'exportMemberData',
-  tags: ['member'],
+  tags: ['member', 'export'],
   summary: 'Request all related data of authenticated member',
   description:
     'Request a download link to have access to all data related to the authenticated user. The link is valid for one week.',
 
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 };
