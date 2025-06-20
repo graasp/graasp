@@ -82,7 +82,7 @@ export const search = {
       cropLength: Type.Number(),
       query: Type.String(),
       page: Type.Number(),
-      limit: Type.Number(),
+      hitsPerPage: Type.Number(),
       sort: Type.Array(Type.String()),
       highlightPreTag: Type.String(),
       highlightPostTag: Type.String(),
