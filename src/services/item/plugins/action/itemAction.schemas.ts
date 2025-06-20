@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { ExportActionsFormatting, type UnionOfConst } from '@graasp/sdk';
+import { type UnionOfConst } from '@graasp/sdk';
 
+import { actionRequestExportFormats } from '../../../../drizzle/schema';
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 
@@ -90,7 +91,9 @@ export const exportActions = {
     id: customType.UUID({ description: 'Item id whose actions will be exported.' }),
   }),
   querystring: Type.Partial(
-    customType.StrictObject({ format: Type.Enum(ExportActionsFormatting) }),
+    customType.StrictObject({
+      format: Type.Union(actionRequestExportFormats.map((format) => Type.Literal(format))),
+    }),
   ),
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),

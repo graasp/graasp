@@ -4,7 +4,6 @@ import { v4 } from 'uuid';
 
 import {
   AppDataVisibility,
-  ExportActionsFormatting,
   type FileItemProperties,
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
@@ -1139,7 +1138,7 @@ export async function seedFromJson(data: DataType = {}) {
     if (i.actionRequestExports) {
       return acc.concat(
         i.actionRequestExports.map((ar) => ({
-          format: ExportActionsFormatting.JSON,
+          format: 'json',
           ...ar,
           itemPath: i.path,
           memberId: ar.member.id,

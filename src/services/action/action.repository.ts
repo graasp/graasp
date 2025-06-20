@@ -91,11 +91,12 @@ export class ActionRepository {
       andConditions.push(eq(actionsTable.accountId, filters.accountId));
     }
     // subquery for items descendants of the itemPath queried
-    const itemSub = await dbConnection
+    const itemSub = dbConnection
       .select()
       .from(items)
       .where(isDescendantOrSelf(items.path, itemPath))
       .as('item');
+
     const res = await dbConnection
       .select()
       .from(actionsTable)

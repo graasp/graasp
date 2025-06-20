@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
-import { ExportActionsFormatting, type FileItemType } from '@graasp/sdk';
+import { type FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -32,7 +32,7 @@ import {
   postAction,
 } from './itemAction.schemas';
 import { ItemActionService } from './itemAction.service';
-import { ActionRequestExportService } from './requestExport/service';
+import { ActionRequestExportService } from './requestExport/itemAction.requestExport.service';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
@@ -100,7 +100,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       const {
         user,
         params: { id: itemId },
-        query: { format = ExportActionsFormatting.JSON },
+        query: { format = 'json' },
         log,
       } = request;
       const member = asDefined(user?.account);
@@ -109,6 +109,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       // reply no content and let the server create the archive and send the mail
       reply.status(StatusCodes.NO_CONTENT);
 
+      // TODO: add in queue
       await db
         .transaction(async (tx) => {
           const item = await requestExportService.request(tx, member, itemId, format);
