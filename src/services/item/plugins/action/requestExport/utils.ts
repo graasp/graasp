@@ -1,6 +1,6 @@
 import { unparse } from 'papaparse';
 
-import { ActionRequestExportFormat } from '../../../../../drizzle/types';
+import { type ActionRequestExportFormat } from '../../../../../drizzle/types';
 
 type RecursiveObject = { [key: string]: string | number | RecursiveObject };
 type ReturnObject = { [key: string]: string | number };

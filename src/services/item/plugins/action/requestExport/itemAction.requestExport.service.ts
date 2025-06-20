@@ -274,7 +274,7 @@ export class ActionRequestExportService {
       });
 
       // create file for items
-      const items = this.actionRequestExportRepository.getItemTree(dbConnection, item.path);
+      const items = await this.actionRequestExportRepository.getItemTree(dbConnection, item.path);
       const itemFilename = this.buildActionFileName('items', timestamp, format);
       const itemData = formatData(format, items);
       archive.addBuffer(Buffer.from(itemData), path.join(rootName, itemFilename));

@@ -17,13 +17,14 @@ import {
   itemsRawTable,
 } from '../../../../../drizzle/schema';
 import {
-  ActionRequestExportFormat,
+  type ActionRequestExportFormat,
   type ActionRequestExportRaw,
   type AppActionRaw,
   type AppDataRaw,
   type AppSettingRaw,
   type ChatMessageRaw,
   type ItemMembershipRaw,
+  type ItemRaw,
   ItemType,
   type MinimalAccount,
 } from '../../../../../drizzle/types';
@@ -119,10 +120,7 @@ export class ActionRequestExportRepository {
    * @param itemPath
    * @returns all items in the tree
    */
-  public async getItemTree(
-    dbConnection: DBConnection,
-    itemPath: string,
-  ): Promise<MinimalAccount[]> {
+  public async getItemTree(dbConnection: DBConnection, itemPath: string): Promise<ItemRaw[]> {
     return await dbConnection
       .select()
       .from(itemsRawTable)
