@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { and, eq, inArray, ne } from 'drizzle-orm';
+import { asc } from 'drizzle-orm/sql';
 import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
@@ -1709,7 +1710,7 @@ describe('Item routes tests', () => {
       });
     });
   });
-  // // copy many items
+  // copy many items
   describe('POST /items/copy', () => {
     it('Throws if signed out', async () => {
       const {
@@ -2102,6 +2103,59 @@ describe('Item routes tests', () => {
             expect(ig[0].lat).toEqual(geoloc.lat);
             expect(ig[0].lng).toEqual(geoloc.lng);
           }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Copying corrupted ordered item results in correct copy', async () => {
+        const {
+          actor,
+          items: [targetItem, parentItem, c1, c2, c3],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              children: [
+                { order: 20, createdAt: '2012-10-05T14:48:00.000Z' },
+                { order: 20, createdAt: '2011-10-05T14:48:00.000Z' },
+                { order: 20, createdAt: '2013-10-05T14:48:00.000Z' },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items/copy',
+          query: { id: [parentItem.id] },
+          payload: {
+            parentId: targetItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          const copyRoot = await db.query.itemsRawTable.findFirst({
+            where: isDirectChild(itemsRawTable.path, targetItem.path),
+          });
+          expect(copyRoot).toBeDefined();
+          const copiedChildren = await db.query.itemsRawTable.findMany({
+            where: isDirectChild(itemsRawTable.path, copyRoot!.path),
+            orderBy: asc(itemsRawTable.order),
+          });
+          expect(copiedChildren).toHaveLength(3);
+
+          // order are repaired
+          expect(copiedChildren[0].name).toEqual(c2.name);
+          expect(copiedChildren[0].order).toEqual(20);
+          expect(copiedChildren[1].name).toEqual(c1.name);
+          expect(copiedChildren[1].order).toEqual(40);
+          expect(copiedChildren[2].name).toEqual(c3.name);
+          expect(copiedChildren[2].order).toEqual(60);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad request if one id is invalid', async () => {
