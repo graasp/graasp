@@ -98,7 +98,6 @@ jobs:
             DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }}
             APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
             APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
-            AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET }}
             CLIENT_HOST=${{ vars.CLIENT_HOST }}
             COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }}
             CORS_ORIGIN_REGEX=${{ secrets.CORS_ORIGIN_REGEX }}
@@ -134,7 +133,6 @@ jobs:
             PUBLIC_URL=${{ secrets.PUBLIC_URL }}
             RECAPTCHA_SECRET_ACCESS_KEY=${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
             REDIS_CONNECTION=${{ secrets.REDIS_CONNECTION }}
-            REFRESH_TOKEN_JWT_SECRET=${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
             S3_FILE_ITEM_ACCESS_KEY_ID=${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
             S3_FILE_ITEM_BUCKET=${{ vars.S3_FILE_ITEM_BUCKET }}
             FILE_STORAGE_TYPE=${{ vars.FILE_STORAGE_TYPE }}

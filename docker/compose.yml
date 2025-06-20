@@ -57,8 +57,6 @@ x-core_environment: &core_environment
   #    npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
   SECURE_SESSION_SECRET_KEY: # replace by your own data
   JWT_SECRET: # replace by your own data
-  AUTH_TOKEN_JWT_SECRET: # replace by your own data
-  REFRESH_TOKEN_JWT_SECRET: # replace by your own data
   PASSWORD_RESET_JWT_SECRET: # replace by your own data
   EMAIL_CHANGE_JWT_SECRET: # replace by your own data
   APPS_JWT_SECRET: # replace by your own data

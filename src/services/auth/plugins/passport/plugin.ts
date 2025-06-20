@@ -6,7 +6,6 @@ import { PROD, STAGING } from '../../../../config/env';
 import {
   JWT_SECRET,
   MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS,
-  REFRESH_TOKEN_JWT_SECRET,
   SECURE_SESSION_EXPIRATION_IN_SECONDS,
   SECURE_SESSION_SECRET_KEY,
 } from '../../../../config/secrets';
@@ -21,7 +20,6 @@ import { MemberPasswordService } from '../password/password.service';
 import { SHORT_TOKEN_PARAM } from './constants';
 import { PassportStrategy } from './strategies';
 import emailChangeStrategy from './strategies/emailChange';
-import jwtStrategy from './strategies/jwt';
 import jwtAppsStrategy from './strategies/jwtApps';
 import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';
 import magicLinkStrategy from './strategies/magicLink';
@@ -64,15 +62,6 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     propagateError: true,
   });
 
-  // //-- Magic Link Strategies (JWT) --//
-  // magicLinkStrategy(
-  //   fastifyPassport,
-  //   memberRepository,
-  //   PassportStrategy.MobileMagicLink,
-  //   TOKEN_PARAM,
-  //   AUTH_TOKEN_JWT_SECRET,
-  //   { propagateError: true },
-  // );
   magicLinkStrategy(
     fastifyPassport,
     memberRepository,
@@ -88,22 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   jwtChallengeVerifierStrategy(fastifyPassport, accountRepository, {
     propagateError: true,
   });
-  // jwtStrategy(
-  //   fastifyPassport,
-  //   accountRepository,
-  //   PassportStrategy.MobileJwt,
-  //   AUTH_TOKEN_JWT_SECRET,
-  //   {
-  //     propagateError: true,
-  //   },
-  // );
-  jwtStrategy(
-    fastifyPassport,
-    accountRepository,
-    PassportStrategy.RefreshToken,
-    REFRESH_TOKEN_JWT_SECRET,
-    { propagateError: false },
-  );
+
   jwtAppsStrategy(
     fastifyPassport,
     accountRepository,
