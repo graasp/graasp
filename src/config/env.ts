@@ -7,7 +7,7 @@ const Environment = {
   test: 'test',
 } as const;
 
-export const NODE_ENV: string | undefined = process.env.NODE_ENV;
+export const NODE_ENV = process.env.NODE_ENV ?? Environment.development;
 
 const once = (fn) => {
   let called = false;
