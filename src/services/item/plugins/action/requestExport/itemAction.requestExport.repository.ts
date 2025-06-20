@@ -43,11 +43,15 @@ export class ActionRequestExportRepository {
     const { memberId, itemPath } = requestExport;
     // expect memberId to be defined
     if (memberId == undefined || memberId == null) {
-      throw new IllegalArgumentException('memberId for export request is illegal');
+      throw new IllegalArgumentException(
+        'memberId for export request is required and was not specified',
+      );
     }
     // expect itemPath to be defined
     if (itemPath == undefined || itemPath == null) {
-      throw new IllegalArgumentException('itemPath for export request is illegal');
+      throw new IllegalArgumentException(
+        'itemPath for export request is required and was not specified',
+      );
     }
     const res = await dbConnection
       .insert(actionRequestExportsTable)

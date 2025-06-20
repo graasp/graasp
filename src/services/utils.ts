@@ -35,3 +35,7 @@ export function resultOfToList<T>(resultOf: ResultOf<T>): T[] {
 
 // Use a cryptographically secure way to generate randomness
 export const randomHexOf4 = () => crypto.randomBytes(2).toString('hex');
+
+export function convertToValidFilename(str: string) {
+  return str.replace(/[\/|\\:*?"<>\s]/g, '_');
+}

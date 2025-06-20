@@ -31,6 +31,7 @@ import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import FileService from '../../../../file/file.service';
 import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
+import { convertToValidFilename } from '../../../../utils';
 import { ActionRequestExportRepository } from './itemAction.requestExport.repository';
 import { formatData } from './utils';
 
@@ -127,14 +128,18 @@ export class ActionRequestExportService {
    */
   private buildActionFilePath({
     itemId,
-    datetime,
     format,
+    itemName,
+    datetime,
   }: {
     itemId: string;
+    itemName: string;
     datetime: string;
     format: ActionRequestExportFormat;
   }): string {
-    return `actions/${itemId}/${format}/${formatDate(datetime, 't')}.zip`;
+    const name = convertToValidFilename(itemName);
+    const filename = `${name}_${format}_actions_${formatDate(datetime, 't')}.zip`;
+    return `actions/${itemId}/${filename}`;
   }
 
   /**
@@ -158,11 +163,11 @@ export class ActionRequestExportService {
       itemId: item.id,
       datetime: archiveDate,
       format,
+      itemName: item.name,
     });
     const link = await this.fileService.getUrl({
       path: filepath,
       expiration: EXPORT_FILE_EXPIRATION,
-      downloadName: `${item.name}_${format}_actions_${formatDate(archiveDate, 't')}.zip`,
     });
     const mail = new MailBuilder({
       subject: {
@@ -220,6 +225,7 @@ export class ActionRequestExportService {
         itemId: item.id,
         datetime: requestExport.createdAt,
         format: requestExport.format,
+        itemName: item.name,
       }),
       mimetype: ZIP_MIMETYPE,
     });
@@ -250,8 +256,7 @@ export class ActionRequestExportService {
     format: ActionRequestExportFormat,
     timestamp: string,
   ) {
-    // timestamp and datetime are used to build folder name and human readable filename
-    const rootName = `actions_${item.id}_${timestamp}`;
+    const rootName = `${convertToValidFilename(item.name)}_actions_${item.id}_${timestamp}`;
 
     const archive = new ZipFile();
 
