@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
@@ -13,6 +14,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
+import { appsTable } from '../../../../drizzle/schema';
 import type { AccountRaw, AppRaw, ItemWithCreator } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../utils/config';
@@ -110,6 +112,27 @@ describe('Apps Plugin Tests', () => {
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { origin: chosenApp.url, key: chosenApp.key },
         });
+        expect(response.json().token).toBeTruthy();
+      });
+
+      it('validation of payload', async () => {
+        // remove apps that have been registered with this URL
+        const url = 'http://localhost:3333';
+        await db.delete(appsTable).where(eq(appsTable.url, url));
+        const { apps } = await seedFromJson({ apps: [{ url }] });
+        const chosenApp = apps[0];
+        const {
+          items: [item],
+        } = await seedFromJson({
+          items: [{ isPublic: true, type: ItemType.APP, extra: { app: { url: chosenApp.url } } }],
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
+          payload: { origin: chosenApp.url, key: chosenApp.key },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(response.json().token).toBeTruthy();
       });
     });
