@@ -46,7 +46,7 @@ import type { Hit } from './search.schemas';
 const ACTIVE_INDEX = 'itemIndex';
 const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
 
-type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
+type AllowedIndices = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
 // Make index configuration typesafe
 const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = [
@@ -155,7 +155,7 @@ export class MeiliSearchWrapper {
    * We need a Index object to do operations on meilisearch indices, but we get the index with an API call
    * This method wraps getting an Index, and stores it in a local dictionary, so we don't need to call the API again
    */
-  private async getIndex(name: ALLOWED_INDICES = ACTIVE_INDEX): Promise<Index<IndexItem>> {
+  private async getIndex(name: AllowedIndices = ACTIVE_INDEX): Promise<Index<IndexItem>> {
     if (this.indexDictionary[name]) {
       return this.indexDictionary[name];
     }
@@ -245,7 +245,7 @@ export class MeiliSearchWrapper {
   async indexOne(
     dbConnection: DBConnection,
     itemPublished: ItemPublishedWithItemWithCreator,
-    targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
+    targetIndex: AllowedIndices = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
     return this.index(dbConnection, [itemPublished], targetIndex);
   }
@@ -253,7 +253,7 @@ export class MeiliSearchWrapper {
   async index(
     dbConnection: DBConnection,
     manyItemPublished: ItemPublishedWithItemWithCreator[],
-    targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
+    targetIndex: AllowedIndices = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
     try {
       // Get all descendants from the input items
@@ -419,14 +419,27 @@ export class MeiliSearchWrapper {
   /**
    * Update facet settings for active index
    */
-  private async updateFacetSettings() {
+  private async updateFacetSettings(indexName: AllowedIndices) {
     // set facetting order to count for tag categories
-    await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
+    await this.meilisearchClient.index(indexName).updateFaceting({
       // return max 50 values per facet for facet distribution
       // it is interesting to receive a lot of values for listing
       maxValuesPerFacet: 50,
       sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
     });
+  }
+
+  private async updateIndexSettings(indexName: AllowedIndices) {
+    const index = this.meilisearchClient.index(indexName);
+    // Update index config
+    const updateSettingsTask = await index.updateSettings({
+      searchableAttributes: SEARCHABLE_ATTRIBUTES,
+      displayedAttributes: DISPLAY_ATTRIBUTES,
+      filterableAttributes: [...FILTERABLE_ATTRIBUTES], // make a shallow copy because the initial parameter is readonly,
+      sortableAttributes: SORT_ATTRIBUTES,
+      typoTolerance: TYPO_TOLERANCE,
+    });
+    await index.waitForTask(updateSettingsTask.taskUid);
   }
 
   // to be executed by async job runner when desired
@@ -436,6 +449,21 @@ export class MeiliSearchWrapper {
       await this.storeMissingPdfContent(db);
     }
 
+    // Ensure that there is an active index before rebuilding
+    try {
+      const index = await this.meilisearchClient.getIndex(ACTIVE_INDEX);
+      this.indexDictionary[ACTIVE_INDEX] = index;
+    } catch (err) {
+      if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
+        const task = await this.meilisearchClient.createIndex(ACTIVE_INDEX);
+        await this.meilisearchClient.waitForTask(task.taskUid);
+
+        const index = await this.meilisearchClient.getIndex(ACTIVE_INDEX);
+        this.indexDictionary[ACTIVE_INDEX] = index;
+      }
+      throw err;
+    }
+
     this.logger.info('REBUILD INDEX: Starting index rebuild...');
     const tmpIndex = await this.getIndex(ROTATING_INDEX);
 
@@ -443,15 +471,7 @@ export class MeiliSearchWrapper {
     this.logger.info('REBUILD INDEX: Cleaning temporary index...');
     await tmpIndex.waitForTask((await tmpIndex.deleteAllDocuments()).taskUid);
 
-    // Update index config
-    const updateSettings = await tmpIndex.updateSettings({
-      searchableAttributes: SEARCHABLE_ATTRIBUTES,
-      displayedAttributes: DISPLAY_ATTRIBUTES,
-      filterableAttributes: [...FILTERABLE_ATTRIBUTES], // make a shallow copy because the initial parameter is readonly
-      sortableAttributes: SORT_ATTRIBUTES,
-      typoTolerance: TYPO_TOLERANCE,
-    });
-    await tmpIndex.waitForTask(updateSettings.taskUid);
+    await this.updateIndexSettings(ROTATING_INDEX);
 
     this.logger.info('REBUILD INDEX: Starting indexation...');
 
@@ -520,7 +540,10 @@ export class MeiliSearchWrapper {
 
     this.logger.info(`REBUILD INDEX: Index rebuild successful!`);
 
-    await this.updateFacetSettings();
+    await this.updateFacetSettings(ACTIVE_INDEX);
+    await this.updateIndexSettings(ACTIVE_INDEX);
+
+    this.logger.info(`REBUILD INDEX: Index settings and facets configuration successful!`);
 
     // Retry if the rebuild fail? Or let retry by a Bull task
   }

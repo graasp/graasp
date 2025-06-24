@@ -91,6 +91,12 @@ jest.spyOn(fakeClient, 'index').mockReturnValue({
   updateFaceting: jest.fn(async () => {
     return { taskUid: '1' } as unknown as EnqueuedTask;
   }),
+  updateSettings: jest.fn(() => {
+    return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
+  }),
+  waitForTask: jest.fn(() => {
+    return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
+  }),
 } as never);
 jest
   .spyOn(fakeClient, 'swapIndexes')
