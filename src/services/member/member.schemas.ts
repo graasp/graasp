@@ -85,7 +85,7 @@ const compositeCurrentGuestSchema = Type.Composite([
 ]);
 
 export const currentAccountSchemaRef = registerSchemaAsRef(
-  'currentAccountSchemaRef',
+  'currentAccount',
   'Current Account',
   Type.Union(
     [
@@ -101,7 +101,7 @@ export const currentAccountSchemaRef = registerSchemaAsRef(
 );
 
 export const nullableCurrentAccountSchemaRef = registerSchemaAsRef(
-  'nullableCurrentAccountSchemaRef',
+  'nullableCurrentAccount',
   'Nullable Current Account',
   Type.Union(
     [
