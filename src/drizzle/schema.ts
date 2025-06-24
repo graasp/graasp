@@ -33,8 +33,8 @@ export const actionViewEnum = pgEnum('action_view_enum', [
   'builder',
   'player',
   'library',
-  'explorer', // TODO: remove this value from the data and migrate to library
   'account',
+  'home',
   'auth',
   'unknown',
 ]);

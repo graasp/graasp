@@ -13,8 +13,8 @@ export const View = {
   Builder: 'builder',
   Player: 'player',
   Library: 'library',
-  Explorer: 'explorer',
   Account: 'account',
+  Home: 'home',
   Auth: 'auth',
   Unknown: 'unknown',
 } as const;

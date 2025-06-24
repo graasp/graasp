@@ -9,7 +9,7 @@ import { type DBConnection } from '../../drizzle/db';
 import type { ItemRaw } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { AccountType, type MaybeUser } from '../../types';
-import { View } from '../item/plugins/action/itemAction.schemas';
+import { View, ViewOptions } from '../item/plugins/action/itemAction.schemas';
 import { MemberRepository } from '../member/member.repository';
 import { ActionRepository } from './action.repository';
 import { getGeolocationIp } from './utils/actions';
@@ -56,10 +56,13 @@ export class ActionService {
       return;
     }
 
-    let view = View.Unknown;
+    let view: ViewOptions = View.Unknown;
     try {
       if (headers?.origin) {
-        view = ClientManager.getInstance().getContextByLink(headers?.origin);
+        const context = ClientManager.getInstance().getContextByLink(headers?.origin);
+        if (!['analytics'].includes(context)) {
+          view = context as ViewOptions;
+        }
       }
     } catch (e) {
       // do nothing
