@@ -40,6 +40,7 @@ import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
+import { FILTERABLE_ATTRIBUTES } from './search.constants';
 import type { Hit } from './search.schemas';
 
 const ACTIVE_INDEX = 'itemIndex';
@@ -76,16 +77,11 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'isHidden',
   'lang',
   'likes',
-  ...Object.values(TagCategory),
+  TagCategory.Level,
+  TagCategory.Discipline,
+  TagCategory.ResourceType,
 ];
-const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
-  'isPublishedRoot',
-  'isHidden',
-  'lang',
-  'likes',
-  'creator',
-  ...Object.values(TagCategory),
-];
+
 const TYPO_TOLERANCE: TypoTolerance = {
   enabled: true,
   minWordSizeForTypos: {
@@ -451,7 +447,7 @@ export class MeiliSearchWrapper {
     const updateSettings = await tmpIndex.updateSettings({
       searchableAttributes: SEARCHABLE_ATTRIBUTES,
       displayedAttributes: DISPLAY_ATTRIBUTES,
-      filterableAttributes: FILTERABLE_ATTRIBUTES,
+      filterableAttributes: [...FILTERABLE_ATTRIBUTES], // make a shallow copy because the initial parameter is readonly
       sortableAttributes: SORT_ATTRIBUTES,
       typoTolerance: TYPO_TOLERANCE,
     });
