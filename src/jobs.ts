@@ -63,8 +63,8 @@ export class JobService {
       },
     });
 
-    // this.setupWorker();
-    // this.setupJobs();
+    this.setupWorker();
+    this.setupJobs();
   }
 
   private setupWorker() {
