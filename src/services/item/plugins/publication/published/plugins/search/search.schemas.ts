@@ -12,7 +12,7 @@ import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
-import { FILTERABLE_ATTRIBUTES } from './meilisearch';
+import { FILTERABLE_ATTRIBUTES } from './search.constants';
 
 const meilisearchHitRef = registerSchemaAsRef(
   'searchHit',
@@ -153,6 +153,7 @@ export const getMostRecent = {
 
 export type Hit = Static<(typeof search)['response']['200']>['hits'][0];
 
+const facetOptions = Type.Union(FILTERABLE_ATTRIBUTES.map((attribute) => Type.Literal(attribute)));
 export const getFacets = {
   operationId: 'getFacetsForName',
   tags: ['collection', 'search'],
@@ -161,14 +162,14 @@ export const getFacets = {
     'Get list of facets and how many collections are tagged with those given a facet name.',
 
   querystring: customType.StrictObject({
-    facetName: Type.Union(FILTERABLE_ATTRIBUTES.map((attribute) => Type.Literal(attribute))),
+    facetName: facetOptions,
   }),
   body: Type.Partial(
     customType.StrictObject({
       query: Type.String(),
       langs: Type.Array(Type.String()),
       isPublishedRoot: Type.Boolean(),
-      facets: Type.Array(Type.String()),
+      facets: Type.Array(facetOptions),
       tags: Type.Partial(Type.Record(Type.Enum(TagCategory), Type.Array(Type.String()))),
     }),
   ),

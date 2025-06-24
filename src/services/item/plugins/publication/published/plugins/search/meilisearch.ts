@@ -40,6 +40,7 @@ import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
+import { FILTERABLE_ATTRIBUTES } from './search.constants';
 import type { Hit } from './search.schemas';
 
 const ACTIVE_INDEX = 'itemIndex';
@@ -80,16 +81,7 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   TagCategory.Discipline,
   TagCategory.ResourceType,
 ];
-export const FILTERABLE_ATTRIBUTES = [
-  'isPublishedRoot',
-  'isHidden',
-  'lang',
-  'likes',
-  'creator',
-  TagCategory.Level,
-  TagCategory.Discipline,
-  TagCategory.ResourceType,
-] as const;
+
 const TYPO_TOLERANCE: TypoTolerance = {
   enabled: true,
   minWordSizeForTypos: {

@@ -432,6 +432,17 @@ describe('Collection Search endpoints', () => {
       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
 
+    it('throw if facet name is not allowed', async () => {
+      const res = await app.inject({
+        method: HttpMethod.Post,
+        url: `${ITEMS_ROUTE_PREFIX}/collections/facets`,
+        query: { facetName: 'toto' },
+        body: {},
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    });
+
     it('get facets', async () => {
       // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
       const fakeResponse = {
@@ -453,7 +464,6 @@ describe('Collection Search endpoints', () => {
         ],
       };
       jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
-
       const res = await app.inject({
         method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/facets`,
