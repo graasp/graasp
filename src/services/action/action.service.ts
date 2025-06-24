@@ -59,10 +59,7 @@ export class ActionService {
     let view: ViewOptions = View.Unknown;
     try {
       if (headers?.origin) {
-        const context = ClientManager.getInstance().getContextByLink(headers?.origin);
-        if (!['analytics'].includes(context)) {
-          view = context as ViewOptions;
-        }
+        view = ClientManager.getInstance().getContextByLink(headers?.origin);
       }
     } catch (e) {
       // do nothing

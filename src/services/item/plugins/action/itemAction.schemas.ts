@@ -14,6 +14,7 @@ export const View = {
   Player: 'player',
   Library: 'library',
   Account: 'account',
+  Analytics: 'analytics',
   Home: 'home',
   Auth: 'auth',
   Unknown: 'unknown',

@@ -34,6 +34,7 @@ export const actionViewEnum = pgEnum('action_view_enum', [
   'player',
   'library',
   'account',
+  'analytics',
   'home',
   'auth',
   'unknown',
