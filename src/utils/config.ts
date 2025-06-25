@@ -1,6 +1,6 @@
 import os from 'os';
 
-import { ClientManager, Context, GPTVersion } from '@graasp/sdk';
+import { ClientManager, Context, GPTVersion, type GPTVersionType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { requiredEnvVar } from '../config/helpers';
@@ -220,12 +220,12 @@ export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
   process.env.MEILISEARCH_STORE_LEGACY_PDF_CONTENT === 'true';
 
 // OpenAI
-const getGptVersion = (): GPTVersion => {
+const getGptVersion = (): GPTVersionType => {
   const GPTVersionEnv = process.env.OPENAI_GPT_VERSION ?? '';
   if ((Object.values(GPTVersion) as string[]).includes(GPTVersionEnv)) {
-    return GPTVersionEnv as GPTVersion;
+    return GPTVersionEnv as GPTVersionType;
   }
-  return GPTVersion.GPT_3_5_TURBO;
+  return GPTVersion.GPT_4_O_MINI;
 };
 export const OPENAI_GPT_VERSION = getGptVersion();
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;

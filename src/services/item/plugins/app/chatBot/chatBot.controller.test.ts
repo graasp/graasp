@@ -202,7 +202,7 @@ describe('Chat Bot Tests', () => {
         const chosenApp = apps[0];
 
         const token = await getAccessToken(app, item, chosenApp);
-        const gptVersion = GPTVersion.GPT_4;
+        const gptVersion = GPTVersion.GPT_4_1_NANO;
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?gptVersion=${gptVersion}`,
