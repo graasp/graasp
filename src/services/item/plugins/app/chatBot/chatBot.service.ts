@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { type ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
+import { type ChatBotMessage, type GPTVersionType, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { AuthenticatedUser } from '../../../../../types';
@@ -20,7 +20,7 @@ export class ChatBotService {
     account: AuthenticatedUser,
     itemId: string,
     body: Array<ChatBotMessage>,
-    gptVersion: GPTVersion,
+    gptVersion: GPTVersionType,
     temperature: number,
   ) {
     // check that the member can read the item to be allowed to interact with the chat
