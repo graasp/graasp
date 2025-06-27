@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.5.0](https://github.com/graasp/graasp/compare/v2.4.0...v2.5.0) (2025-06-25)
+
+
+### Features
+
+* use yazl for export actions of items ([#1914](https://github.com/graasp/graasp/issues/1914)) ([e70e856](https://github.com/graasp/graasp/commit/e70e856b3cc2a4200948d8514355d2e5314d8078))
+* workers for export item as zip (import export refactor) ([#1891](https://github.com/graasp/graasp/issues/1891)) ([a69948d](https://github.com/graasp/graasp/commit/a69948d3cbb9e51e54bfc26ae9abba7df1ae674b))
+
+
+### Bug Fixes
+
+* action.view migration to remove `explorer` and add `home` and `analytics` ([#1920](https://github.com/graasp/graasp/issues/1920)) ([bea9a5a](https://github.com/graasp/graasp/commit/bea9a5a27717f568dc6a138160af639a38d4ee2e))
+* add strict facetName schema from filterable attributes ([#1919](https://github.com/graasp/graasp/issues/1919)) ([6ddfb7a](https://github.com/graasp/graasp/commit/6ddfb7a4e6e232ffaadad3513c546d08c3885949))
+* add test for app origin url format ([#1910](https://github.com/graasp/graasp/issues/1910)) ([35da7fa](https://github.com/graasp/graasp/commit/35da7facc4d8819015a7a60b8e5a087c795ffee7))
+* change download file schema ([#1912](https://github.com/graasp/graasp/issues/1912)) ([b2e59c7](https://github.com/graasp/graasp/commit/b2e59c7d6d37229508ef428e086ca7180df0d742))
+* **deps:** update dependency @fastify/swagger to v9.5.1 ([#1885](https://github.com/graasp/graasp/issues/1885)) ([c037226](https://github.com/graasp/graasp/commit/c03722693c45a9d5985e7deaf31b220147d7d7f6))
+* **deps:** update dependency fastify to v5.3.3 ([#1886](https://github.com/graasp/graasp/issues/1886)) ([4aa8219](https://github.com/graasp/graasp/commit/4aa821937a6028fe6df0d31e009e36407e6153e7))
+* **deps:** update dependency ioredis to v5.6.1 ([#1852](https://github.com/graasp/graasp/issues/1852)) ([cc1a53c](https://github.com/graasp/graasp/commit/cc1a53c880b98e44380cf5a05ee839ed127853df))
+* **deps:** update dependency nodemailer to v6.10.1 ([#1853](https://github.com/graasp/graasp/issues/1853)) ([7ab6cc3](https://github.com/graasp/graasp/commit/7ab6cc3fb17280c5179c06e948d0374544f9d662))
+* display thumbnail failure reason as JSON.stringified ([#1903](https://github.com/graasp/graasp/issues/1903)) ([81f8d4b](https://github.com/graasp/graasp/commit/81f8d4bcc216723e4d431b2f520f9d677d82b6e8))
+* prepare changes for ESM use verbatimSyntax ([#1896](https://github.com/graasp/graasp/issues/1896)) ([311f8e1](https://github.com/graasp/graasp/commit/311f8e124e8d4695825cb8658b61f679173f650a))
+* rebuild meilisearch settings after index ([#1917](https://github.com/graasp/graasp/issues/1917)) ([a158562](https://github.com/graasp/graasp/commit/a1585629d51c1afa0f104bb15ff4f3d7d4e94626))
+* **refactor:** simplify environment variables ([#1897](https://github.com/graasp/graasp/issues/1897)) ([041bcab](https://github.com/graasp/graasp/commit/041bcab7a8ffc6ab14999b9e3fa07df812f5c044))
+* sanitize original order before copy ([#1913](https://github.com/graasp/graasp/issues/1913)) ([b73d57a](https://github.com/graasp/graasp/commit/b73d57aa63bb1816b692f29a3958a7a755320fd4))
+* some typo in the readme ([#1894](https://github.com/graasp/graasp/issues/1894)) ([e7ea9be](https://github.com/graasp/graasp/commit/e7ea9beb0f48a0b4f2ed9c36333683aa6355a0db))
+* use hitsPerPage in search ([#1916](https://github.com/graasp/graasp/issues/1916)) ([d554c01](https://github.com/graasp/graasp/commit/d554c01b456867a7a60619c53a45a50c4c519b1e))
+* use pipeline instead of pipe ([#1906](https://github.com/graasp/graasp/issues/1906)) ([3e29d47](https://github.com/graasp/graasp/commit/3e29d47a797123050d7ffd5a03976b9c03fe072f))
+* use yazl for member export data ([#1911](https://github.com/graasp/graasp/issues/1911)) ([2dcf733](https://github.com/graasp/graasp/commit/2dcf733ec12258575c5108f86e8f1d37531994c0))
+
 ## [2.4.0](https://github.com/graasp/graasp/compare/v2.3.0...v2.4.0) (2025-06-05)
 
 
