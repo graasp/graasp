@@ -45,7 +45,7 @@ export const exportZip = {
   tags: ['item', 'export'],
   summary: 'Export folder content as zip archive',
   description:
-    "Export the folder's content as a ZIP archive. The user will receive an email with a link to download the ZIP archive.",
+    "Export the folder's content as a ZIP archive. The user will receive an email with a link to download the ZIP archive. Users can download any resource they can access.",
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
