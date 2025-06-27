@@ -4,9 +4,9 @@ import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
 import { ZipFile } from 'yazl';
 
-import { PermissionLevel, type UnionOfConst } from '@graasp/sdk';
+import { type UnionOfConst } from '@graasp/sdk';
 
-import { DBConnection } from '../drizzle/db';
+import { type DBConnection } from '../drizzle/db';
 import { type ItemRaw, ItemType, MinimalAccount } from '../drizzle/types';
 import { TRANSLATIONS } from '../langs/constants';
 import { BaseLogger } from '../logger';
@@ -65,13 +65,18 @@ export class ItemExportRequestService {
     this.logger = logger;
   }
 
-  async exportFolderZipAndSendByEmail(db, itemId, memberId) {
+  /**
+   *  Check the member can access the item, then create an archive from the given item and send a download link to the member.
+   * @param db database connection
+   * @param itemId item to be exported
+   * @param memberId member that requested the export
+   */
+  async exportFolderZipAndSendByEmail(db: DBConnection, itemId: string, memberId: string) {
     const member = await this.memberService.get(db, memberId);
     const memberInfo = member.toMemberInfo();
 
     const item = await this.authorizedItemService.getItemById(db, {
       itemId,
-      permission: PermissionLevel.Admin,
       actor: memberInfo,
     });
 
