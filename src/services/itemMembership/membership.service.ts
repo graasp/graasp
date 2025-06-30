@@ -126,17 +126,23 @@ export class ItemMembershipService {
 
   async create(
     dbConnection: DBConnection,
-    actor: AuthenticatedUser,
+    authenticatedUser: AuthenticatedUser,
     membership: { permission: PermissionLevelOptions; itemId: UUID; memberId: UUID },
   ) {
     // check memberships
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      accountId: membership.memberId,
+      accountId: authenticatedUser.id,
       itemId: membership.itemId,
       permission: PermissionLevel.Admin,
     });
 
-    return this._create(dbConnection, actor, item, membership.memberId, membership.permission);
+    return this._create(
+      dbConnection,
+      authenticatedUser,
+      item,
+      membership.memberId,
+      membership.permission,
+    );
   }
 
   async createMany(
