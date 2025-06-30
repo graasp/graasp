@@ -28,7 +28,7 @@ export class ItemVisibilityService {
     visibilityType: ItemVisibilityOptionsType,
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -37,12 +37,12 @@ export class ItemVisibilityService {
 
   async deleteOne(
     dbConnection: DBConnection,
-    member: MinimalMember,
+    accountId: MinimalMember['id'],
     itemId: ItemRaw['id'],
     visibilityType: ItemVisibilityOptionsType,
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId,
       itemId,
       permission: PermissionLevel.Admin,
     });

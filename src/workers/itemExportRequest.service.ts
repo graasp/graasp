@@ -72,15 +72,14 @@ export class ItemExportRequestService {
    * @param memberId member that requested the export
    */
   async exportFolderZipAndSendByEmail(db: DBConnection, itemId: string, memberId: string) {
-    const member = await this.memberService.get(db, memberId);
-    const memberInfo = member.toMemberInfo();
-
     const item = await this.authorizedItemService.getItemById(db, {
       itemId,
-      actor: memberInfo,
+      accountId: memberId,
     });
 
     // generate archive stream and send by email
+    const member = await this.memberService.get(db, memberId);
+    const memberInfo = member.toMemberInfo();
     const archive = await this.exportRaw(db, memberInfo, item);
     await this.uploadAndSendDownloadLink(db, memberInfo, item, archive, ItemExportRequestType.Raw);
   }

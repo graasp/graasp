@@ -55,7 +55,7 @@ export class ShortLinkService {
 
     // check that the member can admin the item to be allowed to create short link
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId: shortLink.itemId,
       permission: PermissionLevel.Admin,
     });
@@ -73,7 +73,7 @@ export class ShortLinkService {
     if (!account) throw new UnauthorizedMember();
     // check that the member can read the item to be allowed to read all short links
     await this.authorizedItemService.getItemById(dbConnection, {
-      actor: account,
+      accountId: account.id,
       itemId,
       permission: PermissionLevel.Read,
     });
@@ -103,7 +103,7 @@ export class ShortLinkService {
 
     // check that the member can admin the item to be allowed to create short link
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId: shortLink.item.id,
       permission: PermissionLevel.Admin,
     });
@@ -125,7 +125,7 @@ export class ShortLinkService {
 
     // check that the member can admin the item to be allowed to create short link
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId: shortLink.item.id,
       permission: PermissionLevel.Admin,
     });

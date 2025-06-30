@@ -61,12 +61,12 @@ export class FolderItemService extends ItemService {
 
   async getFolder(
     dbConnection: DBConnection,
-    member: MaybeUser,
+    maybeUser: MaybeUser,
     itemId: ItemRaw['id'],
     permission?: PermissionLevelOptions,
   ): Promise<FolderItem> {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: maybeUser?.id,
       itemId,
       permission,
     });

@@ -40,7 +40,7 @@ export class ItemTagService {
   ) {
     // Get item and check permission
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -59,9 +59,9 @@ export class ItemTagService {
     return result;
   }
 
-  async getByItemId(dbConnection: DBConnection, actor: MaybeUser, itemId: UUID) {
+  async getByItemId(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: UUID) {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor,
+      accountId: maybeUser?.id,
       itemId,
     });
 
@@ -76,7 +76,7 @@ export class ItemTagService {
   ) {
     // Get item and check permission
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       itemId,
       permission: PermissionLevel.Admin,
     });

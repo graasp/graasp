@@ -26,16 +26,19 @@ export class ItemFlagService {
 
   async post(
     dbConnection: DBConnection,
-    actor: AuthenticatedUser,
+    account: AuthenticatedUser,
     itemId: string,
     flagType: FlagType,
   ) {
     // only register member can report
-    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      accountId: account.id,
+      itemId,
+    });
 
     await this.itemFlagRepository.addOne(dbConnection, {
       flagType,
-      creatorId: actor.id,
+      creatorId: account.id,
       itemId,
     });
   }

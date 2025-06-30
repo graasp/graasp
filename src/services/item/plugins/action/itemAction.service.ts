@@ -47,27 +47,27 @@ export class ItemActionService {
 
   async getForItem(
     dbConnection: DBConnection,
-    actor: AuthenticatedUser,
+    account: AuthenticatedUser,
     itemId: string,
     filters: { view?: ViewOptions; sampleSize?: number } = {},
   ): Promise<ActionWithItem[]> {
     const { view = View.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
 
     // prevent access from unautorized members
-    if (!actor) {
+    if (!account) {
       throw new UnauthorizedMember();
     }
 
     // check right and get item
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor,
+      accountId: account.id,
       itemId,
       permission: PermissionLevel.Read,
     });
 
     // check permission
     const permission = (
-      await this.itemMembershipRepository.getInherited(dbConnection, item.path, actor.id, true)
+      await this.itemMembershipRepository.getInherited(dbConnection, item.path, account.id, true)
     )?.permission;
 
     // Check validity of the requestSampleSize parameter (it is a number between min and max constants)
@@ -86,7 +86,7 @@ export class ItemActionService {
     return this.actionRepository.getForItem(dbConnection, item.path, {
       sampleSize: size,
       view,
-      accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
+      accountId: permission === PermissionLevel.Admin ? undefined : account.id,
     });
   }
 
@@ -161,33 +161,47 @@ export class ItemActionService {
   async getActionsByHour(
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     params: ActionDateFilters,
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
-    return this.itemActionRepository.getActionsByHour(dbConnection, item.path, actor, params);
+    return this.itemActionRepository.getActionsByHour(dbConnection, item.path, maybeUser, params);
   }
 
   async getActionsByDay(
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     params: ActionDateFilters,
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
-    return this.itemActionRepository.getActionsByDay(dbConnection, item.path, actor, params);
+    return this.itemActionRepository.getActionsByDay(dbConnection, item.path, maybeUser, params);
   }
 
   async getActionsByWeekday(
     dbConnection: DBConnection,
     itemId: ItemRaw['id'],
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     params: ActionDateFilters,
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
-    return this.itemActionRepository.getActionsByWeekday(dbConnection, item.path, actor, params);
+    return this.itemActionRepository.getActionsByWeekday(
+      dbConnection,
+      item.path,
+      maybeUser,
+      params,
+    );
   }
 }

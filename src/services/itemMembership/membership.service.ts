@@ -90,7 +90,7 @@ export class ItemMembershipService {
 
   async getForItem(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: ItemRaw['id']) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: maybeUser,
+      accountId: maybeUser?.id,
       itemId,
     });
     const result = await this.itemMembershipRepository.getForItem(dbConnection, item);
@@ -131,7 +131,7 @@ export class ItemMembershipService {
   ) {
     // check memberships
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor,
+      accountId: membership.memberId,
       itemId: membership.itemId,
       permission: PermissionLevel.Admin,
     });
@@ -147,7 +147,7 @@ export class ItemMembershipService {
   ) {
     // check memberships
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -172,7 +172,7 @@ export class ItemMembershipService {
     }
     await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       item: membership.item,
     });
 
@@ -191,7 +191,7 @@ export class ItemMembershipService {
 
   async deleteOne(
     dbConnection: DBConnection,
-    actor: AuthenticatedUser,
+    account: AuthenticatedUser,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: false },
   ) {
@@ -200,7 +200,7 @@ export class ItemMembershipService {
     const { item } = membership;
     await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor,
+      accountId: account.id,
       item,
     });
 
@@ -214,12 +214,12 @@ export class ItemMembershipService {
       throw new CannotDeleteOnlyAdmin({ id: item.id });
     }
 
-    await this.hooks.runPreHooks('delete', actor, dbConnection, membership);
+    await this.hooks.runPreHooks('delete', account, dbConnection, membership);
 
     await this.itemMembershipRepository.deleteOne(dbConnection, itemMembershipId, {
       purgeBelow: args.purgeBelow,
     });
 
-    await this.hooks.runPostHooks('delete', actor, dbConnection, membership);
+    await this.hooks.runPostHooks('delete', account, dbConnection, membership);
   }
 }

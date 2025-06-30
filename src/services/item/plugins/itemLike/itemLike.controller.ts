@@ -57,7 +57,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return await db.transaction(async (tx) => {
         const itemLike = await itemLikeService.post(tx, member, itemId);
         // action like item
-        const item = await authorizedItemService.getItemById(tx, { actor: member, itemId });
+        const item = await authorizedItemService.getItemById(tx, { accountId: member.id, itemId });
         const action = {
           item,
           type: ActionTriggers.ItemLike,
@@ -86,7 +86,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (tx) => {
         const newItemLike = await itemLikeService.removeOne(tx, member, itemId);
         // action unlike item
-        const item = await authorizedItemService.getItemById(tx, { actor: member, itemId });
+        const item = await authorizedItemService.getItemById(tx, { accountId: member.id, itemId });
 
         const action = {
           item,

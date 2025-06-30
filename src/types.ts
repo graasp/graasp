@@ -45,7 +45,7 @@ export type MinimalGuest = MinimalUser & {
 export type AuthenticatedUser = MinimalMember | MinimalGuest;
 
 /**
- * Sometimes we do not care if the person making the request exists or not, so we can use `Actor` instead
+ * Sometimes we do not care if the person making the request exists or not
  */
 export type MaybeUser = AuthenticatedUser | undefined;
 

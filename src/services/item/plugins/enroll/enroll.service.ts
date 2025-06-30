@@ -47,7 +47,7 @@ export class EnrollService {
     if (
       await this.authorizedItemService.hasPermission(dbConnection, {
         permission: PermissionLevel.Read,
-        actor: member,
+        accountId: member.id,
         item,
       })
     ) {

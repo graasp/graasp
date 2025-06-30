@@ -2,7 +2,6 @@ import { singleton } from 'tsyringe';
 
 import {
   AppDataVisibility,
-  type FileItemType,
   ItemType,
   PermissionLevel,
   PermissionLevelCompare,
@@ -15,7 +14,6 @@ import type { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../driz
 import type { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
-import { ItemRepository } from '../../../item.repository';
 import { AppDataRepository } from './appData.repository';
 import {
   AppDataNotAccessible,
@@ -56,8 +54,6 @@ const itemVisibilityAppDataAbility = (
 
 @singleton()
 export class AppDataService {
-  private readonly fileItemType: FileItemType;
-  private readonly itemRepository: ItemRepository;
   private readonly appDataRepository: AppDataRepository;
   private readonly authorizedItemService: AuthorizedItemService;
 
@@ -76,12 +72,7 @@ export class AppDataService {
     };
   }>();
 
-  constructor(
-    authorizedItemService: AuthorizedItemService,
-    itemRepository: ItemRepository,
-    appDataRepository: AppDataRepository,
-  ) {
-    this.itemRepository = itemRepository;
+  constructor(authorizedItemService: AuthorizedItemService, appDataRepository: AppDataRepository) {
     this.authorizedItemService = authorizedItemService;
     this.appDataRepository = appDataRepository;
   }
@@ -95,7 +86,7 @@ export class AppDataService {
     // posting an app data is allowed to readers
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       permission: PermissionLevel.Read,
-      actor: account,
+      accountId: account.id,
       itemId,
     });
 
@@ -146,7 +137,7 @@ export class AppDataService {
     const { itemMembership: inheritedMembership } =
       await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
         permission: PermissionLevel.Read,
-        actor: account,
+        accountId: account.id,
         itemId,
       });
 
@@ -201,7 +192,8 @@ export class AppDataService {
     const { itemMembership: inheritedMembership } =
       await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
         permission: PermissionLevel.Read,
-        actor: account,
+        accountId: account.id,
+
         itemId,
       });
 
@@ -242,7 +234,7 @@ export class AppDataService {
   ) {
     const { itemMembership } = await this.authorizedItemService.getPropertiesForItem(dbConnection, {
       permission: PermissionLevel.Read,
-      actor: account,
+      accountId: account.id,
       item,
     });
 
@@ -259,17 +251,22 @@ export class AppDataService {
     return appData;
   }
 
-  async getForItem(dbConnection: DBConnection, account: MaybeUser, itemId: string, type?: string) {
+  async getForItem(
+    dbConnection: DBConnection,
+    maybeUser: MaybeUser,
+    itemId: string,
+    type?: string,
+  ) {
     // posting an app data is allowed to readers
     const { itemMembership } = await this.authorizedItemService.getPropertiesForItemById(
       dbConnection,
-      { permission: PermissionLevel.Read, actor: account, itemId },
+      { permission: PermissionLevel.Read, accountId: maybeUser?.id, itemId },
     );
 
     return this.appDataRepository.getForItem(
       dbConnection,
       itemId,
-      { accountId: account?.id, type },
+      { accountId: maybeUser?.id, type },
       itemMembership?.permission,
     );
   }

@@ -117,7 +117,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       if (parentId) {
         await authorizedItemService.assertAccessForItemId(db, {
           permission: PermissionLevel.Write,
-          actor: member,
+          accountId: member.id,
           itemId: parentId,
         });
       }

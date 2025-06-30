@@ -54,7 +54,7 @@ describe('getPropertiesForItem', () => {
     await expect(
       authorizationService.getPropertiesForItem(MOCK_DB, {
         permission: PermissionLevel.Admin,
-        actor: MEMBER,
+        accountId: MEMBER.id,
         item: ITEM,
       }),
     ).rejects.toBeInstanceOf(Error);
@@ -72,7 +72,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -90,7 +90,7 @@ describe('getPropertiesForItem', () => {
       expect(
         await authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).toMatchObject({ itemMembership: readMembership });
@@ -102,7 +102,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -122,7 +122,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: writeMembership });
@@ -134,7 +134,7 @@ describe('getPropertiesForItem', () => {
         await expect(
           authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).rejects.toBeInstanceOf(rejects);
@@ -152,7 +152,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: adminMembership });
@@ -171,7 +171,7 @@ describe('getPropertiesForItem', () => {
       expect(
         await authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).toMatchObject({ itemMembership: null });
@@ -189,7 +189,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -209,7 +209,7 @@ describe('getPropertiesForItem', () => {
       expect(
         await authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).toMatchObject({ itemMembership: readMembership });
@@ -227,7 +227,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -249,7 +249,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: writeMembership });
@@ -264,7 +264,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -285,7 +285,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: adminMembership });
@@ -316,7 +316,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -338,7 +338,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -359,7 +359,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: writeMembership });
@@ -371,7 +371,7 @@ describe('getPropertiesForItem', () => {
         await expect(
           authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).rejects.toBeInstanceOf(rejects);
@@ -392,7 +392,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: adminMembership });
@@ -414,7 +414,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -436,7 +436,7 @@ describe('getPropertiesForItem', () => {
       await expect(
         authorizationService.getPropertiesForItem(MOCK_DB, {
           permission,
-          actor: MEMBER,
+          accountId: MEMBER.id,
           item: ITEM,
         }),
       ).rejects.toBeInstanceOf(rejects);
@@ -457,7 +457,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: writeMembership });
@@ -469,7 +469,7 @@ describe('getPropertiesForItem', () => {
         await expect(
           authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).rejects.toBeInstanceOf(rejects);
@@ -490,7 +490,7 @@ describe('getPropertiesForItem', () => {
         expect(
           await authorizationService.getPropertiesForItem(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             item: ITEM,
           }),
         ).toMatchObject({ itemMembership: adminMembership });

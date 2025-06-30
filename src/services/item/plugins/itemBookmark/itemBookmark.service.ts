@@ -65,7 +65,7 @@ export class BookmarkService {
   async post(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     // get and check permissions
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Read,
     });

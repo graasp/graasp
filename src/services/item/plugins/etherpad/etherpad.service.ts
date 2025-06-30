@@ -238,7 +238,7 @@ export class EtherpadItemService {
     mode: 'read' | 'write',
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: account,
+      accountId: account.id,
       itemId,
     });
 
@@ -387,11 +387,11 @@ export class EtherpadItemService {
    */
   public async getEtherpadContentFromItem(
     dbConnection: DBConnection,
-    account: MaybeUser,
+    maybeUser: MaybeUser,
     itemId: string,
   ): Promise<string> {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: account,
+      accountId: maybeUser?.id,
       itemId,
     });
 

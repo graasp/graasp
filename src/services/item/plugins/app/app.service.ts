@@ -55,14 +55,14 @@ export class AppService {
 
   async getApiAccessToken(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     itemId: string,
     appDetails: { origin: string; key: string },
   ) {
     // check actor has access to item
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       permission: PermissionLevel.Read,
-      actor,
+      accountId: maybeUser?.id,
       itemId,
     });
 
@@ -74,7 +74,7 @@ export class AppService {
     await this.appRepository.isValidAppOrigin(dbConnection, appDetails);
 
     const authTokenSubject = this.appRepository.generateApiAccessTokenSubject(
-      actor?.id,
+      maybeUser?.id,
       itemId,
       appDetails,
     );

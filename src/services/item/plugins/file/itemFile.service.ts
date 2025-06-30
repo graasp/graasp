@@ -187,7 +187,7 @@ class FileItemService extends ItemService {
 
   async getFile(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     {
       itemId,
     }: {
@@ -197,7 +197,7 @@ class FileItemService extends ItemService {
     // prehook: get item and input in download call ?
     // check rights
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor,
+      accountId: maybeUser?.id,
       itemId,
     });
     const extraData = item.extra[ItemType.FILE] as FileItemProperties;
@@ -211,7 +211,7 @@ class FileItemService extends ItemService {
 
   async getUrl(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     {
       itemId,
     }: {
@@ -221,7 +221,7 @@ class FileItemService extends ItemService {
     // prehook: get item and input in download call ?
     // check rights
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor,
+      accountId: maybeUser?.id,
       itemId,
     });
     const extraData = item.extra[ItemType.FILE] as FileItemProperties | undefined;

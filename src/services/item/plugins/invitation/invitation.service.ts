@@ -117,7 +117,7 @@ export class InvitationService {
     itemId: string,
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -131,7 +131,7 @@ export class InvitationService {
     invitations: Pick<InvitationInsertDTO, 'permission' | 'email'>[],
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -164,7 +164,7 @@ export class InvitationService {
     }
     await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       item: invitation.item,
     });
 
@@ -182,7 +182,7 @@ export class InvitationService {
     }
     await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       item: invitation.item,
     });
 
@@ -198,7 +198,7 @@ export class InvitationService {
 
     await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor: member,
+      accountId: member.id,
       item: invitation.item,
     });
 
@@ -287,7 +287,7 @@ export class InvitationService {
    */
   async shareItem(
     dbConnection: DBConnection,
-    actor: AuthenticatedUser,
+    authenticatedUser: AuthenticatedUser,
     itemId: ItemRaw['id'],
     invitations: NonEmptyArray<Pick<InvitationRaw, 'email' | 'permission'>>,
   ): Promise<{
@@ -295,14 +295,14 @@ export class InvitationService {
     invitations: InvitationWithItem[];
   }> {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor,
+      accountId: authenticatedUser.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
 
     return this._createMembershipsAndInvitationsForUserList(
       dbConnection,
-      actor,
+      authenticatedUser,
       invitations,
       itemId,
     );
@@ -310,7 +310,7 @@ export class InvitationService {
 
   async importUsersWithCSV(
     dbConnection: DBConnection,
-    actor: MinimalMember,
+    member: MinimalMember,
     itemId: ItemRaw['id'],
     file: MultipartFile,
   ): Promise<{ memberships: ItemMembershipRaw[]; invitations: InvitationRaw[] }> {
@@ -319,7 +319,7 @@ export class InvitationService {
 
     // get the item, verify user has Admin access
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -342,12 +342,12 @@ export class InvitationService {
       throw new MissingEmailInRowError();
     }
 
-    return this._createMembershipsAndInvitationsForUserList(dbConnection, actor, rows, itemId);
+    return this._createMembershipsAndInvitationsForUserList(dbConnection, member, rows, itemId);
   }
 
   async createStructureForCSVAndTemplate(
     dbConnection: DBConnection,
-    actor: MinimalMember,
+    member: MinimalMember,
     parentId: string,
     templateId: string,
     file: MultipartFile,
@@ -363,14 +363,14 @@ export class InvitationService {
 
     // get parentItem
     const parentItem = await this.authorizedItemService.getItemById(dbConnection, {
-      actor,
+      accountId: member.id,
       itemId: parentId,
       permission: PermissionLevel.Admin,
     });
 
     // check that the template exists
     const templateItem = await this.authorizedItemService.getItemById(dbConnection, {
-      actor,
+      accountId: member.id,
       itemId: templateId,
     });
     if (!templateItem.id) {
@@ -417,17 +417,17 @@ export class InvitationService {
       // Copy the template to the new location
       const { copy: newItem } = await this.itemService.copy(
         dbConnection,
-        actor,
+        member,
         templateId,
         parentItem,
       );
       // edit name of parent element to match the name of the group
-      await this.itemService.patch(dbConnection, actor, newItem.id, {
+      await this.itemService.patch(dbConnection, member, newItem.id, {
         name: groupName,
       });
       const { memberships, invitations } = await this._createMembershipsAndInvitationsForUserList(
         dbConnection,
-        actor,
+        member,
         users,
         newItem.id,
       );

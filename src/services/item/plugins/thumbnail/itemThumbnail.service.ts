@@ -38,28 +38,28 @@ export class ItemThumbnailService {
     this.logger = logger;
   }
 
-  async upload(dbConnection: DBConnection, actor: MinimalMember, itemId: string, file: Readable) {
+  async upload(dbConnection: DBConnection, member: MinimalMember, itemId: string, file: Readable) {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       permission: PermissionLevel.Write,
-      actor,
+      accountId: member.id,
       itemId,
     });
-    await this.thumbnailService.upload(actor, itemId, file);
+    await this.thumbnailService.upload(member, itemId, file);
 
     // update item that should have thumbnail
-    await this.itemService.patch(dbConnection, actor, itemId, {
+    await this.itemService.patch(dbConnection, member, itemId, {
       settings: { hasThumbnail: true },
     });
   }
 
   async getFile(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     { size, itemId }: { size: string; itemId: string },
   ) {
     // prehook: get item and input in download call ?
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor,
+      accountId: maybeUser?.id,
       itemId,
     });
 
@@ -73,10 +73,13 @@ export class ItemThumbnailService {
 
   async getUrl(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     { size, itemId }: { size: string; itemId: string },
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     // item does not have thumbnail
     if (!item.settings.hasThumbnail) {
@@ -144,11 +147,11 @@ export class ItemThumbnailService {
 
   async deleteAllThumbnailSizes(
     dbConnection: DBConnection,
-    actor: MinimalMember,
+    member: MinimalMember,
     { itemId }: { itemId: string },
   ) {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Write,
     });
@@ -157,7 +160,7 @@ export class ItemThumbnailService {
         this.thumbnailService.delete({ id: itemId, size });
       }),
     );
-    await this.itemService.patch(dbConnection, actor, itemId, {
+    await this.itemService.patch(dbConnection, member, itemId, {
       settings: { hasThumbnail: false },
     });
   }

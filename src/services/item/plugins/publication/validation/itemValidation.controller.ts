@@ -41,7 +41,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       const item = await authorizedItemService.getItemById(db, {
-        actor: member,
+        accountId: member.id,
         itemId,
         permission: PermissionLevel.Admin,
       });

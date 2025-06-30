@@ -63,7 +63,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
         params: { id: itemId },
         body: { type, extra = {} },
       } = request;
-      const member = user?.account;
+      const maybeUser = user?.account;
 
       // allow only from known hosts
       if (!request.headers.origin) {
@@ -74,8 +74,11 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       }
 
       await db.transaction(async (tx) => {
-        const item = await authorizedItemService.getItemById(tx, { actor: member, itemId });
-        await actionService.postMany(tx, member, request, [
+        const item = await authorizedItemService.getItemById(tx, {
+          accountId: maybeUser?.id,
+          itemId,
+        });
+        await actionService.postMany(tx, maybeUser, request, [
           {
             item,
             type,

@@ -45,7 +45,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (tx) => {
         const member = asDefined(user?.account);
         assertIsMember(member);
-        return itemVisibilityService.deleteOne(tx, member, itemId, type);
+        return itemVisibilityService.deleteOne(tx, member.id, itemId, type);
       });
       reply.status(StatusCodes.NO_CONTENT);
     },

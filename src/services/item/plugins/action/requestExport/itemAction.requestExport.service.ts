@@ -73,7 +73,7 @@ export class ActionRequestExportService {
     // check member has admin access to the item
     const member = await this.memberService.get(dbConnection, minimalMember.id);
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: minimalMember,
+      accountId: minimalMember.id,
       itemId,
       permission: PermissionLevel.Admin,
     });

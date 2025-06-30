@@ -503,7 +503,7 @@ export class ImportService {
 
   async import(
     dbConnection: DBConnection,
-    actor: MinimalMember,
+    member: MinimalMember,
     {
       folderPath,
       targetFolder,
@@ -513,12 +513,12 @@ export class ImportService {
     if (parentId) {
       // check item permission
       await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-        actor,
+        accountId: member.id,
         itemId: parentId,
       });
     }
 
-    await this._import(dbConnection, actor, { parentId, folderPath });
+    await this._import(dbConnection, member, { parentId, folderPath });
 
     // delete zip and content
     fs.rmSync(targetFolder, { recursive: true });

@@ -120,8 +120,11 @@ export class ItemPublishedService {
     }
   }
 
-  async get(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+  async get(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: string) {
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     // item should be public first
     await this.itemVisibilityRepository.getType(
@@ -158,7 +161,7 @@ export class ItemPublishedService {
     publicationStatus: PublicationStatus,
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -240,7 +243,7 @@ export class ItemPublishedService {
 
   async delete(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
