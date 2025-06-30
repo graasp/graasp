@@ -1,5 +1,5 @@
 {
-  "id": "919e28eb-85b7-40d9-99c9-2e075962ecb3",
+  "id": "8b8bad4b-1b1d-4408-843e-ba855600d1ce",
   "prevId": "a13269a4-7c7d-4a55-943d-296d433921d7",
   "version": "7",
   "dialect": "postgresql",
@@ -367,13 +367,13 @@
       "columns": {
         "user_name": {
           "name": "user_name",
-          "type": "varchar",
+          "type": "varchar(39)",
           "primaryKey": true,
           "notNull": true
         },
         "id": {
           "name": "id",
-          "type": "varchar",
+          "type": "varchar(15)",
           "primaryKey": false,
           "notNull": false
         },

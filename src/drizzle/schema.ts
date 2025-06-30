@@ -85,8 +85,8 @@ export const itemValidationStatusEnum = pgEnum('item_validation_status', [
 
 export const adminsTable = pgTable('admins', {
   // the userName is the primary key since we want to allow admins based on their github username
-  userName: varchar('user_name').primaryKey().notNull().unique(),
-  id: varchar(),
+  userName: varchar('user_name', { length: 39 }).primaryKey().notNull().unique(),
+  id: varchar({ length: 15 }),
   lastAuthenticatedAt: timestamp('last_authenticated_at', { withTimezone: true, mode: 'string' })
     .defaultNow()
     .notNull()
