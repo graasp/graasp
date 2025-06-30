@@ -8,6 +8,7 @@ import { SearchIndexWorker } from './searchIndex.worker';
 
 // mock for the SearchIndexService
 const SearchIndexServiceMock = vi.fn();
+SearchIndexServiceMock.prototype.buildIndex = vi.fn();
 
 // logger mock
 const BaseLogger = vi.fn();
