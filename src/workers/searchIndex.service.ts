@@ -68,8 +68,8 @@ const TYPO_TOLERANCE: TypoTolerance = {
 export class SearchIndexService {
   private readonly meilisearchClient: MeiliSearch;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
-  private logger: BaseLogger;
   private readonly itemPublishedRepository: ItemPublishedRepository;
+  private readonly logger: BaseLogger;
 
   constructor(
     meilisearchConnection: MeiliSearch,

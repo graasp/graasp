@@ -75,6 +75,8 @@ jest
   .spyOn(fakeClient, 'waitForTask')
   .mockResolvedValue({ status: TaskStatus.TASK_SUCCEEDED } as Task);
 
+jest.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as never));
+
 const itemPublishedRepository = new ItemPublishedRepository();
 const meilisearchWrapper = {
   index: jest.fn(),
@@ -94,11 +96,9 @@ describe('SearchIndexService', () => {
 
   describe('builds index', () => {
     it('index all items', async () => {
-      jest.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as never));
       const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
         return mockItemPublished({ id: index.toString(), path: index.toString() });
       });
-      // fake pagination
       jest
         .spyOn(itemPublishedRepository, 'getPaginatedItems')
         .mockImplementation(async (_db, page, _) => {

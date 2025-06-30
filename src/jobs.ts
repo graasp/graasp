@@ -69,15 +69,17 @@ export class JobService {
 
   private setupWorker() {
     this.scheduledJobsWorker.on('completed', (job) => {
-      this.logger.info(`${job.id} has completed!`);
+      this.logger.info(`${job.queueName}'s ${job.id} has completed!`);
     });
 
     this.scheduledJobsWorker.on('active', (job) => {
-      this.logger.info(`${job.id} is now active!`);
+      this.logger.info(`${job.queueName}'s ${job.id} is now active!`);
     });
 
     this.scheduledJobsWorker.on('failed', (job, err) => {
-      this.logger.info(`${job?.id ?? 'unknown job'} has failed with ${err.message}`);
+      this.logger.info(
+        `${job?.queueName}'s ${job?.id ?? 'unknown job'} has failed with ${err.message}`,
+      );
     });
 
     this.scheduledJobsWorker.on('error', (err) => {

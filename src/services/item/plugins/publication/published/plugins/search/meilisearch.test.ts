@@ -28,7 +28,6 @@ import type {
   ItemRaw,
   ItemVisibilityWithItem,
 } from '../../../../../../../drizzle/types';
-import FileService from '../../../../../../file/file.service';
 import { ItemRepository } from '../../../../../item.repository';
 import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
 import { ItemVisibilityRepository } from '../../../../itemVisibility/itemVisibility.repository';
@@ -56,8 +55,6 @@ const mockItemPublished = ({
 };
 
 const MOCK_DB = {} as DBConnection;
-
-const fileService = {} as jest.Mocked<FileService>;
 
 const mockIndex = {
   addDocuments: jest.fn(() => {

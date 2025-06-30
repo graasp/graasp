@@ -13,7 +13,7 @@ const JobTypes = Queues.SearchIndex.jobs;
 export class SearchIndexWorker {
   private readonly SearchIndexService: SearchIndexService;
   private readonly logger: BaseLogger;
-  private worker: Worker;
+  private readonly worker: Worker;
 
   constructor(SearchIndexService: SearchIndexService, logger: BaseLogger) {
     this.logger = logger;
@@ -38,7 +38,7 @@ export class SearchIndexWorker {
     );
 
     this.worker.on('completed', (job) => {
-      this.logger.info(`${job.id} has completed!`);
+      this.logger.info(`${job.queueName}'s ${job.id} has completed!`);
     });
 
     this.worker.on('active', (job) => {
