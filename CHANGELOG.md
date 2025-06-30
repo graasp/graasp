@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.5.1](https://github.com/graasp/graasp/compare/v2.5.0...v2.5.1) (2025-06-30)
+
+
+### Bug Fixes
+
+* allow reader to download raw zip ([#1922](https://github.com/graasp/graasp/issues/1922)) ([df73cb9](https://github.com/graasp/graasp/commit/df73cb9ea459f3e4b0c23831adcb665bc1fa3806))
+* fix schema ref id for generated client ([#1930](https://github.com/graasp/graasp/issues/1930)) ([7a11a39](https://github.com/graasp/graasp/commit/7a11a39499c3e52be486b77797d589872838d256))
+
 ## [2.5.0](https://github.com/graasp/graasp/compare/v2.4.0...v2.5.0) (2025-06-25)
 
 
