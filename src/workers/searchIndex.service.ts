@@ -85,7 +85,7 @@ export class SearchIndexService {
   }
 
   // to be executed by async job runner when desired
-  async buildIndex(pageSize: number = 10) {
+  async buildIndex({ pageSize = 10 }: { pageSize?: number } = {}) {
     // Ensure that there is an active index before rebuilding
     try {
       await this.meilisearchClient.getIndex(ACTIVE_INDEX);

@@ -61,11 +61,13 @@ export class ItemExportRequestWorker {
     });
 
     this.worker.on('active', (job) => {
-      this.logger.info(`${job.id} is now active!`);
+      this.logger.info(`${job.queueName}'s ${job.id} is now active!`);
     });
 
     this.worker.on('failed', (job, err) => {
-      this.logger.info(`${job?.id ?? 'unknown job'} has failed with ${err.message}`);
+      this.logger.info(
+        `${job?.queueName}'s ${job?.id ?? 'unknown job'} has failed with ${err.message}`,
+      );
     });
 
     this.worker.on('error', (err) => {
