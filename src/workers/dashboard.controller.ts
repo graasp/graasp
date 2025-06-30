@@ -15,6 +15,7 @@ export const queueDashboardPlugin: FastifyPluginAsyncTypebox = async (instance) 
 
     const queues = [
       new Queue(Queues.ItemExport.queueName, { connection: { url: REDIS_CONNECTION } }),
+      new Queue(Queues.SearchIndex.queueName, { connection: { url: REDIS_CONNECTION } }),
     ];
 
     createBullBoard({
