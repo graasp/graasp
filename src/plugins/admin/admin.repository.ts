@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
-import { DBConnection } from '../drizzle/db';
-import { adminsTable } from '../drizzle/schema';
+import { DBConnection } from '../../drizzle/db';
+import { adminsTable } from '../../drizzle/schema';
 
 export type AdminUser = typeof adminsTable.$inferSelect;
 export type AdminUserUpdateData = typeof adminsTable.$inferInsert;

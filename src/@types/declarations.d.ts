@@ -22,7 +22,6 @@ declare module 'fastify' {
       key: string;
       origin: string;
     };
-    // admin?: AdminUser;
   }
 }
 

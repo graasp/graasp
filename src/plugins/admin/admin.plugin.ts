@@ -15,7 +15,7 @@ import {
 import { db } from '../../drizzle/db';
 import { PUBLIC_URL } from '../../utils/config';
 import { queueDashboardPlugin } from '../../workers/dashboard.controller';
-import { AdminRepository, AdminUser } from '../admin.repository';
+import { AdminRepository, AdminUser } from './admin.repository';
 
 // module augmentation so the types are right when getting the admin user
 declare module 'fastify' {

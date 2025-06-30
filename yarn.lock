@@ -4746,7 +4746,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport@npm:*, @types/passport@npm:1.0.17":
+"@types/passport@npm:*":
   version: 1.0.17
   resolution: "@types/passport@npm:1.0.17"
   dependencies:
@@ -8702,7 +8702,6 @@ __metadata:
     "@types/node-fetch": "npm:2"
     "@types/nodemailer": "npm:6.4.15"
     "@types/papaparse": "npm:5.3.15"
-    "@types/passport": "npm:1.0.17"
     "@types/passport-github2": "npm:1.2.9"
     "@types/passport-jwt": "npm:4.0.1"
     "@types/passport-local": "npm:^1"
@@ -8754,7 +8753,6 @@ __metadata:
     nodemon: "npm:3.1.9"
     openai: "npm:4.91.1"
     papaparse: "npm:^5.4.1"
-    passport: "npm:0.7.0"
     passport-custom: "npm:1.1.1"
     passport-github2: "npm:0.1.12"
     passport-jwt: "npm:4.0.1"
@@ -11880,17 +11878,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport@npm:0.7.0":
-  version: 0.7.0
-  resolution: "passport@npm:0.7.0"
-  dependencies:
-    passport-strategy: "npm:1.x.x"
-    pause: "npm:0.0.1"
-    utils-merge: "npm:^1.0.1"
-  checksum: 10/0ebd4de8e3cba6731b1fddd09b95b8332526f316afded9c9589ff68751e10001c9f1c007170a516e8c1909f9fafdc378c12feb82820241856775005924735b29
-  languageName: node
-  linkType: hard
-
 "path-exists@npm:^4.0.0":
   version: 4.0.0
   resolution: "path-exists@npm:4.0.0"
@@ -11964,13 +11951,6 @@ __metadata:
   version: 2.0.0
   resolution: "pathval@npm:2.0.0"
   checksum: 10/b91575bf9cdf01757afd7b5e521eb8a0b874a49bc972d08e0047cfea0cd3c019f5614521d4bc83d2855e3fcc331db6817dfd533dd8f3d90b16bc76fad2450fc1
-  languageName: node
-  linkType: hard
-
-"pause@npm:0.0.1":
-  version: 0.0.1
-  resolution: "pause@npm:0.0.1"
-  checksum: 10/e96ee581b68085e6f2ba5adbcb4d4a41fe88e5b514061e76df2fe1905f0f65f4fe5a843b538e9551122c6b9184ff4be266c2ee0ea4614702f9a3d04466d9f462
   languageName: node
   linkType: hard
 
@@ -14539,7 +14519,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.x.x, utils-merge@npm:^1.0.1":
+"utils-merge@npm:1.x.x":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10/5d6949693d58cb2e636a84f3ee1c6e7b2f9c16cb1d42d0ecb386d8c025c69e327205aa1c69e2868cc06a01e5e20681fbba55a4e0ed0cce913d60334024eae798
