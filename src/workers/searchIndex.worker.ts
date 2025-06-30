@@ -1,7 +1,7 @@
 import { type Job, Worker } from 'bullmq';
 
 import { REDIS_CONNECTION } from '../config/redis';
-import { BaseLogger } from '../logger';
+import { type BaseLogger } from '../logger';
 import { Queues } from './config';
 import { SearchIndexService } from './searchIndex.service';
 
