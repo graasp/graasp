@@ -12,6 +12,12 @@ export const SECURE_SESSION_EXPIRATION_IN_SECONDS = 604800; // 7days
 export const MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS = 15552000; // 6 * 30days -> 6 months
 
 /**
+ * Admin session key
+ */
+export const ADMIN_SESSION_SECRET_KEY = requiredEnvVar('ADMIN_SESSION_SECRET_KEY');
+export const ADMIN_SESSION_EXPIRATION_IN_SECONDS = 86_400; // 1 day
+
+/**
  * JWT
  */
 export const JWT_SECRET = requiredEnvVar('JWT_SECRET');

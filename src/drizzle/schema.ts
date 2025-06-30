@@ -83,6 +83,15 @@ export const itemValidationStatusEnum = pgEnum('item_validation_status', [
   'pending-manual',
 ]);
 
+export const adminsTable = pgTable('admins', {
+  userName: varchar().primaryKey().notNull().unique(),
+  id: varchar(),
+  lastAuthenticatedAt: timestamp('last_authenticated_at', { withTimezone: true, mode: 'string' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => sql.raw('DEFAULT')),
+});
+
 export const categoriesTable = pgTable(
   'category',
   {

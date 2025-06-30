@@ -1,6 +1,7 @@
 import 'fastify';
 
 import { ItemRaw } from '../drizzle/types';
+import { AdminUser } from '../plugins/admin.repository';
 import { WebsocketService } from '../services/websockets/ws-service';
 import { MaybeUser } from '../types';
 
@@ -22,6 +23,7 @@ declare module 'fastify' {
       key: string;
       origin: string;
     };
+    admin?: AdminUser;
   }
 }
 

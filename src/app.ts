@@ -7,6 +7,7 @@ import fp from 'fastify-plugin';
 
 import { REDIS_CONNECTION } from './config/redis';
 import { registerDependencies } from './di/container';
+import adminPlugin from './plugins/admin/admin.plugin';
 import databasePlugin from './plugins/database';
 import metaPlugin from './plugins/meta';
 import swaggerPlugin from './plugins/swagger';
@@ -32,14 +33,18 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   await instance.register(fp(metaPlugin));
 
-  await instance.register(fp(passportPlugin));
+  await instance.register(adminPlugin);
+
   // need to be defined before member and item for auth check
 
   await instance.register(maintenancePlugin);
 
-  await instance.register(fp(authPlugin));
-
+  // scope the next registration to the core functionalities
   await instance.register(async (instance) => {
+    await instance.register(fp(passportPlugin));
+
+    await instance.register(fp(authPlugin));
+
     // core API modules
     await instance
       // the websockets plugin must be registered before but in the same scope as the apis
