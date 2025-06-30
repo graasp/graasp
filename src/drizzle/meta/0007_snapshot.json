@@ -3252,6 +3252,7 @@
         "player",
         "library",
         "account",
+        "analytics",
         "home",
         "auth",
         "unknown"

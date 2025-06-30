@@ -1,5 +1,5 @@
 {
-  "id": "c995e36d-251c-4bcf-97b2-764aca4c65c1",
+  "id": "919e28eb-85b7-40d9-99c9-2e075962ecb3",
   "prevId": "a13269a4-7c7d-4a55-943d-296d433921d7",
   "version": "7",
   "dialect": "postgresql",
@@ -365,8 +365,8 @@
       "name": "admins",
       "schema": "",
       "columns": {
-        "userName": {
-          "name": "userName",
+        "user_name": {
+          "name": "user_name",
           "type": "varchar",
           "primaryKey": true,
           "notNull": true
@@ -389,11 +389,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "admins_userName_unique": {
-          "name": "admins_userName_unique",
+        "admins_user_name_unique": {
+          "name": "admins_user_name_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "userName"
+            "user_name"
           ]
         }
       },
