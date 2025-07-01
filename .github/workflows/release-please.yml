@@ -34,27 +34,6 @@ jobs:
           aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      # ------ Legacy behavior ---
-      # put created tag in an env variable to be sent to the dispatch
-      - name: Set tag
-        if: ${{ steps.release.outputs.releases_created == 'true' }}
-        id: set-tag
-        run: |
-          REPOSITORY=$(echo '${{ github.repository }}')
-          TAG=$(echo '${{ steps.release.outputs.tag_name }}')
-          JSON=$(jq -c --null-input --arg repository "$REPOSITORY" --arg tag "$TAG" '{"repository": $repository, "tag": $tag}')
-          echo "json=$JSON" >> $GITHUB_OUTPUT
-
-      # Trigger an 'on: repository_dispatch' workflow to run in graasp-deploy repository
-      - name: Push tag to Graasp Deploy (Staging)
-        if: ${{ steps.release.outputs.releases_created == 'true' }}
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: graasp/graasp-deploy
-          event-type: update-staging-version
-          client-payload: ${{ steps.set-tag.outputs.json }}
-
       - name: Auto Tag
         uses: graasp/graasp-deploy/.github/actions/auto-tag-after-release@v1
         with:
