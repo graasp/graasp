@@ -1,7 +1,7 @@
 import {
   EnqueuedTask,
   Index,
-  type MeiliSearch,
+  MeiliSearch,
   MeiliSearchApiError,
   MeiliSearchTimeOutError,
   TypoTolerance,
