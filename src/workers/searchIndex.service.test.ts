@@ -114,7 +114,7 @@ describe('SearchIndexService', () => {
         .spyOn(meilisearchWrapper, 'index')
         .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
 
-      await meilisearch.buildIndex(10);
+      await meilisearch.buildIndex({ pageSize: 10 });
 
       expect(meilisearchWrapper.index).toHaveBeenCalledTimes(2);
       expect(indexSpy.mock.calls[0][1]).toEqual(publishedItemsInDb.slice(0, 10));
