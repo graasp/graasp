@@ -157,10 +157,6 @@ export class SearchService {
     return searchResult.results[0].facetDistribution?.[facetName] ?? {};
   }
 
-  async rebuildIndex() {
-    this.meilisearchClient.rebuildIndex();
-  }
-
   // Registers all hooks related to sync between database and meilisearch index
   // Make sure to not throw if indexation fail, so that the app can continue to work if Meilisearch is down.
   private registerSearchHooks(

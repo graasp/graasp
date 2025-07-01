@@ -1,12 +1,11 @@
-import { SQL, asc, count, eq } from 'drizzle-orm';
+import { Queue } from 'bullmq';
+import { SQL, count, eq } from 'drizzle-orm';
 import {
   EnqueuedTask,
   Index,
   MeiliSearch,
   MeiliSearchApiError,
-  MeiliSearchTimeOutError,
   type MultiSearchParams,
-  type TypoTolerance,
 } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
@@ -19,7 +18,8 @@ import {
   type TagCategoryType,
 } from '@graasp/sdk';
 
-import { type DBConnection, db } from '../../../../../../../drizzle/db';
+import { REDIS_CONNECTION } from '../../../../../../../config/redis';
+import { type DBConnection } from '../../../../../../../drizzle/db';
 import { items } from '../../../../../../../drizzle/schema';
 import type {
   ItemPublishedWithItemWithCreator,
@@ -29,66 +29,21 @@ import type {
   TagRaw,
 } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
-import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
-import FileService from '../../../../../../file/file.service';
+import { Queues } from '../../../../../../../workers/config';
 import { isItemType } from '../../../../../discrimination';
 import { ItemRepository } from '../../../../../item.repository';
-import { readPdfContent } from '../../../../../utils';
 import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
 import { ItemVisibilityRepository } from '../../../../itemVisibility/itemVisibility.repository';
 import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { FILTERABLE_ATTRIBUTES } from './search.constants';
 import type { Hit } from './search.schemas';
 
-const ACTIVE_INDEX = 'itemIndex';
-const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
+export const ACTIVE_INDEX = 'itemIndex';
+export const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
 
-type AllowedIndices = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
-
-// Make index configuration typesafe
-const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = [
-  'name',
-  'description',
-  'content',
-  'creator',
-  ...Object.values(TagCategory),
-];
-const SORT_ATTRIBUTES: (keyof IndexItem)[] = [
-  'name',
-  'updatedAt',
-  'createdAt',
-  'publicationUpdatedAt',
-  'likes',
-];
-const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
-  'id',
-  'name',
-  'creator',
-  'description',
-  'type',
-  'content',
-  'createdAt',
-  'updatedAt',
-  'publicationUpdatedAt',
-  'isPublishedRoot',
-  'isHidden',
-  'lang',
-  'likes',
-  TagCategory.Level,
-  TagCategory.Discipline,
-  TagCategory.ResourceType,
-];
-
-const TYPO_TOLERANCE: TypoTolerance = {
-  enabled: true,
-  minWordSizeForTypos: {
-    oneTypo: 4,
-    twoTypos: 6,
-  },
-};
+export type AllowedIndices = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
 /*
  * Handle search index business logic with Meilisearch
@@ -98,17 +53,16 @@ const TYPO_TOLERANCE: TypoTolerance = {
 export class MeiliSearchWrapper {
   private readonly meilisearchClient: MeiliSearch;
   private readonly indexDictionary: Record<string, Index<IndexItem>> = {};
-  private readonly fileService: FileService;
   private readonly logger: BaseLogger;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly itemRepository: ItemRepository;
   private readonly itemPublishedRepository: ItemPublishedRepository;
   private readonly itemTagRepository: ItemTagRepository;
   private readonly itemLikeRepository: ItemLikeRepository;
+  private readonly searchQueue: Queue;
 
   constructor(
     meilisearchConnection: MeiliSearch,
-    fileService: FileService,
     itemVisibilityRepository: ItemVisibilityRepository,
     itemRepository: ItemRepository,
     itemPublishedRepository: ItemPublishedRepository,
@@ -117,13 +71,16 @@ export class MeiliSearchWrapper {
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchConnection;
-    this.fileService = fileService;
     this.itemRepository = itemRepository;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemPublishedRepository = itemPublishedRepository;
     this.itemTagRepository = itemTagRepository;
     this.itemLikeRepository = itemLikeRepository;
     this.logger = logger;
+
+    this.searchQueue = new Queue(Queues.SearchIndex.queueName, {
+      connection: { url: REDIS_CONNECTION },
+    });
 
     // create index in the background if it doesn't exist
     this.getIndex();
@@ -172,7 +129,12 @@ export class MeiliSearchWrapper {
         // If main index just got created, rebuild it in the background
         if (name === ACTIVE_INDEX) {
           this.logger.info('Search index just created, rebuilding index...');
-          this.rebuildIndex();
+
+          this.searchQueue.add(
+            Queues.SearchIndex.jobs.buildIndex,
+            {},
+            { deduplication: { id: Queues.SearchIndex.jobs.buildIndex } },
+          );
         }
 
         const index = await this.meilisearchClient.getIndex(name);
@@ -352,61 +314,6 @@ export class MeiliSearchWrapper {
     }
   }
 
-  // Update the PDF that were stored before the indexing feature to add the content in database
-  private async storeMissingPdfContent(dbConnection: DBConnection) {
-    this.logger.info('PDF BACKFILL: Start adding content to PDFs added before the search feature');
-
-    let total = 0;
-    let currentPage = 1;
-    // Paginate with 1000 items per page
-    while (currentPage === 1 || (currentPage - 1) * 1000 < total) {
-      const [fileItems, totalCount] = await this.findAndCountItems(dbConnection, {
-        where: { type: ItemType.FILE },
-        take: 1000,
-        skip: (currentPage - 1) * 1000,
-        order: asc(items.createdAt),
-      });
-      total = totalCount;
-      currentPage++;
-
-      this.logger.info(
-        `PDF BACKFILL: Page ${currentPage} - ${fileItems.length} items - total count: ${totalCount}`,
-      );
-
-      const filteredItems = fileItems.filter((i) => {
-        const extra = i.extra[ItemType.FILE];
-        return extra.mimetype === MimeTypes.PDF && extra.content === undefined;
-      });
-
-      this.logger.info(`PDF BACKFILL: Page contains ${filteredItems.length} PDF to process`);
-
-      for (const item of filteredItems) {
-        const extra = item.extra[ItemType.FILE];
-
-        // Probably not needed if we download the file only once
-        // const MAX_ACCEPTED_SIZE_MB = 20;
-        // if (!s3extra.size || s3extra.size / 1_000_000 > MAX_ACCEPTED_SIZE_MB) {
-        //   return '';
-        // }
-        try {
-          const url = await this.fileService.getUrl({
-            path: extra.path,
-          });
-          const content = await readPdfContent(url);
-          await this.itemRepository.updateOne(dbConnection, item.id, {
-            extra: { [ItemType.FILE]: { content } },
-          });
-        } catch (e) {
-          this.logger.error(
-            `PDF BACKFILL: error during processing of item ${item.id} : ${item.name} => ${e}`,
-          );
-        }
-      }
-    }
-
-    this.logger.info('PDF BACKFILL: Finished adding content to PDFs');
-  }
-
   async updateItem(id: string, properties: Partial<IndexItem>) {
     await this.meilisearchClient.index(ACTIVE_INDEX).updateDocuments([
       {
@@ -414,138 +321,6 @@ export class MeiliSearchWrapper {
         ...properties,
       },
     ]);
-  }
-
-  /**
-   * Update facet settings for active index
-   */
-  private async updateFacetSettings(indexName: AllowedIndices) {
-    // set facetting order to count for tag categories
-    await this.meilisearchClient.index(indexName).updateFaceting({
-      // return max 50 values per facet for facet distribution
-      // it is interesting to receive a lot of values for listing
-      maxValuesPerFacet: 50,
-      sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
-    });
-  }
-
-  private async updateIndexSettings(indexName: AllowedIndices) {
-    const index = this.meilisearchClient.index(indexName);
-    // Update index config
-    const updateSettingsTask = await index.updateSettings({
-      searchableAttributes: SEARCHABLE_ATTRIBUTES,
-      displayedAttributes: DISPLAY_ATTRIBUTES,
-      filterableAttributes: [...FILTERABLE_ATTRIBUTES], // make a shallow copy because the initial parameter is readonly,
-      sortableAttributes: SORT_ATTRIBUTES,
-      typoTolerance: TYPO_TOLERANCE,
-    });
-    await index.waitForTask(updateSettingsTask.taskUid);
-  }
-
-  // to be executed by async job runner when desired
-  async rebuildIndex(pageSize: number = 10) {
-    if (MEILISEARCH_STORE_LEGACY_PDF_CONTENT) {
-      // Backfill needed pdf data - Probably remove this when everything work well after deployment
-      await this.storeMissingPdfContent(db);
-    }
-
-    // Ensure that there is an active index before rebuilding
-    try {
-      const index = await this.meilisearchClient.getIndex(ACTIVE_INDEX);
-      this.indexDictionary[ACTIVE_INDEX] = index;
-    } catch (err) {
-      if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
-        const task = await this.meilisearchClient.createIndex(ACTIVE_INDEX);
-        await this.meilisearchClient.waitForTask(task.taskUid);
-
-        const index = await this.meilisearchClient.getIndex(ACTIVE_INDEX);
-        this.indexDictionary[ACTIVE_INDEX] = index;
-      }
-      throw err;
-    }
-
-    this.logger.info('REBUILD INDEX: Starting index rebuild...');
-    const tmpIndex = await this.getIndex(ROTATING_INDEX);
-
-    // Delete existing document if any
-    this.logger.info('REBUILD INDEX: Cleaning temporary index...');
-    await tmpIndex.waitForTask((await tmpIndex.deleteAllDocuments()).taskUid);
-
-    await this.updateIndexSettings(ROTATING_INDEX);
-
-    this.logger.info('REBUILD INDEX: Starting indexation...');
-
-    // Paginate with cursor through DB items (serializable transaction)
-    // This is not executed in a HTTP request context so we can't rely on fastify to create a transaction at the controller level
-    // SERIALIZABLE because we don't want other transaction to affect this one while it goes through the pages.
-    await db.transaction(
-      async (tx) => {
-        const tasks: EnqueuedTask[] = [];
-
-        // instanciate the itempublished repository to use the provided transaction manager
-        let currentPage = 1;
-        let total = 0;
-        while (currentPage === 1 || (currentPage - 1) * pageSize < total) {
-          // Retrieve a page (i.e. 20 items)
-          const [published, totalCount] = await this.itemPublishedRepository.getPaginatedItems(
-            tx,
-            currentPage,
-            pageSize,
-          );
-          this.logger.info(
-            `REBUILD INDEX: Page ${currentPage} - ${published.length} items - total count: ${totalCount}`,
-          );
-          total = totalCount;
-
-          // Index items (1 task per page)
-          try {
-            const task = await this.index(tx, published, ROTATING_INDEX);
-            this.logger.info(
-              `REBUILD INDEX: Pushing indexing task ${task.taskUid} (page ${currentPage})`,
-            );
-            tasks.push(task);
-          } catch (e) {
-            this.logger.error(`REBUILD INDEX: Error during one rebuild index task: ${e}`);
-          }
-
-          currentPage++;
-        }
-        this.logger.info(`REBUILD INDEX: Waiting for ${tasks.length} tasks to terminate...`);
-        // Wait to be sure that everything is indexed
-        // We don't use `waitForTasks` directly because we want to be able to handle error
-        // for one task and still be able to await other tasks
-        for (const taskUid of tasks.map((t) => t.taskUid)) {
-          try {
-            await tmpIndex.waitForTask(taskUid, { timeOutMs: 60_000, intervalMs: 1000 });
-          } catch (e) {
-            if (e instanceof MeiliSearchTimeOutError) {
-              this.logger.info(
-                `REBUILD INDEX: timeout from MeiliSearch while waiting for task ${taskUid}`,
-              );
-            } else {
-              this.logger.warn(e);
-            }
-          }
-        }
-      },
-      { isolationLevel: 'serializable' },
-    );
-
-    // Swap tmp index with actual index
-    this.logger.info(`REBUILD INDEX: Swapping indexes...`);
-    const swapTask = await this.meilisearchClient.swapIndexes([
-      { indexes: [ACTIVE_INDEX, ROTATING_INDEX] },
-    ]);
-    await this.meilisearchClient.waitForTask(swapTask.taskUid);
-
-    this.logger.info(`REBUILD INDEX: Index rebuild successful!`);
-
-    await this.updateFacetSettings(ACTIVE_INDEX);
-    await this.updateIndexSettings(ACTIVE_INDEX);
-
-    this.logger.info(`REBUILD INDEX: Index settings and facets configuration successful!`);
-
-    // Retry if the rebuild fail? Or let retry by a Bull task
   }
 
   async indexIntegrityFix() {

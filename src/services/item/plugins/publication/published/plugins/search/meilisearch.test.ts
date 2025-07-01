@@ -21,14 +21,13 @@ import {
 
 import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import { ItemFactory } from '../../../../../../../../test/factories/item.factory';
-import { type DBConnection, db } from '../../../../../../../drizzle/db';
+import { type DBConnection } from '../../../../../../../drizzle/db';
 import type {
   ItemPublishedWithItem,
   ItemPublishedWithItemWithCreator,
   ItemRaw,
   ItemVisibilityWithItem,
 } from '../../../../../../../drizzle/types';
-import FileService from '../../../../../../file/file.service';
 import { ItemRepository } from '../../../../../item.repository';
 import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
 import { ItemVisibilityRepository } from '../../../../itemVisibility/itemVisibility.repository';
@@ -56,8 +55,6 @@ const mockItemPublished = ({
 };
 
 const MOCK_DB = {} as DBConnection;
-
-const fileService = {} as jest.Mocked<FileService>;
 
 const mockIndex = {
   addDocuments: jest.fn(() => {
@@ -113,7 +110,6 @@ const itemVisibilityRepository = new ItemVisibilityRepository();
 
 const meilisearch = new MeiliSearchWrapper(
   fakeClient,
-  fileService,
   itemVisibilityRepository,
   itemRepository,
   itemPublishedRepository,
@@ -457,38 +453,6 @@ describe('MeilisearchWrapper', () => {
       expect(deleteSpy.mock.calls[0][0]).toMatchObject(
         expect.arrayContaining([item.id, descendant.id, descendant2.id]),
       );
-    });
-  });
-
-  describe('rebuilds index', () => {
-    it('reindex all items', async () => {
-      jest.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as never));
-      const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
-        return mockItemPublished({ id: index.toString(), path: index.toString() });
-      });
-      // prevent finding any PDFs to store because this part is temporary
-      jest.spyOn(meilisearch, 'findAndCountItems').mockResolvedValue([[], 0]);
-      // fake pagination
-      jest
-        .spyOn(itemPublishedRepository, 'getPaginatedItems')
-        .mockImplementation(async (_db, page, _) => {
-          if (page === 1) {
-            return [publishedItemsInDb.slice(0, 10), publishedItemsInDb.length];
-          } else if (page === 2) {
-            return [publishedItemsInDb.slice(10), publishedItemsInDb.length];
-          } else {
-            throw new Error();
-          }
-        });
-      const indexSpy = jest
-        .spyOn(MeiliSearchWrapper.prototype, 'index')
-        .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
-
-      await meilisearch.rebuildIndex(10);
-
-      expect(indexSpy).toHaveBeenCalledTimes(2);
-      expect(indexSpy.mock.calls[0][1]).toEqual(publishedItemsInDb.slice(0, 10));
-      expect(indexSpy.mock.calls[1][1]).toEqual(publishedItemsInDb.slice(10));
     });
   });
 });
