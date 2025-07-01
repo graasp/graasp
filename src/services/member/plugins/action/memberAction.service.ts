@@ -75,7 +75,7 @@ export class ActionMemberService {
       dbConnection,
       {
         permission: PermissionLevel.Read,
-        actor: authenticatedUser,
+        accountId: authenticatedUser.id,
         items: setOfItemsToCheckPermission as ItemRaw[],
       },
     );

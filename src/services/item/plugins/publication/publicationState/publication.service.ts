@@ -45,7 +45,7 @@ export class PublicationService {
   ) {
     const item = await this.itemRepository.getOneWithCreatorOrThrow(dbConnection, itemId);
     await this.authorizedItemService.assertAccess(dbConnection, {
-      actor: member,
+      accountId: member.id,
       item,
       permission: PermissionLevel.Admin,
     });

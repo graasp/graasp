@@ -30,7 +30,10 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
     websockets.register(appDataTopic, async (req) => {
       const { channel: id, member } = req;
-      const item = await authorizedItemService.getItemById(db, { actor: member, itemId: id });
+      const item = await authorizedItemService.getItemById(db, {
+        accountId: member?.id,
+        itemId: id,
+      });
       checkItemIsApp(item);
     });
 

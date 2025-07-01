@@ -55,8 +55,11 @@ export class ItemLikeService {
     });
   }
 
-  async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
-    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
+  async getForItem(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: string) {
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     return this.itemLikeRepository.getByItemId(dbConnection, itemId);
   }
@@ -64,7 +67,7 @@ export class ItemLikeService {
   async removeOne(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
     });
 
@@ -87,7 +90,7 @@ export class ItemLikeService {
   async post(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
     });
     const result = await this.itemLikeRepository.addOne(dbConnection, {

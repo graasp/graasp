@@ -54,7 +54,7 @@ export class AppSettingService {
   ) {
     // posting an app setting is allowed to admin only
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -77,7 +77,7 @@ export class AppSettingService {
   ) {
     // patching requires admin rights
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -103,7 +103,7 @@ export class AppSettingService {
   ) {
     // delete an app data is allowed to admins
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Admin,
     });
@@ -122,17 +122,28 @@ export class AppSettingService {
     return appSetting;
   }
 
-  async get(dbConnection: DBConnection, actor: MaybeUser, itemId: string, appSettingId: UUID) {
+  async get(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: string, appSettingId: UUID) {
     // get app setting is allowed to readers
-    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     return await this.appSettingRepository.getOneOrThrow(dbConnection, appSettingId);
   }
 
-  async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string, name?: string) {
+  async getForItem(
+    dbConnection: DBConnection,
+    maybeUser: MaybeUser,
+    itemId: string,
+    name?: string,
+  ) {
     // item can be public
     // get app setting is allowed to readers
-    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     return this.appSettingRepository.getForItem(dbConnection, itemId, name);
   }

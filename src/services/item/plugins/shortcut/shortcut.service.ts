@@ -68,7 +68,7 @@ export class ShortcutItemService extends ItemService {
     const { description, name: definedName } = item;
 
     const targetItem = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId: target,
     });
 

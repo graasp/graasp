@@ -61,7 +61,7 @@ export class ItemValidationService {
     // check permissions
     await this.authorizedItemService.assertAccess(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor: member,
+      accountId: member.id,
       item,
     });
 

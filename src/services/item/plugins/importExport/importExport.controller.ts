@@ -109,8 +109,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         user,
         params: { itemId },
       } = request;
-      const member = user?.account;
-      const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
+      const maybeUser = user?.account;
+      const item = await authorizedItemService.getItemById(db, {
+        accountId: maybeUser?.id,
+        itemId,
+      });
 
       // do not allow folders
       if (item.type === ItemType.FOLDER) {
@@ -125,10 +128,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         // FIXME: this should be infered from the request ! add a parameter in the request
         view: Context.Builder,
       };
-      await actionService.postMany(db, member, request, [action]);
+      await actionService.postMany(db, maybeUser, request, [action]);
 
       // return single file
-      const { stream, mimetype, name } = await itemExportService.fetchItemData(db, member, item);
+      const { stream, mimetype, name } = await itemExportService.fetchItemData(db, maybeUser, item);
 
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
@@ -154,7 +157,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = user?.account;
       assertIsDefined(member);
       assertIsMember(member);
-      const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
+      const item = await authorizedItemService.getItemById(db, { accountId: member.id, itemId });
 
       // only allow folders
       if (item.type !== ItemType.FOLDER) {
@@ -187,14 +190,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         user,
         params: { itemId },
       } = request;
-      const member = user?.account;
-      const item = await authorizedItemService.getItemById(db, { actor: member, itemId });
+      const maybeUser = user?.account;
+      const item = await authorizedItemService.getItemById(db, {
+        accountId: maybeUser?.id,
+        itemId,
+      });
 
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
 
       // generate archive stream
-      const archiveStream = await graaspExportService.exportGraasp(db, member, item);
+      const archiveStream = await graaspExportService.exportGraasp(db, maybeUser, item);
 
       try {
         reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);

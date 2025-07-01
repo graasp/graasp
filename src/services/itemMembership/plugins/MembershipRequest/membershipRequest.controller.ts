@@ -44,7 +44,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (tx) => {
         // Check if the Item exists and the member has the required permission.
         await authorizedItemService.assertAccessForItemId(tx, {
-          actor: member,
+          accountId: member.id,
           itemId,
           permission: PermissionLevel.Admin,
         });
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         if (
           await authorizedItemService.hasPermission(tx, {
             permission: PermissionLevel.Read,
-            actor: member,
+            accountId: member.id,
             item,
           })
         ) {
@@ -146,7 +146,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (tx) => {
         // Check if the item exists and the member has the required permission
         await authorizedItemService.assertAccessForItemId(tx, {
-          actor: member,
+          accountId: member.id,
           itemId,
           permission: PermissionLevel.Admin,
         });

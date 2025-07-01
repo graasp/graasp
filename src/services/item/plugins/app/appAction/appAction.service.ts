@@ -45,7 +45,7 @@ export class AppActionService {
     // posting an app action is allowed to readers
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       permission: PermissionLevel.Read,
-      actor: account,
+      accountId: account.id,
       itemId,
     });
 
@@ -72,7 +72,7 @@ export class AppActionService {
     // posting an app action is allowed to readers
     const { itemMembership } = await this.authorizedItemService.getPropertiesForItemById(
       dbConnection,
-      { permission: PermissionLevel.Read, actor: account, itemId },
+      { permission: PermissionLevel.Read, accountId: account.id, itemId },
     );
     const permission = itemMembership?.permission;
     let { accountId: fMemberId } = filters;

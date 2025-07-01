@@ -109,7 +109,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
         if (parentId) {
           await authorizedItemService.assertAccessForItemId(tx, {
             permission: PermissionLevel.Write,
-            actor: member,
+            accountId: member.id,
             itemId: parentId,
           });
         }

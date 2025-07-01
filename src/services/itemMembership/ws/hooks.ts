@@ -18,7 +18,10 @@ export function registerItemMembershipWsHooks(
   websockets.register(itemMembershipsTopic, async (req) => {
     const { channel: itemId, member } = req;
     // item must exist with read permission, else exception is thrown
-    await authorizedItemService.assertAccessForItemId(dbConnection, { actor: member, itemId });
+    await authorizedItemService.assertAccessForItemId(dbConnection, {
+      accountId: member?.id,
+      itemId,
+    });
   });
 
   // on create:

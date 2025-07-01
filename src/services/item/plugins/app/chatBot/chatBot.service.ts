@@ -26,7 +26,7 @@ export class ChatBotService {
     // check that the member can read the item to be allowed to interact with the chat
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       permission: PermissionLevel.Read,
-      actor: account,
+      accountId: account.id,
       itemId,
     });
 

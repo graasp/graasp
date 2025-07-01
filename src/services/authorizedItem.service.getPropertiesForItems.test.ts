@@ -57,7 +57,7 @@ describe('getPropertiesForItems for one item', () => {
     await expect(
       authorizationService.getPropertiesForItems(MOCK_DB, {
         permission: PermissionLevel.Admin,
-        actor: MEMBER,
+        accountId: MEMBER.id,
         items: [ITEM],
       }),
     ).rejects.toBeInstanceOf(Error);
@@ -81,7 +81,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -106,7 +106,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.data[ITEM.id],
@@ -121,7 +121,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -147,7 +147,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -161,7 +161,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.errors[0],
@@ -186,7 +186,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -211,7 +211,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.data[ITEM.id],
@@ -225,7 +225,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -249,7 +249,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.data[ITEM.id],
@@ -263,7 +263,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -289,7 +289,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -303,7 +303,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.errors[0],
@@ -328,7 +328,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -355,7 +355,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -381,7 +381,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -407,7 +407,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -421,7 +421,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.errors[0],
@@ -446,7 +446,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -473,7 +473,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -499,7 +499,7 @@ describe('getPropertiesForItems for one item', () => {
         (
           await authorizationService.getPropertiesForItems(MOCK_DB, {
             permission,
-            actor: MEMBER,
+            accountId: MEMBER.id,
             items: [ITEM],
           })
         ).itemMemberships.errors[0],
@@ -525,7 +525,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -539,7 +539,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.errors[0],
@@ -564,7 +564,7 @@ describe('getPropertiesForItems for one item', () => {
           (
             await authorizationService.getPropertiesForItems(MOCK_DB, {
               permission,
-              actor: MEMBER,
+              accountId: MEMBER.id,
               items: [ITEM],
             })
           ).itemMemberships.data[ITEM.id],
@@ -602,7 +602,7 @@ describe('getPropertiesForItems for many items', () => {
     // shared member can read both items
     const { itemMemberships: result } = await authorizationService.getPropertiesForItems(MOCK_DB, {
       permission: PermissionLevel.Read,
-      actor: SHARED_MEMBER,
+      accountId: SHARED_MEMBER.id,
       items: [SHARED_ITEM, PUBLIC_ITEM],
     });
     expect(result.data[SHARED_ITEM.id]).toEqual(sharedMembership);
@@ -611,7 +611,7 @@ describe('getPropertiesForItems for many items', () => {
     // shared member cannot write public item
     const { itemMemberships: result1 } = await authorizationService.getPropertiesForItems(MOCK_DB, {
       permission: PermissionLevel.Write,
-      actor: SHARED_MEMBER,
+      accountId: SHARED_MEMBER.id,
       items: [SHARED_ITEM, PUBLIC_ITEM],
     });
     expect(result1.data[SHARED_ITEM.id]).toEqual(sharedMembership);
@@ -621,7 +621,7 @@ describe('getPropertiesForItems for many items', () => {
     // shared member cannot admin
     const { itemMemberships: result2 } = await authorizationService.getPropertiesForItems(MOCK_DB, {
       permission: PermissionLevel.Admin,
-      actor: SHARED_MEMBER,
+      accountId: SHARED_MEMBER.id,
       items: [SHARED_ITEM, PUBLIC_ITEM],
     });
     expect(result2.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
@@ -647,7 +647,7 @@ describe('getPropertiesForItems for no items', () => {
 
     const res = await authorizationService.getPropertiesForItems(MOCK_DB, {
       permission: PermissionLevel.Admin,
-      actor: MEMBER,
+      accountId: MEMBER.id,
       items: [],
     });
     const expected: Awaited<ReturnType<typeof authorizationService.getPropertiesForItems>> = {

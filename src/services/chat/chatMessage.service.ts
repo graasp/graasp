@@ -25,34 +25,45 @@ export class ChatMessageService {
     this.authorizedItemService = authorizedItemService;
   }
 
-  async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
+  async getForItem(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: string) {
     // check permission
-    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     return await this.chatMessageRepository.getByItem(dbConnection, itemId);
   }
 
   async postOne(
     dbConnection: DBConnection,
-    actor: AuthenticatedUser,
+    authenticatedUser: AuthenticatedUser,
     itemId: string,
     data: { body: string; mentions?: string[] },
   ) {
     // check permission
-    await this.authorizedItemService.assertAccessForItemId(dbConnection, { actor, itemId });
+    await this.authorizedItemService.assertAccessForItemId(dbConnection, {
+      accountId: authenticatedUser?.id,
+      itemId,
+    });
 
     const message = await this.chatMessageRepository.addOne(dbConnection, {
       itemId,
-      creatorId: actor.id,
+      creatorId: authenticatedUser.id,
       body: data.body,
     });
 
     // post the mentions that are sent with the message
     if (data.mentions?.length) {
-      await this.mentionService.createManyForItem(dbConnection, actor, message, data.mentions);
+      await this.mentionService.createManyForItem(
+        dbConnection,
+        authenticatedUser,
+        message,
+        data.mentions,
+      );
     }
 
-    const messageWithCreator = { ...message, creator: actor };
+    const messageWithCreator = { ...message, creator: authenticatedUser };
 
     return messageWithCreator;
   }
@@ -66,7 +77,7 @@ export class ChatMessageService {
   ) {
     // check permission
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       itemId,
     });
 
@@ -99,7 +110,7 @@ export class ChatMessageService {
   ) {
     // check permission
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       itemId,
     });
 
@@ -121,7 +132,7 @@ export class ChatMessageService {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      actor: authenticatedUser,
+      accountId: authenticatedUser.id,
       itemId,
       permission: PermissionLevel.Admin,
     });

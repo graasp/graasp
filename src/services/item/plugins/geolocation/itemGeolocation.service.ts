@@ -38,7 +38,7 @@ export class ItemGeolocationService {
   async delete(dbConnection: DBConnection, member: MinimalMember, itemId: ItemRaw['id']) {
     // check item exists and actor has permission
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Write,
     });
@@ -46,9 +46,12 @@ export class ItemGeolocationService {
     return this.itemGeolocationRepository.delete(dbConnection, item);
   }
 
-  async getByItem(dbConnection: DBConnection, actor: MaybeUser, itemId: ItemRaw['id']) {
+  async getByItem(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: ItemRaw['id']) {
     // check item exists and actor has permission
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     const geoloc = await this.itemGeolocationRepository.getByItem(dbConnection, item.path);
 
@@ -57,7 +60,7 @@ export class ItemGeolocationService {
 
   async getIn(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     query: {
       parentItemId?: ItemRaw['id'];
       lat1?: ItemGeolocationRaw['lat'];
@@ -70,14 +73,14 @@ export class ItemGeolocationService {
     let parentItem: ItemRaw | undefined;
     if (query.parentItemId) {
       parentItem = await this.authorizedItemService.getItemById(dbConnection, {
-        actor,
+        accountId: maybeUser?.id,
         itemId: query.parentItemId,
       });
     }
 
     const geoloc = await this.itemGeolocationRepository.getItemsIn(
       dbConnection,
-      actor,
+      maybeUser,
       query,
       parentItem,
     );
@@ -91,7 +94,7 @@ export class ItemGeolocationService {
     const { itemMemberships, visibilities } =
       await this.authorizedItemService.getPropertiesForItems(dbConnection, {
         permission: PermissionLevel.Read,
-        actor,
+        accountId: maybeUser?.id,
         items: geoloc.map(({ item }) => item),
       });
 
@@ -136,7 +139,7 @@ export class ItemGeolocationService {
   ) {
     // check item exists and member has permission
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
       permission: PermissionLevel.Write,
     });

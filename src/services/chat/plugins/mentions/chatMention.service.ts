@@ -75,7 +75,7 @@ export class MentionService {
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       permission: PermissionLevel.Read,
-      actor: account,
+      accountId: account.id,
       itemId: message.itemId,
     });
 

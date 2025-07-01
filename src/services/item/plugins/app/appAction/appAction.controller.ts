@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     websockets.register(appActionsTopic, async (req) => {
       const { channel: id, member } = req;
       const item = await authorizedItemService.getItemById(db, {
-        actor: member,
+        accountId: member?.id,
         itemId: id,
         permission: PermissionLevel.Admin,
       });

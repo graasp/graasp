@@ -278,7 +278,7 @@ export class ItemService {
   ) {
     this.log.debug(`verify parent ${parentId} exists and the member has permission over it`);
     const parentItem = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId: parentId,
       permission: PermissionLevel.Write,
     });
@@ -449,7 +449,7 @@ export class ItemService {
    */
   async getPacked(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     id: string,
     permission: PermissionLevelOptions = PermissionLevel.Read,
   ) {
@@ -459,7 +459,7 @@ export class ItemService {
       {
         item,
         permission,
-        actor,
+        accountId: maybeUser?.id,
       },
     );
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
@@ -486,13 +486,16 @@ export class ItemService {
 
   private async _getChildren(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     itemId: string,
     params?: ItemChildrenParams,
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
-    return this.itemRepository.getFilteredChildren(dbConnection, actor, item, params);
+    return this.itemRepository.getFilteredChildren(dbConnection, maybeUser, item, params);
   }
 
   async getChildren(
@@ -538,11 +541,14 @@ export class ItemService {
 
   async getDescendants(
     dbConnection: DBConnection,
-    actor: MaybeUser,
+    maybeUser: MaybeUser,
     itemId: UUID,
     options?: { types?: ItemTypeUnion[] },
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
 
     if (!isItemType(item, ItemType.FOLDER)) {
       return { item, descendants: <ItemWithCreator[]>[] };
@@ -579,14 +585,17 @@ export class ItemService {
     );
   }
 
-  async getParents(dbConnection: DBConnection, actor: MaybeUser, itemId: UUID) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+  async getParents(dbConnection: DBConnection, maybeUser: MaybeUser, itemId: UUID) {
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: maybeUser?.id,
+      itemId,
+    });
     const parents = await this.itemRepository.getAncestors(dbConnection, item);
 
     const { itemMemberships, visibilities } =
       await this.authorizedItemService.getPropertiesForItems(dbConnection, {
         permission: PermissionLevel.Read,
-        actor,
+        accountId: maybeUser?.id,
         items: parents,
       });
     // remove parents actor does not have access
@@ -604,7 +613,7 @@ export class ItemService {
   ): Promise<ItemRaw> {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       permission: PermissionLevel.Write,
-      actor: member,
+      accountId: member.id,
       itemId,
     });
 
@@ -631,10 +640,10 @@ export class ItemService {
   }
 
   // QUESTION? DELETE BY PATH???
-  async delete(dbConnection: DBConnection, actor: MinimalMember, itemId: UUID) {
+  async delete(dbConnection: DBConnection, account: MinimalMember, itemId: UUID) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor,
+      accountId: account.id,
       itemId,
     });
 
@@ -651,7 +660,7 @@ export class ItemService {
 
     // pre hook
     for (const item of items) {
-      await this.hooks.runPreHooks('delete', actor, dbConnection, { item });
+      await this.hooks.runPreHooks('delete', account, dbConnection, { item });
     }
 
     await this.itemRepository.delete(
@@ -661,7 +670,7 @@ export class ItemService {
 
     // post hook
     for (const item of items) {
-      await this.hooks.runPostHooks('delete', actor, dbConnection, { item });
+      await this.hooks.runPostHooks('delete', account, dbConnection, { item });
 
       try {
         await this.meilisearchWrapper.deleteOne(dbConnection, item);
@@ -712,7 +721,7 @@ export class ItemService {
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       permission: PermissionLevel.Admin,
-      actor: member,
+      accountId: member.id,
       itemId,
     });
 
@@ -781,7 +790,7 @@ export class ItemService {
     let parentItem: FolderItem | undefined = undefined;
     if (toItemId) {
       parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
-        actor: member,
+        accountId: member.id,
         itemId: toItemId,
         permission: PermissionLevel.Write,
       })) as FolderItem;
@@ -849,7 +858,7 @@ export class ItemService {
     parentItem?: FolderItem,
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      actor: member,
+      accountId: member.id,
       itemId,
     });
 
@@ -981,7 +990,7 @@ export class ItemService {
     let parentItem: FolderItem | undefined;
     if (args.parentId) {
       parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
-        actor: member,
+        accountId: member.id,
         itemId: args.parentId,
         permission: PermissionLevel.Write,
       })) as FolderItem;
@@ -1004,11 +1013,14 @@ export class ItemService {
 
   async reorder(
     dbConnection: DBConnection,
-    actor: MinimalMember,
+    member: MinimalMember,
     itemId: string,
     body: { previousItemId?: string },
   ) {
-    const item = await this.authorizedItemService.getItemById(dbConnection, { actor, itemId });
+    const item = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: member.id,
+      itemId,
+    });
 
     const ids = getIdsFromPath(item.path);
 
@@ -1029,13 +1041,13 @@ export class ItemService {
    */
   async rescaleOrderForParent(
     dbConnection: DBConnection,
-    member: AuthenticatedUser,
+    account: AuthenticatedUser,
     item: ItemRaw,
   ) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
       const parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
-        actor: member,
+        accountId: account.id,
         itemId: parentId,
       })) as FolderItem;
       await this.itemRepository.rescaleOrder(dbConnection, parentItem);

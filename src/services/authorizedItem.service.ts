@@ -9,7 +9,6 @@ import {
 
 import type { DBConnection } from '../drizzle/db';
 import type { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
-import type { MaybeUser } from '../types';
 import {
   MemberCannotAccess,
   MemberCannotAdminItem,
@@ -46,7 +45,7 @@ export class AuthorizedItemService {
   /**
    * Returns hightest membership and visibilities for each item if the user has access to it
    * @param permission minimum permission required
-   * @param actor member that tries to access the item
+   * @param accountId member that tries to access the item
    * @param items items to get properties for
    * @returns result of the highest item membership for each item, result of visibilities for each item
    */
@@ -54,9 +53,9 @@ export class AuthorizedItemService {
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
-      actor,
+      accountId,
       items,
-    }: { permission: PermissionLevelOptions; actor: { id: string } | undefined; items: ItemRaw[] },
+    }: { permission: PermissionLevelOptions; accountId?: string; items: ItemRaw[] },
   ): Promise<{
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
@@ -70,8 +69,8 @@ export class AuthorizedItemService {
     }
 
     // batch request for all items
-    const inheritedMemberships = actor
-      ? await this.itemMembershipRepository.getInheritedMany(dbConnection, items, actor.id, true)
+    const inheritedMemberships = accountId
+      ? await this.itemMembershipRepository.getInheritedMany(dbConnection, items, accountId, true)
       : null;
     const visibilities = await this.itemVisibilityRepository.getManyForMany(dbConnection, items, [
       ItemVisibilityType.Public,
@@ -142,7 +141,7 @@ export class AuthorizedItemService {
   }
 
   /**
-   * Returns whether the actor has a membership on the item and can access it.
+   * Returns whether the account has a membership on the item and can access it.
    * Having an admin membership returns true.
    * Having a write membership returns true.
    * Having a read membership and the item is hidden returns false.
@@ -154,14 +153,14 @@ export class AuthorizedItemService {
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
-      actor,
+      accountId,
       item,
-    }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
+    }: { permission?: PermissionLevelOptions; accountId?: string; item: ItemRaw },
   ) {
     try {
       const { itemMembership, visibilities } = await this.getPropertiesForItem(dbConnection, {
         permission,
-        actor,
+        accountId,
         item,
       });
 
@@ -177,71 +176,79 @@ export class AuthorizedItemService {
   }
 
   /**
-   * Assert the actor can access an item, throws otherwise
-   * @returns if the actor has an admin membership
-   * @returns if the actor has a write membership
-   * @returns if the actor has a read membership and the item is public
-   * @returns if the actor has no membership and the item is public
-   * @throws if the actor has a read membership and the item is hidden
-   * @throws if the actor has no membership for a private item
+   * Assert the account can access an item, throws otherwise
+   * @returns if the account has an admin membership
+   * @returns if the account has a write membership
+   * @returns if the account has a read membership and the item is public
+   * @returns if the account has no membership and the item is public
+   * @throws if the account has a read membership and the item is hidden
+   * @throws if the account has no membership for a private item
    */
   public async assertAccess(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
-      actor,
+      accountId,
       item,
-    }: { permission?: PermissionLevelOptions; actor: MaybeUser; item: ItemRaw },
+    }: { permission?: PermissionLevelOptions; accountId?: string; item: ItemRaw },
   ) {
-    await this.getPropertiesForItem(dbConnection, { permission, actor, item });
+    await this.getPropertiesForItem(dbConnection, { permission, accountId, item });
   }
 
   /**
-   * Returns whether the actor can access an item.
+   * Returns whether the account can access an item.
    * refer to assertAccess
    */
   public async assertAccessForItemId(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
-      actor,
+      accountId,
       itemId,
-    }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
+    }: {
+      permission?: PermissionLevelOptions;
+      accountId?: string;
+      itemId: ItemRaw['id'];
+    },
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    await this.assertAccess(dbConnection, { permission, actor, item });
+    await this.assertAccess(dbConnection, { permission, accountId, item });
   }
 
   /**
-   * Returns item if the actor has access to it
+   * Returns item if the account has access to it
    * @returns item
    */
   public async getItemById(
     dbConnection: DBConnection,
     {
       permission,
-      actor,
+      accountId,
       itemId,
-    }: { permission?: PermissionLevelOptions; actor: MaybeUser; itemId: ItemRaw['id'] },
+    }: {
+      permission?: PermissionLevelOptions;
+      accountId?: string;
+      itemId: ItemRaw['id'];
+    },
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    await this.assertAccess(dbConnection, { permission, actor, item });
+    await this.assertAccess(dbConnection, { permission, accountId, item });
     return item;
   }
 
   /**
-   * Returns item if the actor has access to it
+   * Returns item if the account has access to it
    * @returns highest permission and visibilities
    */
   public async getPropertiesForItemById(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
-      actor,
+      accountId,
       itemId,
     }: {
       permission?: PermissionLevelOptions;
-      actor: { id: string } | undefined;
+      accountId?: string;
       itemId: ItemRaw['id'];
     },
   ): Promise<{
@@ -249,20 +256,20 @@ export class AuthorizedItemService {
     visibilities: ItemVisibilityWithItem[];
   }> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    return this.getPropertiesForItem(dbConnection, { permission, actor, item });
+    return this.getPropertiesForItem(dbConnection, { permission, accountId, item });
   }
 
   /**
-   * Returns item and related properties if the actor has access to it
+   * Returns item and related properties if the account has access to it
    * @returns highest permission and visibilities
    */
   public async getPropertiesForItem(
     dbConnection: DBConnection,
     {
       permission = PermissionLevel.Read,
-      actor,
+      accountId,
       item,
-    }: { permission?: PermissionLevelOptions; actor: { id: string } | undefined; item: ItemRaw },
+    }: { permission?: PermissionLevelOptions; accountId?: string; item: ItemRaw },
   ): Promise<{
     itemMembership: ItemMembershipRaw | null;
     visibilities: ItemVisibilityWithItem[];
@@ -270,8 +277,8 @@ export class AuthorizedItemService {
     // get best permission for user
     // but do not fetch membership for signed out member
 
-    const inheritedMembership = actor
-      ? await this.itemMembershipRepository.getInherited(dbConnection, item.path, actor.id, true)
+    const inheritedMembership = accountId
+      ? await this.itemMembershipRepository.getInherited(dbConnection, item.path, accountId, true)
       : null;
     const highest = inheritedMembership?.permission;
     const isValid = highest && permissionMapping[highest].includes(permission);

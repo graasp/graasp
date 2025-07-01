@@ -69,7 +69,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user, params: { id: itemId } }, reply) => {
       const item = await authorizedItemService.getItemById(db, {
-        actor: user?.account,
+        accountId: user?.account?.id,
         itemId,
         permission: PermissionLevel.Admin,
       });
@@ -117,7 +117,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       await db.transaction(async (tx) => {
         const item = await authorizedItemService.getItemById(tx, {
-          actor: member,
+          accountId: member.id,
           itemId,
           permission: PermissionLevel.Admin,
         });
@@ -141,7 +141,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (tx) => {
         // Validate permission
         await authorizedItemService.getItemById(tx, {
-          actor: member,
+          accountId: member.id,
           itemId,
           permission: PermissionLevel.Admin,
         });
