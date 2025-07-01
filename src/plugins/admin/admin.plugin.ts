@@ -67,7 +67,7 @@ export default async (fastify: FastifyInstance) => {
         clientSecret: GITHUB_CLIENT_SECRET,
         callbackURL: `${PUBLIC_URL.origin}/admin/auth/github/callback`,
       },
-      async (accessToken: string, refreshToken: string, profile: GitHubProfile) => {
+      async (accessToken: string, refreshToken: string, profile: GitHubProfile, done) => {
         const { username } = profile;
         if (!username) {
           throw new MissingGithubUsername();
@@ -78,10 +78,10 @@ export default async (fastify: FastifyInstance) => {
           // update info stored in the table
           await adminRepository.update(db, username, { id: profile.id });
           // You can add admin checks here
-          return profile;
+          return done(null, profile);
         }
         console.debug('user is not an allowed admin', profile);
-        throw new NotAnAuthorizedAdmin();
+        return done(new NotAnAuthorizedAdmin());
       },
     ),
   );
@@ -147,7 +147,7 @@ export default async (fastify: FastifyInstance) => {
     reply.type('text/html').send(
       `Hello, ${request.admin?.userName || 'admin'}!
         <a href="/admin/logout">Logout</a><br/>
-        <a href="/admin/queue">Queue Dashboard</a>
+        <a href="/admin/queues/ui">Queue Dashboard</a>
         `,
     );
   });
