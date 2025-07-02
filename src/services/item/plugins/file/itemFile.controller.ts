@@ -22,16 +22,7 @@ import { getUrl, updateFile, upload } from './itemFile.schema';
 import FileItemService from './itemFile.service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
-export interface GraaspPluginFileOptions {
-  uploadMaxFileNb?: number; // max number of files to upload at a time
-  maxFileSize?: number; // max size for an uploaded file in bytes
-  maxMemberStorage?: number; // max storage space for a user
-}
-
-const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
-  const { uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD, maxFileSize = DEFAULT_MAX_FILE_SIZE } =
-    options;
-
+const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
   const storageService = resolveDependency(StorageService);
@@ -45,8 +36,8 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
       fields: 0, // Max number of non-file fields (Default: Infinity).
       // allow some fields for app data and app setting
-      fileSize: maxFileSize, // For multipart forms, the max file size (Default: Infinity).
-      files: uploadMaxFileNb, // Max number of file fields (Default: Infinity).
+      fileSize: DEFAULT_MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+      files: MAX_NUMBER_OF_FILES_UPLOAD, // Max number of file fields (Default: Infinity).
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
   });

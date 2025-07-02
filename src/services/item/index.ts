@@ -3,13 +3,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { APPS_JWT_SECRET } from '../../config/secrets';
-import {
-  APPS_PUBLISHER_ID,
-  APP_ITEMS_PREFIX,
-  FILE_ITEM_PLUGIN_OPTIONS,
-  ITEMS_ROUTE_PREFIX,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from '../../utils/config';
+import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX, ITEMS_ROUTE_PREFIX } from '../../utils/config';
 import chatController from '../chat/chatMessage.controller';
 import graaspItemLogin from '../itemLogin/itemLogin.controller';
 import { itemMembershipsController } from '../itemMembership/membership.controller';
@@ -45,11 +39,6 @@ import thumbnailsPlugin from './plugins/thumbnail/itemThumbnail.controller';
 import { itemWsHooks } from './ws/item.hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  fastify.decorate('file', {
-    s3Config: S3_FILE_ITEM_PLUGIN_OPTIONS,
-    localConfig: FILE_ITEM_PLUGIN_OPTIONS,
-  });
-
   // this needs to execute before 'create()' and 'updateOne()' are called
   // because graaspApps extends the schemas
   await fastify.register(graaspApps, {
