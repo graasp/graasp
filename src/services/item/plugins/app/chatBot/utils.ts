@@ -1,6 +1,6 @@
 import type { ChatCompletion } from 'openai/resources/chat/index';
 
-import { type ChatBotMessage, GPTVersion } from '@graasp/sdk';
+import { type ChatBotMessage, type GPTVersionType } from '@graasp/sdk';
 
 import {
   OpenAIBaseError,
@@ -13,7 +13,7 @@ import { openAICompletion } from './openAICompletion';
 
 export const fetchOpenAI = async (
   body: ChatBotMessage[],
-  gptVersion: GPTVersion,
+  gptVersion: GPTVersionType,
   temperature: number,
 ) => {
   try {
@@ -35,7 +35,7 @@ export const fetchOpenAI = async (
   }
 };
 
-function computeResult(choice: ChatCompletion.Choice, gptVersion?: GPTVersion) {
+function computeResult(choice: ChatCompletion.Choice, gptVersion?: GPTVersionType) {
   const finishReason = choice.finish_reason;
   switch (finishReason) {
     case FinishReason.LENGTH:

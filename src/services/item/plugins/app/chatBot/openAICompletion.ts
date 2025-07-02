@@ -1,13 +1,13 @@
 import { OpenAI } from 'openai';
 
-import { type ChatBotMessage, GPTVersion } from '@graasp/sdk';
+import { type ChatBotMessage, GPTVersion, type GPTVersionType } from '@graasp/sdk';
 
 import { OPENAI_API_KEY, OPENAI_ORG_ID } from '../../../../../utils/config';
 import { OpenAIBadVersion } from '../../../../../utils/errors';
 
 export const openAICompletion = async (
   body: Array<ChatBotMessage>,
-  gptVersion: GPTVersion,
+  gptVersion: GPTVersionType,
   temperature?: number,
 ) => {
   validateGPTVersion(gptVersion);
@@ -25,8 +25,8 @@ export const openAICompletion = async (
   return completion;
 };
 
-export function validateGPTVersion(gptVersion?: GPTVersion) {
-  if (gptVersion && !Object.values(GPTVersion).includes(gptVersion as GPTVersion)) {
+export function validateGPTVersion(gptVersion?: GPTVersionType) {
+  if (gptVersion && !Object.values(GPTVersion).includes(gptVersion as GPTVersionType)) {
     throw new OpenAIBadVersion(gptVersion, `${Object.values(GPTVersion)}`);
   }
 }
