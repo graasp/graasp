@@ -34,6 +34,7 @@ import { ItemVisibilityRepository } from '../../../../itemVisibility/itemVisibil
 import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { MeiliSearchWrapper } from './meilisearch';
+import { MeilisearchRepository } from './meilisearch.repository';
 
 jest.unmock('./meilisearch');
 
@@ -107,14 +108,12 @@ const itemTagRepository = new ItemTagRepository();
 const itemLikeRepository = new ItemLikeRepository();
 const itemRepository = new ItemRepository();
 const itemVisibilityRepository = new ItemVisibilityRepository();
+const meilisearchRepository = new MeilisearchRepository();
 
 const meilisearch = new MeiliSearchWrapper(
   fakeClient,
-  itemVisibilityRepository,
   itemRepository,
-  itemPublishedRepository,
-  itemTagRepository,
-  itemLikeRepository,
+  meilisearchRepository,
   MOCK_LOGGER,
 );
 
