@@ -2306,10 +2306,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:9.8.0":
-  version: 9.8.0
-  resolution: "@faker-js/faker@npm:9.8.0"
-  checksum: 10/d7d7940ba7f2bd0d266d507bb7a33ec5099654da624dc8647d7cfd2e908b75ba06ed7dd0ec3b771a18600a734f420370b3cecd1ee5d4799993b1ee3505f866d8
+"@faker-js/faker@npm:9.9.0":
+  version: 9.9.0
+  resolution: "@faker-js/faker@npm:9.9.0"
+  checksum: 10/b24b1be0fb3090d54abaaa3a814f37d1a7551f1207dcd330a1af2c70f6312a8b95ebb82653577757dd62f4cbbb56caa3c83513053253654dc3e286a05040ecbe
   languageName: node
   linkType: hard
 
@@ -4641,12 +4641,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.15.3":
-  version: 22.15.3
-  resolution: "@types/node@npm:22.15.3"
+"@types/node@npm:22.16.0":
+  version: 22.16.0
+  resolution: "@types/node@npm:22.16.0"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10/6b4ff03c36598432b419980f828281aa16383e2de6eb61f73275495ef8d2cbf8cb5607659b4cae5ff8b2b2ff69913ea07ffcc0be029e4280b6e8bc138dc6629b
+  checksum: 10/26ebbbd24749caa4a692664290c53cdca63ec717ca250cd2babf3d3da796e9d3d0b6b9814d160693261b5e881796bf0f3c1887fef355b19e9a78fe27cd5e2ce2
   languageName: node
   linkType: hard
 
@@ -8623,7 +8623,7 @@ __metadata:
     "@bull-board/ui": "npm:6.10.1"
     "@commitlint/cli": "npm:19.8.0"
     "@commitlint/config-conventional": "npm:19.8.0"
-    "@faker-js/faker": "npm:9.8.0"
+    "@faker-js/faker": "npm:9.9.0"
     "@fastify/busboy": "npm:3.1.1"
     "@fastify/cors": "npm:11.0.1"
     "@fastify/error": "npm:4.1.0"
@@ -8659,7 +8659,7 @@ __metadata:
     "@types/lodash.partition": "npm:^4"
     "@types/lodash.uniqby": "npm:4.7.9"
     "@types/mime": "npm:3.0.4"
-    "@types/node": "npm:22.15.3"
+    "@types/node": "npm:22.16.0"
     "@types/node-fetch": "npm:2"
     "@types/nodemailer": "npm:6.4.15"
     "@types/papaparse": "npm:5.3.15"

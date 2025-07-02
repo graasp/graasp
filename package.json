@@ -124,7 +124,7 @@
   "devDependencies": {
     "@commitlint/cli": "19.8.0",
     "@commitlint/config-conventional": "19.8.0",
-    "@faker-js/faker": "9.8.0",
+    "@faker-js/faker": "9.9.0",
     "@jest/globals": "29.7.0",
     "@quobix/vacuum": "0.17.0",
     "@trivago/prettier-plugin-sort-imports": "5.2.2",
@@ -140,7 +140,7 @@
     "@types/lodash.partition": "^4",
     "@types/lodash.uniqby": "4.7.9",
     "@types/mime": "3.0.4",
-    "@types/node": "22.15.3",
+    "@types/node": "22.16.0",
     "@types/node-fetch": "2",
     "@types/nodemailer": "6.4.15",
     "@types/papaparse": "5.3.15",
