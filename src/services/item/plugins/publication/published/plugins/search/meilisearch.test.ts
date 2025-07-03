@@ -10,28 +10,13 @@ import {
 } from 'meilisearch';
 import { v4 } from 'uuid';
 
-import {
-  type IndexItem,
-  ItemType,
-  ItemVisibilityType,
-  MimeTypes,
-  TagCategory,
-  type UUID,
-} from '@graasp/sdk';
+import { type IndexItem } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import { ItemFactory } from '../../../../../../../../test/factories/item.factory';
 import { type DBConnection } from '../../../../../../../drizzle/db';
-import type {
-  ItemPublishedWithItem,
-  ItemPublishedWithItemWithCreator,
-  ItemRaw,
-  ItemVisibilityWithItem,
-} from '../../../../../../../drizzle/types';
+import type { ItemPublishedWithItemWithCreator } from '../../../../../../../drizzle/types';
 import { ItemRepository } from '../../../../../item.repository';
-import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
-import { ItemVisibilityRepository } from '../../../../itemVisibility/itemVisibility.repository';
-import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { MeiliSearchWrapper } from './meilisearch';
 import { MeilisearchRepository } from './meilisearch.repository';
@@ -73,9 +58,6 @@ const mockIndex = {
   deleteAllDocuments: jest.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  updateSettings: jest.fn(() => {
-    return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
-  }),
 } as unknown as jest.Mocked<Index<IndexItem>>;
 
 const fakeClient = new MeiliSearch({
@@ -104,10 +86,7 @@ jest
   .mockResolvedValue({ status: TaskStatus.TASK_SUCCEEDED } as Task);
 
 const itemPublishedRepository = new ItemPublishedRepository();
-const itemTagRepository = new ItemTagRepository();
-const itemLikeRepository = new ItemLikeRepository();
 const itemRepository = new ItemRepository();
-const itemVisibilityRepository = new ItemVisibilityRepository();
 const meilisearchRepository = new MeilisearchRepository();
 
 const meilisearch = new MeiliSearchWrapper(
@@ -146,11 +125,8 @@ describe('MeilisearchWrapper', () => {
 
       // Given
       jest.spyOn(itemRepository, 'getDescendants').mockResolvedValue([]);
-      jest.spyOn(itemTagRepository, 'getByItemId').mockResolvedValue([]);
       const itemPublished = mockItemPublished(item);
-      jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished);
-      jest.spyOn(itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([]);
-      jest.spyOn(itemLikeRepository, 'getCountByItemId').mockResolvedValue(0);
+      jest.spyOn(meilisearchRepository, 'getIndexedTree').mockResolvedValue([{} as never]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
@@ -159,99 +135,17 @@ describe('MeilisearchWrapper', () => {
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
-      expect(addDocumentSpy.mock.calls[0][0][0]).toMatchObject({
-        id: item.id,
-        level: [],
-        discipline: [],
-        'resource-type': [],
-        content: '',
-        isPublishedRoot: true,
-        isHidden: false,
-      });
-    });
-
-    it('index descendants', async () => {
-      const item = ItemFactory();
-      const descendant = ItemFactory();
-      const descendant2 = ItemFactory();
-      // Given
-      jest.spyOn(itemRepository, 'getDescendants').mockResolvedValue([descendant, descendant2]);
-      jest.spyOn(itemTagRepository, 'getByItemId').mockResolvedValue([]);
-      const itemPublished = mockItemPublished(item);
-      jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished);
-      jest.spyOn(itemLikeRepository, 'getCountByItemId').mockResolvedValue(0);
-      jest.spyOn(itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([
-        {
-          type: ItemVisibilityType.Hidden,
-          item: { id: descendant.id, path: descendant.path } as ItemRaw,
-        } as ItemVisibilityWithItem,
-      ]);
-
-      const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
-
-      // When
-      await meilisearch.indexOne(MOCK_DB, itemPublished);
-
-      // Then
-      expect(addDocumentSpy).toHaveBeenCalledTimes(1);
-      expect(addDocumentSpy.mock.calls[0][0]).toHaveLength(3);
-      expect(addDocumentSpy.mock.calls[0][0]).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: item.id,
-            level: [],
-            discipline: [],
-            'resource-type': [],
-            content: '',
-            isPublishedRoot: true,
-            isHidden: false,
-          }),
-          expect.objectContaining({
-            id: descendant.id,
-            level: [],
-            discipline: [],
-            'resource-type': [],
-            content: '',
-            isPublishedRoot: false,
-            isHidden: true,
-          }),
-          expect.objectContaining({
-            id: descendant2.id,
-            level: [],
-            discipline: [],
-            'resource-type': [],
-            content: '',
-            isPublishedRoot: false,
-            isHidden: false,
-          }),
-        ]),
-      );
     });
 
     it('can index multiple items', async () => {
-      const item = ItemFactory();
-      const descendant = ItemFactory();
-      const descendant2 = ItemFactory();
-      const item2 = ItemFactory();
-      const descendant3 = ItemFactory();
-
-      const descendants = {
-        [item.id]: [descendant, descendant2],
-        [item2.id]: [descendant3],
-      } satisfies Record<string, ItemRaw[]>;
-
       // Given
-      jest
-        .spyOn(itemRepository, 'getDescendants')
-        .mockImplementation(async (_db, item) => descendants[item.id]);
-      jest.spyOn(itemTagRepository, 'getByItemId').mockResolvedValue([]);
-      const itemPublished1 = mockItemPublished(item);
+      const itemPublished1 = mockItemPublished(ItemFactory());
       jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished1);
-      const itemPublished2 = mockItemPublished(item2);
+      const itemPublished2 = mockItemPublished(ItemFactory());
       jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished2);
-      jest.spyOn(itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([]);
-      jest.spyOn(itemLikeRepository, 'getCountByItemId').mockResolvedValue(0);
-
+      const getIndexTreeMock = jest
+        .spyOn(meilisearchRepository, 'getIndexedTree')
+        .mockResolvedValue([{} as never]);
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
       // When
@@ -259,179 +153,7 @@ describe('MeilisearchWrapper', () => {
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
-      expect(addDocumentSpy.mock.calls[0][0]).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: item.id,
-          }),
-          expect.objectContaining({
-            id: descendant.id,
-          }),
-          expect.objectContaining({
-            id: descendant2.id,
-          }),
-          expect.objectContaining({
-            id: item2.id,
-          }),
-          expect.objectContaining({
-            id: descendant3.id,
-          }),
-        ]),
-      );
-    });
-
-    it('index correct tags and published state', async () => {
-      const item = ItemFactory();
-      const descendant = ItemFactory();
-      const descendant2 = ItemFactory();
-
-      const tags = {
-        [item.id]: [
-          { name: 'tag1', id: v4(), category: TagCategory.Discipline },
-          { name: 'tag2', id: v4(), category: TagCategory.Level },
-          { name: 'tag3', id: v4(), category: TagCategory.Level },
-        ],
-        [descendant.id]: [{ name: 'tag3', id: v4(), category: TagCategory.ResourceType }],
-        [descendant2.id]: [],
-      };
-
-      const published = {
-        [item.path]: mockItemPublished(item),
-        [descendant.path]: mockItemPublished(item),
-        [descendant2.path]: mockItemPublished(descendant2),
-      } satisfies Record<string, ItemPublishedWithItemWithCreator>;
-
-      jest.spyOn(itemRepository, 'getDescendants').mockResolvedValue([descendant, descendant2]);
-      jest
-        .spyOn(itemTagRepository, 'getByItemId')
-        .mockImplementation(async (_db, id: UUID) => tags[id]);
-      jest
-        .spyOn(itemPublishedRepository, 'getForItem')
-        .mockImplementation((_db, path) => Promise.resolve(published[path]));
-      jest.spyOn(itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([
-        {
-          type: ItemVisibilityType.Hidden,
-          item: { id: descendant.id },
-        } as ItemVisibilityWithItem,
-      ]);
-
-      const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
-
-      // When
-      await meilisearch.indexOne(MOCK_DB, published[item.path]);
-
-      // Then
-      expect(addDocumentSpy).toHaveBeenCalledTimes(1);
-      expect(addDocumentSpy.mock.calls[0][0]).toHaveLength(3);
-      expect(addDocumentSpy.mock.calls[0][0]).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: item.id,
-            discipline: [tags[item.id][0].name],
-            level: [tags[item.id][1].name, tags[item.id][2].name],
-            'resource-type': [],
-            content: '',
-            isPublishedRoot: true,
-            isHidden: false,
-          }),
-        ]),
-      );
-    });
-
-    it('index likes', async () => {
-      const item = ItemFactory();
-      const descendant = ItemFactory();
-      const descendant2 = ItemFactory();
-
-      const published = {
-        [item.path]: mockItemPublished(item),
-        [descendant.path]: mockItemPublished(item),
-        [descendant2.path]: mockItemPublished(descendant2),
-      } satisfies Record<string, ItemPublishedWithItem>;
-
-      jest.spyOn(itemRepository, 'getDescendants').mockResolvedValue([descendant, descendant2]);
-      jest.spyOn(itemTagRepository, 'getByItemId').mockResolvedValue([]);
-      jest
-        .spyOn(itemPublishedRepository, 'getForItem')
-        .mockImplementation(async (_db, path) => published[path]);
-
-      jest.spyOn(itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([
-        {
-          type: ItemVisibilityType.Hidden,
-          item: { id: descendant.id },
-        } as ItemVisibilityWithItem,
-      ]);
-
-      jest.spyOn(itemLikeRepository, 'getCountByItemId').mockResolvedValue(2);
-
-      const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
-
-      // When
-      await meilisearch.indexOne(MOCK_DB, published[item.path]);
-
-      // Then
-      expect(addDocumentSpy).toHaveBeenCalledTimes(1);
-      expect(addDocumentSpy.mock.calls[0][0]).toHaveLength(3);
-      expect(addDocumentSpy.mock.calls[0][0]).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: item.id,
-            likes: 2,
-            content: '',
-            isPublishedRoot: true,
-            isHidden: false,
-          }),
-        ]),
-      );
-    });
-
-    it('content is indexed', async () => {
-      const item = ItemFactory();
-      const extraFile = {
-        [ItemType.FILE]: {
-          mimetype: MimeTypes.PDF,
-          content: 's3 content',
-        },
-      };
-      const descendant = ItemFactory({ type: ItemType.FILE, extra: extraFile });
-      const extra = {
-        [ItemType.DOCUMENT]: {
-          content: 'my text is here',
-        },
-      };
-      const descendant2 = ItemFactory({ type: ItemType.DOCUMENT, extra });
-      // Given
-
-      jest.spyOn(itemRepository, 'getDescendants').mockResolvedValue([descendant, descendant2]);
-      jest.spyOn(itemTagRepository, 'getByItemId').mockResolvedValue([]);
-      const itemPublished = mockItemPublished(item);
-      jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished);
-      jest.spyOn(itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([]);
-
-      const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
-
-      // When
-      await meilisearch.indexOne(MOCK_DB, itemPublished);
-
-      // Then
-      expect(addDocumentSpy).toHaveBeenCalledTimes(1);
-      expect(addDocumentSpy.mock.calls[0][0]).toHaveLength(3);
-      expect(addDocumentSpy.mock.calls[0][0]).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: item.id,
-            content: '',
-          }),
-          expect.objectContaining({
-            id: descendant.id,
-            content: 's3 content',
-          }),
-          expect.objectContaining({
-            id: descendant2.id,
-            content: 'my text is here',
-          }),
-        ]),
-      );
+      expect(getIndexTreeMock).toHaveBeenCalledTimes(2);
     });
   });
 
