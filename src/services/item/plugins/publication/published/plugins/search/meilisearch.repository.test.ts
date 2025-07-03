@@ -1,6 +1,7 @@
+import { faker } from '@faker-js/faker';
+
 import { seedFromJson } from '../../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../../drizzle/db';
-import { tagsTable } from '../../../../../../../drizzle/schema';
 import { ItemType } from '../../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../../utils/assertions';
 import { TagCategory } from '../../../../../../tag/tag.schemas';
@@ -9,14 +10,9 @@ import { MeilisearchRepository } from './meilisearch.repository';
 const meilisearchRepository = new MeilisearchRepository();
 
 describe('Meilisearch Repository', () => {
-  beforeEach(async () => {
-    // delete tag table to avoid collision
-    await db.delete(tagsTable);
-  });
-
   describe('getIndexedTree', () => {
     it('return correct items', async () => {
-      const { items, members, publishedItems } = await seedFromJson({
+      const { items, members, publishedItems, tags } = await seedFromJson({
         actor: null,
         items: [
           {
@@ -25,7 +21,7 @@ describe('Meilisearch Repository', () => {
             creator: { name: 'cedric' },
             name: 'parent',
             description: 'parent description',
-            tags: [{ category: TagCategory.Level, name: 'mytag2' }],
+            tags: [{ category: TagCategory.Level, name: faker.word.words(5) }],
             children: [
               {
                 name: 'document',
@@ -44,8 +40,8 @@ describe('Meilisearch Repository', () => {
                 extra: { folder: {} },
                 type: 'folder',
                 tags: [
-                  { category: TagCategory.Discipline, name: 'mytag' },
-                  { category: TagCategory.Discipline, name: 'mytag1' },
+                  { category: TagCategory.Discipline, name: faker.word.words(5) },
+                  { category: TagCategory.Discipline, name: faker.word.words(5) },
                 ],
               },
             ],
@@ -64,7 +60,7 @@ describe('Meilisearch Repository', () => {
         type: ItemType.FOLDER,
         lang: items[0].lang,
         content: '',
-        level: ['mytag2'],
+        level: [tags[0].name],
         discipline: [],
         'resource-type': [],
         creator: { id: members[2].id, name: members[2].name },
@@ -145,7 +141,7 @@ describe('Meilisearch Repository', () => {
         content: '',
         lang: items[4].lang,
         level: [],
-        discipline: ['mytag', 'mytag1'],
+        discipline: [tags[1].name, tags[2].name],
         'resource-type': [],
         creator: { id: '', name: '' },
         updatedAt: items[4].updatedAt,
