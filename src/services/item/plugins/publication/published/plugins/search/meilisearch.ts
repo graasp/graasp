@@ -139,9 +139,11 @@ export class MeiliSearchWrapper {
     targetIndex: AllowedIndices = ACTIVE_INDEX,
   ) {
     try {
-      const documents: IndexItem[] = [];
+      let documents: IndexItem[] = [];
       for (const { itemPath } of manyItemPublished) {
-        documents.concat(await this.meilisearchRepository.getIndexedTree(dbConnection, itemPath));
+        documents = documents.concat(
+          await this.meilisearchRepository.getIndexedTree(dbConnection, itemPath),
+        );
       }
       const index = await this.getIndex(targetIndex);
       const indexingTask = await index.addDocuments(documents);
