@@ -65,7 +65,8 @@
         "mhutchie.git-graph",
         "firsttris.vscode-jest-runner",
         "Orta.vscode-jest",
-        "Gruntfuggly.todo-tree"
+        "Gruntfuggly.todo-tree",
+        "streetsidesoftware.code-spell-checker"
       ]
     }
   }

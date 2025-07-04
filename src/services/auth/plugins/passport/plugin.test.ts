@@ -3,21 +3,28 @@ import { StatusCodes } from 'http-status-codes';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';
 
-import type { FastifyInstance, PassportUser } from 'fastify';
+import { type FastifyInstance, type PassportUser, fastify } from 'fastify';
+import fp from 'fastify-plugin';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
+import { coreApp } from '../../../../app';
 import {
   APPS_JWT_SECRET,
   EMAIL_CHANGE_JWT_SECRET,
   JWT_SECRET,
   PASSWORD_RESET_JWT_SECRET,
 } from '../../../../config/secrets';
-import { resolveDependency } from '../../../../di/utils';
+import { registerDependencies } from '../../../../di/container';
+import { resetDependencies, resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { ItemRaw, MemberRaw } from '../../../../drizzle/types';
+import { databasePlugin } from '../../../../plugins/database';
+import { metaPlugin } from '../../../../plugins/meta';
+import { openapiPlugin } from '../../../../plugins/swagger';
+import { schemaRegisterPlugin } from '../../../../plugins/typebox';
+import ajvFormats from '../../../../schemas/ajvFormats';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../../item/test/fixtures/items';
@@ -68,7 +75,36 @@ describe('Passport Plugin', () => {
   let preHandler: jest.Mock;
 
   beforeAll(async () => {
-    ({ app } = await build());
+    resetDependencies();
+    app = fastify({
+      disableRequestLogging: true,
+      logger: {
+        transport: {
+          target: 'pino-pretty',
+        },
+        level: 'info',
+      },
+      ajv: {
+        customOptions: {
+          coerceTypes: 'array',
+          discriminator: true,
+          allowUnionTypes: true,
+        },
+        plugins: [ajvFormats],
+      },
+    });
+    await app.register(fp(openapiPlugin));
+    await app.register(fp(schemaRegisterPlugin));
+
+    // db should be registered before the dependencies.
+    await app.register(fp(databasePlugin));
+
+    // register some dependencies manually
+    registerDependencies(app.log);
+
+    await app.register(fp(metaPlugin));
+    // register the core app
+    app.register(fp(coreApp));
 
     handler = jest.fn();
     preHandler = jest.fn();
