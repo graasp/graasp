@@ -1,4 +1,4 @@
-import { and, count, eq, exists, isNull, sql } from 'drizzle-orm';
+import { and, count, eq, isNull, sql } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
 import { type IndexItem, ItemVisibilityType } from '@graasp/sdk';
@@ -72,7 +72,7 @@ export class MeilisearchRepository {
         })
         .from(tagsTable)
         .leftJoin(itemTagsTable, eq(tagsTable.id, itemTagsTable.tagId))
-        .where(exists(db.select().from(tree).where(eq(tree.id, itemTagsTable.itemId))))
+        .innerJoin(tree, eq(tree.id, itemTagsTable.itemId))
         .groupBy(itemTagsTable.itemId),
     );
 
@@ -84,7 +84,7 @@ export class MeilisearchRepository {
           count: count(itemLikesTable.itemId).as('count'),
         })
         .from(itemLikesTable)
-        .where(exists(db.select().from(tree).where(eq(tree.id, itemLikesTable.itemId))))
+        .innerJoin(tree, eq(tree.id, itemLikesTable.itemId))
         .groupBy(itemLikesTable.itemId),
     );
 
