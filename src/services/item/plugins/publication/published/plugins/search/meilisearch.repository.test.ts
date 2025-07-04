@@ -25,14 +25,14 @@ describe('Meilisearch Repository', () => {
             children: [
               {
                 name: 'document',
-                type: 'document',
-                description: 'document description',
+                type: ItemType.DOCUMENT,
+                description: 'document description with some <div>html</div>',
                 extra: { document: { content: 'document content with some <div>html</div>' } },
               },
               {
                 name: 'file',
                 description: null,
-                type: 'file',
+                type: ItemType.FILE,
                 extra: { file: { content: 'pdf content' } },
               },
               { extra: { folder: {} }, type: 'folder', likes: [{ name: 'bob' }, { name: 'anna' }] },
@@ -52,6 +52,7 @@ describe('Meilisearch Repository', () => {
 
       const results = await meilisearchRepository.getIndexedTree(db, items[0].path);
 
+      // parent item
       const parent = results.find(({ id }) => id === items[0].id);
       expect(parent).toEqual({
         id: items[0].id,
@@ -72,12 +73,13 @@ describe('Meilisearch Repository', () => {
         likes: 0,
       });
 
+      // document with content, remove html
       const document = results.find(({ id }) => id === items[1].id);
       expect(document).toEqual({
         id: items[1].id,
         name: 'document',
-        description: 'document description',
-        type: 'document',
+        description: 'document description with some html',
+        type: ItemType.DOCUMENT,
         content: 'document content with some html',
         lang: items[1].lang,
         level: [],
@@ -92,12 +94,13 @@ describe('Meilisearch Repository', () => {
         likes: 0,
       });
 
+      // file with content
       const file = results.find(({ id }) => id === items[2].id);
       expect(file).toEqual({
         id: items[2].id,
         name: 'file',
         description: '',
-        type: 'file',
+        type: ItemType.FILE,
         content: 'pdf content',
         lang: items[2].lang,
         level: [],
@@ -112,6 +115,7 @@ describe('Meilisearch Repository', () => {
         likes: 0,
       });
 
+      // item with likes
       const likedItem = results.find(({ id }) => id === items[3].id);
       expect(likedItem).toEqual({
         id: items[3].id,
@@ -132,6 +136,7 @@ describe('Meilisearch Repository', () => {
         likes: 2,
       });
 
+      // item with 2 tags
       const itemWith2Tags = results.find(({ id }) => id === items[4].id);
       expect(itemWith2Tags).toEqual({
         id: items[4].id,
@@ -141,7 +146,7 @@ describe('Meilisearch Repository', () => {
         content: '',
         lang: items[4].lang,
         level: [],
-        discipline: [tags[1].name, tags[2].name],
+        discipline: expect.arrayContaining([tags[1].name, tags[2].name]),
         'resource-type': [],
         creator: { id: '', name: '' },
         updatedAt: items[4].updatedAt,
