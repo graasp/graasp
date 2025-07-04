@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { DBConnection } from '../../drizzle/db';
 import { adminsTable } from '../../drizzle/schema';
@@ -9,14 +9,14 @@ export type AdminUserUpdateData = typeof adminsTable.$inferInsert;
 export class AdminRepository {
   async get(dbConnection: DBConnection, adminId: string): Promise<AdminUser | undefined> {
     const adminUser = await dbConnection.query.adminsTable.findFirst({
-      where: eq(adminsTable.id, adminId),
+      where: eq(adminsTable.githubId, adminId),
     });
     return adminUser;
   }
 
-  async isAdmin(dbConnection: DBConnection, userName: string): Promise<boolean> {
+  async isAdmin(dbConnection: DBConnection, githubId: string): Promise<boolean> {
     const admin = await dbConnection.query.adminsTable.findFirst({
-      where: eq(adminsTable.userName, userName),
+      where: eq(adminsTable.githubId, githubId),
     });
     if (admin) {
       return true;
@@ -26,13 +26,12 @@ export class AdminRepository {
 
   async update(
     dbConnection: DBConnection,
-    userName: string,
-    data: { id: string },
+    data: { githubId: string; githubName: string },
   ): Promise<AdminUser> {
     const admin = await dbConnection
       .update(adminsTable)
-      .set({ id: data.id })
-      .where(eq(adminsTable.userName, userName))
+      .set({ githubName: data.githubName, lastAuthenticatedAt: sql`now()` })
+      .where(eq(adminsTable.githubId, data.githubId))
       .returning();
     if (!admin || !admin[0]) {
       throw new Error('Could not update admin info');

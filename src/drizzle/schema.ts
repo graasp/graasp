@@ -83,14 +83,14 @@ export const itemValidationStatusEnum = pgEnum('item_validation_status', [
   'pending-manual',
 ]);
 
-export const adminsTable = pgTable('admins', {
-  // the userName is the primary key since we want to allow admins based on their github username
-  userName: varchar('user_name', { length: 39 }).primaryKey().notNull().unique(),
-  id: varchar({ length: 15 }),
-  lastAuthenticatedAt: timestamp('last_authenticated_at', { withTimezone: true, mode: 'string' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => sql.raw('DEFAULT')),
+export const adminsTable = pgTable('admin', {
+  githubId: varchar('github_id', { length: 15 }).primaryKey().unique().notNull(),
+  githubName: varchar('github_name', { length: 39 }).notNull().unique(),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+  lastAuthenticatedAt: timestamp('last_authenticated_at', {
+    withTimezone: true,
+    mode: 'string',
+  }),
 });
 
 export const categoriesTable = pgTable(

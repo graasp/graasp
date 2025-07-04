@@ -19,7 +19,7 @@ import { AdminRepository, AdminUser } from './admin.repository';
 
 // module augmentation so the types are right when getting the admin user
 // this interface can be used in place of the FastifyRequest in request handlers to get correct typing when inside the admin plugin.
-// we use this manual approache to not pollute the global type system with type augmentation.
+// we use this manual approach to not pollute the global type system with type augmentation.
 interface AdminRequest extends FastifyRequest {
   admin?: AdminUser;
 }
@@ -27,14 +27,19 @@ interface AdminRequest extends FastifyRequest {
 // name of the passport strategy
 const GITHUB_OAUTH_STRATEGY = 'github-admin';
 
-// Common error definions for this module
+// Common error definiens for this module
 const NotAnAuthorizedAdmin = createError(
   'GAERR001',
   'User is not an authorized admin',
   StatusCodes.UNAUTHORIZED,
 );
-const MissingGithubUsername = createError(
+const MissingGithubId = createError(
   'GAERR002',
+  'Response from Github is missing key `id`',
+  StatusCodes.BAD_REQUEST,
+);
+const MissingGithubUsername = createError(
+  'GAERR003',
   'Response from Github is missing key `username`',
   StatusCodes.BAD_REQUEST,
 );
@@ -68,15 +73,18 @@ export default async (fastify: FastifyInstance) => {
         callbackURL: `${PUBLIC_URL.origin}/admin/auth/github/callback`,
       },
       async (accessToken: string, refreshToken: string, profile: GitHubProfile, done) => {
-        const { username } = profile;
+        const { username, id: githubId } = profile;
+        if (!githubId) {
+          throw new MissingGithubId();
+        }
         if (!username) {
           throw new MissingGithubUsername();
         }
         // only allow users that are present in the admin table by their username
-        if (await adminRepository.isAdmin(db, username)) {
+        if (await adminRepository.isAdmin(db, githubId)) {
           console.debug('user is an allowed admin');
           // update info stored in the table
-          await adminRepository.update(db, username, { id: profile.id });
+          await adminRepository.update(db, { githubId, githubName: username });
           // You can add admin checks here
           return done(null, profile);
         }
@@ -121,44 +129,40 @@ export default async (fastify: FastifyInstance) => {
   );
 
   // login page when user is not authenticated
-  fastify.get('/admin/login', async (_request: AdminRequest, reply) => {
+  fastify.get('/admin/login', async (_request, reply) => {
     reply.type('text/html').send('<a href="/admin/auth/github">Login with GitHub</a>');
   });
 
-  // this redirects all unauthenticated requests to the login
-  // only /admin/login and /admin/auth/github should be let through to prevent redirection loops
-  fastify.addHook('preHandler', (request: AdminRequest, reply, done) => {
-    const url = request.raw.url || '';
-    if (
-      url.startsWith('/admin') &&
-      !url.startsWith('/admin/login') &&
-      !url.startsWith('/admin/auth/github') &&
-      !request.isAuthenticated()
-    ) {
-      reply.redirect('/admin/login');
-    } else {
-      done();
-    }
-  });
+  // create a scope where if the user is not authenticated they get redirected to the login page
+  fastify.register(async (authenticatedAdmin) => {
+    // this redirects all unauthenticated requests to the login
+    authenticatedAdmin.addHook('preHandler', (request: AdminRequest, reply, done) => {
+      if (!request.isAuthenticated()) {
+        reply.redirect('/admin/login');
+      } else {
+        done();
+      }
+    });
 
-  // return the admin home, for the moment it is a bit bare
-  fastify.get('/admin', async (request: AdminRequest, reply) => {
-    request.log.info(request.admin);
-    reply.type('text/html').send(
-      `Hello, ${request.admin?.userName || 'admin'}!
+    // return the admin home, for the moment it is a bit bare
+    authenticatedAdmin.get('/admin', async (request: AdminRequest, reply) => {
+      request.log.info(request.admin);
+      reply.type('text/html').send(
+        `Hello, ${request.admin?.githubName || 'admin'}!
         <a href="/admin/logout">Logout</a><br/>
         <a href="/admin/queues/ui">Queue Dashboard</a>
         `,
-    );
-  });
+      );
+    });
 
-  fastify.get('/admin/logout', async (request: AdminRequest, reply) => {
-    await request.logout();
-    reply.redirect('/admin/login');
-  });
+    authenticatedAdmin.get('/admin/logout', async (request: AdminRequest, reply) => {
+      await request.logout();
+      reply.redirect('/admin/login');
+    });
 
-  // register the queue Dashboard for BullMQ
-  // warning inside this module it registers the path as absolute,
-  // so we should beware that when moving the registration we should also update the absolute paths
-  fastify.register(queueDashboardPlugin);
+    // register the queue Dashboard for BullMQ
+    // warning inside this module it registers the path as absolute,
+    // so we should beware that when moving the registration we should also update the absolute paths
+    authenticatedAdmin.register(queueDashboardPlugin);
+  });
 };

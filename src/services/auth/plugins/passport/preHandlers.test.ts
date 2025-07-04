@@ -14,7 +14,7 @@ import { isAuthenticated, matchOne } from './preHandlers';
 // all top level routes do not use passport.
 // move this test closer to matchone
 // other prehandlers are tested in plugin.test.ts
-describe.skip('matchOne', () => {
+describe('matchOne', () => {
   let app: FastifyInstance;
   let member: MinimalMember;
   let handler: jest.Mock;
