@@ -5,6 +5,7 @@ import { createError } from '@fastify/error';
 import { Authenticator } from '@fastify/passport';
 import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyRequest } from 'fastify';
+import fp from 'fastify-plugin';
 
 import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from '../../config/admin';
 import { PROD } from '../../config/env';
@@ -99,12 +100,13 @@ export default async (fastify: FastifyInstance) => {
     return user.id;
   });
   adminPassport.registerUserDeserializer(
-    async (uuid: string, req: AdminRequest): Promise<{ admin: AdminUser | undefined }> => {
-      req.log.info('uuuid', uuid);
+    async (uuid: string, req: AdminRequest): Promise<AdminUser | undefined> => {
+      req.log.info({ uuid }, 'Deserialize admin github id');
 
       const admin = await adminRepository.get(db, uuid);
+      req.log.info({ admin }, 'Resolved github id to admin user');
 
-      return { admin };
+      return admin;
     },
   );
 
@@ -134,35 +136,37 @@ export default async (fastify: FastifyInstance) => {
   });
 
   // create a scope where if the user is not authenticated they get redirected to the login page
-  fastify.register(async (authenticatedAdmin) => {
-    // this redirects all unauthenticated requests to the login
-    authenticatedAdmin.addHook('preHandler', (request: AdminRequest, reply, done) => {
-      if (!request.isAuthenticated()) {
-        reply.redirect('/admin/login');
-      } else {
-        done();
-      }
-    });
+  fastify.register(
+    fp(async (authenticatedAdmin) => {
+      // this redirects all unauthenticated requests to the login
+      authenticatedAdmin.addHook('preHandler', (request: AdminRequest, reply, done) => {
+        if (!request.isAuthenticated()) {
+          reply.redirect('/admin/login');
+        } else {
+          done();
+        }
+      });
 
-    // return the admin home, for the moment it is a bit bare
-    authenticatedAdmin.get('/admin', async (request: AdminRequest, reply) => {
-      request.log.info(request.admin);
-      reply.type('text/html').send(
-        `Hello, ${request.admin?.githubName || 'admin'}!
+      // return the admin home, for the moment it is a bit bare
+      authenticatedAdmin.get('/admin', async (request: AdminRequest, reply) => {
+        request.log.info(request.admin);
+        reply.type('text/html').send(
+          `Hello, ${request.admin?.githubName || 'admin'}!
         <a href="/admin/logout">Logout</a><br/>
         <a href="/admin/queues/ui">Queue Dashboard</a>
         `,
-      );
-    });
+        );
+      });
 
-    authenticatedAdmin.get('/admin/logout', async (request: AdminRequest, reply) => {
-      await request.logout();
-      reply.redirect('/admin/login');
-    });
+      authenticatedAdmin.get('/admin/logout', async (request: AdminRequest, reply) => {
+        await request.logout();
+        reply.redirect('/admin/login');
+      });
 
-    // register the queue Dashboard for BullMQ
-    // warning inside this module it registers the path as absolute,
-    // so we should beware that when moving the registration we should also update the absolute paths
-    authenticatedAdmin.register(queueDashboardPlugin);
-  });
+      // register the queue Dashboard for BullMQ
+      // warning inside this module it registers the path as absolute,
+      // so we should beware that when moving the registration we should also update the absolute paths
+      authenticatedAdmin.register(queueDashboardPlugin);
+    }),
+  );
 };

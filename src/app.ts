@@ -2,6 +2,7 @@
 // should not be reimported in any other files !
 import 'reflect-metadata';
 
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
@@ -35,29 +36,30 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   await instance.register(adminPlugin);
 
-  // need to be defined before member and item for auth check
-
   await instance.register(maintenancePlugin);
 
   // scope the next registration to the core functionalities
-  await instance.register(async (instance) => {
-    await instance.register(fp(passportPlugin));
-
-    await instance.register(fp(authPlugin));
-
-    // core API modules
-    await instance
-      // the websockets plugin must be registered before but in the same scope as the apis
-      // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
-      .register(fp(websocketsPlugin), {
-        prefix: '/ws',
-        redis: {
-          channelName: 'graasp-realtime-updates',
-          connection: REDIS_CONNECTION,
-        },
-      })
-      .register(fp(MemberServiceApi))
-      .register(fp(ItemServiceApi))
-      .register(tagPlugin);
-  });
+  await instance.register(coreApp);
 }
+
+export const coreApp: FastifyPluginAsyncTypebox = async (instance) => {
+  // need to be defined before member and item for auth check
+  await instance.register(fp(passportPlugin));
+
+  await instance.register(fp(authPlugin));
+
+  // core API modules
+  await instance
+    // the websockets plugin must be registered before but in the same scope as the apis
+    // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
+    .register(fp(websocketsPlugin), {
+      prefix: '/ws',
+      redis: {
+        channelName: 'graasp-realtime-updates',
+        connection: REDIS_CONNECTION,
+      },
+    })
+    .register(fp(MemberServiceApi))
+    .register(fp(ItemServiceApi))
+    .register(tagPlugin);
+};
