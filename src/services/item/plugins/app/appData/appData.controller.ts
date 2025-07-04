@@ -1,6 +1,7 @@
+import { fastifyMultipart } from '@fastify/multipart';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { AppDataVisibility, HttpMethod } from '@graasp/sdk';
+import { AppDataVisibility } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
@@ -19,6 +20,8 @@ import { checkItemIsApp } from '../ws/utils';
 import { create, deleteOne, download, getForOne, updateOne, upload } from './appData.schemas';
 import { AppDataService } from './appData.service';
 
+export const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
+
 const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const appDataService = resolveDependency(AppDataService);
 
@@ -30,7 +33,18 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     // register websockets
     const { websockets } = fastify;
     const authorizedItemService = resolveDependency(AuthorizedItemService);
-    // const appDataService = resolveDependency(AppDataService);
+
+    fastify.register(fastifyMultipart, {
+      limits: {
+        // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
+        // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
+        fields: 5, // Max number of non-file fields (Default: Infinity).
+        // allow some fields for app data and app setting
+        fileSize: DEFAULT_MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+        files: 1, // Max number of file fields (Default: Infinity).
+        // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
+      },
+    });
 
     websockets.register(appDataTopic, async (req) => {
       const { channel: id, member } = req;
@@ -107,12 +121,13 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     );
 
-    fastify.route({
-      method: HttpMethod.Post,
-      url: '/app-data/upload',
-      schema: upload,
-      preHandler: guestAuthenticateAppsJWT,
-      handler: async (request) => {
+    fastify.post(
+      '/app-data/upload',
+      {
+        schema: upload,
+        preHandler: guestAuthenticateAppsJWT,
+      },
+      async (request) => {
         const { user } = request;
         const member = asDefined(user?.account);
         const app = asDefined(user?.app);
@@ -129,7 +144,7 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
             return addMemberInAppData(await appDataService.upload(tx, member, file, app.item));
           })
           .catch((e) => {
-            console.error(e);
+            fastify.log.error(e);
 
             // TODO rollback uploaded file
 
@@ -139,7 +154,7 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
             throw new UploadFileUnexpectedError(e);
           });
       },
-    });
+    );
 
     fastify.get(
       '/app-data/:id/download',
@@ -156,6 +171,7 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const app = asDefined(user?.app);
 
         return appDataService.download(db, member, { item: app.item, appDataId }).catch((e) => {
+          fastify.log.error(e);
           if (e.code) {
             throw e;
           }

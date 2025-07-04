@@ -3,9 +3,10 @@ import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { AppDataVisibility, FileItemProperties, ItemType, UUID } from '@graasp/sdk';
+import { FileItemProperties, ItemType, UUID } from '@graasp/sdk';
 
 import { AppDataRaw, ItemRaw } from '../../../../../drizzle/types';
+import { BaseLogger } from '../../../../../logger';
 import { AuthenticatedUser } from '../../../../../types';
 import FileService from '../../../../file/file.service';
 import { NotAppDataFile } from './errors';
@@ -13,19 +14,21 @@ import { AppDataFileService } from './interfaces/appDataFileService';
 
 export class AppDataFileServiceAdapter implements AppDataFileService {
   private readonly fileService: FileService;
+  private readonly log: BaseLogger;
+
+  constructor(fileService: FileService, log: BaseLogger) {
+    this.fileService = fileService;
+    this.log = log;
+  }
 
   buildFilePath(itemId: UUID, appDataId: UUID) {
     return path.join('apps', 'app-data', itemId, appDataId);
   }
 
-  constructor(fileService: FileService) {
-    this.fileService = fileService;
-  }
-
   async upload(account: AuthenticatedUser, file: MultipartFile, item: ItemRaw) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
-    const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename
+    const filepath = this.buildFilePath(item.id, appDataId);
 
     const fileProperties = await this.fileService
       .upload(account, {
@@ -37,13 +40,13 @@ export class AppDataFileServiceAdapter implements AppDataFileService {
         return { path: filepath, name: filename, mimetype };
       })
       .catch((e) => {
+        this.log.error(e);
         throw e;
       });
 
     return {
       id: appDataId,
       type: ItemType.FILE,
-      visibility: AppDataVisibility.Member,
       data: {
         [ItemType.FILE]: fileProperties,
       },
@@ -52,7 +55,6 @@ export class AppDataFileServiceAdapter implements AppDataFileService {
 
   async download(appData: AppDataRaw) {
     // check app data is a file
-    // const appData = await this.appDataService.get(account, repositories, item, appDataId);
     const fileProp = appData.data[ItemType.FILE] as FileItemProperties;
     if (!fileProp) {
       throw new NotAppDataFile(appData);
@@ -81,7 +83,7 @@ export class AppDataFileServiceAdapter implements AppDataFileService {
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not
       // this is especially useful for the files uploaded before the migration to the new plugin
-      console.error(err);
+      this.log.error(err);
     }
   }
 }

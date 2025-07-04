@@ -13,6 +13,7 @@ import {
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
+import { BaseLogger } from '../../../../../logger';
 import type { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import FileService from '../../../../file/file.service';
@@ -65,10 +66,11 @@ export class AppDataService {
     authorizedItemService: AuthorizedItemService,
     appDataRepository: AppDataRepository,
     fileService: FileService,
+    log: BaseLogger,
   ) {
     this.authorizedItemService = authorizedItemService;
     this.appDataRepository = appDataRepository;
-    this.appDataFileService = new AppDataFileServiceAdapter(fileService);
+    this.appDataFileService = new AppDataFileServiceAdapter(fileService, log);
   }
 
   async post(

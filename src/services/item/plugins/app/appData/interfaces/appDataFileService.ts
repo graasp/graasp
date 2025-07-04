@@ -8,7 +8,7 @@ export interface AppDataFileService {
     account: AuthenticatedUser,
     file: MultipartFile,
     item: ItemRaw,
-  ): Promise<{ id: string; data: { [key: string]: unknown }; visibility: string; type: string }>;
+  ): Promise<{ id: string; data: { [key: string]: unknown }; type: string }>;
 
   download(appData: AppDataRaw): Promise<string>;
 
