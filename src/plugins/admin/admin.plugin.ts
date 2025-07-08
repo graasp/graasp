@@ -5,7 +5,6 @@ import { createError } from '@fastify/error';
 import { Authenticator } from '@fastify/passport';
 import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyRequest } from 'fastify';
-import fp from 'fastify-plugin';
 
 import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from '../../config/admin';
 import { PROD } from '../../config/env';
@@ -83,10 +82,9 @@ export default async (fastify: FastifyInstance) => {
         }
         // only allow users that are present in the admin table by their username
         if (await adminRepository.isAdmin(db, githubId)) {
-          console.debug('user is an allowed admin');
+          console.debug(`user ${username}(${githubId}) is an allowed admin`);
           // update info stored in the table
           await adminRepository.update(db, { githubId, githubName: username });
-          // You can add admin checks here
           return done(null, profile);
         }
         console.debug('user is not an allowed admin', profile);
@@ -113,6 +111,7 @@ export default async (fastify: FastifyInstance) => {
   fastify.get(
     '/admin/auth/github',
     {
+      // this is the route that is used to start the login process for github. It relies on the strategy to do the work, the handler is empty.
       preValidation: adminPassport.authenticate(GITHUB_OAUTH_STRATEGY, { scope: ['user:email'] }),
     },
     async (_request: AdminRequest, _reply) => {},
@@ -136,37 +135,37 @@ export default async (fastify: FastifyInstance) => {
   });
 
   // create a scope where if the user is not authenticated they get redirected to the login page
-  fastify.register(
-    fp(async (authenticatedAdmin) => {
-      // this redirects all unauthenticated requests to the login
-      authenticatedAdmin.addHook('preHandler', (request: AdminRequest, reply, done) => {
-        if (!request.isAuthenticated()) {
-          reply.redirect('/admin/login');
-        } else {
-          done();
-        }
-      });
+  fastify.register(async (authenticatedAdmin) => {
+    // this redirects all unauthenticated requests to the login
+    authenticatedAdmin.addHook('preHandler', (request: AdminRequest, reply, done) => {
+      if (!request.isAuthenticated()) {
+        reply.redirect('/admin/login');
+      } else {
+        done();
+      }
+    });
 
-      // return the admin home, for the moment it is a bit bare
-      authenticatedAdmin.get('/admin', async (request: AdminRequest, reply) => {
-        request.log.info(request.admin);
-        reply.type('text/html').send(
-          `Hello, ${request.admin?.githubName || 'admin'}!
+    // return the admin home, for the moment it is a bit bare
+    authenticatedAdmin.get('/admin', async (request: AdminRequest, reply) => {
+      request.log.info(request.admin);
+      reply.type('text/html').send(
+        `Hello, ${request.admin?.githubName || 'admin'}!
         <a href="/admin/logout">Logout</a><br/>
         <a href="/admin/queues/ui">Queue Dashboard</a>
         `,
-        );
-      });
+      );
+    });
 
-      authenticatedAdmin.get('/admin/logout', async (request: AdminRequest, reply) => {
-        await request.logout();
-        reply.redirect('/admin/login');
-      });
+    authenticatedAdmin.get('/admin/logout', async (request: AdminRequest, reply) => {
+      await request.logout();
+      // remove session cookie
+      request.session.delete();
+      reply.redirect('/admin/login');
+    });
 
-      // register the queue Dashboard for BullMQ
-      // warning inside this module it registers the path as absolute,
-      // so we should beware that when moving the registration we should also update the absolute paths
-      authenticatedAdmin.register(queueDashboardPlugin);
-    }),
-  );
+    // register the queue Dashboard for BullMQ
+    // warning inside this module it registers the path as absolute,
+    // so we should beware that when moving the registration we should also update the absolute paths
+    authenticatedAdmin.register(queueDashboardPlugin);
+  });
 };
