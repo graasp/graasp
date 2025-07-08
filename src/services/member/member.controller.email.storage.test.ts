@@ -263,6 +263,32 @@ describe('Member Storage Controller', () => {
       // mock send email only sent once, before
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
     });
+    // regression test for issue #1939
+    it('Change email and store as lowercase', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+
+      // specifically use an uppercase email
+      const newEmail = faker.internet.email().toUpperCase();
+      const token = jwtSign(
+        { uuid: actor.id, oldEmail: actor.email, newEmail },
+        EMAIL_CHANGE_JWT_SECRET,
+      );
+
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: '/members/current/email/change',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      // Email changed
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(rawMember?.email).toEqual(newEmail.toLowerCase());
+    });
   });
   describe('GET /members/current/storage/files', () => {
     it('returns ok', async () => {
