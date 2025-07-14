@@ -23,11 +23,11 @@ import {
   matchOne,
 } from '../passport';
 import {
-  getMembersCurrentPasswordStatus,
-  passwordLogin,
-  patchResetPasswordRequest,
-  postResetPasswordRequest,
-  setPassword,
+  createPassword,
+  getOwnPasswordStatus,
+  requestPasswordResetLink,
+  resetPassword,
+  signInWithPassword,
   updatePassword,
 } from './password.schemas';
 import { MemberPasswordService } from './password.service';
@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/login-password',
     {
-      schema: passwordLogin,
+      schema: signInWithPassword,
       preHandler: [
         captchaPreHandler(RecaptchaAction.SignInWithPassword, {
           shouldFail: false,
@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/password',
     {
-      schema: setPassword,
+      schema: createPassword,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, body: { password } }, reply) => {
@@ -129,7 +129,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/password/reset',
     {
-      schema: postResetPasswordRequest,
+      schema: requestPasswordResetLink,
       preHandler: captchaPreHandler(RecaptchaAction.ResetPassword),
     },
     async (request, reply) => {
@@ -170,7 +170,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.patch(
     '/password/reset',
     {
-      schema: patchResetPasswordRequest,
+      schema: resetPassword,
       preHandler: authenticatePasswordReset,
     },
     async (request, reply) => {
@@ -206,7 +206,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/members/current/password/status',
     {
-      schema: getMembersCurrentPasswordStatus,
+      schema: getOwnPasswordStatus,
       preHandler: [isAuthenticated],
     },
     async ({ user }) => {

@@ -6,7 +6,8 @@ import type { FastifySchema } from 'fastify';
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 
-export const passwordLogin = {
+export const signInWithPassword = {
+  operationId: 'signInWithPassword',
   tags: ['password'],
   summary: 'Log in with email and password',
   description:
@@ -20,9 +21,17 @@ export const passwordLogin = {
   querystring: customType.StrictObject({
     lang: Type.Optional(Type.String()),
   }),
+  response: {
+    [StatusCodes.OK]: customType.StrictObject({
+      resource: Type.String({ description: 'Redirection link' }),
+    }),
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
 } as const satisfies FastifySchema;
 
-export const setPassword = {
+export const createPassword = {
+  operationId: 'createPassword',
   tags: ['password'],
   summary: 'Set a password for the authenticated member',
   description:
@@ -38,6 +47,7 @@ export const setPassword = {
 } as const satisfies FastifySchema;
 
 export const updatePassword = {
+  operationId: 'updatePassword',
   tags: ['password'],
   summary: 'Update the password of the authenticated member',
   description:
@@ -55,7 +65,8 @@ export const updatePassword = {
   },
 } as const satisfies FastifySchema;
 
-export const postResetPasswordRequest = {
+export const requestPasswordResetLink = {
+  operationId: 'requestPasswordResetLink',
   tags: ['password'],
   summary: 'Create a reset password request',
   description:
@@ -70,7 +81,8 @@ export const postResetPasswordRequest = {
   },
 } as const satisfies FastifySchema;
 
-export const patchResetPasswordRequest = {
+export const resetPassword = {
+  operationId: 'resetPassword',
   tags: ['password'],
   summary: 'Confirm the reset password request',
   description:
@@ -85,7 +97,8 @@ export const patchResetPasswordRequest = {
   },
 } as const satisfies FastifySchema;
 
-export const getMembersCurrentPasswordStatus = {
+export const getOwnPasswordStatus = {
+  operationId: 'getOwnPasswordStatus',
   tags: ['password', 'current'],
   summary: 'Get the current password status of the authenticated member',
   description: 'Return whether the authenticated member has a password defined.',
