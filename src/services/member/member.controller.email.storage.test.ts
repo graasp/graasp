@@ -142,7 +142,7 @@ describe('Member Storage Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       await waitForExpect(() => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
-        expect(mockSendEmail.mock.calls[0][1]).toBe(email);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(email.toLowerCase());
         expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
       });
 
