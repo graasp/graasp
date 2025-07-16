@@ -141,11 +141,12 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, body: { email } }, reply) => {
+      const newEmail = email.toLowerCase();
       const account = asDefined(user?.account);
       assertIsMember(account);
 
       // check if there is a member that already has the new email
-      if (await memberService.getByEmail(db, email)) {
+      if (await memberService.getByEmail(db, newEmail)) {
         // Email adress is already taken, throw an error
         throw new EmailAlreadyTaken();
       }
@@ -154,8 +155,8 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = await memberService.get(db, account.id);
       assertIsDefined(member);
       const memberInfo = member.toMemberInfo();
-      const token = memberService.createEmailChangeRequest(memberInfo, email);
-      memberService.sendEmailChangeRequest(email, token, memberInfo.lang);
+      const token = memberService.createEmailChangeRequest(memberInfo, newEmail);
+      memberService.sendEmailChangeRequest(newEmail, token, memberInfo.lang);
 
       reply.status(StatusCodes.NO_CONTENT);
     },

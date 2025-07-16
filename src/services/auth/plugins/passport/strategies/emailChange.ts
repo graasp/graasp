@@ -21,8 +21,16 @@ export default (
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: EMAIL_CHANGE_JWT_SECRET,
       },
-      async ({ uuid, oldEmail, newEmail }, done: StrictVerifiedCallback) => {
+      async (
+        {
+          uuid,
+          oldEmail,
+          newEmail: newEmailRaw,
+        }: { uuid: string; oldEmail: string; newEmail: string },
+        done: StrictVerifiedCallback,
+      ) => {
         try {
+          const newEmail = newEmailRaw.toLowerCase();
           // We shouldn't fetch the member by email, so we keep track of the actual member.
           const member = await memberRepository.get(db, uuid);
           // We check the email, so we invalidate the token if the email has changed in the meantime.
