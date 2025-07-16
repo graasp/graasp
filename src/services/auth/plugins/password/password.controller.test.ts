@@ -24,7 +24,7 @@ import { REDIS_CONNECTION } from '../../../../config/redis';
 import { PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES } from '../../../../config/secrets';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { memberPasswordsTable } from '../../../../drizzle/schema';
+import { accountsTable, memberPasswordsTable } from '../../../../drizzle/schema';
 import type { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -94,8 +94,14 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(response.headers['set-cookie']).toBeDefined();
+
+      // last authenticated at should be updated
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, actor.email),
+      });
+      expect(m?.lastAuthenticatedAt).not.toEqual(actor.lastAuthenticatedAt);
     });
 
     it('Sign In successfully with weak password', async () => {
@@ -114,8 +120,7 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign In successfully with captcha score = 0', async () => {
@@ -139,8 +144,7 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign In successfully with captcha score < 0.5', async () => {
@@ -164,8 +168,7 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {

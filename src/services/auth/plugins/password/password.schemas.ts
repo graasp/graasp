@@ -22,9 +22,7 @@ export const signInWithPassword = {
     lang: Type.Optional(Type.String()),
   }),
   response: {
-    [StatusCodes.OK]: customType.StrictObject({
-      resource: Type.String({ description: 'Redirection link' }),
-    }),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },
