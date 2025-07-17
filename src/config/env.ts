@@ -39,6 +39,5 @@ export const getEnv = once(() => {
 });
 
 export const PROD = NODE_ENV === Environment.production;
-export const STAGING = NODE_ENV === Environment.staging;
 export const DEV = NODE_ENV === Environment.development;
 export const TEST = NODE_ENV === Environment.test;

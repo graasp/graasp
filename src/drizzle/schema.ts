@@ -83,6 +83,16 @@ export const itemValidationStatusEnum = pgEnum('item_validation_status', [
   'pending-manual',
 ]);
 
+export const adminsTable = pgTable('admin', {
+  githubId: varchar('github_id', { length: 15 }).primaryKey().unique().notNull(),
+  githubName: varchar('github_name', { length: 39 }).notNull().unique(),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+  lastAuthenticatedAt: timestamp('last_authenticated_at', {
+    withTimezone: true,
+    mode: 'string',
+  }),
+});
+
 export const categoriesTable = pgTable(
   'category',
   {

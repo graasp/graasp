@@ -1,6 +1,6 @@
 {
-  "id": "a13269a4-7c7d-4a55-943d-296d433921d7",
-  "prevId": "c1e8fb8d-9d2c-4afd-922a-a71a5dbac747",
+  "id": "0c841877-4d4c-454e-a637-2a26584f4db8",
+  "prevId": "a13269a4-7c7d-4a55-943d-296d433921d7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -357,6 +357,59 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.admin": {
+      "name": "admin",
+      "schema": "",
+      "columns": {
+        "github_id": {
+          "name": "github_id",
+          "type": "varchar(15)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "github_name": {
+          "name": "github_name",
+          "type": "varchar(39)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_authenticated_at": {
+          "name": "last_authenticated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "admin_github_id_unique": {
+          "name": "admin_github_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "github_id"
+          ]
+        },
+        "admin_github_name_unique": {
+          "name": "admin_github_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "github_name"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

@@ -124,7 +124,8 @@ CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 # Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key and https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
 # TLDR: npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
 SECURE_SESSION_SECRET_KEY=<secret-key>
-
+# session key for the admin dashboard, (can use the same command as for SECURE_SESSION_SECRET_KEY)
+ADMIN_SESSION_SECRET_KEY=<secret-key>
 
 ### Auth
 
@@ -218,6 +219,11 @@ OPENAI_API_KEY=<openai-api-key>
 
 # GEOLOCATION API - this can be empty if you don't use geolocation
 GEOLOCATION_API_KEY=
+
+# Github Oauth provider secrets
+# refer to the documentation in /src/plugins/admin on how to configure the OAuth app in GitHub
+GITHUB_CLIENT_ID=<your-github-oauth-app-client-id>
+GITHUB_CLIENT_SECRET=<your-github-oauth-app-secret>
 ```
 
 ### Umami
