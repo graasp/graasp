@@ -16,7 +16,9 @@ export const ItemFactory = (
 ): ItemWithCreator => {
   const { parentPath, ...item } = itemArgs;
   const id = v4();
-  const path = `${parentPath ? `${parentPath}.` : ''}${buildPathFromIds(id)}`;
+
+  const parentPrefix = parentPath ? `${parentPath}.` : '';
+  const path = `${parentPrefix}${buildPathFromIds(id)}`;
 
   return {
     type: ItemType.FOLDER,
