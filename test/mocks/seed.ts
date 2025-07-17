@@ -69,6 +69,7 @@ import type {
   ItemLikeRaw,
   ItemLoginSchemaRaw,
   ItemMembershipRaw,
+  ItemPublishedRaw,
   ItemRaw,
   ItemTagRaw,
   ItemValidationGroupRaw,
@@ -607,8 +608,9 @@ async function createItemPublisheds(items: (SeedItem & { id: string; path: strin
     return acc;
   }, []);
 
+  let publishedItemsData: ItemPublishedRaw[] = [];
   if (published.length) {
-    await db.insert(publishedItemsTable).values(published).returning();
+    publishedItemsData = await db.insert(publishedItemsTable).values(published).returning();
   }
 
   // get all item validation group names
@@ -667,6 +669,7 @@ async function createItemPublisheds(items: (SeedItem & { id: string; path: strin
   return {
     itemValidations: [],
     itemValidationGroups: [],
+    publishedItemsData,
   };
 }
 
@@ -817,6 +820,7 @@ export async function seedFromJson(data: DataType = {}) {
     itemValidationGroups: ItemValidationGroupRaw[];
     itemValidations: ItemValidationRaw[];
     shortLinks: ShortLinkRaw[];
+    publishedItems?: ItemPublishedRaw[];
   } = {
     actions: [],
     items: [],
@@ -903,10 +907,14 @@ export async function seedFromJson(data: DataType = {}) {
   result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
 
   // save published
-  const { itemValidationGroups: ivg, itemValidations: iv } =
-    await createItemPublisheds(processedItems);
+  const {
+    itemValidationGroups: ivg,
+    itemValidations: iv,
+    publishedItemsData,
+  } = await createItemPublisheds(processedItems);
   result.itemValidations = iv;
   result.itemValidationGroups = ivg;
+  result.publishedItems = publishedItemsData;
 
   // save tags without throwing on conflict, return everything
   if (data.tags?.length) {

@@ -9,14 +9,7 @@ import {
 } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import {
-  type IndexItem,
-  ItemType,
-  ItemVisibilityType,
-  MimeTypes,
-  TagCategory,
-  type TagCategoryType,
-} from '@graasp/sdk';
+import { type IndexItem, ItemType } from '@graasp/sdk';
 
 import { REDIS_CONNECTION } from '../../../../../../../config/redis';
 import { type DBConnection } from '../../../../../../../drizzle/db';
@@ -25,19 +18,12 @@ import type {
   ItemPublishedWithItemWithCreator,
   ItemRaw,
   ItemTypeEnumKeys,
-  ItemWithCreator,
-  TagRaw,
 } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
 import { Queues } from '../../../../../../../workers/config';
 import { isItemType } from '../../../../../discrimination';
 import { ItemRepository } from '../../../../../item.repository';
-import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
-import { ItemVisibilityRepository } from '../../../../itemVisibility/itemVisibility.repository';
-import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
-import { stripHtml } from '../../../validation/utils';
-import { ItemPublishedNotFound } from '../../errors';
-import { ItemPublishedRepository } from '../../itemPublished.repository';
+import { MeilisearchRepository } from './meilisearch.repository';
 import type { Hit } from './search.schemas';
 
 export const ACTIVE_INDEX = 'itemIndex';
@@ -54,28 +40,19 @@ export class MeiliSearchWrapper {
   private readonly meilisearchClient: MeiliSearch;
   private readonly indexDictionary: Record<string, Index<IndexItem>> = {};
   private readonly logger: BaseLogger;
-  private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly itemRepository: ItemRepository;
-  private readonly itemPublishedRepository: ItemPublishedRepository;
-  private readonly itemTagRepository: ItemTagRepository;
-  private readonly itemLikeRepository: ItemLikeRepository;
+  private readonly meilisearchRepository: MeilisearchRepository;
   private readonly searchQueue: Queue;
 
   constructor(
     meilisearchConnection: MeiliSearch,
-    itemVisibilityRepository: ItemVisibilityRepository,
     itemRepository: ItemRepository,
-    itemPublishedRepository: ItemPublishedRepository,
-    itemTagRepository: ItemTagRepository,
-    itemLikeRepository: ItemLikeRepository,
+    meilisearchRepository: MeilisearchRepository,
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchConnection;
     this.itemRepository = itemRepository;
-    this.itemVisibilityRepository = itemVisibilityRepository;
-    this.itemPublishedRepository = itemPublishedRepository;
-    this.itemTagRepository = itemTagRepository;
-    this.itemLikeRepository = itemLikeRepository;
+    this.meilisearchRepository = meilisearchRepository;
     this.logger = logger;
 
     this.searchQueue = new Queue(Queues.SearchIndex.queueName, {
@@ -84,11 +61,6 @@ export class MeiliSearchWrapper {
 
     // create index in the background if it doesn't exist
     this.getIndex();
-  }
-
-  private removeHTMLTags(s?: string | null): string {
-    if (!s) return '';
-    return stripHtml(s);
   }
 
   private async logTaskCompletion(task: EnqueuedTask, itemName: string) {
@@ -153,57 +125,6 @@ export class MeiliSearchWrapper {
     return searchResult;
   }
 
-  private async parseItem(
-    item: ItemWithCreator,
-    tags: TagRaw[],
-    isPublishedRoot: boolean,
-    isHidden: boolean,
-    likesCount: number,
-  ): Promise<Omit<IndexItem, 'publicationUpdatedAt'>> {
-    const tagsByCategory = Object.fromEntries(
-      Object.values(TagCategory).map((c) => {
-        return [c, tags.filter(({ category }) => category === c).map(({ name }) => name)];
-      }),
-    ) as { [key in TagCategoryType]: string[] };
-
-    return {
-      id: item.id,
-      name: item.name,
-      creator: {
-        id: item.creator?.id ?? '',
-        name: item.creator?.name ?? '',
-      },
-      description: this.removeHTMLTags(item.description),
-      type: item.type,
-      content: await this.getContent(item),
-      isPublishedRoot: isPublishedRoot,
-      isHidden: isHidden,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      lang: item.lang,
-      likes: likesCount,
-      ...tagsByCategory,
-    };
-  }
-
-  // Retrieve searchable part inside an item
-  private async getContent(item: ItemRaw) {
-    switch (true) {
-      case isItemType(item, ItemType.DOCUMENT):
-        return this.removeHTMLTags(item.extra.document.content); // better way to type extra safely?
-      case isItemType(item, ItemType.FILE): {
-        const localExtra = item.extra.file;
-        if (localExtra.mimetype === MimeTypes.PDF) {
-          return localExtra.content;
-        } else {
-          return '';
-        }
-      }
-      default:
-        return '';
-    }
-  }
-
   async indexOne(
     dbConnection: DBConnection,
     itemPublished: ItemPublishedWithItemWithCreator,
@@ -216,77 +137,21 @@ export class MeiliSearchWrapper {
     dbConnection: DBConnection,
     manyItemPublished: ItemPublishedWithItemWithCreator[],
     targetIndex: AllowedIndices = ACTIVE_INDEX,
-  ): Promise<EnqueuedTask> {
+  ) {
     try {
-      // Get all descendants from the input items
-      let itemsToIndex: {
-        isHidden: boolean;
-        publicationUpdatedAt: string;
-        item: ItemWithCreator;
-      }[] = [];
-      for (const p of manyItemPublished) {
-        const isHidden = await this.itemVisibilityRepository.getManyBelowAndSelf(
-          dbConnection,
-          p.item,
-          [ItemVisibilityType.Hidden],
-        );
-
-        itemsToIndex.push({
-          publicationUpdatedAt: p.updatedAt,
-          item: p.item,
-          isHidden: Boolean(isHidden.find((ih) => p.item.path.includes(ih.item.path))),
-        });
-
-        const descendants = isItemType(p.item, ItemType.FOLDER)
-          ? await this.itemRepository.getDescendants(dbConnection, p.item)
-          : [];
-
-        itemsToIndex = itemsToIndex.concat(
-          descendants.map((d) => ({
-            item: d,
-            publicationUpdatedAt: p.updatedAt,
-            isHidden: Boolean(isHidden.find((ih) => d.path.includes(ih.item.path))),
-          })),
+      let documents: IndexItem[] = [];
+      for (const { itemPath } of manyItemPublished) {
+        documents = documents.concat(
+          await this.meilisearchRepository.getIndexedTree(dbConnection, itemPath),
         );
       }
-
-      // Parse all the item into indexable items (containing published state, visibility, content...)
-
-      const documents: IndexItem[] = await Promise.all(
-        itemsToIndex.map(async ({ isHidden, publicationUpdatedAt, item: i }) => {
-          // Publishing and categories are implicit/inherited on children, we are forced to query the database to check these
-          // More efficient way to get this info? Do the db query for all item at once ?
-          // This part might slow the app when we index many items or an item with many children.
-          const publishedRoot = await this.itemPublishedRepository.getForItem(dbConnection, i.path);
-          if (!publishedRoot) {
-            throw new ItemPublishedNotFound(i.id);
-          }
-
-          const tags = await this.itemTagRepository.getByItemId(dbConnection, i.id);
-
-          const likesCount = await this.itemLikeRepository.getCountByItemId(dbConnection, i.id);
-
-          return {
-            ...(await this.parseItem(
-              i,
-              tags,
-              publishedRoot.item.id === i.id,
-              isHidden,
-              likesCount,
-            )),
-            publicationUpdatedAt,
-          };
-        }),
-      );
-      // Index the resulting documents
-
       const index = await this.getIndex(targetIndex);
       const indexingTask = await index.addDocuments(documents);
       this.logTaskCompletion(
         indexingTask,
-        itemsToIndex
+        documents
           .slice(0, 30) // Avoid logging too many items
-          .map((i) => i.item.name)
+          .map((i) => i.name)
           .join(';'),
       );
 
