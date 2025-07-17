@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { compare } from 'bcrypt';
+import { compareAsc } from 'date-fns';
 import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { Redis } from 'ioredis';
@@ -95,13 +96,16 @@ describe('Password', () => {
         },
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-      expect(response.headers['set-cookie']).toBeDefined();
+      expect(response.headers['set-cookie']).toContain('session=');
 
       // last authenticated at should be updated
       const m = await db.query.accountsTable.findFirst({
         where: eq(accountsTable.email, actor.email!),
       });
-      expect(m?.lastAuthenticatedAt).not.toEqual(actor.lastAuthenticatedAt);
+      assertIsDefined(m);
+      expect(
+        compareAsc(new Date(m.lastAuthenticatedAt!), new Date(actor.lastAuthenticatedAt!)),
+      ).toEqual(1);
     });
 
     it('Sign In successfully with weak password', async () => {
@@ -368,7 +372,7 @@ describe('Password', () => {
 
           // Try to login with the new password
           const responseLogin = await login(app, member.email, newPassword);
-          expect(responseLogin.statusCode).toBe(StatusCodes.SEE_OTHER);
+          expect(responseLogin.statusCode).toBe(StatusCodes.NO_CONTENT);
 
           // Try to login with the old password
           const responseLoginOld = await login(app, member.email, password);
@@ -392,7 +396,7 @@ describe('Password', () => {
           assertIsDefined(anotherMember);
           assertIsMemberForTest(anotherMember);
           const responseLoginDifferent = await login(app, anotherMember.email, anotherPassword);
-          expect(responseLoginDifferent.statusCode).toBe(StatusCodes.SEE_OTHER);
+          expect(responseLoginDifferent.statusCode).toBe(StatusCodes.NO_CONTENT);
 
           // token should be single use
           const responseSecondReset = await app.inject({
@@ -732,16 +736,8 @@ describe('Password', () => {
         url: '/login-password',
         payload: { email: actor.email, password: pwd, captcha: MOCK_CAPTCHA },
       });
-
-      expect(loginResponse.statusCode).toEqual(StatusCodes.SEE_OTHER);
-
-      const response = await app.inject({
-        method: HttpMethod.Get,
-        url: loginResponse.json().resource,
-      });
-
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.headers['set-cookie']).toContain('session=');
+      expect(loginResponse.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(loginResponse.headers['set-cookie']).toContain('session=');
     });
   });
 });

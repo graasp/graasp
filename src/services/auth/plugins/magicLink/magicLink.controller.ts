@@ -18,7 +18,7 @@ import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha/captcha';
 import { PassportStrategy } from '../passport/strategies';
 import type { PassportInfo } from '../passport/types';
-import { auth, login, register } from './magicLink.schemas';
+import { auth, login, register, signOut } from './magicLink.schemas';
 import { MagicLinkService } from './magicLink.service';
 
 const ERROR_SEARCH_PARAM = 'error';
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   // logout
-  fastify.get('/logout', async (request, reply) => {
+  fastify.post('/logout', { schema: signOut }, async (request, reply) => {
     // logout user, so subsequent calls can not make use of the current user.
     request.logout();
     // remove session so the cookie is removed by the browser
