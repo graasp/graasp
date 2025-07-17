@@ -99,7 +99,7 @@ describe('Password', () => {
 
       // last authenticated at should be updated
       const m = await db.query.accountsTable.findFirst({
-        where: eq(accountsTable.email, actor.email),
+        where: eq(accountsTable.email, actor.email!),
       });
       expect(m?.lastAuthenticatedAt).not.toEqual(actor.lastAuthenticatedAt);
     });

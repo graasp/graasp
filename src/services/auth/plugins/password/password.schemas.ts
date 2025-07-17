@@ -16,7 +16,6 @@ export const signInWithPassword = {
     email: Type.String({ format: 'email' }),
     password: Type.String(),
     captcha: Type.String(),
-    url: Type.Optional(Type.String({ format: 'uri' })),
   }),
   querystring: customType.StrictObject({
     lang: Type.Optional(Type.String()),
