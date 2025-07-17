@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.6.0](https://github.com/graasp/graasp/compare/v2.5.1...v2.6.0) (2025-07-17)
+
+
+### Features
+
+* create build index worker ([#1928](https://github.com/graasp/graasp/issues/1928)) ([547611c](https://github.com/graasp/graasp/commit/547611cd9b20c6e1c9817e92f05445a344ac6787))
+* optimize query for indexing items ([#1937](https://github.com/graasp/graasp/issues/1937)) ([a3a93a3](https://github.com/graasp/graasp/commit/a3a93a35c09b4714fe97544c70c388d987e68157))
+
+
+### Bug Fixes
+
+* lowercase the email when requesting an email change ([#1940](https://github.com/graasp/graasp/issues/1940)) ([dcef3c0](https://github.com/graasp/graasp/commit/dcef3c0bfcb7f56331da3f79a2dcde0e1a33cfd9))
+* remove legacy push action to graasp-deploy ([#1933](https://github.com/graasp/graasp/issues/1933)) ([a0db759](https://github.com/graasp/graasp/commit/a0db75960946ecb71d7bc9b5290f6369d3501400))
+* remove unused configuration and decoration for the file service ([#1934](https://github.com/graasp/graasp/issues/1934)) ([882b469](https://github.com/graasp/graasp/commit/882b469e381a87311e8a793fd7293ca67d64aba5))
+* upgrade openai models ([#1918](https://github.com/graasp/graasp/issues/1918)) ([2937830](https://github.com/graasp/graasp/commit/2937830ffab8b56c9e5b1968842ad6cf922dc20c))
+
 ## [2.5.1](https://github.com/graasp/graasp/compare/v2.5.0...v2.5.1) (2025-06-30)
 
 
