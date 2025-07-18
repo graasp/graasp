@@ -9,25 +9,21 @@ import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { PageItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { PageRepository } from './page.repository';
 
 @singleton()
 export class PageItemService {
   private readonly itemService: ItemService;
-  private readonly itemRepository: ItemRepository;
   private readonly pageRepository: PageRepository;
   private readonly authorizedItemService: AuthorizedItemService;
 
   constructor(
     itemService: ItemService,
     pageRepository: PageRepository,
-    itemRepository: ItemRepository,
     authorizedItemService: AuthorizedItemService,
   ) {
     this.itemService = itemService;
-    this.itemRepository = itemRepository;
     this.pageRepository = pageRepository;
     this.authorizedItemService = authorizedItemService;
   }
@@ -52,7 +48,7 @@ export class PageItemService {
     // create page properties row
     await this.pageRepository.createContent(dbConnection, newItem.id);
 
-    return newItem;
+    return newItem as PageItem;
   }
 
   async updateContent(
