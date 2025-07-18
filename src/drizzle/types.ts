@@ -107,6 +107,7 @@ export const ItemType = {
   SHORTCUT: 'shortcut',
   H5P: 'h5p',
   ETHERPAD: 'etherpad',
+  PAGE: 'page',
 } as const;
 export type ItemTypeUnion = UnionOfConst<typeof ItemType>;
 
