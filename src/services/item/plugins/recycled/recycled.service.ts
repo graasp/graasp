@@ -53,14 +53,7 @@ export class RecycledBinService {
     ids: ItemRaw['id'][],
   ) {
     // validate permission on parents
-    // TODO: optimize!!!!!!
-    for (const id of ids) {
-      await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-        permission: PermissionLevel.Admin,
-        accountId: member.id,
-        itemId: id,
-      });
-    }
+    await this.recycledItemRepository.assertAdminAccessForItemIds(dbConnection, member.id, ids);
 
     const items = await this.recycledItemRepository.getDeletedTreesById(dbConnection, ids);
 

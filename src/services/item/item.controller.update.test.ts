@@ -1168,6 +1168,87 @@ describe('Item routes tests', () => {
           // ws should not fail
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
+      it('Delete recycled items', async () => {
+        const {
+          actor,
+          items: [item1, item2],
+          itemMemberships: [im1, im2],
+        } = await seedFromJson({
+          items: [
+            {
+              isDeleted: true,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+            {
+              isDeleted: true,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const items = [item1, item2];
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: '/items',
+          query: { id: items.map(({ id }) => id) },
+        });
+        expect(response.json()).toEqual(items.map(({ id }) => id));
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        await waitForExpect(async () => {
+          const remaining = await db.query.itemsRawTable.findMany({
+            where: inArray(itemsRawTable.id, [item1.id, item2.id]),
+          });
+          expect(remaining).toHaveLength(0);
+          const memberships = await db.query.itemMembershipsTable.findMany({
+            where: inArray(itemMembershipsTable.id, [im1.id, im2.id]),
+          });
+          expect(memberships).toHaveLength(0);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+      it('Do not delete items with write permission', async () => {
+        const {
+          actor,
+          items: [item1, item2],
+        } = await seedFromJson({
+          items: [
+            {
+              isDeleted: true,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+            {
+              isDeleted: true,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const items = [item1, item2];
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: '/items',
+          query: { id: items.map(({ id }) => id) },
+        });
+        expect(response.json()).toEqual(items.map(({ id }) => id));
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        await new Promise((done) => {
+          // wait one second for the operation to apply, because this is already the start state
+          setTimeout(async () => {
+            const remaining = await db.query.itemsRawTable.findMany({
+              where: inArray(itemsRawTable.id, [item1.id, item2.id]),
+            });
+            expect(remaining).toHaveLength(2);
+
+            done(true);
+          }, 1000);
+        });
+      });
       it('Bad request if one id is invalid', async () => {
         const { actor, items } = await seedFromJson({
           items: [
