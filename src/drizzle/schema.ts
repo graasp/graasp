@@ -1106,6 +1106,7 @@ export const pageTable = pgTable(
       .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
+    index('IDX_page_item_id').using('btree', table.itemId.asc().nullsLast().op('uuid_ops')),
     foreignKey({
       columns: [table.itemId],
       foreignColumns: [itemsRawTable.id],
