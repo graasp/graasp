@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { compare } from 'bcrypt';
+import { compareAsc } from 'date-fns';
 import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { Redis } from 'ioredis';
@@ -24,7 +25,7 @@ import { REDIS_CONNECTION } from '../../../../config/redis';
 import { PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES } from '../../../../config/secrets';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { memberPasswordsTable } from '../../../../drizzle/schema';
+import { accountsTable, memberPasswordsTable } from '../../../../drizzle/schema';
 import type { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -94,8 +95,17 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(response.headers['set-cookie']).toContain('session=');
+
+      // last authenticated at should be updated
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, actor.email!),
+      });
+      assertIsDefined(m);
+      expect(
+        compareAsc(new Date(m.lastAuthenticatedAt!), new Date(actor.lastAuthenticatedAt!)),
+      ).toEqual(1);
     });
 
     it('Sign In successfully with weak password', async () => {
@@ -114,8 +124,7 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign In successfully with captcha score = 0', async () => {
@@ -139,8 +148,7 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign In successfully with captcha score < 0.5', async () => {
@@ -164,8 +172,7 @@ describe('Password', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('resource');
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
@@ -365,7 +372,7 @@ describe('Password', () => {
 
           // Try to login with the new password
           const responseLogin = await login(app, member.email, newPassword);
-          expect(responseLogin.statusCode).toBe(StatusCodes.SEE_OTHER);
+          expect(responseLogin.statusCode).toBe(StatusCodes.NO_CONTENT);
 
           // Try to login with the old password
           const responseLoginOld = await login(app, member.email, password);
@@ -389,7 +396,7 @@ describe('Password', () => {
           assertIsDefined(anotherMember);
           assertIsMemberForTest(anotherMember);
           const responseLoginDifferent = await login(app, anotherMember.email, anotherPassword);
-          expect(responseLoginDifferent.statusCode).toBe(StatusCodes.SEE_OTHER);
+          expect(responseLoginDifferent.statusCode).toBe(StatusCodes.NO_CONTENT);
 
           // token should be single use
           const responseSecondReset = await app.inject({
@@ -729,16 +736,8 @@ describe('Password', () => {
         url: '/login-password',
         payload: { email: actor.email, password: pwd, captcha: MOCK_CAPTCHA },
       });
-
-      expect(loginResponse.statusCode).toEqual(StatusCodes.SEE_OTHER);
-
-      const response = await app.inject({
-        method: HttpMethod.Get,
-        url: loginResponse.json().resource,
-      });
-
-      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.headers['set-cookie']).toContain('session=');
+      expect(loginResponse.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(loginResponse.headers['set-cookie']).toContain('session=');
     });
   });
 });

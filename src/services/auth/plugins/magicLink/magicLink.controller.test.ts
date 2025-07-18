@@ -220,10 +220,10 @@ describe('Auth routes tests', () => {
     });
   });
 
-  describe('GET /logout', () => {
+  describe('POST /logout', () => {
     it('Authenticate successfully', async () => {
       const response = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: '/logout',
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);

@@ -4,19 +4,16 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
-import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES } from '../../../../config/secrets';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import type { ActionInsertDTO } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
-import { PUBLIC_URL } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
 import { View } from '../../../item/plugins/action/itemAction.schemas';
+import { MemberService } from '../../../member/member.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha/captcha';
 import {
-  SHORT_TOKEN_PARAM,
   authenticatePassword,
   authenticatePasswordReset,
   isAuthenticated,
@@ -32,11 +29,9 @@ import {
 } from './password.schemas';
 import { MemberPasswordService } from './password.service';
 
-const REDIRECTION_URL_PARAM = 'url';
-const AUTHENTICATION_FALLBACK_ROUTE = '/auth';
-
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const actionService = resolveDependency(ActionService);
+  const memberService = resolveDependency(MemberService);
   const memberPasswordService = resolveDependency(MemberPasswordService);
 
   // login with password
@@ -52,23 +47,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       ],
     },
     async (request, reply) => {
-      const { body, log, user } = request;
-      const { url } = body;
+      const { user } = request;
+      request.logIn(user, { session: true });
+
+      // update last authenticated date
       const member = asDefined(user?.account);
+      await db.transaction(async (tx) => {
+        await memberService.refreshLastAuthenticatedAt(tx, member.id);
+      });
 
-      const token = memberPasswordService.generateToken(
-        { sub: member.id },
-        `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-      );
-      const redirectionUrl = getRedirectionLink(log, url);
-
-      const target = new URL(AUTHENTICATION_FALLBACK_ROUTE, PUBLIC_URL);
-      target.searchParams.set(SHORT_TOKEN_PARAM, token);
-      target.searchParams.set(REDIRECTION_URL_PARAM, redirectionUrl);
-      const resource = target.toString();
-
-      reply.status(StatusCodes.SEE_OTHER);
-      return { resource };
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 

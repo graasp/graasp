@@ -63,3 +63,15 @@ export const auth = {
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
+
+export const signOut = {
+  operationId: 'signOut',
+  tags: ['authentication'],
+  summary: 'Log out',
+  description: 'Log out from current session',
+
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
