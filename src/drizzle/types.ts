@@ -107,6 +107,7 @@ export const ItemType = {
   SHORTCUT: 'shortcut',
   H5P: 'h5p',
   ETHERPAD: 'etherpad',
+  PAGE: 'page',
 } as const;
 export type ItemTypeUnion = UnionOfConst<typeof ItemType>;
 
@@ -119,6 +120,7 @@ export type ItemExtraMap = {
   [ItemType.LINK]: LinkItemExtra;
   [ItemType.FILE]: FileItemExtra;
   [ItemType.SHORTCUT]: ShortcutItemExtra;
+  [ItemType.PAGE]: never;
 };
 
 export type ItemSettingsMap = {
@@ -130,6 +132,7 @@ export type ItemSettingsMap = {
   [ItemType.LINK]: LinkItemSettings;
   [ItemType.FILE]: ItemSettings;
   [ItemType.SHORTCUT]: ItemSettings;
+  [ItemType.PAGE]: ItemSettings;
 };
 
 // local type alias to simplify the notation
