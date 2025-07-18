@@ -27,6 +27,7 @@ import graaspFavoritePlugin from './plugins/itemBookmark/itemBookmark.controller
 import graaspItemFlags from './plugins/itemFlag/itemFlag.controller';
 import graaspItemLikes from './plugins/itemLike/itemLike.controller';
 import graaspItemVisibility from './plugins/itemVisibility/itemVisibility.controller';
+import { pageItemPlugin } from './plugins/page/page.controller';
 import graaspItemPublicationState from './plugins/publication/publicationState/publication.controller';
 import graaspItemPublish from './plugins/publication/published/itemPublished.controller';
 import graaspValidationPlugin from './plugins/publication/validation/itemValidation.controller';
@@ -117,6 +118,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(itemGeolocationPlugin);
 
         fastify.register(graaspItemTagPlugin);
+
+        fastify.register(pageItemPlugin);
 
         fastify.register(itemController);
       });

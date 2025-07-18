@@ -1090,3 +1090,26 @@ export const maintenanceTable = pgTable('maintenance', {
   startAt: timestamp('start_at', { withTimezone: true, mode: 'string' }).notNull(),
   endAt: timestamp('end_at', { withTimezone: true, mode: 'string' }).notNull(),
 });
+
+export const pageTable = pgTable(
+  'page',
+  {
+    id: uuid().primaryKey().defaultRandom().notNull(),
+    itemId: uuid('item_id').notNull(),
+    content: jsonb().$type<string>().default('{}').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.itemId],
+      foreignColumns: [itemsRawTable.id],
+      name: 'FK_page_item_id',
+    }).onDelete('cascade'),
+  ],
+);
