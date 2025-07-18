@@ -12,8 +12,8 @@ function BaseAccountFactory<T extends AccountTypeOptions>(
 ) {
   return {
     ...AccountFactory(baseAccount),
-    createdAt: faker.date.anytime().toISOString(),
-    updatedAt: faker.date.anytime().toISOString(),
+    createdAt: faker.date.past().toISOString(),
+    updatedAt: faker.date.past().toISOString(),
     ...baseAccount,
   };
 }
@@ -30,9 +30,9 @@ export const MemberFactory = (m: Partial<AccountRaw> = {}): MemberRaw => {
     ]),
     enableSaveActions: m.enableSaveActions ?? true,
     lastAuthenticatedAt: isValidated
-      ? (m.lastAuthenticatedAt ?? faker.date.anytime().toISOString())
+      ? (m.lastAuthenticatedAt ?? faker.date.past().toISOString())
       : null,
-    userAgreementsDate: m.userAgreementsDate ?? faker.date.anytime().toISOString(),
+    userAgreementsDate: m.userAgreementsDate ?? faker.date.past().toISOString(),
     ...baseAccount,
     ...m,
     email:
