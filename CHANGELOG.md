@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.7.0](https://github.com/graasp/graasp/compare/v2.6.0...v2.7.0) (2025-07-18)
+
+
+### Features
+
+* **password:** set login session in password login ([#1944](https://github.com/graasp/graasp/issues/1944)) ([b07c850](https://github.com/graasp/graasp/commit/b07c850d6dce7b99e0ab193b4f5b39c70b2a3018))
+
+
+### Bug Fixes
+
+* code smell with nested template string ([#1942](https://github.com/graasp/graasp/issues/1942)) ([2cb7732](https://github.com/graasp/graasp/commit/2cb77327c6431fc2e0a6a725c028cee3a8a1e3ed))
+
 ## [2.6.0](https://github.com/graasp/graasp/compare/v2.5.1...v2.6.0) (2025-07-17)
 
 
