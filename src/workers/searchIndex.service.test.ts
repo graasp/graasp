@@ -9,7 +9,10 @@ import { ItemFactory } from '../../test/factories/item.factory';
 import { db } from '../drizzle/db';
 import { ItemPublishedWithItemWithCreator } from '../drizzle/types';
 import { ItemPublishedRepository } from '../services/item/plugins/publication/published/itemPublished.repository';
-import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
+import {
+  ACTIVE_INDEX,
+  MeiliSearchWrapper,
+} from '../services/item/plugins/publication/published/plugins/search/meilisearch';
 import { SearchIndexService } from './searchIndex.service';
 
 const mockItemPublished = ({
@@ -30,6 +33,7 @@ const mockItemPublished = ({
 };
 
 const mockIndex = {
+  uid: ACTIVE_INDEX,
   addDocuments: jest.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
