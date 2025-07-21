@@ -4,10 +4,11 @@ import { fastify } from 'fastify';
 
 import registerAppPlugins from './app';
 import { DEV, NODE_ENV, PROD } from './config/env';
+import { HOST_LISTEN_ADDRESS, PORT } from './config/location';
 import { client } from './drizzle/db';
 import ajvFormats from './schemas/ajvFormats';
 import { initSentry } from './sentry';
-import { APP_VERSION, CORS_ORIGIN_REGEX, HOST_LISTEN_ADDRESS, PORT } from './utils/config';
+import { APP_VERSION, CORS_ORIGIN_REGEX } from './utils/config';
 import { GREETING } from './utils/constants';
 
 export const instance = fastify({

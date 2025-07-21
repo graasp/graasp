@@ -8,12 +8,12 @@ import { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from '../../config/admin';
 import { PROD } from '../../config/env';
+import { PUBLIC_URL } from '../../config/location';
 import {
   ADMIN_SESSION_EXPIRATION_IN_SECONDS,
   ADMIN_SESSION_SECRET_KEY,
 } from '../../config/secrets';
 import { db } from '../../drizzle/db';
-import { PUBLIC_URL } from '../../utils/config';
 import { queueDashboardPlugin } from '../../workers/dashboard.controller';
 import { AdminRepository, AdminUser } from './admin.repository';
 

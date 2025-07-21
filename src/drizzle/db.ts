@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { withReplicas } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 
-import { DB_CONNECTION_POOL_SIZE, DB_READ_REPLICA_CONNECTIONS } from '../utils/config';
+import { DB_CONNECTION_POOL_SIZE, DB_READ_REPLICA_CONNECTIONS } from '../config/db';
 import * as relations from './relations';
 import * as schema from './schema';
 

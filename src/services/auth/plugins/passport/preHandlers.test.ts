@@ -20,8 +20,6 @@ import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { isAuthenticated, matchOne } from './preHandlers';
 
-// TODO: this tests fails now because passport registration has been moved to inside the core registration and we can not register a route there,
-// all top level routes do not use passport.
 // move this test closer to matchOne
 // other preHandlers are tested in plugin.test.ts
 describe('matchOne', () => {
