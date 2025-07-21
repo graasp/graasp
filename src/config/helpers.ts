@@ -18,3 +18,13 @@ export function requiredEnvVar(name: string) {
   }
   return varValue;
 }
+
+export function toBoolean(value: string | undefined, options?: { default: boolean }) {
+  if (value == undefined) {
+    return options?.default ?? false;
+  }
+  if (value === 'true' || value === '1') {
+    return true;
+  }
+  return false;
+}

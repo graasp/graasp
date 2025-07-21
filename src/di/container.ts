@@ -5,7 +5,8 @@ import type { FastifyBaseLogger } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { MAILER_CONFIG_FROM_EMAIL, MAILER_CONNECTION } from '../config/mailer';
+import { DEV } from '../config/env';
+import { MAILER_CONFIG_FROM_EMAIL, MAILER_CONNECTION, MAILER_USE_SSL } from '../config/mailer';
 import { REDIS_CONNECTION } from '../config/redis';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/mailer.service';
@@ -103,6 +104,7 @@ export const registerDependencies = (log: FastifyBaseLogger) => {
     MailerService,
     new MailerService({
       connection: MAILER_CONNECTION,
+      useSSL: DEV ? false : MAILER_USE_SSL,
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     }),
   );

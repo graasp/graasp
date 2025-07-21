@@ -12,6 +12,7 @@ export interface Mail {
 
 export interface MailerOptions {
   connection: string;
+  useSSL: boolean;
   fromEmail: string;
 }
 
@@ -20,9 +21,9 @@ export class MailerService {
   private readonly fromEmail: string;
   private readonly transporter: Transporter;
 
-  constructor({ connection, fromEmail }: MailerOptions) {
+  constructor({ connection, useSSL, fromEmail }: MailerOptions) {
     this.fromEmail = fromEmail;
-    this.transporter = createTransport(connection);
+    this.transporter = createTransport(connection, { secure: useSSL });
   }
 
   /**
