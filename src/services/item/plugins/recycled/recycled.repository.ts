@@ -178,6 +178,7 @@ export class RecycledItemDataRepository {
     const imIds = im.map(({ itemId }) => itemId);
     const idsWithoutAccess = ids.filter((m) => !imIds.includes(m));
     if (idsWithoutAccess.length) {
+      // return first id lacking access
       throw new MemberCannotAdminItem(idsWithoutAccess[0]);
     }
   }
