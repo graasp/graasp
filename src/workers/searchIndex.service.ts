@@ -93,8 +93,9 @@ export class SearchIndexService {
       if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
         const task = await this.meilisearchClient.createIndex(ACTIVE_INDEX);
         await this.meilisearchClient.waitForTask(task.taskUid);
+      } else {
+        throw err;
       }
-      throw err;
     }
 
     this.logger.info('REBUILD INDEX: Starting index rebuild...');
@@ -194,9 +195,9 @@ export class SearchIndexService {
         await this.meilisearchClient.waitForTask(task.taskUid);
 
         return await this.meilisearchClient.getIndex(name);
+      } else {
+        throw err;
       }
-
-      throw err;
     }
   }
 
