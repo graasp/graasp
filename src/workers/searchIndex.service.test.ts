@@ -100,29 +100,6 @@ const meilisearch = new SearchIndexService(
 );
 
 describe('SearchIndexService', () => {
-  beforeEach(() => {
-    jest.spyOn(fakeClient, 'getIndex').mockResolvedValue(mockIndex);
-    jest.spyOn(fakeClient, 'index').mockReturnValue({
-      updateFaceting: jest.fn(async () => {
-        return { taskUid: '1' } as unknown as EnqueuedTask;
-      }),
-      updateSettings: jest.fn(() => {
-        return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
-      }),
-      waitForTask: jest.fn(() => {
-        return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
-      }),
-    } as never);
-    jest
-      .spyOn(fakeClient, 'swapIndexes')
-      .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
-    jest
-      .spyOn(fakeClient, 'waitForTask')
-      .mockResolvedValue({ status: TaskStatus.TASK_SUCCEEDED } as Task);
-
-    jest.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as never));
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
   });
