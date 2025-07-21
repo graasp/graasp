@@ -5,16 +5,17 @@ import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
 import { type Paginated, type Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { isDescendantOrSelf } from '../../../../drizzle/operations';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import {
   itemMembershipsTable,
   itemsRawTable,
   membersView,
   recycledItemDatasTable,
 } from '../../../../drizzle/schema';
-import type { ItemRaw } from '../../../../drizzle/types';
+import type { ItemRaw, MemberRaw } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import type { MinimalMember } from '../../../../types';
+import { MemberCannotAdminItem } from '../../../../utils/errors';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
 import type { FolderItem } from '../../discrimination';
 
@@ -147,5 +148,38 @@ export class RecycledItemDataRepository {
       .where(inArray(itemsRawTable.id, ids));
 
     return trees.map(({ descendants }) => descendants);
+  }
+
+  /**
+   * Returns whether the member has an admin access on all the items
+   * @param dbConnection database connection
+   * @param memberId id of member performing the task
+   * @param ids item ids
+   * @returns true if the member has access to all items
+   */
+  async assertAdminAccessForItemIds(
+    dbConnection: DBConnection,
+    memberId: MemberRaw['id'],
+    ids: ItemRaw['id'][],
+  ) {
+    const im = await dbConnection
+      .select({ itemId: itemsRawTable.id })
+      .from(itemsRawTable)
+      .innerJoin(
+        itemMembershipsTable,
+        and(
+          eq(itemMembershipsTable.accountId, memberId),
+          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
+          inArray(itemsRawTable.id, ids),
+          isAncestorOrSelf(itemMembershipsTable.itemPath, itemsRawTable.path),
+        ),
+      );
+
+    const imIds = im.map(({ itemId }) => itemId);
+    const idsWithoutAccess = ids.filter((m) => !imIds.includes(m));
+    if (idsWithoutAccess.length) {
+      // return first id lacking access
+      throw new MemberCannotAdminItem(idsWithoutAccess[0]);
+    }
   }
 }
