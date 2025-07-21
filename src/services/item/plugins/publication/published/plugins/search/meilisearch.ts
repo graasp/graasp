@@ -1,12 +1,6 @@
 import { Queue } from 'bullmq';
 import { SQL, count, eq } from 'drizzle-orm';
-import {
-  EnqueuedTask,
-  Index,
-  MeiliSearch,
-  MeiliSearchApiError,
-  type MultiSearchParams,
-} from 'meilisearch';
+import { EnqueuedTask, Index, MeiliSearch, type MultiSearchParams } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
 import { type IndexItem, ItemType } from '@graasp/sdk';
@@ -89,32 +83,29 @@ export class MeiliSearchWrapper {
       return this.indexDictionary[name];
     }
 
-    try {
-      const index = await this.meilisearchClient.getIndex(name);
+    const indexes = await this.meilisearchClient.getIndexes();
+    const index = indexes.results.find(({ uid }) => uid === name);
+    if (index) {
       this.indexDictionary[name] = index;
       return index;
-    } catch (err) {
-      if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
-        const task = await this.meilisearchClient.createIndex(name);
-        await this.meilisearchClient.waitForTask(task.taskUid);
+    } else {
+      const task = await this.meilisearchClient.createIndex(name);
+      await this.meilisearchClient.waitForTask(task.taskUid);
 
-        // If main index just got created, rebuild it in the background
-        if (name === ACTIVE_INDEX) {
-          this.logger.info('Search index just created, rebuilding index...');
+      // If main index just got created, rebuild it in the background
+      if (name === ACTIVE_INDEX) {
+        this.logger.info('Search index just created, rebuilding index...');
 
-          this.searchQueue.add(
-            Queues.SearchIndex.jobs.buildIndex,
-            {},
-            { deduplication: { id: Queues.SearchIndex.jobs.buildIndex } },
-          );
-        }
-
-        const index = await this.meilisearchClient.getIndex(name);
-        this.indexDictionary[name] = index;
-        return index;
+        this.searchQueue.add(
+          Queues.SearchIndex.jobs.buildIndex,
+          {},
+          { deduplication: { id: Queues.SearchIndex.jobs.buildIndex } },
+        );
       }
+      const index = await this.meilisearchClient.getIndex(name);
 
-      throw err;
+      this.indexDictionary[name] = index;
+      return index;
     }
   }
 

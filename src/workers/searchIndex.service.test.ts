@@ -1,12 +1,5 @@
 import { expect, jest } from '@jest/globals';
-import {
-  EnqueuedTask,
-  Index,
-  MeiliSearch,
-  MeiliSearchApiError,
-  Task,
-  TaskStatus,
-} from 'meilisearch';
+import { EnqueuedTask, Index, MeiliSearch, Task, TaskStatus } from 'meilisearch';
 import { v4 } from 'uuid';
 
 import { type IndexItem } from '@graasp/sdk';
@@ -16,10 +9,7 @@ import { ItemFactory } from '../../test/factories/item.factory';
 import { db } from '../drizzle/db';
 import { ItemPublishedWithItemWithCreator } from '../drizzle/types';
 import { ItemPublishedRepository } from '../services/item/plugins/publication/published/itemPublished.repository';
-import {
-  ACTIVE_INDEX,
-  MeiliSearchWrapper,
-} from '../services/item/plugins/publication/published/plugins/search/meilisearch';
+import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
 import { SearchIndexService } from './searchIndex.service';
 
 const mockItemPublished = ({
@@ -106,6 +96,8 @@ describe('SearchIndexService', () => {
 
   describe('builds index', () => {
     it('index all items', async () => {
+      jest.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [mockIndex], total: 1 });
+      jest.spyOn(fakeClient, 'createIndex').mockResolvedValue({ taskUid: 1 } as EnqueuedTask);
       const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
         return mockItemPublished({ id: index.toString(), path: index.toString() });
       });
@@ -133,21 +125,7 @@ describe('SearchIndexService', () => {
     it('index all items when active index does not exist', async () => {
       // throw error when getting active index
       // should create index and start indexing
-      jest.spyOn(fakeClient, 'getIndex').mockImplementation(async (index) => {
-        if (index === ACTIVE_INDEX) {
-          throw new MeiliSearchApiError(
-            {
-              code: 'index_not_found',
-              link: 'link',
-              message: 'message',
-              type: 'type',
-            },
-            404,
-          );
-        } else {
-          return mockIndex;
-        }
-      });
+      jest.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [], total: 0 });
       jest.spyOn(fakeClient, 'createIndex').mockResolvedValue({ taskUid: 1 } as EnqueuedTask);
 
       const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {

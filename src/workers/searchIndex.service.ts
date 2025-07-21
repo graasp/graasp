@@ -87,15 +87,12 @@ export class SearchIndexService {
   // to be executed by async job runner when desired
   async buildIndex({ pageSize = 10 }: { pageSize?: number } = {}) {
     // Ensure that there is an active index before rebuilding
-    try {
-      await this.meilisearchClient.getIndex(ACTIVE_INDEX);
-    } catch (err) {
-      if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
-        const task = await this.meilisearchClient.createIndex(ACTIVE_INDEX);
-        await this.meilisearchClient.waitForTask(task.taskUid);
-      } else {
-        throw err;
-      }
+
+    const indexes = await this.meilisearchClient.getIndexes();
+    const index = indexes.results.find(({ uid }) => uid === ACTIVE_INDEX);
+    if (!index) {
+      const task = await this.meilisearchClient.createIndex(ACTIVE_INDEX);
+      await this.meilisearchClient.waitForTask(task.taskUid);
     }
 
     this.logger.info('REBUILD INDEX: Starting index rebuild...');
