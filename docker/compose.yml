@@ -29,6 +29,8 @@ x-core_environment: &core_environment
 
   # the Mailer config is set by the "mailer" service below
   MAILER_CONNECTION: smtp://docker:docker@mailer:1025
+  # disable ssl for emails, in production the default is to enable SSL.
+  MAILER_USE_SSL: false
   # Redis
   REDIS_CONNECTION: redis://redis:6379
 
