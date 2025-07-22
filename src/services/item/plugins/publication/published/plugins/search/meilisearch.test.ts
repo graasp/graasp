@@ -18,7 +18,7 @@ import { type DBConnection } from '../../../../../../../drizzle/db';
 import type { ItemPublishedWithItemWithCreator } from '../../../../../../../drizzle/types';
 import { ItemRepository } from '../../../../../item.repository';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { MeiliSearchWrapper } from './meilisearch';
+import { ACTIVE_INDEX, MeiliSearchWrapper } from './meilisearch';
 import { MeilisearchRepository } from './meilisearch.repository';
 
 jest.unmock('./meilisearch');
@@ -43,6 +43,7 @@ const mockItemPublished = ({
 const MOCK_DB = {} as DBConnection;
 
 const mockIndex = {
+  uid: ACTIVE_INDEX,
   addDocuments: jest.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
@@ -66,6 +67,7 @@ const fakeClient = new MeiliSearch({
   httpClient: () => Promise.resolve(),
 });
 
+jest.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [mockIndex], total: 1 });
 jest.spyOn(fakeClient, 'getIndex').mockResolvedValue(mockIndex);
 jest.spyOn(fakeClient, 'index').mockReturnValue({
   updateFaceting: jest.fn(async () => {
