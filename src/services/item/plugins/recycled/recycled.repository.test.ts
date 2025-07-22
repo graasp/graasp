@@ -4,6 +4,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAdminItem } from '../../../../utils/errors';
+import { assertIsMemberForTest } from '../../../authentication';
 import { RecycledItemDataRepository } from './recycled.repository';
 
 const recycledRepository = new RecycledItemDataRepository();
@@ -78,6 +79,122 @@ describe('RecycledItemDataRepository', () => {
           items.map((i) => i.id),
         ),
       ).rejects.toBeInstanceOf(MemberCannotAdminItem);
+    });
+  });
+  describe('getOwnRecycledItems', () => {
+    it('return top most recycled items', async () => {
+      const {
+        items: [deletedParent, deletedParentChild],
+        actor,
+      } = await seedFromJson({
+        items: [
+          // should return top parent, but not the child
+          {
+            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            children: [{}],
+            isDeleted: true,
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const result = (
+        await recycledRepository.getOwnRecycledItems(db, actor, { page: 1, pageSize: 100 })
+      ).data.map(({ id }) => id);
+      expect(result).toContain(deletedParent.id);
+      expect(result).not.toContain(deletedParentChild.id);
+    });
+    it('do not return child of deleted items', async () => {
+      const {
+        items: [parent, adminChild],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            children: [
+              {
+                memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+              },
+            ],
+            isDeleted: true,
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const result = (
+        await recycledRepository.getOwnRecycledItems(db, actor, { page: 1, pageSize: 100 })
+      ).data.map(({ id }) => id);
+      expect(result).not.toContain(parent.id);
+      expect(result).not.toContain(adminChild.id);
+    });
+    it('return deleted child of admin item', async () => {
+      const {
+        items: [adminParent, deletedChild],
+        actor,
+      } = await seedFromJson({
+        items: [
+          // should return the deleted child, permission on the parent
+          {
+            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            children: [
+              {
+                isDeleted: true,
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const result = (
+        await recycledRepository.getOwnRecycledItems(db, actor, { page: 1, pageSize: 100 })
+      ).data.map(({ id }) => id);
+
+      expect(result).not.toContain(adminParent.id);
+      expect(result).toContain(deletedChild.id);
+    });
+    it('do not return recycled items without access', async () => {
+      const {
+        items: [readItem],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ permission: PermissionLevel.Read, account: 'actor' }],
+            isDeleted: true,
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const result = (
+        await recycledRepository.getOwnRecycledItems(db, actor, { page: 1, pageSize: 100 })
+      ).data.map(({ id }) => id);
+      expect(result).not.toContain(readItem.id);
+    });
+    it('do not return non-recycled items', async () => {
+      const {
+        items: [nonRecycledItem],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const result = (
+        await recycledRepository.getOwnRecycledItems(db, actor, { page: 1, pageSize: 100 })
+      ).data.map(({ id }) => id);
+      expect(result).not.toContain(nonRecycledItem.id);
     });
   });
 });

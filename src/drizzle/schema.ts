@@ -859,6 +859,7 @@ export const itemsRawTable = pgTable(
     index('IDX_gist_item_path_deleted_at')
       .using('gist', table.path.asc().nullsLast().op('gist_ltree_ops'))
       .where(isNull(table.deletedAt)),
+    index('IDX_item_path_deleted').using('gist', table.path).where(isNotNull(table.deletedAt)),
     foreignKey({
       columns: [table.creatorId],
       foreignColumns: [accountsTable.id],
