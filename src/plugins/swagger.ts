@@ -4,7 +4,7 @@ import type { FastifyInstance } from 'fastify';
 
 import { APP_VERSION } from '../utils/config';
 
-export default async function (instance: FastifyInstance): Promise<void> {
+const openapiPlugin = async function (instance: FastifyInstance): Promise<void> {
   await instance.register(swaggerPlugin, {
     openapi: {
       openapi: '3.1.0',
@@ -90,4 +90,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       return swaggerObject;
     },
   });
-}
+};
+
+export { openapiPlugin };
+export default openapiPlugin;

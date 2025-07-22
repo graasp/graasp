@@ -1,17 +1,27 @@
 import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance, PassportUser } from 'fastify';
+import Fastify from 'fastify';
+import fp from 'fastify-plugin';
 
-import build, { mockAuthenticate, unmockAuthenticate } from '../../../../../test/app';
+import { mockAuthenticate, unmockAuthenticate } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
+import { coreApp } from '../../../../app';
+import { registerDependencies } from '../../../../di/container';
+import { resetDependencies } from '../../../../di/utils';
+import { databasePlugin } from '../../../../plugins/database';
+import { metaPlugin } from '../../../../plugins/meta';
+import { openapiPlugin } from '../../../../plugins/swagger';
+import { schemaRegisterPlugin } from '../../../../plugins/typebox';
+import ajvFormats from '../../../../schemas/ajvFormats';
 import type { MinimalMember } from '../../../../types';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { isAuthenticated, matchOne } from './preHandlers';
 
-// move this test closer to matchone
-// other prehandlers are tested in plugin.test.ts
+// move this test closer to matchOne
+// other preHandlers are tested in plugin.test.ts
 describe('matchOne', () => {
   let app: FastifyInstance;
   let member: MinimalMember;
@@ -27,7 +37,36 @@ describe('matchOne', () => {
   }
 
   beforeAll(async () => {
-    ({ app } = await build());
+    resetDependencies();
+    app = Fastify({
+      disableRequestLogging: true,
+      logger: {
+        transport: {
+          target: 'pino-pretty',
+        },
+        level: 'info',
+      },
+      ajv: {
+        customOptions: {
+          coerceTypes: 'array',
+          discriminator: true,
+          allowUnionTypes: true,
+        },
+        plugins: [ajvFormats],
+      },
+    });
+    await app.register(fp(openapiPlugin));
+    await app.register(fp(schemaRegisterPlugin));
+
+    // db should be registered before the dependencies.
+    await app.register(fp(databasePlugin));
+
+    // register some dependencies manually
+    registerDependencies(app.log);
+
+    await app.register(fp(metaPlugin));
+    // register the core app
+    app.register(fp(coreApp));
 
     handler = jest.fn();
     preHandler = jest.fn(async () => {});
@@ -58,6 +97,7 @@ describe('matchOne', () => {
   it('No Whitelist', async () => {
     handler.mockImplementation(shouldBeActor(member));
     const response = await app.inject({ path: MOCKED_ROUTE });
+    // console.log(await response.json());
     expect(handler).toHaveBeenCalledTimes(1);
     expect(response.statusCode).toBe(StatusCodes.OK);
   });

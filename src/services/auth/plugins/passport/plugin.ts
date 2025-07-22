@@ -2,7 +2,7 @@ import fastifyPassport from '@fastify/passport';
 import { fastifySecureSession } from '@fastify/secure-session';
 import type { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
-import { PROD, STAGING } from '../../../../config/env';
+import { PROD } from '../../../../config/env';
 import {
   JWT_SECRET,
   MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS,
@@ -41,7 +41,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       cookie: {
         domain: COOKIE_DOMAIN,
         path: '/',
-        secure: PROD || STAGING,
+        secure: PROD,
         httpOnly: true,
         // Timeout before the session is invalidated. The user can renew the session since the timeout is not reached.
         // The session will be automatically renewed on each request.

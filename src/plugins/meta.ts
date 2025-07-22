@@ -83,7 +83,7 @@ const health = {
   },
 } as const satisfies FastifySchema;
 
-const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+const metaPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get('/health', { schema: health }, async (_, reply) => {
     // allow request cross origin
     reply.header('Access-Control-Allow-Origin', '*');
@@ -188,4 +188,5 @@ const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatu
   }
 };
 
-export default plugin;
+export { metaPlugin };
+export default metaPlugin;

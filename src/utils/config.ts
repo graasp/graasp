@@ -27,52 +27,12 @@ export const ALLOWED_ORIGINS = [new URL(CLIENT_HOST).origin, new URL(LIBRARY_HOS
 // Add the hosts of the different clients
 ClientManager.getInstance().setHost(CLIENT_HOST).addHost(Context.Library, LIBRARY_HOST);
 
-export const PROTOCOL = process.env.PROTOCOL || 'http';
-export const HOSTNAME = process.env.HOSTNAME || 'localhost';
-/**
- * Host address the server listen on, default to 0.0.0.0 to bind to all addresses.
- */
-export const HOST_LISTEN_ADDRESS = process.env.HOST_LISTEN_ADDRESS || '0.0.0.0';
-
-export const PORT = process.env.PORT ? +process.env.PORT : 3000;
-export const HOST = `${PROTOCOL}://${HOSTNAME}:${PORT}`;
-
 if (!process.env.COOKIE_DOMAIN) {
   throw new Error('COOKIE_DOMAIN is undefined');
 }
 
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
-
-/**
- * Public url is the url where the server is hosted. Mostly used to set the cookie on the right domain
- * Warning for PUBLIC_URL:
- * make sure that process.env.PUBLIC_URL / HOST have the format ${PROTOCOL}://${HOSTNAME}:${PORT}
- * See the following example where the format is only ${HOSTNAME}:${PORT} in which case
- * it interprets the hostname as protocol and the port as the pathname. Using the complete URL
- * scheme fixes that
- *
- * $ node
- * Welcome to Node.js v16.20.1.
- * Type ".help" for more information.
- * > new URL('localhost:3000')
- * URL {
- *   href: 'localhost:3000',
- *   origin: 'null',
- *   protocol: 'localhost:',
- *   username: '',
- *   password: '',
- *   host: '',
- *   hostname: '',
- *   port: '',
- *   pathname: '3000',
- *   search: '',
- *   searchParams: URLSearchParams {},
- *   hash: ''
- * }
- * >
- */
-export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
 
 /**
  * GRAASP FILE STORAGE CONFIG
@@ -271,12 +231,3 @@ export const SENTRY_TRACES_SAMPLE_RATE: number = +process.env.SENTRY_TRACES_SAMP
 export const JEST_WORKER_ID: number = +process.env.JEST_WORKER_ID! || 1;
 export const CI: boolean = process.env.CI === 'true';
 export const AUTO_RUN_MIGRATIONS: boolean = (process.env.AUTO_RUN_MIGRATIONS ?? 'true') === 'true';
-
-/////////////////////////////////////
-// Database Environement Variables //
-/////////////////////////////////////
-// Can be undefined, so tests can run without setting it. In production, TypeORM will throw an exception if not defined.
-export const DB_CONNECTION_POOL_SIZE: number = +process.env.DB_CONNECTION_POOL_SIZE! || 10;
-export const DB_READ_REPLICA_CONNECTIONS: string[] = process.env.DB_READ_REPLICA_CONNECTIONS
-  ? process.env.DB_READ_REPLICA_CONNECTIONS?.split(',')
-  : [];

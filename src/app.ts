@@ -2,11 +2,13 @@
 // should not be reimported in any other files !
 import 'reflect-metadata';
 
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { REDIS_CONNECTION } from './config/redis';
 import { registerDependencies } from './di/container';
+import adminPlugin from './plugins/admin/admin.plugin';
 import databasePlugin from './plugins/database';
 import metaPlugin from './plugins/meta';
 import swaggerPlugin from './plugins/swagger';
@@ -32,27 +34,32 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   await instance.register(fp(metaPlugin));
 
-  await instance.register(fp(passportPlugin));
-  // need to be defined before member and item for auth check
+  await instance.register(adminPlugin);
 
   await instance.register(maintenancePlugin);
 
+  // scope the next registration to the core functionalities
+  await instance.register(coreApp);
+}
+
+export const coreApp: FastifyPluginAsyncTypebox = async (instance) => {
+  // need to be defined before member and item for auth check
+  await instance.register(fp(passportPlugin));
+
   await instance.register(fp(authPlugin));
 
-  await instance.register(async (instance) => {
-    // core API modules
-    await instance
-      // the websockets plugin must be registered before but in the same scope as the apis
-      // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
-      .register(fp(websocketsPlugin), {
-        prefix: '/ws',
-        redis: {
-          channelName: 'graasp-realtime-updates',
-          connection: REDIS_CONNECTION,
-        },
-      })
-      .register(fp(MemberServiceApi))
-      .register(fp(ItemServiceApi))
-      .register(tagPlugin);
-  });
-}
+  // core API modules
+  await instance
+    // the websockets plugin must be registered before but in the same scope as the apis
+    // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
+    .register(fp(websocketsPlugin), {
+      prefix: '/ws',
+      redis: {
+        channelName: 'graasp-realtime-updates',
+        connection: REDIS_CONNECTION,
+      },
+    })
+    .register(fp(MemberServiceApi))
+    .register(fp(ItemServiceApi))
+    .register(tagPlugin);
+};
