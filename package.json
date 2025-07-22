@@ -83,7 +83,7 @@
     "fastify": "5.3.3",
     "fastify-nodemailer": "5.0.0",
     "fastify-plugin": "5.0.1",
-    "form-data": "4.0.2",
+    "form-data": "4.0.4",
     "fs-extra": "11.3.0",
     "geoip-lite": "1.4.10",
     "h5p-standalone": "3.8.0",
