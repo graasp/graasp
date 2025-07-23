@@ -1,0 +1,1 @@
+CREATE INDEX "IDX_recycled_item_data_item_path" ON "recycled_item_data" USING gist ("item_path" gist_ltree_ops);--> statement-breakpoint 

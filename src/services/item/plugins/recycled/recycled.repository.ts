@@ -53,30 +53,31 @@ export class RecycledItemDataRepository {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
-    const query = dbConnection
-      .select(getTableColumns(itemsRawTable))
-      // start with smaller table that can have the most contraints: membership with admin and accountId
+    // narrow memberships to account's and admin
+    const ownMemberships = dbConnection
+      .select()
       .from(itemMembershipsTable)
-      // we want to join on recycled item
-      .innerJoin(
-        itemsRawTable,
-        // reduce size by getting only recycled items
-        and(
-          isDescendantOrSelf(itemsRawTable.path, itemMembershipsTable.itemPath),
-          isNotNull(itemsRawTable.deletedAt),
-        ),
-      )
-      // get top most recycled item
-      .innerJoin(recycledItemDatasTable, eq(recycledItemDatasTable.itemPath, itemsRawTable.path))
-      // return item's creator
-      .leftJoin(membersView, eq(itemsRawTable.creatorId, membersView.id))
-      // item membership constraints
       .where(
         and(
           eq(itemMembershipsTable.accountId, account.id),
           eq(itemMembershipsTable.permission, PermissionLevel.Admin),
         ),
       )
+      .as('ownMemberships');
+
+    const query = dbConnection
+      .select(getTableColumns(itemsRawTable))
+      .from(ownMemberships)
+      // get top most recycled item
+      // should have admin access on recycled item root
+      .innerJoin(
+        recycledItemDatasTable,
+        isDescendantOrSelf(recycledItemDatasTable.itemPath, ownMemberships.itemPath),
+      )
+      // join with item
+      .innerJoin(itemsRawTable, and(eq(itemsRawTable.path, recycledItemDatasTable.itemPath)))
+      // return item's creator
+      .leftJoin(membersView, eq(itemsRawTable.creatorId, membersView.id))
       .as('subquery');
 
     const data = await dbConnection
