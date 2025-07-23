@@ -39,3 +39,14 @@ export const createPage = {
   ]),
   response: { [StatusCodes.CREATED]: pageSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
+
+export const pageWebsocketsSchema = {
+  operationId: 'pagesWebsockets',
+  tags: ['item', 'page', 'websockets'],
+  summary: 'Connect to websockets for a page',
+  description: 'Connect to websockets for a page and allow collaboration through yjs.',
+
+  querystring: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+} as const satisfies FastifySchema;
