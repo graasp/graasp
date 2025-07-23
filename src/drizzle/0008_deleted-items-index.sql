@@ -1,1 +1,0 @@
-CREATE INDEX "IDX_item_path_deleted" ON "item" USING gist ("path") WHERE "item"."deleted_at" is not null;--> statement-breakpoint

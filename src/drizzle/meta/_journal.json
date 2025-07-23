@@ -57,13 +57,6 @@
       "when": 1750768930827,
       "tag": "0007_action_view_enum",
       "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1753193922194,
-      "tag": "0008_deleted-items-index",
-      "breakpoints": true
     }
   ]
 }
