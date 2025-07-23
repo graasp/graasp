@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.7.0](https://github.com/graasp/graasp/compare/v2.6.0...v2.7.0) (2025-07-23)
+
+
+### Features
+
+* **password:** set login session in password login ([#1944](https://github.com/graasp/graasp/issues/1944)) ([b07c850](https://github.com/graasp/graasp/commit/b07c850d6dce7b99e0ab193b4f5b39c70b2a3018))
+
+
+### Bug Fixes
+
+* check admin permission on recycled items for deletion ([#1949](https://github.com/graasp/graasp/issues/1949)) ([63ce44f](https://github.com/graasp/graasp/commit/63ce44f059accfe36c6130d910f4c029d6567086))
+* code smell with nested template string ([#1942](https://github.com/graasp/graasp/issues/1942)) ([2cb7732](https://github.com/graasp/graasp/commit/2cb77327c6431fc2e0a6a725c028cee3a8a1e3ed))
+* **deps:** update dependency form-data to v4.0.4 [security] ([#1954](https://github.com/graasp/graasp/issues/1954)) ([3d436fd](https://github.com/graasp/graasp/commit/3d436fd9da5d02f66e6837a6dcc8f88988dd5dd3))
+* improve get own recycled items with index ([#1955](https://github.com/graasp/graasp/issues/1955)) ([fbd872b](https://github.com/graasp/graasp/commit/fbd872ba61abc5894573c59ce45a30b3a4334ee5))
+* **indexing:** throw only for unexpected error on getting index ([#1953](https://github.com/graasp/graasp/issues/1953)) ([9776242](https://github.com/graasp/graasp/commit/97762425b4867954dd3ca0ef2beb6ec33cc460fa))
+* use `secure: true` instead of `smtps://` in mailer ([#1952](https://github.com/graasp/graasp/issues/1952)) ([03fec6c](https://github.com/graasp/graasp/commit/03fec6c1800ddb6a7c4e6394cd31d1d6421e9817))
+
 ## [2.6.0](https://github.com/graasp/graasp/compare/v2.5.1...v2.6.0) (2025-07-17)
 
 
