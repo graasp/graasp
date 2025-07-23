@@ -218,6 +218,10 @@ export const recycledItemDatasTable = pgTable(
       .onUpdate('cascade')
       .onDelete('cascade'),
     unique('recycled-item-data').on(table.itemPath),
+    index('IDX_recycled_item_data_item_path').using(
+      'gist',
+      table.itemPath.asc().nullsLast().op('gist_ltree_ops'),
+    ),
   ],
 );
 
