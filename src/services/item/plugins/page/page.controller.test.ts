@@ -118,8 +118,7 @@ describe('Page routes tests', () => {
 
       await new Promise((done, reject) => {
         ws.on('error', () => {
-          // should not throw
-          reject();
+          reject(new Error('should not throw'));
         });
 
         ws.on('message', () => {

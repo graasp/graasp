@@ -32,15 +32,14 @@ const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0';
 const persistenceDir = process.env.YPERSISTENCE;
 
 type Persistence = {
-  bindState: (s: string, doc: WSSharedDoc) => void;
+  bindState: (s: string, doc: WSSharedDoc) => Promise<void>;
   writeState: (s: string, doc: WSSharedDoc) => Promise<void>;
   provider: LeveldbPersistence;
 };
 
 let persistence: Persistence | null = null;
 if (typeof persistenceDir === 'string') {
-  // eslint-disable-next-line no-console
-  console.info('Persisting documents to "' + persistenceDir + '"');
+  console.debug('Persisting documents to "' + persistenceDir + '"');
   const ldb = new LeveldbPersistence(persistenceDir);
   persistence = {
     provider: ldb,
@@ -211,6 +210,7 @@ const send = (doc: WSSharedDoc, conn: WebSocket, m: Uint8Array) => {
       err != null && closeConn(doc, conn);
     });
   } catch (e) {
+    console.error(e);
     closeConn(doc, conn);
   }
 };
@@ -243,6 +243,7 @@ export const setupWSConnection = (
       try {
         conn.ping();
       } catch (e) {
+        console.error(e);
         closeConn(doc, conn);
         clearInterval(pingInterval);
       }
