@@ -13,7 +13,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { createPage, pageWebsocketsSchema } from './page.schemas';
 import { PageItemService } from './page.service';
-import { setupWSConnection } from './server/utils';
+import { setupWSConnection } from './setupWSConnection';
 
 export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const pageItemService = resolveDependency(PageItemService);
@@ -53,20 +53,22 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     {
       websocket: true,
       schema: pageWebsocketsSchema,
-      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+      preHandler: [
+        isAuthenticated,
+        matchOne(validatedMemberAccountRole),
+        async ({ user, query }) => {
+          const account = asDefined(user?.account);
+
+          // check write permission
+          await authorizedItemService.assertAccessForItemId(db, {
+            permission: PermissionLevel.Write,
+            itemId: query.id,
+            accountId: account.id,
+          });
+        },
+      ],
     },
     async (client, req) => {
-      // member from valid session
-      const { user, query } = req;
-      const account = asDefined(user?.account);
-
-      // check permissions
-      await authorizedItemService.assertAccessForItemId(db, {
-        permission: PermissionLevel.Write,
-        itemId: query.id,
-        accountId: account.id,
-      });
-
       client.on('error', fastify.log.error);
 
       setupWSConnection(client, req);

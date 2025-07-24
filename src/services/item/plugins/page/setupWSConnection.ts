@@ -1,4 +1,4 @@
-// source: https://github.com/yjs/y-websocket-server/blob/main/src/utils.js
+/* source: https://github.com/yjs/y-websocket-server/blob/main/src/utils.js */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as decoding from 'lib0/decoding';
@@ -20,6 +20,8 @@ import * as syncProtocol from 'y-protocols/sync';
 // @ts-expect-error
 import * as Y from 'yjs';
 
+import { FastifyRequest } from 'fastify';
+
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
 const wsReadyStateClosing = 2; // eslint-disable-line
@@ -31,8 +33,8 @@ const persistenceDir = process.env.YPERSISTENCE;
 
 type Persistence = {
   bindState: (s: string, doc: WSSharedDoc) => void;
-  writeState: (s: string, doc: WSSharedDoc) => Promise<any>;
-  provider: any;
+  writeState: (s: string, doc: WSSharedDoc) => Promise<void>;
+  provider: LeveldbPersistence;
 };
 
 let persistence: Persistence | null = null;
@@ -138,7 +140,7 @@ export class WSSharedDoc extends Y.Doc {
  * @param {boolean} gc - whether to allow gc on the doc (applies only when created)
  * @return {WSSharedDoc}
  */
-export const getYDoc = (docname, gc = true) =>
+export const getYDoc = (docname: string, gc: boolean = true): WSSharedDoc =>
   map.setIfUndefined(docs, docname, () => {
     const doc = new WSSharedDoc(docname);
     doc.gc = gc;
@@ -149,12 +151,7 @@ export const getYDoc = (docname, gc = true) =>
     return doc;
   });
 
-/**
- * @param {any} conn
- * @param {WSSharedDoc} doc
- * @param {Uint8Array} message
- */
-const messageListener = (conn, doc, message) => {
+const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array) => {
   try {
     const encoder = encoding.createEncoder();
     const decoder = decoding.createDecoder(message);
@@ -182,11 +179,13 @@ const messageListener = (conn, doc, message) => {
     }
   } catch (err) {
     console.error(err);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     doc.emit('error', [err]);
   }
 };
 
-const closeConn = (doc: WSSharedDoc, conn: any) => {
+const closeConn = (doc: WSSharedDoc, conn: WebSocket) => {
   if (doc.conns.has(conn)) {
     const controlledIds: Set<number> = doc.conns.get(conn)!;
     doc.conns.delete(conn);
@@ -218,27 +217,18 @@ const send = (doc: WSSharedDoc, conn: WebSocket, m: Uint8Array) => {
 
 const pingTimeout = 30000;
 
-/**
- * @param {import('ws').WebSocket} conn
- * @param {import('http').IncomingMessage} req
- * @param {any} opts
- */
 export const setupWSConnection = (
-  conn,
-  req,
+  conn: WebSocket,
+  req: FastifyRequest,
   { docName = (req.url || '').slice(1).split('?')[0], gc = true } = {},
 ) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
-
   const doc = getYDoc(docName, gc);
   doc.conns.set(conn, new Set());
+
   // listen and reply to events
-  conn.on(
-    'message',
-    /** @param {ArrayBuffer} message */ (message) =>
-      messageListener(conn, doc, new Uint8Array(message)),
-  );
+  conn.on('message', (message: ArrayBuffer) => messageListener(conn, doc, new Uint8Array(message)));
 
   // Check if connection is still alive
   let pongReceived = true;
@@ -258,10 +248,12 @@ export const setupWSConnection = (
       }
     }
   }, pingTimeout);
+
   conn.on('close', () => {
     closeConn(doc, conn);
     clearInterval(pingInterval);
   });
+
   conn.on('pong', () => {
     pongReceived = true;
   });
