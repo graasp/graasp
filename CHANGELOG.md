@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.8.0](https://github.com/graasp/graasp/compare/v2.7.0...v2.8.0) (2025-07-25)
+
+
+### Features
+
+* create page endpoint ([#1947](https://github.com/graasp/graasp/issues/1947)) ([a391280](https://github.com/graasp/graasp/commit/a391280be0dbd0aae5cb6425dce009b560c09362))
+* setup yjs for collaboration in pages ([#1959](https://github.com/graasp/graasp/issues/1959)) ([d773276](https://github.com/graasp/graasp/commit/d773276a045a4c17df50e50f33a89adc88d0ffd1))
+
+
+### Bug Fixes
+
+* ensure required env var can't be an empty string ([#1960](https://github.com/graasp/graasp/issues/1960)) ([3ce0469](https://github.com/graasp/graasp/commit/3ce0469fe7ca54e978ec3da4e5047d3c8306706a))
+
 ## [2.7.0](https://github.com/graasp/graasp/compare/v2.6.0...v2.7.0) (2025-07-23)
 
 
