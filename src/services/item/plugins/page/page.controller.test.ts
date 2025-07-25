@@ -80,8 +80,7 @@ describe('Page routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: { protocol: 'ws', pathname: '/items/pages/ws' },
-        query: { id: v4() },
+        url: { protocol: 'ws', pathname: `/items/${v4()}/pages/ws` },
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -92,9 +91,8 @@ describe('Page routes tests', () => {
         method: HttpMethod.Get,
         path: {
           protocol: 'ws',
-          pathname: '/items/pages/ws',
+          pathname: '/items/wrong-id/pages/ws',
         },
-        query: { id: 'wrong-id' },
       });
 
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -114,7 +112,7 @@ describe('Page routes tests', () => {
       await app.listen();
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
-      const ws = new WebSocket(`http://localhost:${port}/items/pages/ws?id=${item.id}`);
+      const ws = new WebSocket(`http://localhost:${port}/items/${item.id}pages/ws`);
 
       await new Promise((done, reject) => {
         ws.on('error', () => {

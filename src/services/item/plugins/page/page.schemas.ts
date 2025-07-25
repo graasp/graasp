@@ -46,7 +46,7 @@ export const pageWebsocketsSchema = {
   summary: 'Connect to websockets for a page',
   description: 'Connect to websockets for a page and allow collaboration through yjs.',
 
-  querystring: customType.StrictObject({
+  params: customType.StrictObject({
     id: customType.UUID(),
   }),
 } as const satisfies FastifySchema;

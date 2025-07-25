@@ -49,20 +49,20 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.get(
-    '/pages/ws',
+    '/pages/:id/ws',
     {
       websocket: true,
       schema: pageWebsocketsSchema,
       preHandler: [
         isAuthenticated,
         matchOne(validatedMemberAccountRole),
-        async ({ user, query }) => {
+        async ({ user, params }) => {
           const account = asDefined(user?.account);
 
           // check write permission
           await authorizedItemService.assertAccessForItemId(db, {
             permission: PermissionLevel.Write,
-            itemId: query.id,
+            itemId: params.id,
             accountId: account.id,
           });
         },
