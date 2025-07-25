@@ -2,17 +2,22 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { PermissionLevel } from '@graasp/sdk';
+
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
+import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { createPage } from './page.schemas';
+import { createPage, pageWebsocketsSchema } from './page.schemas';
 import { PageItemService } from './page.service';
+import { setupWSConnection } from './setupWSConnection';
 
 export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const pageItemService = resolveDependency(PageItemService);
+  const authorizedItemService = resolveDependency(AuthorizedItemService);
 
   fastify.post(
     '/pages',
@@ -40,6 +45,33 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       reply.code(StatusCodes.CREATED);
       reply.send(item);
+    },
+  );
+
+  fastify.get(
+    '/pages/:id/ws',
+    {
+      websocket: true,
+      schema: pageWebsocketsSchema,
+      preHandler: [
+        isAuthenticated,
+        matchOne(validatedMemberAccountRole),
+        async ({ user, params }) => {
+          const account = asDefined(user?.account);
+
+          // check write permission
+          await authorizedItemService.assertAccessForItemId(db, {
+            permission: PermissionLevel.Write,
+            itemId: params.id,
+            accountId: account.id,
+          });
+        },
+      ],
+    },
+    async (client, req) => {
+      client.on('error', fastify.log.error);
+
+      setupWSConnection(client, req);
     },
   );
 };

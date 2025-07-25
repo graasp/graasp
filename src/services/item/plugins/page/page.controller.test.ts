@@ -1,9 +1,12 @@
 import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
+import { AddressInfo } from 'net';
+import { v4 } from 'uuid';
+import { WebSocket } from 'ws';
 
 import type { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
+import { FolderItemFactory, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -69,6 +72,58 @@ describe('Page routes tests', () => {
           where: eq(pageTable.itemId, itemId),
         });
         expect(newContent).toBeDefined();
+      });
+    });
+  });
+
+  describe('GET /items/pages/ws', () => {
+    it('Throws if signed out', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: { protocol: 'ws', pathname: `/items/pages/${v4()}/ws` },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('Throws if id is incorrect', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        path: {
+          protocol: 'ws',
+          pathname: '/items/pages/wrong-id/ws',
+        },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    });
+
+    it('Allow access', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // start server to correctly listen to websockets
+      await app.listen();
+      await app.ready();
+      const port = (app.server.address() as AddressInfo)!.port;
+      const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws`);
+
+      await new Promise((done, reject) => {
+        ws.on('error', (e) => {
+          console.log(e);
+          reject(new Error('should not throw'));
+        });
+
+        ws.on('message', () => {
+          // should be able to receive messages
+          done(true);
+        });
       });
     });
   });
