@@ -13,7 +13,7 @@ export class ExpectedEnvVariable extends Error {
  */
 export function requiredEnvVar(name: string) {
   const varValue = process.env[name];
-  if (varValue === undefined) {
+  if (varValue === undefined || varValue === '') {
     throw new ExpectedEnvVariable(name);
   }
   return varValue;
