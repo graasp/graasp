@@ -1,4 +1,7 @@
-/* source: https://github.com/yjs/y-websocket-server/blob/main/src/utils.js */
+/*
+ * source: https://github.com/yjs/y-websocket-server/blob/main/src/utils.js
+ */
+import { eq } from 'drizzle-orm/sql';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as decoding from 'lib0/decoding';
@@ -7,9 +10,7 @@ import * as decoding from 'lib0/decoding';
 import * as encoding from 'lib0/encoding';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-import * as map from 'lib0/map';
 import { WebSocket } from 'ws';
-import { LeveldbPersistence } from 'y-leveldb';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as awarenessProtocol from 'y-protocols/awareness';
@@ -20,49 +21,26 @@ import * as syncProtocol from 'y-protocols/sync';
 // @ts-expect-error
 import * as Y from 'yjs';
 
-import { FastifyRequest } from 'fastify';
+import { db } from '../../../../drizzle/db';
+import { pageTable } from '../../../../drizzle/schema';
+import {
+  headlessConvertLexicalJSONToYDocState,
+  headlessConvertYDocStateToLexicalJSON,
+} from './toLexical';
 
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
 const wsReadyStateClosing = 2; // eslint-disable-line
 const wsReadyStateClosed = 3; // eslint-disable-line
 
+const PERSIST_INTERVAL_IS_MS = 15000;
+const DELETE_TIMEOUT = 30000;
+
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0';
-const persistenceDir = process.env.YPERSISTENCE;
+type WrappedDoc = { doc: WSSharedDoc; saveInterval?: any; deleteTimeout?: any };
 
-type Persistence = {
-  bindState: (s: string, doc: WSSharedDoc) => Promise<void>;
-  writeState: (s: string, doc: WSSharedDoc) => Promise<void>;
-  provider: LeveldbPersistence;
-};
-
-let persistence: Persistence | null = null;
-if (typeof persistenceDir === 'string') {
-  console.debug('Persisting documents to "' + persistenceDir + '"');
-  const ldb = new LeveldbPersistence(persistenceDir);
-  persistence = {
-    provider: ldb,
-    bindState: async (docName, ydoc) => {
-      const persistedYdoc = await ldb.getYDoc(docName);
-      const newUpdates = Y.encodeStateAsUpdate(ydoc);
-      ldb.storeUpdate(docName, newUpdates);
-      Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
-      ydoc.on('update', (update) => {
-        ldb.storeUpdate(docName, update);
-      });
-    },
-    writeState: async (_docName, _ydoc) => {},
-  };
-}
-
-export const setPersistence = (persistence_: Persistence) => {
-  persistence = persistence_;
-};
-
-export const getPersistence = () => persistence;
-
-export const docs = new Map<string, WSSharedDoc>();
+export const docs = new Map<string, WrappedDoc>();
 
 const messageSync = 0;
 const messageAwareness = 1;
@@ -72,13 +50,25 @@ const updateHandler = (update: Uint8Array, _origin: never, doc: WSSharedDoc, _tr
   encoding.writeVarUint(encoder, messageSync);
   syncProtocol.writeUpdate(encoder, update);
   const message = encoding.toUint8Array(encoder);
-  doc.conns.forEach((_, conn) => send(doc, conn, message));
+  doc.conns.forEach((_, conn) => send(doc.name, conn, message));
 };
 
 let contentInitializor = (f) => Promise.resolve();
 
 export const setContentInitializor = (f) => {
   contentInitializor = f;
+};
+
+const saveDocInDb = (doc: WSSharedDoc) => {
+  const content = headlessConvertYDocStateToLexicalJSON([], Y.encodeStateAsUpdate(doc));
+  console.log('--- SAVE !');
+
+  db.transaction(async () => {
+    await db
+      .update(pageTable)
+      .set({ content: JSON.stringify(content) })
+      .where(eq(pageTable.itemId, doc.name));
+  });
 };
 
 export class WSSharedDoc extends Y.Doc {
@@ -123,7 +113,7 @@ export class WSSharedDoc extends Y.Doc {
       );
       const buff = encoding.toUint8Array(encoder);
       this.conns.forEach((_, c) => {
-        send(this, c, buff);
+        send(this.name, c, buff);
       });
     };
     this.awareness.on('update', awarenessChangeHandler);
@@ -139,18 +129,29 @@ export class WSSharedDoc extends Y.Doc {
  * @param {boolean} gc - whether to allow gc on the doc (applies only when created)
  * @return {WSSharedDoc}
  */
-export const getYDoc = (docname: string, gc: boolean = true): WSSharedDoc =>
-  map.setIfUndefined(docs, docname, () => {
-    const doc = new WSSharedDoc(docname);
-    doc.gc = gc;
-    if (persistence !== null) {
-      persistence.bindState(docname, doc);
-    }
-    docs.set(docname, doc);
-    return doc;
+export const getDoc = (docName: string, gc: boolean = true): WrappedDoc => {
+  console.log([...docs.entries()]);
+  if (docs.get(docName)) {
+    console.log('return existing doc');
+    return docs.get(docName)!;
+  }
+
+  console.debug('Create new yjs document for', docName);
+
+  const doc = new WSSharedDoc(docName);
+  doc.gc = gc;
+
+  headlessConvertLexicalJSONToYDocState(docName).then(async (persistedYdoc) => {
+    const update = Y.encodeStateAsUpdate(persistedYdoc);
+    Y.applyUpdate(doc, update);
   });
 
-const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array) => {
+  docs.set(docName, { doc });
+
+  return { doc };
+};
+
+const messageListener = (conn: WebSocket, ddd: any, message: Uint8Array) => {
   try {
     const encoder = encoding.createEncoder();
     const decoder = decoding.createDecoder(message);
@@ -158,18 +159,18 @@ const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array)
     switch (messageType) {
       case messageSync:
         encoding.writeVarUint(encoder, messageSync);
-        syncProtocol.readSyncMessage(decoder, encoder, doc, conn);
+        syncProtocol.readSyncMessage(decoder, encoder, ddd.doc, conn);
 
         // If the `encoder` only contains the type of reply message and no
         // message, there is no need to send the message. When `encoder` only
         // contains the type of reply, its length is 1.
         if (encoding.length(encoder) > 1) {
-          send(doc, conn, encoding.toUint8Array(encoder));
+          send(ddd, conn, encoding.toUint8Array(encoder));
         }
         break;
       case messageAwareness: {
         awarenessProtocol.applyAwarenessUpdate(
-          doc.awareness,
+          ddd.doc.awareness,
           decoding.readVarUint8Array(decoder),
           conn,
         );
@@ -184,58 +185,84 @@ const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array)
   }
 };
 
-const closeConn = (doc: WSSharedDoc, conn: WebSocket) => {
+const closeConn = (wd: WrappedDoc, conn: WebSocket) => {
+  console.log('-------- CLOSE CONN!', wd.doc.name);
+  const { doc, saveInterval } = wd;
+
   if (doc.conns.has(conn)) {
     const controlledIds: Set<number> = doc.conns.get(conn)!;
     doc.conns.delete(conn);
     awarenessProtocol.removeAwarenessStates(doc.awareness, Array.from(controlledIds), null);
-    if (doc.conns.size === 0 && persistence !== null) {
-      // if persisted, we store state and destroy ydocument
-      persistence.writeState(doc.name, doc).then(() => {
+    if (doc.conns.size === 0) {
+      // we store state and destroy ydocument
+      saveDocInDb(doc);
+
+      // remove interval
+      clearInterval(saveInterval);
+
+      // do not delete doc right away
+      const deleteTimeout = setTimeout(() => {
+        docs.delete(doc.name);
         doc.destroy();
-      });
-      docs.delete(doc.name);
+      }, DELETE_TIMEOUT);
+
+      docs.set(wd.doc.name, { doc, deleteTimeout, saveInterval: undefined });
     }
   }
   conn.close();
 };
 
-const send = (doc: WSSharedDoc, conn: WebSocket, m: Uint8Array) => {
+const send = (name: string, conn: WebSocket, m: Uint8Array) => {
+  const wrappedDoc = docs.get(name)!;
+
   if (conn.readyState !== wsReadyStateConnecting && conn.readyState !== wsReadyStateOpen) {
-    closeConn(doc, conn);
+    console.log('ready?');
+    closeConn(wrappedDoc, conn);
   }
   try {
     conn.send(m, {}, (err) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      err != null && closeConn(doc, conn);
+      err != null && closeConn(wrappedDoc, conn);
     });
   } catch (e) {
     console.error(e);
-    closeConn(doc, conn);
+    console.log('send error');
+    closeConn(wrappedDoc, conn);
   }
 };
 
 const pingTimeout = 30000;
 
-export const setupWSConnection = (
-  conn: WebSocket,
-  req: FastifyRequest,
-  { docName = (req.url || '').slice(1).split('?')[0], gc = true } = {},
-) => {
+export const setupWSConnection = (conn: WebSocket, itemId: string, { gc = true } = {}) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
-  const doc = getYDoc(docName, gc);
+  const wrappedDoc = getDoc(itemId, gc);
+  const { doc, deleteTimeout } = wrappedDoc;
+
+  // setup persist data in database at first connection
+  if (deleteTimeout) {
+    console.log('DO NOT DELETE', deleteTimeout);
+    clearTimeout(deleteTimeout);
+    const saveInterval = setInterval(() => {
+      saveDocInDb(doc);
+    }, PERSIST_INTERVAL_IS_MS);
+    wrappedDoc.saveInterval = saveInterval;
+  }
+
   doc.conns.set(conn, new Set());
 
   // listen and reply to events
-  conn.on('message', (message: ArrayBuffer) => messageListener(conn, doc, new Uint8Array(message)));
+  conn.on('message', (message: ArrayBuffer) =>
+    messageListener(conn, wrappedDoc, new Uint8Array(message)),
+  );
 
   // Check if connection is still alive
   let pongReceived = true;
   const pingInterval = setInterval(() => {
     if (!pongReceived) {
       if (doc.conns.has(conn)) {
-        closeConn(doc, conn);
+        console.log('NO PONG');
+        closeConn(wrappedDoc, conn);
       }
       clearInterval(pingInterval);
     } else if (doc.conns.has(conn)) {
@@ -244,28 +271,33 @@ export const setupWSConnection = (
         conn.ping();
       } catch (e) {
         console.error(e);
-        closeConn(doc, conn);
+        console.log('error ping');
+        closeConn(wrappedDoc, conn);
         clearInterval(pingInterval);
       }
     }
   }, pingTimeout);
 
-  conn.on('close', () => {
-    closeConn(doc, conn);
+  conn.on('error', (e) => {
+    console.error('Error in websockets:', e);
+  });
+
+  conn.on('close', (e, d) => {
+    console.log('on close', e, d.toString());
+    closeConn(wrappedDoc, conn);
     clearInterval(pingInterval);
   });
 
   conn.on('pong', () => {
     pongReceived = true;
   });
-  // put the following in a variables in a block so the interval handlers don't keep in in
-  // scope
+  // put the following in a variables in a block so the interval handlers don't keep in the scope
   {
     // send sync step 1
     const encoder = encoding.createEncoder();
     encoding.writeVarUint(encoder, messageSync);
     syncProtocol.writeSyncStep1(encoder, doc);
-    send(doc, conn, encoding.toUint8Array(encoder));
+    send(itemId, conn, encoding.toUint8Array(encoder));
     const awarenessStates = doc.awareness.getStates();
     if (awarenessStates.size > 0) {
       const encoder = encoding.createEncoder();
@@ -274,7 +306,7 @@ export const setupWSConnection = (
         encoder,
         awarenessProtocol.encodeAwarenessUpdate(doc.awareness, Array.from(awarenessStates.keys())),
       );
-      send(doc, conn, encoding.toUint8Array(encoder));
+      send(itemId, conn, encoding.toUint8Array(encoder));
     }
   }
 };

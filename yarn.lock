@@ -3147,6 +3147,46 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lexical/headless@npm:0.33.1":
+  version: 0.33.1
+  resolution: "@lexical/headless@npm:0.33.1"
+  dependencies:
+    lexical: "npm:0.33.1"
+  checksum: 10/7c5493e372af9318631c0fc8e0a1c284000a3adece5bafb7500a3b1028200b10d683f6acfe50f3e50d868d2c24f4a65c59077aded417c889e396b5a20d2283f9
+  languageName: node
+  linkType: hard
+
+"@lexical/offset@npm:0.33.1":
+  version: 0.33.1
+  resolution: "@lexical/offset@npm:0.33.1"
+  dependencies:
+    lexical: "npm:0.33.1"
+  checksum: 10/a0b49db3e6afa2b5792be1810561feade0f58ef0f9c7305ccf15fd18c2cd9ce361daf7aa9ffbfbc071a102fce081ab2226b94a3a8a0725155dc05a2885bbf5ca
+  languageName: node
+  linkType: hard
+
+"@lexical/selection@npm:0.33.1":
+  version: 0.33.1
+  resolution: "@lexical/selection@npm:0.33.1"
+  dependencies:
+    lexical: "npm:0.33.1"
+  checksum: 10/fc02f0e50e9b048bf048756b821f2393d968811569207e2d268970dac3d490beddcda1dc6e389434f3e442da6803dbff2842c2df481b8560d761f5abe65ceba5
+  languageName: node
+  linkType: hard
+
+"@lexical/yjs@npm:0.33.1":
+  version: 0.33.1
+  resolution: "@lexical/yjs@npm:0.33.1"
+  dependencies:
+    "@lexical/offset": "npm:0.33.1"
+    "@lexical/selection": "npm:0.33.1"
+    lexical: "npm:0.33.1"
+  peerDependencies:
+    yjs: ">=13.5.22"
+  checksum: 10/12cbdf3a0d9a046826e225ac47fde4178691e60af8e5f368b394d2958e5f52dacfa4cef565f9029611f8ced19706d2e468d0617e72bda28b270e0c56db307d38
+  languageName: node
+  linkType: hard
+
 "@lukeed/ms@npm:^2.0.2":
   version: 2.0.2
   resolution: "@lukeed/ms@npm:2.0.2"
@@ -8713,6 +8753,8 @@ __metadata:
     "@graasp/sdk": "npm:5.15.0"
     "@graasp/translations": "npm:1.44.0"
     "@jest/globals": "npm:29.7.0"
+    "@lexical/headless": "npm:0.33.1"
+    "@lexical/yjs": "npm:0.33.1"
     "@quobix/vacuum": "npm:0.17.0"
     "@rapideditor/country-coder": "npm:5.4.0"
     "@sentry/node": "npm:7.119.2"
@@ -8773,6 +8815,7 @@ __metadata:
     ioredis: "npm:5.6.1"
     jest: "npm:29.7.0"
     jsonwebtoken: "npm:9.0.2"
+    lexical: "npm:0.33.1"
     lib0: "npm:0.2.114"
     lodash.groupby: "npm:4.6.0"
     lodash.partition: "npm:4.6.0"
@@ -10545,6 +10588,13 @@ __metadata:
     prelude-ls: "npm:^1.2.1"
     type-check: "npm:~0.4.0"
   checksum: 10/2e4720ff79f21ae08d42374b0a5c2f664c5be8b6c8f565bb4e1315c96ed3a8acaa9de788ffed82d7f2378cf36958573de07ef92336cb5255ed74d08b8318c9ee
+  languageName: node
+  linkType: hard
+
+"lexical@npm:0.33.1":
+  version: 0.33.1
+  resolution: "lexical@npm:0.33.1"
+  checksum: 10/fcfaa4e13cc47f02ce55a5fc5cee46c391d61febb92a5d8af0d966b05274f6ca9fb99c7e159dd6a029acf808c6cf5471b83dbec4cfefbe66c2db88fac18661ad
   languageName: node
   linkType: hard
 
