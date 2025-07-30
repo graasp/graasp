@@ -18,7 +18,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       fastify.get(
-        '/',
+        '',
         { schema: getCountForTags, preHandler: optionalIsAuthenticated },
         async ({ query: { search, category } }) => {
           return await tagService.getCountBy(db, search, category);
