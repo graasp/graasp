@@ -10,16 +10,23 @@ import { errorSchemaRef } from '../../schemas/global';
 import { accountSchemaRef } from '../account/account.schemas';
 import { itemSchemaRef } from '../item/item.schemas';
 
+const itemLoginSchemaTypeSchema = customType.EnumString(Object.values(ItemLoginSchemaType), {
+  description: 'Defines which credentials are necessary to login.',
+});
+
+const itemLoginSchemaStatusSchema = customType.EnumString(Object.values(ItemLoginSchemaStatus));
+
+registerSchemaAsRef(
+  'itemLoginSchemaStatus',
+  'Item Login Schema Status',
+  itemLoginSchemaStatusSchema,
+);
+
 const itemLoginSchemaSchema = customType.StrictObject(
   {
     id: customType.UUID(),
-    type: customType.EnumString(Object.values(ItemLoginSchemaType), {
-      description: 'Defines which credentials are necessary to login.',
-    }),
-    status: customType.EnumString(Object.values(ItemLoginSchemaStatus), {
-      description:
-        'Item login status, which can be enabled, frozen, or disabled. Item login cannot be deleted, an item login can be disabled instead to prevent deleting associated guest accounts.',
-    }),
+    type: itemLoginSchemaTypeSchema,
+    status: itemLoginSchemaStatusSchema,
     item: Type.Optional(itemSchemaRef),
     createdAt: customType.DateTime(),
     updatedAt: customType.DateTime(),
@@ -66,9 +73,7 @@ export const getLoginSchemaType = {
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: customType.Nullable(
-      customType.EnumString(Object.values(ItemLoginSchemaType)),
-    ),
+    [StatusCodes.OK]: customType.Nullable(itemLoginSchemaTypeSchema),
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },

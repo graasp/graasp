@@ -13,6 +13,12 @@ import {
 } from '../account/account.schemas';
 import { itemSchemaRef } from '../item/item.schemas';
 
+const permissionLevelSchemaRef = registerSchemaAsRef(
+  'permissionLevel',
+  'Permission Level',
+  customType.EnumString(Object.values(PermissionLevel)),
+);
+
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',
   'Item Membership',
@@ -21,7 +27,7 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       account: augmentedAccountSchemaRef,
       item: itemSchemaRef,
-      permission: customType.EnumString(Object.values(PermissionLevel)),
+      permission: permissionLevelSchemaRef,
       creator: Type.Optional(nullableAugmentedAccountSchemaRef),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
@@ -40,7 +46,7 @@ export const itemMembershipWithoutRelationsSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       accountId: customType.UUID(),
       itemPath: Type.String(),
-      permission: customType.EnumString(Object.values(PermissionLevel)),
+      permission: permissionLevelSchemaRef,
       creator: Type.Optional(customType.UUID()),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
@@ -53,7 +59,7 @@ export const itemMembershipWithoutRelationsSchemaRef = registerSchemaAsRef(
 
 export const createItemMembershipSchema = customType.StrictObject({
   accountId: customType.UUID(),
-  permission: customType.EnumString(Object.values(PermissionLevel)),
+  permission: permissionLevelSchemaRef,
 });
 
 // schema for creating an item membership
@@ -100,7 +106,7 @@ export const updateOne = {
     itemId: customType.UUID(),
   }),
   body: customType.StrictObject({
-    permission: customType.EnumString(Object.values(PermissionLevel)),
+    permission: permissionLevelSchemaRef,
   }),
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
