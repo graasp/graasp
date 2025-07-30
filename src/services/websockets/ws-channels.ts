@@ -132,47 +132,47 @@ class WebSocketChannels {
     this.wsServer.on('error', this.logger.error);
 
     // checks lost connections every defined time interval
-    this.heartbeat = setInterval(() => {
-      // find clients that are not registered anymore
-      this.wsServer.clients.forEach((ws) => {
-        if (this.subscriptions.get(ws) === undefined) {
-          this.logger.info(
-            'graasp-plugin-websockets: ejecting client, orphan without subscriptions',
-          );
-          ws.terminate();
-        }
-      });
-      // find registered clients that lost connection
-      this.subscriptions.forEach((client, ws) => {
-        // if client was already marked dead, terminate its connection
-        if (client.isAlive === false) {
-          // remove from this instance also
-          this.clientRemove(ws);
-          this.logger.info(
-            'graasp-plugin-websockets: ejecting client, timeout detected',
-            'client:',
-            client?.toString(),
-          );
-          return ws.terminate();
-        }
+    // this.heartbeat = setInterval(() => {
+    //   // find clients that are not registered anymore
+    //   this.wsServer.clients.forEach((ws) => {
+    //     if (this.subscriptions.get(ws) === undefined) {
+    //       this.logger.info(
+    //         'graasp-plugin-websockets: ejecting client, orphan without subscriptions',
+    //       );
+    //       ws.terminate();
+    //     }
+    //   });
+    //   // find registered clients that lost connection
+    //   this.subscriptions.forEach((client, ws) => {
+    //     // if client was already marked dead, terminate its connection
+    //     if (client.isAlive === false) {
+    //       // remove from this instance also
+    //       this.clientRemove(ws);
+    //       this.logger.info(
+    //         'graasp-plugin-websockets: ejecting client, timeout detected',
+    //         'client:',
+    //         client?.toString(),
+    //       );
+    //       return ws.terminate();
+    //     }
 
-        // mark all as dead and then send ping
-        // (which will set them alive again when pong response is received in {@link Client})
-        client.isAlive = false;
-        ws.ping();
-      });
-      // find empty channels eligible for garbage collection
-      this.channels.forEach((channel, name) => {
-        if (channel.removeIfEmpty && channel.subscribers.size === 0) {
-          this.channelDelete(name);
-          this.logger.info(
-            `graasp-plugin-websockets: removing channel "${name}" with removeIfEmpty=${channel.removeIfEmpty}: no subscribers left on this instance`,
-            'channel:',
-            channel,
-          );
-        }
-      });
-    }, heartbeatInterval);
+    //     // mark all as dead and then send ping
+    //     // (which will set them alive again when pong response is received in {@link Client})
+    //     client.isAlive = false;
+    //     ws.ping();
+    //   });
+    //   // find empty channels eligible for garbage collection
+    //   this.channels.forEach((channel, name) => {
+    //     if (channel.removeIfEmpty && channel.subscribers.size === 0) {
+    //       this.channelDelete(name);
+    //       this.logger.info(
+    //         `graasp-plugin-websockets: removing channel "${name}" with removeIfEmpty=${channel.removeIfEmpty}: no subscribers left on this instance`,
+    //         'channel:',
+    //         channel,
+    //       );
+    //     }
+    //   });
+    // }, heartbeatInterval);
 
     // cleanup if server closes
     this.wsServer.on('close', () => {

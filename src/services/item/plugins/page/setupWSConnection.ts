@@ -9,7 +9,6 @@ import * as encoding from 'lib0/encoding';
 // @ts-expect-error
 import * as map from 'lib0/map';
 import { WebSocket } from 'ws';
-import { LeveldbPersistence } from 'y-leveldb';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as awarenessProtocol from 'y-protocols/awareness';
@@ -20,7 +19,7 @@ import * as syncProtocol from 'y-protocols/sync';
 // @ts-expect-error
 import * as Y from 'yjs';
 
-import { FastifyRequest } from 'fastify';
+import { DrizzlePersistence } from './DrizzlePersistence';
 
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
@@ -29,38 +28,21 @@ const wsReadyStateClosed = 3; // eslint-disable-line
 
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0';
-const persistenceDir = process.env.YPERSISTENCE;
 
-type Persistence = {
-  bindState: (s: string, doc: WSSharedDoc) => Promise<void>;
-  writeState: (s: string, doc: WSSharedDoc) => Promise<void>;
-  provider: LeveldbPersistence;
+const dp = new DrizzlePersistence();
+const persistence = {
+  provider: dp,
+  bindState: async (docName, ydoc) => {
+    const persistedYdoc = await dp.getYDoc(docName);
+    const newUpdates = Y.encodeStateAsUpdate(ydoc);
+    dp.storeUpdate(docName, newUpdates);
+    Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
+    ydoc.on('update', (update) => {
+      dp.storeUpdate(docName, update);
+    });
+  },
+  writeState: async (_docName, _ydoc) => {},
 };
-
-let persistence: Persistence | null = null;
-if (typeof persistenceDir === 'string') {
-  console.debug('Persisting documents to "' + persistenceDir + '"');
-  const ldb = new LeveldbPersistence(persistenceDir);
-  persistence = {
-    provider: ldb,
-    bindState: async (docName, ydoc) => {
-      const persistedYdoc = await ldb.getYDoc(docName);
-      const newUpdates = Y.encodeStateAsUpdate(ydoc);
-      ldb.storeUpdate(docName, newUpdates);
-      Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
-      ydoc.on('update', (update) => {
-        ldb.storeUpdate(docName, update);
-      });
-    },
-    writeState: async (_docName, _ydoc) => {},
-  };
-}
-
-export const setPersistence = (persistence_: Persistence) => {
-  persistence = persistence_;
-};
-
-export const getPersistence = () => persistence;
 
 export const docs = new Map<string, WSSharedDoc>();
 
@@ -75,11 +57,7 @@ const updateHandler = (update: Uint8Array, _origin: never, doc: WSSharedDoc, _tr
   doc.conns.forEach((_, conn) => send(doc, conn, message));
 };
 
-let contentInitializor = (f) => Promise.resolve();
-
-export const setContentInitializor = (f) => {
-  contentInitializor = f;
-};
+const contentInitializor = (f) => Promise.resolve();
 
 export class WSSharedDoc extends Y.Doc {
   name: string;
@@ -143,9 +121,7 @@ export const getYDoc = (docname: string, gc: boolean = true): WSSharedDoc =>
   map.setIfUndefined(docs, docname, () => {
     const doc = new WSSharedDoc(docname);
     doc.gc = gc;
-    if (persistence !== null) {
-      persistence.bindState(docname, doc);
-    }
+    persistence.bindState(docname, doc);
     docs.set(docname, doc);
     return doc;
   });
@@ -189,13 +165,10 @@ const closeConn = (doc: WSSharedDoc, conn: WebSocket) => {
     const controlledIds: Set<number> = doc.conns.get(conn)!;
     doc.conns.delete(conn);
     awarenessProtocol.removeAwarenessStates(doc.awareness, Array.from(controlledIds), null);
-    if (doc.conns.size === 0 && persistence !== null) {
-      // if persisted, we store state and destroy ydocument
-      persistence.writeState(doc.name, doc).then(() => {
-        doc.destroy();
-      });
-      docs.delete(doc.name);
-    }
+    persistence.writeState(doc.name, doc).then(() => {
+      doc.destroy();
+    });
+    docs.delete(doc.name);
   }
   conn.close();
 };
@@ -217,11 +190,7 @@ const send = (doc: WSSharedDoc, conn: WebSocket, m: Uint8Array) => {
 
 const pingTimeout = 30000;
 
-export const setupWSConnection = (
-  conn: WebSocket,
-  req: FastifyRequest,
-  { docName = (req.url || '').slice(1).split('?')[0], gc = true } = {},
-) => {
+export const setupWSConnection = (conn: WebSocket, docName, gc = true) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
   const doc = getYDoc(docName, gc);

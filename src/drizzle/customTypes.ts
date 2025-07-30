@@ -18,3 +18,9 @@ export const customNumeric = customType<{ data: number; driverData: string }>({
     return +value;
   },
 });
+
+export const binaryHash = customType<{ data: string; driverData: Buffer }>({
+  dataType() {
+    return 'bytea';
+  },
+});

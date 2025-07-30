@@ -6,6 +6,7 @@ import {
   doublePrecision,
   foreignKey,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -27,7 +28,7 @@ import {
   type ItemTypeUnion,
 } from '@graasp/sdk';
 
-import { customNumeric, ltree } from './customTypes';
+import { binaryHash, customNumeric, ltree } from './customTypes';
 
 export const actionViewEnum = pgEnum('action_view_enum', [
   'builder',
@@ -1100,6 +1101,8 @@ export const pageTable = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),
+    update: binaryHash().notNull(),
+    clock: integer().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull()

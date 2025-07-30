@@ -71,7 +71,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async (client, req) => {
       client.on('error', fastify.log.error);
 
-      setupWSConnection(client, req);
+      setupWSConnection(client, req.params.id);
     },
   );
 };
