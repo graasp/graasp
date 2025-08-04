@@ -6,7 +6,6 @@
  * Integrates the {@link WebSocketChannels} abstraction
  * in a fastify server plugin with @fastify/websocket
  */
-import fws from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
 
 import { NODE_ENV } from '../../config/env';
@@ -30,18 +29,6 @@ export interface WebsocketsPluginOptions {
 const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, options) => {
   // destructure passed fastify instance
   const { log } = fastify;
-
-  // must await this register call: otherwise decorated properties on `fastify` are not available
-  await fastify.register(fws, {
-    errorHandler: (error, conn, _req, _reply) => {
-      // remove client if needed
-      if (wsChannels) {
-        wsChannels.clientRemove(conn);
-      }
-      log.error(`graasp-plugin-websockets: an error occured: ${error}\n\tDestroying connection`);
-      conn.terminate();
-    },
-  });
 
   // Serializer / deserializer instance
   const serdes = new AjvMessageSerializer();
@@ -79,7 +66,12 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
 
       client.on('message', (msg) => wsService.handleRequest(msg, user?.account, client));
 
-      client.on('error', log.error);
+      client.on('error', (error, conn) => {
+        log.error(error);
+        if (wsChannels) {
+          wsChannels.clientRemove(conn);
+        }
+      });
 
       client.on('close', (_code, _reason) => {
         wsChannels.clientRemove(client);

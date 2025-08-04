@@ -45,9 +45,6 @@ export class PageItemService {
       item: { ...args.item, type: ItemType.PAGE, extra: {} },
     });
 
-    // create page properties row
-    // await this.pageRepository.createContent(dbConnection, newItem.id);
-
     return newItem as PageItem;
   }
 

@@ -23,25 +23,18 @@ import { DrizzlePersistence } from './DrizzlePersistence';
 
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
-const wsReadyStateClosing = 2; // eslint-disable-line
-const wsReadyStateClosed = 3; // eslint-disable-line
 
-// disable gc when using snapshots!
-const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0';
+const PING_TIMEOUT = 30000;
 
 const dp = new DrizzlePersistence();
-const persistence = {
-  provider: dp,
-  bindState: async (docName, ydoc) => {
-    const persistedYdoc = await dp.getYDoc(docName);
-    const newUpdates = Y.encodeStateAsUpdate(ydoc);
-    dp.storeUpdate(docName, newUpdates);
-    Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
-    ydoc.on('update', (update) => {
-      dp.storeUpdate(docName, update);
-    });
-  },
-  writeState: async (_docName, _ydoc) => {},
+const bindState = async (pageId: string, ydoc: Y.Doc) => {
+  const persistedYdoc = await dp.getYDoc(pageId);
+  const newUpdates = Y.encodeStateAsUpdate(ydoc);
+  dp.storeUpdate(pageId, newUpdates);
+  Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
+  ydoc.on('update', (update) => {
+    dp.storeUpdate(pageId, update);
+  });
 };
 
 export const docs = new Map<string, WSSharedDoc>();
@@ -49,7 +42,7 @@ export const docs = new Map<string, WSSharedDoc>();
 const messageSync = 0;
 const messageAwareness = 1;
 
-const updateHandler = (update: Uint8Array, _origin: never, doc: WSSharedDoc, _tr: never) => {
+const updateHandler = (update: Uint8Array, _origin: never, doc: WSSharedDoc) => {
   const encoder = encoding.createEncoder();
   encoding.writeVarUint(encoder, messageSync);
   syncProtocol.writeUpdate(encoder, update);
@@ -57,16 +50,13 @@ const updateHandler = (update: Uint8Array, _origin: never, doc: WSSharedDoc, _tr
   doc.conns.forEach((_, conn) => send(doc, conn, message));
 };
 
-const contentInitializor = (f) => Promise.resolve();
-
 export class WSSharedDoc extends Y.Doc {
   name: string;
   awareness: awarenessProtocol.Awareness;
   conns: Map<WebSocket, Set<number>>;
-  whenInitialized: Promise<void>;
 
-  constructor(name) {
-    super({ gc: gcEnabled });
+  constructor(name: string) {
+    super();
     this.name = name;
     this.conns = new Map();
     this.awareness = new awarenessProtocol.Awareness(this);
@@ -106,23 +96,20 @@ export class WSSharedDoc extends Y.Doc {
     };
     this.awareness.on('update', awarenessChangeHandler);
     this.on('update', updateHandler);
-    this.whenInitialized = contentInitializor(this);
   }
 }
 
 /**
- * Gets a Y.Doc by name, whether in memory or on disk
+ * Gets a Y.Doc by name, whether in memory or in db
  *
- * @param {string} docname - the name of the Y.Doc to find or create
- * @param {boolean} gc - whether to allow gc on the doc (applies only when created)
+ * @param {string} pageId - the name of the Y.Doc to find or create
  * @return {WSSharedDoc}
  */
-export const getYDoc = (docname: string, gc: boolean = true): WSSharedDoc =>
-  map.setIfUndefined(docs, docname, () => {
-    const doc = new WSSharedDoc(docname);
-    doc.gc = gc;
-    persistence.bindState(docname, doc);
-    docs.set(docname, doc);
+export const getYDoc = (pageId: string): WSSharedDoc =>
+  map.setIfUndefined(docs, pageId, () => {
+    const doc = new WSSharedDoc(pageId);
+    bindState(pageId, doc);
+    docs.set(pageId, doc);
     return doc;
   });
 
@@ -165,9 +152,7 @@ const closeConn = (doc: WSSharedDoc, conn: WebSocket) => {
     const controlledIds: Set<number> = doc.conns.get(conn)!;
     doc.conns.delete(conn);
     awarenessProtocol.removeAwarenessStates(doc.awareness, Array.from(controlledIds), null);
-    persistence.writeState(doc.name, doc).then(() => {
-      doc.destroy();
-    });
+    doc.destroy();
     docs.delete(doc.name);
   }
   conn.close();
@@ -188,12 +173,10 @@ const send = (doc: WSSharedDoc, conn: WebSocket, m: Uint8Array) => {
   }
 };
 
-const pingTimeout = 30000;
-
-export const setupWSConnection = (conn: WebSocket, docName, gc = true) => {
+export const setupWSConnection = (conn: WebSocket, pageId: string) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
-  const doc = getYDoc(docName, gc);
+  const doc = getYDoc(pageId);
   doc.conns.set(conn, new Set());
 
   // listen and reply to events
@@ -217,7 +200,7 @@ export const setupWSConnection = (conn: WebSocket, docName, gc = true) => {
         clearInterval(pingInterval);
       }
     }
-  }, pingTimeout);
+  }, PING_TIMEOUT);
 
   conn.on('close', () => {
     closeConn(doc, conn);

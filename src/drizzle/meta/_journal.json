@@ -71,6 +71,13 @@
       "when": 1753260966712,
       "tag": "0009_page",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1754296787808,
+      "tag": "0010_page-update",
+      "breakpoints": true
     }
   ]
 }

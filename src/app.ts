@@ -2,6 +2,7 @@
 // should not be reimported in any other files !
 import 'reflect-metadata';
 
+import fws from '@fastify/websocket';
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
@@ -20,6 +21,15 @@ import tagPlugin from './services/tag/tag.controller';
 import websocketsPlugin from './services/websockets/websocket.controller';
 
 export default async function (instance: FastifyInstance): Promise<void> {
+  const { log } = instance;
+
+  await instance.register(fws, {
+    errorHandler: (error, conn, _req, _reply) => {
+      log.error(`graasp-page-websockets: an error occured: ${error}\n\tDestroying connection`);
+      conn.terminate();
+    },
+  });
+
   await instance
     .register(fp(swaggerPlugin))
     .register(fp(schemaRegisterPlugin))
