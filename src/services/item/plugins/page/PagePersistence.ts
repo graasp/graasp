@@ -11,15 +11,15 @@ import { PageRepository } from './page.repository';
 export const PREFERRED_TRIM_SIZE = 500;
 
 export class PagePersistence {
-  private pageRepository = new PageRepository();
+  private readonly pageRepository = new PageRepository();
 
   getYDoc(db: DBConnection, itemId: string): Promise<Y.Doc> {
     return db.transaction(async (dbConnection) => {
       const updates = await this.pageRepository.getUpdates(dbConnection, itemId);
       const ydoc = new Y.Doc();
       ydoc.transact(() => {
-        for (let i = 0; i < updates.length; i++) {
-          Y.applyUpdate(ydoc, updates[i]);
+        for (const update of updates) {
+          Y.applyUpdate(ydoc, update);
         }
       });
       if (updates.length > PREFERRED_TRIM_SIZE) {
@@ -89,8 +89,8 @@ export class PagePersistence {
   private mergeUpdates(updates: Uint8Array[]) {
     const ydoc = new Y.Doc();
     ydoc.transact(() => {
-      for (let i = 0; i < updates.length; i++) {
-        Y.applyUpdate(ydoc, updates[i]);
+      for (const update of updates) {
+        Y.applyUpdate(ydoc, update);
       }
     });
     return { update: Y.encodeStateAsUpdate(ydoc), sv: Y.encodeStateVector(ydoc) };
