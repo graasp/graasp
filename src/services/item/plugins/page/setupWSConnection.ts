@@ -19,21 +19,22 @@ import * as syncProtocol from 'y-protocols/sync';
 // @ts-expect-error
 import * as Y from 'yjs';
 
-import { DrizzlePersistence } from './DrizzlePersistence';
+import { db } from '../../../../drizzle/db';
+import { PagePersistence } from './PagePersistence';
 
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
 
 const PING_TIMEOUT = 30000;
 
-const dp = new DrizzlePersistence();
+const dp = new PagePersistence();
 const bindState = async (pageId: string, ydoc: Y.Doc) => {
-  const persistedYdoc = await dp.getYDoc(pageId);
+  const persistedYdoc = await dp.getYDoc(db, pageId);
   const newUpdates = Y.encodeStateAsUpdate(ydoc);
-  dp.storeUpdate(pageId, newUpdates);
+  dp.storeUpdate(db, pageId, newUpdates);
   Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
   ydoc.on('update', (update) => {
-    dp.storeUpdate(pageId, update);
+    dp.storeUpdate(db, pageId, update);
   });
 };
 
@@ -50,7 +51,7 @@ const updateHandler = (update: Uint8Array, _origin: never, doc: WSSharedDoc) => 
   doc.conns.forEach((_, conn) => send(doc, conn, message));
 };
 
-export class WSSharedDoc extends Y.Doc {
+class WSSharedDoc extends Y.Doc {
   name: string;
   awareness: awarenessProtocol.Awareness;
   conns: Map<WebSocket, Set<number>>;
@@ -180,7 +181,9 @@ export const setupWSConnection = (conn: WebSocket, pageId: string) => {
   doc.conns.set(conn, new Set());
 
   // listen and reply to events
-  conn.on('message', (message: ArrayBuffer) => messageListener(conn, doc, new Uint8Array(message)));
+  conn.on('message', (message: ArrayBuffer) => {
+    messageListener(conn, doc, new Uint8Array(message));
+  });
 
   // Check if connection is still alive
   let pongReceived = true;

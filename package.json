@@ -175,7 +175,8 @@
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
     "vitest": "3.2.3",
-    "wait-for-expect": "3.0.2"
+    "wait-for-expect": "3.0.2",
+    "y-websocket": "3.0.0"
   },
   "resolutions": {
     "sodium-native": "4.2.0"

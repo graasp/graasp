@@ -8813,6 +8813,7 @@ __metadata:
     ws: "npm:8.18.1"
     y-leveldb: "npm:0.2.0"
     y-protocols: "npm:1.0.6"
+    y-websocket: "npm:3.0.0"
     yazl: "npm:3.3.1"
     yjs: "npm:13.6.27"
   languageName: unknown
@@ -10548,7 +10549,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lib0@npm:0.2.114, lib0@npm:^0.2.31, lib0@npm:^0.2.85, lib0@npm:^0.2.99":
+"lib0@npm:0.2.114, lib0@npm:^0.2.102, lib0@npm:^0.2.31, lib0@npm:^0.2.85, lib0@npm:^0.2.99":
   version: 0.2.114
   resolution: "lib0@npm:0.2.114"
   dependencies:
@@ -15076,7 +15077,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"y-protocols@npm:1.0.6":
+"y-protocols@npm:1.0.6, y-protocols@npm:^1.0.5":
   version: 1.0.6
   resolution: "y-protocols@npm:1.0.6"
   dependencies:
@@ -15084,6 +15085,18 @@ __metadata:
   peerDependencies:
     yjs: ^13.0.0
   checksum: 10/28dc27e1db98b496763fa083827c24c73c286f8a76649e0de09ddd9553cc2bf98fc9331dc0b206acfd1277d905d7e879f60fbe06c464bac4f3c8a9994b3a21f7
+  languageName: node
+  linkType: hard
+
+"y-websocket@npm:3.0.0":
+  version: 3.0.0
+  resolution: "y-websocket@npm:3.0.0"
+  dependencies:
+    lib0: "npm:^0.2.102"
+    y-protocols: "npm:^1.0.5"
+  peerDependencies:
+    yjs: ^13.5.6
+  checksum: 10/396fd488c177538f608019a442969c02a3c6e972f8aaa6c310959789718ebc6690e44721c58a6a0d88aee0879adc13c716ab714b332e4a0cb51b895f1231b6d1
   languageName: node
   linkType: hard
 
