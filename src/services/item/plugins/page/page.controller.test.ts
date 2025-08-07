@@ -204,7 +204,11 @@ describe('Page routes tests', () => {
 
       // connect to ws with yjs specific websocket provider
       const doc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc);
+      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc, {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        WebSocketPolyfill: WebSocket,
+      });
 
       // update document
       doc.getText('mytext').insert(0, 'abc');
@@ -249,7 +253,11 @@ describe('Page routes tests', () => {
 
       // connect to ws with yjs specific websocket provider
       const doc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc);
+      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc, {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        WebSocketPolyfill: WebSocket,
+      });
 
       // update should be saved in db
       await waitForExpect(async () => {
@@ -288,7 +296,11 @@ describe('Page routes tests', () => {
 
       // connect to ws with yjs specific websocket provider
       const doc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc);
+      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc, {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        WebSocketPolyfill: WebSocket,
+      });
 
       // update should be saved in db
       await waitForExpect(async () => {
@@ -297,7 +309,11 @@ describe('Page routes tests', () => {
 
       // 2nd user connects to the same item
       const doc2 = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc2);
+      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc2, {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        WebSocketPolyfill: WebSocket,
+      });
 
       // update should be saved in db
       await waitForExpect(async () => {
