@@ -25,7 +25,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   await instance.register(fws, {
     errorHandler: (error, conn, _req, _reply) => {
-      log.error(`graasp-page-websockets: an error occured: ${error}\n\tDestroying connection`);
+      log.error(`graasp-websockets: an error occured: ${error}\n\tDestroying connection`);
       conn.terminate();
     },
   });

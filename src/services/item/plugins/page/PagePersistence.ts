@@ -77,7 +77,11 @@ export class PagePersistence {
     stateAsUpdate: Uint8Array,
   ): Promise<number> {
     const clock = await this.saveNewUpdate(db, itemId, stateAsUpdate);
-    this.pageRepository.clearUpdatesRange(db, itemId, 0, clock); // intentionally not waiting for the promise to resolve!
+    // intentionally not waiting for the promise to resolve! (from source)
+    // clearing is not critical, the logic still works without clearing previous updates
+    this.pageRepository.clearUpdatesRange(db, itemId, 0, clock).catch((e) => {
+      console.error(e);
+    });
 
     return clock;
   }

@@ -27,14 +27,14 @@ const wsReadyStateOpen = 1;
 
 const PING_TIMEOUT = 30000;
 
-const dp = new PagePersistence();
+const persistence = new PagePersistence();
 const bindState = async (pageId: string, ydoc: Y.Doc) => {
-  const persistedYdoc = await dp.getYDoc(db, pageId);
+  const persistedYdoc = await persistence.getYDoc(db, pageId);
   const newUpdates = Y.encodeStateAsUpdate(ydoc);
-  dp.storeUpdate(db, pageId, newUpdates);
+  persistence.storeUpdate(db, pageId, newUpdates);
   Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
   ydoc.on('update', (update) => {
-    dp.storeUpdate(db, pageId, update);
+    persistence.storeUpdate(db, pageId, update);
   });
 };
 

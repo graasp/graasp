@@ -23,6 +23,7 @@ export class PageRepository {
    */
   async getCurrentUpdateClock(dbConnection: DBConnection, itemId: string): Promise<number> {
     const lastUpdate = await dbConnection.query.pageUpdateTable.findFirst({
+      columns: { clock: true },
       where: eq(pageUpdateTable.itemId, itemId),
       orderBy: desc(pageUpdateTable.clock),
     });
@@ -34,6 +35,7 @@ export class PageRepository {
    */
   async getUpdates(dbConnection: DBConnection, itemId: string): Promise<Uint8Array[]> {
     const updateEntries = await dbConnection.query.pageUpdateTable.findMany({
+      columns: { update: true },
       where: eq(pageUpdateTable.itemId, itemId),
       orderBy: asc(pageUpdateTable.clock),
     });
