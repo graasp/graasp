@@ -13,7 +13,7 @@ import { PagePersistence } from './PagePersistence';
 
 const persistence = new PagePersistence();
 
-describe('DrizzlePersistence', () => {
+describe('PagePersistence', () => {
   describe('getYDoc', () => {
     it('get empty doc for page without updates', async () => {
       const {

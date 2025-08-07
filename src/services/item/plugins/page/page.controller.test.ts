@@ -32,6 +32,7 @@ describe('Page routes tests', () => {
 
   beforeAll(async () => {
     ({ app } = await build());
+    await app.listen();
   });
 
   afterAll(async () => {
@@ -165,7 +166,6 @@ describe('Page routes tests', () => {
       mockAuthenticate(actor);
 
       // start server to correctly listen to websockets
-      await app.listen();
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
       const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws`);
@@ -199,7 +199,6 @@ describe('Page routes tests', () => {
       mockAuthenticate(actor);
 
       // start server to correctly listen to websockets
-      await app.listen();
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
 
@@ -245,7 +244,6 @@ describe('Page routes tests', () => {
       tmpDoc.destroy();
 
       // start server to correctly listen to websockets
-      await app.listen();
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
 
@@ -285,7 +283,6 @@ describe('Page routes tests', () => {
       tmpDoc.destroy();
 
       // start server to correctly listen to websockets
-      await app.listen();
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
 
