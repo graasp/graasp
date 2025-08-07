@@ -14,7 +14,6 @@ import {
   createConnUrl,
   createDefaultLocalConfig,
   createWsChannels,
-  createWsClient,
   createWsClients,
 } from './test-utils';
 
@@ -84,23 +83,6 @@ test("empty channel gc'd by heartbeat", async () => {
   await waitForExpect(() => {
     expect(channels.channels.size).toEqual(0);
   });
-  wss.close();
-});
-
-test("client without mapping gc'd by heartbeat", async () => {
-  const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
-  const { channels, wss } = createWsChannels(config, 100);
-  const client = await createWsClient(config);
-  expect(channels.subscriptions.size).toEqual(1);
-  // forcefully remove mapping
-  channels.subscriptions.forEach((_, ws) => channels.subscriptions.delete(ws));
-  await waitForExpect(() => {
-    // client connection should be eventually terminated
-    expect(client.readyState).toEqual(WebSocket.CLOSED);
-  });
-  // server should not have client anymore
-  expect(channels.wsServer.clients.size).toEqual(0);
-  client.close();
   wss.close();
 });
 

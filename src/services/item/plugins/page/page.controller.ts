@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -11,6 +11,7 @@ import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { WrongItemTypeError } from '../../errors';
 import { createPage, pageWebsocketsSchema } from './page.schemas';
 import { PageItemService } from './page.service';
 import { setupWSConnection } from './setupWSConnection';
@@ -60,18 +61,23 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
           const account = asDefined(user?.account);
 
           // check write permission
-          await authorizedItemService.assertAccessForItemId(db, {
+          const item = await authorizedItemService.getItemById(db, {
             permission: PermissionLevel.Write,
             itemId: params.id,
             accountId: account.id,
           });
+
+          // item should be a page
+          if (item.type !== ItemType.PAGE) {
+            throw new WrongItemTypeError(item.type);
+          }
         },
       ],
     },
     async (client, req) => {
       client.on('error', fastify.log.error);
 
-      setupWSConnection(client, req);
+      setupWSConnection(client, req.params.id);
     },
   );
 };

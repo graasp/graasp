@@ -133,15 +133,6 @@ class WebSocketChannels {
 
     // checks lost connections every defined time interval
     this.heartbeat = setInterval(() => {
-      // find clients that are not registered anymore
-      this.wsServer.clients.forEach((ws) => {
-        if (this.subscriptions.get(ws) === undefined) {
-          this.logger.info(
-            'graasp-plugin-websockets: ejecting client, orphan without subscriptions',
-          );
-          ws.terminate();
-        }
-      });
       // find registered clients that lost connection
       this.subscriptions.forEach((client, ws) => {
         // if client was already marked dead, terminate its connection
