@@ -7,14 +7,14 @@ import { ItemType, PermissionLevel } from '@graasp/sdk';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
+import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { WrongItemTypeError } from '../../errors';
 import { createPage, pageWebsocketsSchema } from './page.schemas';
 import { PageItemService } from './page.service';
-import { setupWSConnection } from './setupWSConnection';
+import { setupWSConnectionForRead, setupWSConnectionForWriters } from './setupWSConnection';
 
 export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const pageItemService = resolveDependency(PageItemService);
@@ -50,23 +50,17 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.get(
-    '/pages/:id/ws',
+    '/pages/:id/ws/read',
     {
       websocket: true,
       schema: pageWebsocketsSchema,
       preHandler: [
-        isAuthenticated,
-        matchOne(validatedMemberAccountRole),
+        optionalIsAuthenticated,
         async ({ user, params }) => {
-          const account = asDefined(user?.account);
-
-          // check write permission
           const item = await authorizedItemService.getItemById(db, {
-            permission: PermissionLevel.Write,
             itemId: params.id,
-            accountId: account.id,
+            accountId: user?.account?.id,
           });
-
           // item should be a page
           if (item.type !== ItemType.PAGE) {
             throw new WrongItemTypeError(item.type);
@@ -76,8 +70,36 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async (client, req) => {
       client.on('error', fastify.log.error);
+      setupWSConnectionForRead(client, req.params.id);
+    },
+  );
 
-      setupWSConnection(client, req.params.id);
+  fastify.get(
+    '/pages/:id/ws',
+    {
+      websocket: true,
+      schema: pageWebsocketsSchema,
+      preHandler: [
+        isAuthenticated,
+        matchOne(validatedMemberAccountRole),
+        async ({ user, params }) => {
+          const account = asDefined(user?.account);
+          // check write permission
+          const item = await authorizedItemService.getItemById(db, {
+            permission: PermissionLevel.Write,
+            itemId: params.id,
+            accountId: account.id,
+          });
+          // item should be a page
+          if (item.type !== ItemType.PAGE) {
+            throw new WrongItemTypeError(item.type);
+          }
+        },
+      ],
+    },
+    async (client, req) => {
+      client.on('error', fastify.log.error);
+      setupWSConnectionForWriters(client, req.params.id);
     },
   );
 };
