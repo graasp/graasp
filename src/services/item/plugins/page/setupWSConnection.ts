@@ -40,7 +40,9 @@ const persistence = new PagePersistence();
  * Save document updates in database
  */
 class WSSharedDoc extends WSDoc {
-  static ORIGIN = 'shared';
+  static buildOrigin(name: string) {
+    return name + '_shared';
+  }
 
   constructor(name: string) {
     super(name, true);
@@ -88,7 +90,7 @@ class WSSharedDoc extends WSDoc {
     this.on('update', (update) => {
       const readDoc = readDocs.get(this.name);
       if (readDoc) {
-        Y.applyUpdate(readDoc, update, WSSharedDoc.ORIGIN);
+        Y.applyUpdate(readDoc, update, WSSharedDoc.buildOrigin(this.name));
       }
     });
 
@@ -128,7 +130,7 @@ class WSReadDoc extends WSDoc {
     // send yjs doc updates to all connections
     // only if origin is from shared doc or sync update
     this.on('update', (update: Uint8Array, origin: unknown) => {
-      if (origin === WSSharedDoc.ORIGIN || origin === this.SYNC_ORIGIN) {
+      if (origin === WSSharedDoc.buildOrigin(this.name) || origin === this.SYNC_ORIGIN) {
         this.broadcastUpdate(update);
       }
     });
