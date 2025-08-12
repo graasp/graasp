@@ -37,16 +37,15 @@ export class WSDoc extends Y.Doc {
     this.enableAwareness = enableAwareness;
     this.awareness = new awarenessProtocol.Awareness(this);
     this.awareness.setLocalState(null);
+  }
 
-    // send yjs doc update to all connections
-    this.on('update', (update: Uint8Array, _origin: never) => {
-      const encoder = encoding.createEncoder();
-      encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
-      syncProtocol.writeUpdate(encoder, update);
-      const message = encoding.toUint8Array(encoder);
+  protected broadcastUpdate(update: Uint8Array) {
+    const encoder = encoding.createEncoder();
+    encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
+    syncProtocol.writeUpdate(encoder, update);
+    const message = encoding.toUint8Array(encoder);
 
-      this.conns.forEach((_, conn) => this.send(conn, message));
-    });
+    this.conns.forEach((_, conn) => this.send(conn, message));
   }
 
   /**

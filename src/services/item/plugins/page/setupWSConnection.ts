@@ -35,11 +35,13 @@ export const readDocs = new Map<string, WSReadDoc>();
 const persistence = new PagePersistence();
 
 /**
- * Yjs document wrapper for read usage
- * Handles update for awareness
- * Save document update in database
+ * Yjs document wrapper for write usage
+ * Handles updates for awareness
+ * Save document updates in database
  */
 class WSSharedDoc extends WSDoc {
+  static ORIGIN = 'shared';
+
   constructor(name: string) {
     super(name, true);
 
@@ -77,11 +79,16 @@ class WSSharedDoc extends WSDoc {
     };
     this.awareness.on('update', awarenessChangeHandler);
 
-    // send yjs doc update to corresponding read doc if it exists
+    // send yjs doc updates to all connections
+    this.on('update', (update: Uint8Array) => {
+      this.broadcastUpdate(update);
+    });
+
+    // send yjs doc updates to corresponding read doc if it exists
     this.on('update', (update) => {
       const readDoc = readDocs.get(this.name);
       if (readDoc) {
-        Y.applyUpdate(readDoc, update);
+        Y.applyUpdate(readDoc, update, WSSharedDoc.ORIGIN);
       }
     });
 
@@ -93,7 +100,7 @@ class WSSharedDoc extends WSDoc {
     docs.delete(this.name);
   }
 
-  async bindState(pageId: string) {
+  private async bindState(pageId: string) {
     // get updates from database and apply on the yjs doc
     const persistedYdoc = await persistence.getYDoc(db, pageId);
     const newUpdates = Y.encodeStateAsUpdate(this);
@@ -109,16 +116,27 @@ class WSSharedDoc extends WSDoc {
 
 /**
  * Yjs document wrapper for read usage
+ * Receive updates from corresponding write doc
  */
 class WSReadDoc extends WSDoc {
+  private SYNC_ORIGIN = 'sync';
+
   constructor(name: string) {
     super(name, false);
     this.bindState(name);
+
+    // send yjs doc updates to all connections
+    // only if origin is from shared doc or sync update
+    this.on('update', (update: Uint8Array, origin: unknown) => {
+      if (origin === WSSharedDoc.ORIGIN || origin === this.SYNC_ORIGIN) {
+        this.broadcastUpdate(update);
+      }
+    });
   }
 
-  async bindState(pageId: string) {
+  private async bindState(pageId: string) {
     const persistedYdoc = await persistence.getYDoc(db, pageId);
-    Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc));
+    Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc), this.SYNC_ORIGIN);
   }
 
   closeConn(conn: WebSocket) {

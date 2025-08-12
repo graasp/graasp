@@ -57,6 +57,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: [
         optionalIsAuthenticated,
         async ({ user, params }) => {
+          // check access to item
           const item = await authorizedItemService.getItemById(db, {
             itemId: params.id,
             accountId: user?.account?.id,
@@ -90,6 +91,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
             itemId: params.id,
             accountId: account.id,
           });
+
           // item should be a page
           if (item.type !== ItemType.PAGE) {
             throw new WrongItemTypeError(item.type);
