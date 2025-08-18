@@ -1,9 +1,6 @@
 /* source: https://github.com/yjs/y-websocket-server/blob/main/src/utils.js */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-import * as decoding from 'lib0/decoding';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import * as encoding from 'lib0/encoding';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -21,47 +18,34 @@ import * as Y from 'yjs';
 
 import { db } from '../../../../drizzle/db';
 import { PagePersistence } from './PagePersistence';
+import { WSDoc } from './WSDoc';
+import { MESSAGE_AWARENESS_CODE, MESSAGE_SYNC_CODE, PING_TIMEOUT } from './constants';
 
-const wsReadyStateConnecting = 0;
-const wsReadyStateOpen = 1;
-
-const PING_TIMEOUT = 30000;
-
-const persistence = new PagePersistence();
-const bindState = async (pageId: string, ydoc: Y.Doc) => {
-  const persistedYdoc = await persistence.getYDoc(db, pageId);
-  const newUpdates = Y.encodeStateAsUpdate(ydoc);
-  persistence.storeUpdate(db, pageId, newUpdates);
-  Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
-  ydoc.on('update', (update) => {
-    persistence.storeUpdate(db, pageId, update);
-  });
-};
-
+/**
+ * In-memory storage of currently used yjs docs and readonly yjs docs
+ * For a page item, there might exist one instance in docs (for writers) and one instance in readDocs (for readers)
+ * or in either one
+ */
 export const docs = new Map<string, WSSharedDoc>();
+export const readDocs = new Map<string, WSReadDoc>();
 
-const messageSync = 0;
-const messageAwareness = 1;
+/**
+ * Storage management for pages, dealing with updates from yjs
+ */
+const persistence = new PagePersistence();
 
-const updateHandler = (update: Uint8Array, _origin: never, doc: WSSharedDoc) => {
-  const encoder = encoding.createEncoder();
-  encoding.writeVarUint(encoder, messageSync);
-  syncProtocol.writeUpdate(encoder, update);
-  const message = encoding.toUint8Array(encoder);
-  doc.conns.forEach((_, conn) => send(doc, conn, message));
-};
-
-class WSSharedDoc extends Y.Doc {
-  name: string;
-  awareness: awarenessProtocol.Awareness;
-  conns: Map<WebSocket, Set<number>>;
+/**
+ * Yjs document wrapper for write usage
+ * Handles updates for awareness
+ * Save document updates in database
+ */
+class WSSharedDoc extends WSDoc {
+  static buildOrigin(name: string) {
+    return name + '_shared';
+  }
 
   constructor(name: string) {
-    super();
-    this.name = name;
-    this.conns = new Map();
-    this.awareness = new awarenessProtocol.Awareness(this);
-    this.awareness.setLocalState(null);
+    super(name, true);
 
     const awarenessChangeHandler = (
       {
@@ -85,112 +69,100 @@ class WSSharedDoc extends Y.Doc {
       }
       // broadcast awareness update
       const encoder = encoding.createEncoder();
-      encoding.writeVarUint(encoder, messageAwareness);
+      encoding.writeVarUint(encoder, MESSAGE_AWARENESS_CODE);
       encoding.writeVarUint8Array(
         encoder,
         awarenessProtocol.encodeAwarenessUpdate(this.awareness, changedClients),
       );
       const buff = encoding.toUint8Array(encoder);
       this.conns.forEach((_, c) => {
-        send(this, c, buff);
+        this.send(c, buff);
       });
     };
     this.awareness.on('update', awarenessChangeHandler);
-    this.on('update', updateHandler);
+
+    // send yjs doc updates to all connections
+    this.on('update', (update: Uint8Array) => {
+      this.broadcastUpdate(update);
+    });
+
+    // send yjs doc updates to corresponding read doc if it exists
+    this.on('update', (update) => {
+      const readDoc = readDocs.get(this.name);
+      if (readDoc) {
+        Y.applyUpdate(readDoc, update, WSSharedDoc.buildOrigin(this.name));
+      }
+    });
+
+    this.bindState(name);
+  }
+
+  closeConn(conn: WebSocket) {
+    super.closeConn(conn);
+    if (this.conns.size === 0) {
+      docs.delete(this.name);
+    }
+  }
+
+  private async bindState(pageId: string) {
+    // get updates from database and apply on the yjs doc
+    const persistedYdoc = await persistence.getYDoc(db, pageId);
+    const newUpdates = Y.encodeStateAsUpdate(this);
+    persistence.storeUpdate(db, pageId, newUpdates);
+    Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc));
+
+    // on yjs document update, the update is store in the database
+    this.on('update', (update) => {
+      persistence.storeUpdate(db, pageId, update);
+    });
   }
 }
 
 /**
- * Gets a Y.Doc by name, whether in memory or in db
- *
- * @param {string} pageId - the name of the Y.Doc to find or create
- * @return {WSSharedDoc}
+ * Yjs document wrapper for read usage
+ * Receive updates from corresponding write doc
  */
-export const getYDoc = (pageId: string): WSSharedDoc =>
-  map.setIfUndefined(docs, pageId, () => {
-    const doc = new WSSharedDoc(pageId);
-    bindState(pageId, doc);
-    docs.set(pageId, doc);
-    return doc;
-  });
+class WSReadDoc extends WSDoc {
+  private SYNC_ORIGIN = 'sync';
 
-const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array) => {
-  try {
-    const encoder = encoding.createEncoder();
-    const decoder = decoding.createDecoder(message);
-    const messageType = decoding.readVarUint(decoder);
-    switch (messageType) {
-      case messageSync:
-        encoding.writeVarUint(encoder, messageSync);
-        syncProtocol.readSyncMessage(decoder, encoder, doc, conn);
+  constructor(name: string) {
+    super(name, false);
+    this.bindState(name);
 
-        // If the `encoder` only contains the type of reply message and no
-        // message, there is no need to send the message. When `encoder` only
-        // contains the type of reply, its length is 1.
-        if (encoding.length(encoder) > 1) {
-          send(doc, conn, encoding.toUint8Array(encoder));
-        }
-        break;
-      case messageAwareness: {
-        awarenessProtocol.applyAwarenessUpdate(
-          doc.awareness,
-          decoding.readVarUint8Array(decoder),
-          conn,
-        );
-        break;
+    // send yjs doc updates to all connections
+    // only if origin is from shared doc or sync update
+    this.on('update', (update: Uint8Array, origin: unknown) => {
+      if (origin === WSSharedDoc.buildOrigin(this.name) || origin === this.SYNC_ORIGIN) {
+        this.broadcastUpdate(update);
       }
-    }
-  } catch (err) {
-    console.error(err);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    doc.emit('error', [err]);
-  }
-};
-
-const closeConn = (doc: WSSharedDoc, conn: WebSocket) => {
-  if (doc.conns.has(conn)) {
-    const controlledIds: Set<number> = doc.conns.get(conn)!;
-    doc.conns.delete(conn);
-    awarenessProtocol.removeAwarenessStates(doc.awareness, Array.from(controlledIds), null);
-    doc.destroy();
-    docs.delete(doc.name);
-  }
-  conn.close();
-};
-
-const send = (doc: WSSharedDoc, conn: WebSocket, m: Uint8Array) => {
-  if (conn.readyState !== wsReadyStateConnecting && conn.readyState !== wsReadyStateOpen) {
-    closeConn(doc, conn);
-  }
-  try {
-    conn.send(m, {}, (err) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      err != null && closeConn(doc, conn);
     });
-  } catch (e) {
-    console.error(e);
-    closeConn(doc, conn);
   }
-};
 
-export const setupWSConnection = (conn: WebSocket, pageId: string) => {
-  conn.binaryType = 'arraybuffer';
-  // get doc, initialize if it does not exist yet
-  const doc = getYDoc(pageId);
-  doc.conns.set(conn, new Set());
+  private async bindState(pageId: string) {
+    const persistedYdoc = await persistence.getYDoc(db, pageId);
+    Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc), this.SYNC_ORIGIN);
+  }
 
-  // listen and reply to events
-  conn.on('message', (message: ArrayBuffer) => {
-    messageListener(conn, doc, new Uint8Array(message));
-  });
+  closeConn(conn: WebSocket) {
+    super.closeConn(conn);
+    if (this.conns.size === 0) {
+      readDocs.delete(this.name);
+    }
+  }
+}
 
+/**
+ * Setup ping pong events to close the websocket connection when necessary
+ * @param conn websocket connection
+ * @param doc yjs document
+ */
+function setupPingPong(conn: WebSocket, doc: WSDoc) {
   // Check if connection is still alive
   let pongReceived = true;
   const pingInterval = setInterval(() => {
     if (!pongReceived) {
       if (doc.conns.has(conn)) {
-        closeConn(doc, conn);
+        doc.closeConn(conn);
       }
       clearInterval(pingInterval);
     } else if (doc.conns.has(conn)) {
@@ -199,37 +171,89 @@ export const setupWSConnection = (conn: WebSocket, pageId: string) => {
         conn.ping();
       } catch (e) {
         console.error(e);
-        closeConn(doc, conn);
+        doc.closeConn(conn);
         clearInterval(pingInterval);
       }
     }
   }, PING_TIMEOUT);
 
   conn.on('close', () => {
-    closeConn(doc, conn);
+    doc.closeConn(conn);
     clearInterval(pingInterval);
   });
 
   conn.on('pong', () => {
     pongReceived = true;
   });
+}
+
+/**
+ * Setup websocket connection for writer
+ * @param conn websocket connection
+ * @param pageId page id to connect to
+ */
+export const setupWSConnectionForWriters = (conn: WebSocket, pageId: string) => {
+  conn.binaryType = 'arraybuffer';
+  // get doc, initialize if it does not exist yet
+  const doc = map.setIfUndefined(docs, pageId, () => {
+    const doc = new WSSharedDoc(pageId);
+
+    docs.set(pageId, doc);
+
+    return doc;
+  });
+  doc.addConnection(conn);
+
+  setupPingPong(conn, doc);
+
   // put the following in a variables in a block so the interval handlers don't keep in in
   // scope
   {
     // send sync step 1
     const encoder = encoding.createEncoder();
-    encoding.writeVarUint(encoder, messageSync);
+    encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
     syncProtocol.writeSyncStep1(encoder, doc);
-    send(doc, conn, encoding.toUint8Array(encoder));
+    doc.send(conn, encoding.toUint8Array(encoder));
+
+    // send init awareness
     const awarenessStates = doc.awareness.getStates();
     if (awarenessStates.size > 0) {
       const encoder = encoding.createEncoder();
-      encoding.writeVarUint(encoder, messageAwareness);
+      encoding.writeVarUint(encoder, MESSAGE_AWARENESS_CODE);
       encoding.writeVarUint8Array(
         encoder,
         awarenessProtocol.encodeAwarenessUpdate(doc.awareness, Array.from(awarenessStates.keys())),
       );
-      send(doc, conn, encoding.toUint8Array(encoder));
+      doc.send(conn, encoding.toUint8Array(encoder));
     }
+  }
+};
+
+/**
+ * Setup websocket connection for read user
+ * @param conn websocket connection
+ * @param pageId page id to connect to
+ */
+export const setupWSConnectionForRead = (conn: WebSocket, pageId: string) => {
+  conn.binaryType = 'arraybuffer';
+  // get doc, initialize if it does not exist yet
+  const doc = map.setIfUndefined(readDocs, pageId, () => {
+    const doc = new WSReadDoc(pageId);
+    readDocs.set(pageId, doc);
+
+    return doc;
+  });
+  doc.addConnection(conn);
+
+  setupPingPong(conn, doc);
+
+  // put the following in a variables in a block so the interval handlers don't keep in in
+  // scope
+  {
+    // send sync step 1
+    const encoder = encoding.createEncoder();
+    encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
+    syncProtocol.writeSyncStep1(encoder, doc);
+    doc.send(conn, encoding.toUint8Array(encoder));
   }
 };
