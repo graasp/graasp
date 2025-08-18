@@ -99,7 +99,9 @@ class WSSharedDoc extends WSDoc {
 
   closeConn(conn: WebSocket) {
     super.closeConn(conn);
-    docs.delete(this.name);
+    if (this.conns.size === 0) {
+      docs.delete(this.name);
+    }
   }
 
   private async bindState(pageId: string) {
@@ -143,7 +145,9 @@ class WSReadDoc extends WSDoc {
 
   closeConn(conn: WebSocket) {
     super.closeConn(conn);
-    readDocs.delete(this.name);
+    if (this.conns.size === 0) {
+      readDocs.delete(this.name);
+    }
   }
 }
 
