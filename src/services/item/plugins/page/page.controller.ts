@@ -11,14 +11,24 @@ import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../aut
 import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { ItemService } from '../../item.service';
 import { createPage, pageWebsocketsSchema } from './page.schemas';
 import { PageItemService } from './page.service';
 import { setupWSConnectionForRead, setupWSConnectionForWriters } from './setupWSConnection';
 
 export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const itemService = resolveDependency(ItemService);
   const pageItemService = resolveDependency(PageItemService);
   const authorizedItemService = resolveDependency(AuthorizedItemService);
+
+  // register post copy handler to copy the updates for page
+  itemService.hooks.setPostHook('copy', async (_actor, thisDb, { original: item, copy }) => {
+    if (isItemType(item, ItemType.PAGE)) {
+      await pageItemService.copy(thisDb, item.id, copy.id);
+    }
+  });
 
   fastify.post(
     '/pages',
@@ -71,7 +81,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async (client, req) => {
       client.on('error', fastify.log.error);
-      setupWSConnectionForRead(client, req.params.id);
+      setupWSConnectionForRead(client, req.params.id, pageItemService);
     },
   );
 
@@ -101,7 +111,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async (client, req) => {
       client.on('error', fastify.log.error);
-      setupWSConnectionForWriters(client, req.params.id);
+      setupWSConnectionForWriters(client, req.params.id, pageItemService);
     },
   );
 };

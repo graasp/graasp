@@ -17,9 +17,9 @@ import * as syncProtocol from 'y-protocols/sync';
 import * as Y from 'yjs';
 
 import { db } from '../../../../drizzle/db';
-import { PagePersistence } from './PagePersistence';
 import { WSDoc } from './WSDoc';
 import { MESSAGE_AWARENESS_CODE, MESSAGE_SYNC_CODE, PING_TIMEOUT } from './constants';
+import { PageItemService } from './page.service';
 
 /**
  * In-memory storage of currently used yjs docs and readonly yjs docs
@@ -28,11 +28,6 @@ import { MESSAGE_AWARENESS_CODE, MESSAGE_SYNC_CODE, PING_TIMEOUT } from './const
  */
 export const docs = new Map<string, WSSharedDoc>();
 export const readDocs = new Map<string, WSReadDoc>();
-
-/**
- * Storage management for pages, dealing with updates from yjs
- */
-const persistence = new PagePersistence();
 
 /**
  * Yjs document wrapper for write usage
@@ -44,8 +39,8 @@ class WSSharedDoc extends WSDoc {
     return name + '_shared';
   }
 
-  constructor(name: string) {
-    super(name, true);
+  constructor(pageItemService: PageItemService, name: string) {
+    super(pageItemService, name, true);
 
     const awarenessChangeHandler = (
       {
@@ -106,14 +101,14 @@ class WSSharedDoc extends WSDoc {
 
   private async bindState(pageId: string) {
     // get updates from database and apply on the yjs doc
-    const persistedYdoc = await persistence.getYDoc(db, pageId);
+    const persistedYdoc = await this.pageItemService.getById(db, pageId);
     const newUpdates = Y.encodeStateAsUpdate(this);
-    persistence.storeUpdate(db, pageId, newUpdates);
+    this.pageItemService.storeUpdate(db, pageId, newUpdates);
     Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc));
 
     // on yjs document update, the update is store in the database
     this.on('update', (update) => {
-      persistence.storeUpdate(db, pageId, update);
+      this.pageItemService.storeUpdate(db, pageId, update);
     });
   }
 }
@@ -125,8 +120,8 @@ class WSSharedDoc extends WSDoc {
 class WSReadDoc extends WSDoc {
   private SYNC_ORIGIN = 'sync';
 
-  constructor(name: string) {
-    super(name, false);
+  constructor(pageItemService: PageItemService, name: string) {
+    super(pageItemService, name, false);
     this.bindState(name);
 
     // send yjs doc updates to all connections
@@ -139,7 +134,7 @@ class WSReadDoc extends WSDoc {
   }
 
   private async bindState(pageId: string) {
-    const persistedYdoc = await persistence.getYDoc(db, pageId);
+    const persistedYdoc = await this.pageItemService.getById(db, pageId);
     Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc), this.SYNC_ORIGIN);
   }
 
@@ -192,11 +187,15 @@ function setupPingPong(conn: WebSocket, doc: WSDoc) {
  * @param conn websocket connection
  * @param pageId page id to connect to
  */
-export const setupWSConnectionForWriters = (conn: WebSocket, pageId: string) => {
+export const setupWSConnectionForWriters = (
+  conn: WebSocket,
+  pageId: string,
+  pageItemService: PageItemService,
+) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
   const doc = map.setIfUndefined(docs, pageId, () => {
-    const doc = new WSSharedDoc(pageId);
+    const doc = new WSSharedDoc(pageItemService, pageId);
 
     docs.set(pageId, doc);
 
@@ -234,11 +233,15 @@ export const setupWSConnectionForWriters = (conn: WebSocket, pageId: string) => 
  * @param conn websocket connection
  * @param pageId page id to connect to
  */
-export const setupWSConnectionForRead = (conn: WebSocket, pageId: string) => {
+export const setupWSConnectionForRead = (
+  conn: WebSocket,
+  pageId: string,
+  pageItemService: PageItemService,
+) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
   const doc = map.setIfUndefined(readDocs, pageId, () => {
-    const doc = new WSReadDoc(pageId);
+    const doc = new WSReadDoc(pageItemService, pageId);
     readDocs.set(pageId, doc);
 
     return doc;
