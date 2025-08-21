@@ -1,4 +1,5 @@
 /* source: https://github.com/yjs/y-websocket-server/blob/main/src/utils.js */
+import { captureException } from '@sentry/node';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as encoding from 'lib0/encoding';
@@ -92,24 +93,35 @@ class WSSharedDoc extends WSDoc {
     this.bindState(name);
   }
 
-  closeConn(conn: WebSocket) {
-    super.closeConn(conn);
+  closeConn(conn: WebSocket, code = 1000, reason?: string) {
+    super.closeConn(conn, code, reason);
     if (this.conns.size === 0) {
       docs.delete(this.name);
     }
   }
 
   private async bindState(pageId: string) {
-    // get updates from database and apply on the yjs doc
-    const persistedYdoc = await this.pageItemService.getById(db, pageId);
-    const newUpdates = Y.encodeStateAsUpdate(this);
-    this.pageItemService.storeUpdate(db, pageId, newUpdates);
-    Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc));
+    try {
+      // get updates from database and apply on the yjs doc
+      const persistedYdoc = await this.pageItemService.getById(db, pageId);
+      const newUpdates = Y.encodeStateAsUpdate(this);
+      this.pageItemService.storeUpdate(db, pageId, newUpdates);
+      Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc));
 
-    // on yjs document update, the update is store in the database
-    this.on('update', (update) => {
-      this.pageItemService.storeUpdate(db, pageId, update);
-    });
+      // on yjs document update, the update is store in the database
+      this.on('update', (update) => {
+        this.pageItemService.storeUpdate(db, pageId, update);
+      });
+    } catch (e) {
+      console.error('An error occured while binding the state:', e);
+      // send error to sentry
+      captureException(e);
+
+      this.conns.forEach((v, conn) => {
+        // close connections for unexpected error
+        this.closeConn(conn, 1011);
+      });
+    }
   }
 }
 
@@ -134,12 +146,22 @@ class WSReadDoc extends WSDoc {
   }
 
   private async bindState(pageId: string) {
-    const persistedYdoc = await this.pageItemService.getById(db, pageId);
-    Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc), this.SYNC_ORIGIN);
+    try {
+      const persistedYdoc = await this.pageItemService.getById(db, pageId);
+      Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc), this.SYNC_ORIGIN);
+    } catch (e) {
+      console.error('An error occured while binding the state:', e);
+      // send error to sentry
+      captureException(e);
+      this.conns.forEach((v, conn) => {
+        // close connections for unexpected error
+        this.closeConn(conn, 1011);
+      });
+    }
   }
 
-  closeConn(conn: WebSocket) {
-    super.closeConn(conn);
+  closeConn(conn: WebSocket, code = 1000, reason?: string) {
+    super.closeConn(conn, code, reason);
     if (this.conns.size === 0) {
       readDocs.delete(this.name);
     }
