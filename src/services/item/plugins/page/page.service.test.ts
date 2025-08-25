@@ -9,18 +9,22 @@ import { ItemType } from '@graasp/sdk';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { pageUpdateTable } from '../../../../drizzle/schema';
-import { PagePersistence } from './PagePersistence';
+import { ItemService } from '../../item.service';
+import { PageRepository } from './page.repository';
+import { PageItemService } from './page.service';
 
-const persistence = new PagePersistence();
+const itemService = {} as ItemService;
+const pageRepository = new PageRepository();
+const pageItemService = new PageItemService(itemService, pageRepository);
 
-describe('PagePersistence', () => {
+describe('PageItemService', () => {
   describe('getYDoc', () => {
     it('get empty doc for page without updates', async () => {
       const {
         items: [item],
       } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
 
-      const doc = await persistence.getYDoc(db, item.id);
+      const doc = await pageItemService.getById(db, item.id);
       expect(doc).toBeDefined();
       expect(Buffer.from(encodeStateVector(doc))).toEqual(Buffer.from([0]));
     });
@@ -48,7 +52,7 @@ describe('PagePersistence', () => {
       // wait for updates to be asynchronously saved
       await waitForExpect(async () => {
         // expect doc to have all updates
-        const initDoc = await persistence.getYDoc(db, item.id);
+        const initDoc = await pageItemService.getById(db, item.id);
         expect(initDoc).toBeDefined();
         expect(Buffer.from(encodeStateAsUpdate(initDoc))).toEqual(docState);
       });
@@ -77,7 +81,7 @@ describe('PagePersistence', () => {
       // wait for updates to be asynchronously saved
       await waitForExpect(async () => {
         // expect doc to have all updates
-        const initDoc = await persistence.getYDoc(db, item.id);
+        const initDoc = await pageItemService.getById(db, item.id);
         expect(initDoc).toBeDefined();
         expect(Buffer.from(encodeStateAsUpdate(initDoc))).toEqual(Buffer.from(docState));
 
@@ -102,13 +106,59 @@ describe('PagePersistence', () => {
       tmpDoc.destroy();
 
       await waitForExpect(async () => {
-        persistence.storeUpdate(db, item.id, update);
+        pageItemService.storeUpdate(db, item.id, update);
         const savedUpdate = await db.query.pageUpdateTable.findMany({
           where: eq(pageUpdateTable.itemId, item.id),
         });
         expect(savedUpdate).toHaveLength(1);
         expect(Buffer.from(savedUpdate[0].update)).toEqual(Buffer.from(update));
       });
+    });
+  });
+  describe('copy', () => {
+    it('copy empty page', async () => {
+      const {
+        items: [item, copy],
+      } = await seedFromJson({ items: [{ type: ItemType.PAGE }, { type: ItemType.PAGE }] });
+
+      await pageItemService.copy(db, item.id, copy.id);
+      const savedUpdate = await db.query.pageUpdateTable.findMany({
+        where: eq(pageUpdateTable.itemId, copy.id),
+      });
+      expect(savedUpdate).toHaveLength(1);
+
+      const originalDoc = await pageItemService.getById(db, item.id);
+      expect(Buffer.from(savedUpdate[0].update)).toEqual(
+        Buffer.from(encodeStateAsUpdate(originalDoc)),
+      );
+    });
+    it('copy page and save merged update', async () => {
+      const {
+        items: [item, copy],
+      } = await seedFromJson({ items: [{ type: ItemType.PAGE }, { type: ItemType.PAGE }] });
+
+      // generate updates through temporary doc
+      const tmpDoc = new Doc();
+      tmpDoc.getText('mytext').insert(0, 'abc');
+      const update1 = encodeStateAsUpdate(tmpDoc);
+      tmpDoc.getText('mytext').insert(1, 'abc1');
+      const update2 = encodeStateAsUpdate(tmpDoc);
+      await db.insert(pageUpdateTable).values([
+        { itemId: item.id, clock: 1, update: update1 },
+        { itemId: item.id, clock: 2, update: update2 },
+      ]);
+      tmpDoc.destroy();
+
+      await pageItemService.copy(db, item.id, copy.id);
+      const savedUpdate = await db.query.pageUpdateTable.findMany({
+        where: eq(pageUpdateTable.itemId, copy.id),
+      });
+      expect(savedUpdate).toHaveLength(1);
+
+      const originalDoc = await pageItemService.getById(db, item.id);
+      expect(Buffer.from(savedUpdate[0].update)).toEqual(
+        Buffer.from(encodeStateAsUpdate(originalDoc)),
+      );
     });
   });
 });

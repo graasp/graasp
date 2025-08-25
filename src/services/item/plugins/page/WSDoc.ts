@@ -16,6 +16,7 @@ import * as syncProtocol from 'y-protocols/sync';
 import * as Y from 'yjs';
 
 import { MESSAGE_AWARENESS_CODE, MESSAGE_SYNC_CODE } from './constants';
+import { PageItemService } from './page.service';
 
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
@@ -25,18 +26,21 @@ const wsReadyStateOpen = 1;
  * Broadcast updates to attached connections
  */
 export class WSDoc extends Y.Doc {
-  name: string;
-  conns: Map<WebSocket, Set<number>>;
-  enableAwareness: boolean;
-  awareness: awarenessProtocol.Awareness;
+  public awareness: awarenessProtocol.Awareness;
+  public conns: Map<WebSocket, Set<number>>;
 
-  constructor(name: string, enableAwareness: boolean) {
+  protected name: string;
+  protected enableAwareness: boolean;
+  protected pageItemService: PageItemService;
+
+  constructor(pageItemService: PageItemService, name: string, enableAwareness: boolean) {
     super();
     this.name = name;
     this.conns = new Map();
     this.enableAwareness = enableAwareness;
     this.awareness = new awarenessProtocol.Awareness(this);
     this.awareness.setLocalState(null);
+    this.pageItemService = pageItemService;
   }
 
   protected broadcastUpdate(update: Uint8Array) {

@@ -1,4 +1,5 @@
-import { eq } from 'drizzle-orm';
+import { faker } from '@faker-js/faker';
+import { desc, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { AddressInfo } from 'net';
 import { v4 } from 'uuid';
@@ -22,10 +23,41 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
+import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { itemsRawTable, pageUpdateTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
+import { PageItemService } from './page.service';
+
+async function getAppPort(app: FastifyInstance) {
+  await app.ready();
+  const port = (app.server.address() as AddressInfo)!.port;
+  return port;
+}
+
+async function connectToItemWs(
+  app: FastifyInstance,
+  itemId: string,
+  { readOnly = false }: { readOnly?: boolean } = {},
+) {
+  // start server to correctly listen to websockets
+  const port = await getAppPort(app);
+
+  // connect to ws with yjs specific websocket provider
+  const doc = new Doc();
+  const provider = new WebsocketProvider(
+    `ws://localhost:${port}`,
+    `items/pages/${itemId}/ws${readOnly ? '/read' : ''}`,
+    doc,
+    {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      WebSocketPolyfill: WebSocket,
+    },
+  );
+  return { doc, provider };
+}
 
 describe('Page routes tests', () => {
   let app: FastifyInstance;
@@ -166,8 +198,7 @@ describe('Page routes tests', () => {
       mockAuthenticate(actor);
 
       // start server to correctly listen to websockets
-      await app.ready();
-      const port = (app.server.address() as AddressInfo)!.port;
+      const port = await getAppPort(app);
       const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws`);
 
       await new Promise((done, reject) => {
@@ -198,34 +229,14 @@ describe('Page routes tests', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
-      // start server to correctly listen to websockets
-      await app.ready();
-      const port = (app.server.address() as AddressInfo)!.port;
-
-      // connect to ws with yjs specific websocket provider
-      const doc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        WebSocketPolyfill: WebSocket,
-      });
-
+      const { doc, provider } = await connectToItemWs(app, item.id);
       // count received messages
-      const doc1 = new Doc();
-      const provider = new WebsocketProvider(
-        `ws://localhost:${port}`,
-        `items/pages/${item.id}/ws`,
-        doc1,
-        {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          WebSocketPolyfill: WebSocket,
-        },
-      );
+      const { doc: doc1, provider: countProvider } = await connectToItemWs(app, item.id);
+
       let count = 0;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      provider.ws.on('message', () => {
+      countProvider.ws.on('message', () => {
         count += 1;
       });
 
@@ -246,6 +257,10 @@ describe('Page routes tests', () => {
         // sometimes can receive 3rd message where getText and insert are split
         expect(count).toBeGreaterThanOrEqual(2);
       });
+
+      doc1.destroy();
+      provider.destroy();
+      countProvider.destroy();
     });
 
     it('Init document with saved data', async () => {
@@ -270,17 +285,7 @@ describe('Page routes tests', () => {
       await db.insert(pageUpdateTable).values({ itemId: item.id, clock: 1, update: initUpdate });
       tmpDoc.destroy();
 
-      // start server to correctly listen to websockets
-      await app.ready();
-      const port = (app.server.address() as AddressInfo)!.port;
-
-      // connect to ws with yjs specific websocket provider
-      const doc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        WebSocketPolyfill: WebSocket,
-      });
+      const { doc, provider } = await connectToItemWs(app, item.id);
 
       // update should be saved in db
       await waitForExpect(async () => {
@@ -289,6 +294,7 @@ describe('Page routes tests', () => {
 
       // cleanup
       doc.destroy();
+      provider.destroy();
     });
 
     it('Init document with saved data for second document', async () => {
@@ -313,17 +319,7 @@ describe('Page routes tests', () => {
       await db.insert(pageUpdateTable).values({ itemId: item.id, clock: 1, update: initUpdate });
       tmpDoc.destroy();
 
-      // start server to correctly listen to websockets
-      await app.ready();
-      const port = (app.server.address() as AddressInfo)!.port;
-
-      // connect to ws with yjs specific websocket provider
-      const doc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        WebSocketPolyfill: WebSocket,
-      });
+      const { doc, provider: provider1 } = await connectToItemWs(app, item.id);
 
       // update should be saved in db
       await waitForExpect(async () => {
@@ -331,12 +327,7 @@ describe('Page routes tests', () => {
       });
 
       // 2nd user connects to the same item
-      const doc2 = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws`, doc2, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        WebSocketPolyfill: WebSocket,
-      });
+      const { doc: doc2, provider: provider2 } = await connectToItemWs(app, item.id);
 
       // update should be saved in db
       await waitForExpect(async () => {
@@ -346,6 +337,8 @@ describe('Page routes tests', () => {
       // cleanup
       doc.destroy();
       doc2.destroy();
+      provider1.destroy();
+      provider2.destroy();
     });
   });
 
@@ -446,6 +439,9 @@ describe('Page routes tests', () => {
           done(true);
         });
       });
+
+      // cleanup
+      ws.close();
     });
 
     it('Allow access for public item without access', async () => {
@@ -479,6 +475,9 @@ describe('Page routes tests', () => {
           done(true);
         });
       });
+
+      // cleanup
+      ws.close();
     });
 
     it('Allow access for public item and signed out', async () => {
@@ -510,6 +509,9 @@ describe('Page routes tests', () => {
           done(true);
         });
       });
+
+      // cleanup
+      ws.close();
     });
 
     it('Init document with saved data', async () => {
@@ -534,17 +536,7 @@ describe('Page routes tests', () => {
       await db.insert(pageUpdateTable).values({ itemId: item.id, clock: 1, update: initUpdate });
       tmpDoc.destroy();
 
-      // start server to correctly listen to websockets
-      await app.ready();
-      const port = (app.server.address() as AddressInfo)!.port;
-
-      // connect to ws with yjs specific websocket provider
-      const doc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws/read`, doc, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        WebSocketPolyfill: WebSocket,
-      });
+      const { doc, provider } = await connectToItemWs(app, item.id, { readOnly: true });
 
       // update should be saved in db
       await waitForExpect(async () => {
@@ -553,6 +545,7 @@ describe('Page routes tests', () => {
 
       // cleanup
       doc.destroy();
+      provider.destroy();
     });
 
     it('Receive update from write document', async () => {
@@ -575,34 +568,18 @@ describe('Page routes tests', () => {
       mockAuthenticate(actor);
 
       // start server to correctly listen to websockets
-      await app.ready();
-      const port = (app.server.address() as AddressInfo)!.port;
 
-      // connect to write document
-      const writeDoc = new Doc();
-      const provider = new WebsocketProvider(
-        `ws://localhost:${port}`,
-        `items/pages/${item.id}/ws`,
-        writeDoc,
-        {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          WebSocketPolyfill: WebSocket,
-        },
-      );
+      const { doc: writeDoc, provider: provider1 } = await connectToItemWs(app, item.id);
       // wait for connection to be established before switching user
       await waitForExpect(() => {
-        expect(provider.synced).toBeTruthy();
+        expect(provider1.synced).toBeTruthy();
       });
       const initDoc = encodeStateAsUpdate(writeDoc);
 
       // connect to read document with another user
       mockAuthenticate(reader);
-      const readDoc = new Doc();
-      new WebsocketProvider(`ws://localhost:${port}`, `items/pages/${item.id}/ws/read`, readDoc, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        WebSocketPolyfill: WebSocket,
+      const { doc: readDoc, provider: provider2 } = await connectToItemWs(app, item.id, {
+        readOnly: true,
       });
 
       // apply update on write document
@@ -623,6 +600,8 @@ describe('Page routes tests', () => {
       // cleanup
       writeDoc.destroy();
       readDoc.destroy();
+      provider1.destroy();
+      provider2.destroy();
     });
 
     it('Update from read document should not broadcast', async () => {
@@ -640,39 +619,16 @@ describe('Page routes tests', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
-      // start server to correctly listen to websockets
-      await app.ready();
-      const port = (app.server.address() as AddressInfo)!.port;
-
-      // connect to write document
-      const readDoc1 = new Doc();
-      const provider = new WebsocketProvider(
-        `ws://localhost:${port}`,
-        `items/pages/${item.id}/ws/read`,
-        readDoc1,
-        {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          WebSocketPolyfill: WebSocket,
-        },
-      );
+      const { doc: readDoc1, provider } = await connectToItemWs(app, item.id, {
+        readOnly: true,
+      });
       // wait for connection to be established before switching user
       await waitForExpect(() => {
         expect(provider.synced).toBeTruthy();
       });
 
       // count received messages
-      const readDoc2 = new Doc();
-      const readerProvider = new WebsocketProvider(
-        `ws://localhost:${port}`,
-        `items/pages/${item.id}/ws`,
-        readDoc2,
-        {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          WebSocketPolyfill: WebSocket,
-        },
-      );
+      const { doc: readDoc2, provider: readerProvider } = await connectToItemWs(app, item.id);
       let messageCount = 0;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -694,6 +650,102 @@ describe('Page routes tests', () => {
       // cleanup
       readDoc1.destroy();
       readDoc2.destroy();
+      provider.destroy();
+      readerProvider.destroy();
+    });
+  });
+
+  describe('copy post hook', () => {
+    it('Does not copy update if item is not a page ', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({
+        items: [{}],
+      });
+
+      const pageItemService = resolveDependency(PageItemService);
+      const copySpy = jest.spyOn(pageItemService, 'copy');
+
+      await app.inject({
+        method: HttpMethod.Post,
+        path: {
+          pathname: '/items/copy',
+          query: { id: item.id },
+        },
+      });
+
+      // wait 2 seconds
+      await new Promise((done) => {
+        setTimeout(() => {
+          done(true);
+        }, 2000);
+      });
+
+      expect(copySpy).not.toHaveBeenCalled();
+    });
+
+    it('Copy folder with page copy updates', async () => {
+      const name = faker.word.sample();
+      const {
+        actor,
+        items: [folder, page],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            children: [
+              {
+                name,
+                type: ItemType.PAGE,
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // prefill updates in db
+      const tmpDoc = new Doc();
+      tmpDoc.getText('mytext').insert(0, 'abc');
+      const initUpdate = encodeStateAsUpdate(tmpDoc);
+      await db.insert(pageUpdateTable).values({ itemId: page.id, clock: 1, update: initUpdate });
+      tmpDoc.destroy();
+
+      // copy folder
+      const copyOp = await app.inject({
+        method: HttpMethod.Post,
+        path: {
+          pathname: '/items/copy',
+          query: { id: folder.id },
+        },
+        payload: {},
+      });
+      expect(copyOp.statusCode).toEqual(StatusCodes.ACCEPTED);
+
+      // wait until copy is done
+      let copy;
+      await waitForExpect(async () => {
+        const items = await db.query.itemsRawTable.findMany({
+          where: eq(itemsRawTable.name, name),
+          orderBy: desc(itemsRawTable.createdAt),
+        });
+
+        // should contain copy and original
+        expect(items).toHaveLength(2);
+        copy = items[0];
+      }, 2000);
+
+      // connect to copy
+      const { doc, provider } = await connectToItemWs(app, copy.id);
+
+      // should receive init update
+      await waitForExpect(() => {
+        expect(Buffer.from(encodeStateAsUpdate(doc))).toEqual(Buffer.from(initUpdate));
+      }, 2000);
+
+      doc.destroy();
+      provider.destroy();
     });
   });
 });
