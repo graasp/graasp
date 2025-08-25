@@ -404,7 +404,7 @@ describe('Page routes tests', () => {
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
-      const port = await startAppAndReturnPort(app);
+      const port = await getAppPort(app);
       const ws = new WebSocket(`ws://localhost:${port}/items/pages/${item.id}/ws`);
 
       // connection should close
@@ -792,7 +792,7 @@ describe('Page routes tests', () => {
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
-      const port = await startAppAndReturnPort(app);
+      const port = await getAppPort(app);
       const ws = new WebSocket(`ws://localhost:${port}/items/pages/${item.id}/ws/read`);
 
       // connection should close
