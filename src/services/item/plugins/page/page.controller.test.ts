@@ -30,7 +30,7 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
 import { PageItemService } from './page.service';
 
-async function startAppAndReturnPort(app: FastifyInstance) {
+async function getAppPort(app: FastifyInstance) {
   await app.ready();
   const port = (app.server.address() as AddressInfo)!.port;
   return port;
@@ -42,7 +42,7 @@ async function connectToItemWs(
   { readOnly = false }: { readOnly?: boolean } = {},
 ) {
   // start server to correctly listen to websockets
-  const port = await startAppAndReturnPort(app);
+  const port = await getAppPort(app);
 
   // connect to ws with yjs specific websocket provider
   const doc = new Doc();
@@ -198,7 +198,7 @@ describe('Page routes tests', () => {
       mockAuthenticate(actor);
 
       // start server to correctly listen to websockets
-      const port = await startAppAndReturnPort(app);
+      const port = await getAppPort(app);
       const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws`);
 
       await new Promise((done, reject) => {
