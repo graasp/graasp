@@ -1,6 +1,7 @@
 import { and, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
+  bigint,
   boolean,
   check,
   doublePrecision,
@@ -28,7 +29,7 @@ import {
   type ItemTypeUnion,
 } from '@graasp/sdk';
 
-import { binaryHash, customNumeric, ltree } from './customTypes';
+import { binary, binaryHash, citext, customNumeric, ltree } from './customTypes';
 
 export const actionViewEnum = pgEnum('action_view_enum', [
   'builder',
@@ -1107,4 +1108,57 @@ export const pageUpdateTable = pgTable(
       name: 'FK_page_update_item_id',
     }).onDelete('cascade'),
   ],
+);
+
+// migrations table for phoenix
+export const schemaMigrations = pgTable('schema_migrations', {
+  version: bigint('version', { mode: 'number' }).primaryKey().notNull(),
+  insertedAt: timestamp('inserted_at', { precision: 0 }),
+});
+
+// users table for the phoenix admin pannel
+export const usersTable = pgTable(
+  'users',
+  {
+    id: uuid().primaryKey().notNull(),
+    email: citext().unique().notNull(),
+    hashed_password: varchar({ length: 255 }),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: false, precision: 0 }),
+    createdAt: timestamp('created_at', { withTimezone: false, precision: 0 }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: false, precision: 0 }).notNull(),
+  },
+  (table) => [index('users_email_index').using('btree', table.email)],
+);
+
+// users tokens used for authentication
+export const usersTokens = pgTable(
+  'users_tokens',
+  {
+    id: uuid('id').primaryKey().notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => usersTable.id, { onDelete: 'cascade' }),
+    token: binary('token').notNull(),
+    context: varchar('context', { length: 255 }).notNull(),
+    sentTo: varchar('sent_to', { length: 255 }),
+    authenticatedAt: timestamp('authenticated_at', { precision: 0 }),
+    createdAt: timestamp('created_at', { precision: 0 }).notNull(),
+  },
+  (table) => [
+    unique('users_tokens_context_token_index').on(table.context, table.token),
+    index('users_tokens_user_id_index').using('btree', table.userId.op('uuid_ops')),
+  ],
+);
+
+export const removalNotices = pgTable(
+  'removal_notices',
+  {
+    id: uuid('id').primaryKey().notNull(),
+    publicationName: varchar('publication_name', { length: 255 }),
+    reason: text('reason'),
+    userId: uuid('user_id').references(() => usersTable.id, { onDelete: 'cascade' }),
+    creatorId: uuid('creator_id').references(() => usersTable.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { precision: 0 }).notNull(),
+  },
+  (table) => [index('removal_notices_user_id_index').using('btree', table.userId.op('uuid_ops'))],
 );
