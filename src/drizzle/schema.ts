@@ -96,7 +96,7 @@ export const categoriesTable = pgTable(
 );
 
 export const publishedItemsTable = pgTable(
-  'item_published',
+  'published_items',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
@@ -514,7 +514,7 @@ export const invitationsTable = pgTable(
 );
 
 export const publishersTable = pgTable(
-  'publisher',
+  'publishers',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 250 }).notNull(),
@@ -531,13 +531,14 @@ export const publishersTable = pgTable(
 );
 
 export const appsTable = pgTable(
-  'app',
+  'apps',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     key: uuid().notNull().defaultRandom(),
     name: varchar({ length: 250 }).notNull(),
     description: varchar({ length: 250 }).notNull(),
     url: varchar({ length: 250 }).notNull(),
+    thumbnail: varchar({ length: 255 }).notNull(),
     publisherId: uuid('publisher_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
@@ -546,7 +547,6 @@ export const appsTable = pgTable(
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
-    extra: jsonb().$type<object>().default({}).notNull(),
   },
   (table) => [
     foreignKey({

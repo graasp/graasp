@@ -63,7 +63,7 @@ export const getList = {
           name: Type.String(),
           description: Type.String(),
           url: Type.String(),
-          extra: Type.Object({}, { additionalProperties: true }),
+          thumbnail: Type.String(),
           // we don't want to return the id since it's the key!
         },
         {

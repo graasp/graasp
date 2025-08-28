@@ -85,6 +85,13 @@
       "when": 1756302675771,
       "tag": "0011_phoenix-schemas",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1756305500468,
+      "tag": "0012_table_name_update",
+      "breakpoints": true
     }
   ]
 }
