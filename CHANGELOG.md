@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.8.0](https://github.com/graasp/graasp/compare/v2.7.0...v2.8.0) (2025-08-28)
+
+
+### Features
+
+* add read ws ([#1967](https://github.com/graasp/graasp/issues/1967)) ([9f34803](https://github.com/graasp/graasp/commit/9f34803e1b1764f808aee4937da74f141f4a78fa))
+* copy update on page copy ([#1969](https://github.com/graasp/graasp/issues/1969)) ([9d6eb5c](https://github.com/graasp/graasp/commit/9d6eb5cc83438a3a2f47aeac4ca15377f0e61f07))
+* create page endpoint ([#1947](https://github.com/graasp/graasp/issues/1947)) ([a391280](https://github.com/graasp/graasp/commit/a391280be0dbd0aae5cb6425dce009b560c09362))
+* **page:** gracefully fallback on error ([#1970](https://github.com/graasp/graasp/issues/1970)) ([6bca256](https://github.com/graasp/graasp/commit/6bca256282f4f84b75e2921702ff1ffd1853d883))
+* save page updates ([#1965](https://github.com/graasp/graasp/issues/1965)) ([76a284d](https://github.com/graasp/graasp/commit/76a284d8f584014dd3b419a55726f660064c7258))
+* setup yjs for collaboration in pages ([#1959](https://github.com/graasp/graasp/issues/1959)) ([d773276](https://github.com/graasp/graasp/commit/d773276a045a4c17df50e50f33a89adc88d0ffd1))
+
+
+### Bug Fixes
+
+* ensure required env var can't be an empty string ([#1960](https://github.com/graasp/graasp/issues/1960)) ([3ce0469](https://github.com/graasp/graasp/commit/3ce0469fe7ca54e978ec3da4e5047d3c8306706a))
+
 ## [2.7.0](https://github.com/graasp/graasp/compare/v2.6.0...v2.7.0) (2025-07-23)
 
 
