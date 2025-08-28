@@ -54,7 +54,6 @@ export class PageItemService {
       const ydoc = new Y.Doc();
       ydoc.transact(() => {
         for (const update of updates) {
-          // Y.applyUpdate(ydoc, Buffer.from([1, 2, 3]));
           Y.applyUpdate(ydoc, update);
         }
       });
