@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { desc, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import * as encoding from 'lib0/encoding';
 import { AddressInfo } from 'net';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
@@ -28,12 +31,21 @@ import { db } from '../../../../drizzle/db';
 import { itemsRawTable, pageUpdateTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
+import { MESSAGE_SYNC_CODE } from './constants';
 import { PageItemService } from './page.service';
 
 async function getAppPort(app: FastifyInstance) {
   await app.ready();
   const port = (app.server.address() as AddressInfo)!.port;
   return port;
+}
+
+async function expectServerToBeResponsive(app: FastifyInstance) {
+  const result = await app.inject({
+    method: 'GET',
+    url: '/version',
+  });
+  expect(result.statusCode).toEqual(StatusCodes.OK);
 }
 
 async function connectToItemWs(
@@ -339,6 +351,82 @@ describe('Page routes tests', () => {
       doc2.destroy();
       provider1.destroy();
       provider2.destroy();
+    });
+
+    it('Gracefully recover if update is corrupted', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            type: ItemType.PAGE,
+            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // prefill incorrect update in db
+      await db
+        .insert(pageUpdateTable)
+        .values({ itemId: item.id, clock: 1, update: Buffer.from([1, 2, 3]) });
+
+      const { doc, provider: provider1 } = await connectToItemWs(app, item.id);
+
+      // connection should close
+      let hasClosed = false;
+      provider1.on('connection-close', () => {
+        hasClosed = true;
+      });
+      await waitForExpect(async () => {
+        expect(hasClosed).toBeTruthy();
+        await expectServerToBeResponsive(app);
+      }, 2000);
+
+      // cleanup
+      doc.destroy();
+      provider1.destroy();
+    });
+
+    it('Gracefully recover if receive corrupted ws message', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            type: ItemType.PAGE,
+            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      const port = await getAppPort(app);
+      const ws = new WebSocket(`ws://localhost:${port}/items/pages/${item.id}/ws`);
+
+      // connection should close
+      let hasClosed = false;
+      ws.on('close', () => {
+        hasClosed = true;
+      });
+
+      // wait for connection to be established before switching user
+      await waitForExpect(() => {
+        expect(ws.readyState).toBeTruthy();
+      }, 2000);
+
+      const encoder = encoding.createEncoder();
+      encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
+      encoding.writeVarUint8Array(encoder, Buffer.from([1, 2, 3]));
+      ws.send(encoding.toUint8Array(encoder));
+
+      await waitForExpect(async () => {
+        expect(hasClosed).toBeTruthy();
+        await expectServerToBeResponsive(app);
+      }, 4000);
     });
   });
 
@@ -652,6 +740,81 @@ describe('Page routes tests', () => {
       readDoc2.destroy();
       provider.destroy();
       readerProvider.destroy();
+    });
+
+    it('Gracefully recover if update is corrupted', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            type: ItemType.PAGE,
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // prefill incorrect update in db
+      await db
+        .insert(pageUpdateTable)
+        .values({ itemId: item.id, clock: 1, update: Buffer.from([1, 2, 3]) });
+
+      const { doc, provider: provider1 } = await connectToItemWs(app, item.id, { readOnly: true });
+
+      // connection should close
+      let hasClosed = false;
+      provider1.on('connection-close', () => {
+        hasClosed = true;
+      });
+      await waitForExpect(async () => {
+        expect(hasClosed).toBeTruthy();
+      }, 2000);
+
+      // cleanup
+      doc.destroy();
+      provider1.destroy();
+    });
+
+    it('Gracefully recover if receive corrupted ws message', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            type: ItemType.PAGE,
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      const port = await getAppPort(app);
+      const ws = new WebSocket(`ws://localhost:${port}/items/pages/${item.id}/ws/read`);
+
+      // connection should close
+      let hasClosed = false;
+      ws.on('close', () => {
+        hasClosed = true;
+      });
+
+      // wait for connection to be established before switching user
+      await waitForExpect(() => {
+        expect(ws.readyState).toBeTruthy();
+      }, 2000);
+
+      const encoder = encoding.createEncoder();
+      encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
+      encoding.writeVarUint8Array(encoder, Buffer.from([1, 2, 3]));
+      ws.send(encoding.toUint8Array(encoder));
+
+      await waitForExpect(async () => {
+        expect(hasClosed).toBeTruthy();
+        await expectServerToBeResponsive(app);
+      }, 4000);
     });
   });
 

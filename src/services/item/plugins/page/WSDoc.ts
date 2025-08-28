@@ -97,9 +97,8 @@ export class WSDoc extends Y.Doc {
       }
     } catch (err) {
       console.error(err);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      doc.emit('error', [err]);
+      // close connection because receive message is unsupported
+      this.closeConn(conn, 1003);
     }
   }
 
@@ -127,14 +126,14 @@ export class WSDoc extends Y.Doc {
    * Close given connection
    * @param conn connection to close
    */
-  closeConn(conn: WebSocket) {
-    console.debug('Page: close connection');
+  closeConn(conn: WebSocket, code = 1000, reason?: string) {
+    console.debug('Page: close connection', code, reason);
     if (this.conns.has(conn)) {
       const controlledIds: Set<number> = this.conns.get(conn)!;
       this.conns.delete(conn);
       awarenessProtocol.removeAwarenessStates(this.awareness, Array.from(controlledIds), null);
       this.destroy();
     }
-    conn.close();
+    conn.close(code, reason);
   }
 }
