@@ -12,7 +12,7 @@ ALTER TABLE "published_items" ADD CONSTRAINT "published_items_creator_id_account
 ALTER TABLE "published_items" ADD CONSTRAINT "published_items_item_path_item_path_fk" FOREIGN KEY ("item_path") REFERENCES "public"."item"("path") ON DELETE cascade ON UPDATE cascade;
 
 -- Add the new thumbnail column
-ALTER TABLE "apps" ADD COLUMN "thumbnail" varchar(255) NOT NULL;--> statement-breakpoint
+ALTER TABLE "apps" ADD COLUMN "thumbnail" varchar(255) DEFAULT '' NOT NULL ;--> statement-breakpoint
 
 -- Copy the image property from the extra (jsonb) column to the new thumbnail column
 UPDATE "apps"
