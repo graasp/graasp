@@ -24,3 +24,18 @@ export const binaryHash = customType<{ data: Uint8Array; driverData: Buffer }>({
     return 'bytea';
   },
 });
+
+export const citext = customType<{ data: string }>({
+  dataType() {
+    return 'citext';
+  },
+});
+
+export const binary = customType<{
+  data: Buffer;
+  default: false;
+}>({
+  dataType() {
+    return 'bytea';
+  },
+});

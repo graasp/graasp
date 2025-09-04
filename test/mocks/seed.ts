@@ -982,6 +982,7 @@ export async function seedFromJson(data: DataType = {}) {
           name: faker.word.words(5),
           description: faker.word.sample(),
           url: `${publishersEntities[0].origins[0]}/${faker.word.sample()}`,
+          thumbnail: faker.internet.url(),
           ...app,
           publisherId: publishersEntities[0].id,
         })),

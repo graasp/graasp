@@ -42,7 +42,7 @@ export class ItemPublishedRepository {
     if (res.length) {
       const entry = res[0];
       const mappedEntry = {
-        ...entry.item_published,
+        ...entry.published_items,
         item: { ...entry.item_view, creator: entry.members_view as MemberRaw },
         // creator: entry.members_view,
       };
@@ -61,9 +61,9 @@ export class ItemPublishedRepository {
       .innerJoin(items, inArray(publishedItemsTable.itemPath, itemPaths))
       .leftJoin(membersView, eq(items.creatorId, membersView.id));
 
-    return result.map(({ item_published, item_view, members_view }) => ({
+    return result.map(({ published_items, item_view, members_view }) => ({
       item: { ...item_view, creator: members_view as MemberRaw },
-      ...item_published,
+      ...published_items,
     }));
   }
 
@@ -82,8 +82,8 @@ export class ItemPublishedRepository {
       .innerJoin(membersView, eq(items.creatorId, membersView.id))
       .offset((page - 1) * pageSize)
       .limit(pageSize);
-    const mappedResults = results.map(({ item_published, item_view, members_view }) => ({
-      ...item_published,
+    const mappedResults = results.map(({ published_items, item_view, members_view }) => ({
+      ...published_items,
       item: { ...item_view, creator: members_view as MemberRaw },
     }));
     const total = (await dbConnection.select({ count: count() }).from(publishedItemsTable))[0]

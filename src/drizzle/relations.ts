@@ -265,7 +265,7 @@ export const invitationsRelations = relations(invitationsTable, ({ one }) => ({
 }));
 
 export const appRelations = relations(appsTable, ({ one }) => ({
-  publisher: one(publishersTable, {
+  publishers: one(publishersTable, {
     fields: [appsTable.publisherId],
     references: [publishersTable.id],
   }),
