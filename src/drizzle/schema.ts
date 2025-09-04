@@ -1146,9 +1146,7 @@ export const adminsTokens = pgTable(
   'admins_tokens',
   {
     id: uuid('id').primaryKey().notNull(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => adminsTable.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     token: binary('token').notNull(),
     context: varchar('context', { length: 255 }).notNull(),
     sentTo: varchar('sent_to', { length: 255 }),
@@ -1156,6 +1154,11 @@ export const adminsTokens = pgTable(
     createdAt: timestamp('created_at', { precision: 0 }).notNull(),
   },
   (table) => [
+    foreignKey({
+      name: 'admins_tokens_user_id_fkey',
+      columns: [table.userId],
+      foreignColumns: [adminsTable.id],
+    }).onDelete('cascade'),
     unique('admins_tokens_context_token_index').on(table.context, table.token),
     index('admins_tokens_user_id_index').using('btree', table.userId.op('uuid_ops')),
   ],

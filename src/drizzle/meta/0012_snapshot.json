@@ -500,8 +500,8 @@
         }
       },
       "foreignKeys": {
-        "admins_tokens_user_id_admins_id_fk": {
-          "name": "admins_tokens_user_id_admins_id_fk",
+        "admins_tokens_user_id_fkey": {
+          "name": "admins_tokens_user_id_fkey",
           "tableFrom": "admins_tokens",
           "tableTo": "admins",
           "columnsFrom": [
