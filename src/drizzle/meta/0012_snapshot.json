@@ -1,6 +1,6 @@
 {
-  "id": "209ee7ae-27d3-4b90-8c5b-49190dd4423a",
-  "prevId": "cd22bb3d-b49f-43f7-9c70-f269486a642e",
+  "id": "be8db956-55cd-44d9-b6c3-8f7137714629",
+  "prevId": "209ee7ae-27d3-4b90-8c5b-49190dd4423a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -357,6 +357,174 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.admins": {
+      "name": "admins",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "citext",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hashed_password": {
+          "name": "hashed_password",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp (0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (0)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "admins_email_index": {
+          "name": "admins_email_index",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "admins_email_unique": {
+          "name": "admins_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.admins_tokens": {
+      "name": "admins_tokens",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "context": {
+          "name": "context",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sent_to": {
+          "name": "sent_to",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "authenticated_at": {
+          "name": "authenticated_at",
+          "type": "timestamp (0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (0)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "admins_tokens_user_id_index": {
+          "name": "admins_tokens_user_id_index",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "uuid_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "admins_tokens_user_id_admins_id_fk": {
+          "name": "admins_tokens_user_id_admins_id_fk",
+          "tableFrom": "admins_tokens",
+          "tableTo": "admins",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "admins_tokens_context_token_index": {
+          "name": "admins_tokens_context_token_index",
+          "nullsNotDistinct": false,
+          "columns": [
+            "context",
+            "token"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -743,8 +911,8 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "FK_37eb7baab82e11150157ec0b5a6": {
-          "name": "FK_37eb7baab82e11150157ec0b5a6",
+        "apps_publisher_id_fk": {
+          "name": "apps_publisher_id_fk",
           "tableFrom": "apps",
           "tableTo": "publishers",
           "columnsFrom": [
@@ -3178,8 +3346,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.removal_notices": {
-      "name": "removal_notices",
+    "public.publication_removal_notices": {
+      "name": "publication_removal_notices",
       "schema": "",
       "columns": {
         "id": {
@@ -3200,8 +3368,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "user_id": {
-          "name": "user_id",
+        "item_id": {
+          "name": "item_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -3220,11 +3388,11 @@
         }
       },
       "indexes": {
-        "removal_notices_user_id_index": {
-          "name": "removal_notices_user_id_index",
+        "publication_removal_notices_item_id_index": {
+          "name": "publication_removal_notices_item_id_index",
           "columns": [
             {
-              "expression": "user_id",
+              "expression": "item_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
@@ -3238,12 +3406,12 @@
         }
       },
       "foreignKeys": {
-        "removal_notices_user_id_users_id_fk": {
-          "name": "removal_notices_user_id_users_id_fk",
-          "tableFrom": "removal_notices",
-          "tableTo": "users",
+        "publication_removal_notices_item_id_item_id_fk": {
+          "name": "publication_removal_notices_item_id_item_id_fk",
+          "tableFrom": "publication_removal_notices",
+          "tableTo": "item",
           "columnsFrom": [
-            "user_id"
+            "item_id"
           ],
           "columnsTo": [
             "id"
@@ -3251,10 +3419,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "removal_notices_creator_id_users_id_fk": {
-          "name": "removal_notices_creator_id_users_id_fk",
-          "tableFrom": "removal_notices",
-          "tableTo": "users",
+        "publication_removal_notices_creator_id_admins_id_fk": {
+          "name": "publication_removal_notices_creator_id_admins_id_fk",
+          "tableFrom": "publication_removal_notices",
+          "tableTo": "admins",
           "columnsFrom": [
             "creator_id"
           ],
@@ -3415,174 +3583,6 @@
           "columns": [
             "name",
             "category"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.users": {
-      "name": "users",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "citext",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "hashed_password": {
-          "name": "hashed_password",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "confirmed_at": {
-          "name": "confirmed_at",
-          "type": "timestamp (0)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (0)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (0)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "users_email_index": {
-          "name": "users_email_index",
-          "columns": [
-            {
-              "expression": "email",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.users_tokens": {
-      "name": "users_tokens",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token": {
-          "name": "token",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "context": {
-          "name": "context",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sent_to": {
-          "name": "sent_to",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "authenticated_at": {
-          "name": "authenticated_at",
-          "type": "timestamp (0)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (0)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "users_tokens_user_id_index": {
-          "name": "users_tokens_user_id_index",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "uuid_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "users_tokens_user_id_users_id_fk": {
-          "name": "users_tokens_user_id_users_id_fk",
-          "tableFrom": "users_tokens",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "users_tokens_context_token_index": {
-          "name": "users_tokens_context_token_index",
-          "nullsNotDistinct": false,
-          "columns": [
-            "context",
-            "token"
           ]
         }
       },

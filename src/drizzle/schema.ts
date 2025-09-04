@@ -552,7 +552,7 @@ export const appsTable = pgTable(
     foreignKey({
       columns: [table.publisherId],
       foreignColumns: [publishersTable.id],
-      name: 'FK_37eb7baab82e11150157ec0b5a6',
+      name: 'apps_publisher_id_fk',
     }).onDelete('cascade'),
     unique('app_key_key').on(table.key),
     unique('UQ_f36adbb7b096ceeb6f3e80ad14c').on(table.name),
@@ -1110,15 +1110,26 @@ export const pageUpdateTable = pgTable(
   ],
 );
 
-// migrations table for phoenix
+/**
+ * Migrations table for Phoenix
+ * This table stores the migrations that have been run by phoenix.
+ * It is currently managed by Drizzle. We manually insert the migration version and timstamp to satisfy Phoenix.
+ * We ensure that the changes that Phoenix wants to make to the database are carried out by Drizzle.
+ */
 export const schemaMigrations = pgTable('schema_migrations', {
+  /**
+   * The unique "name" of the migration. This is the creation timestamp of the migration file: e.g: 20250901110819
+   */
   version: bigint('version', { mode: 'number' }).primaryKey().notNull(),
+  /**
+   * The timestamp of the migraiton insertion (when it was run on the database)
+   */
   insertedAt: timestamp('inserted_at', { precision: 0 }),
 });
 
 // users table for the phoenix admin pannel
-export const usersTable = pgTable(
-  'users',
+export const adminsTable = pgTable(
+  'admins',
   {
     id: uuid().primaryKey().notNull(),
     email: citext().unique().notNull(),
@@ -1127,17 +1138,17 @@ export const usersTable = pgTable(
     createdAt: timestamp('created_at', { withTimezone: false, precision: 0 }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: false, precision: 0 }).notNull(),
   },
-  (table) => [index('users_email_index').using('btree', table.email)],
+  (table) => [index('admins_email_index').using('btree', table.email)],
 );
 
 // users tokens used for authentication
-export const usersTokens = pgTable(
-  'users_tokens',
+export const adminsTokens = pgTable(
+  'admins_tokens',
   {
     id: uuid('id').primaryKey().notNull(),
     userId: uuid('user_id')
       .notNull()
-      .references(() => usersTable.id, { onDelete: 'cascade' }),
+      .references(() => adminsTable.id, { onDelete: 'cascade' }),
     token: binary('token').notNull(),
     context: varchar('context', { length: 255 }).notNull(),
     sentTo: varchar('sent_to', { length: 255 }),
@@ -1145,20 +1156,22 @@ export const usersTokens = pgTable(
     createdAt: timestamp('created_at', { precision: 0 }).notNull(),
   },
   (table) => [
-    unique('users_tokens_context_token_index').on(table.context, table.token),
-    index('users_tokens_user_id_index').using('btree', table.userId.op('uuid_ops')),
+    unique('admins_tokens_context_token_index').on(table.context, table.token),
+    index('admins_tokens_user_id_index').using('btree', table.userId.op('uuid_ops')),
   ],
 );
 
 export const removalNotices = pgTable(
-  'removal_notices',
+  'publication_removal_notices',
   {
     id: uuid('id').primaryKey().notNull(),
     publicationName: varchar('publication_name', { length: 255 }),
     reason: text('reason'),
-    userId: uuid('user_id').references(() => usersTable.id, { onDelete: 'cascade' }),
-    creatorId: uuid('creator_id').references(() => usersTable.id, { onDelete: 'set null' }),
+    itemId: uuid('item_id').references(() => itemsRawTable.id, { onDelete: 'cascade' }),
+    creatorId: uuid('creator_id').references(() => adminsTable.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { precision: 0 }).notNull(),
   },
-  (table) => [index('removal_notices_user_id_index').using('btree', table.userId.op('uuid_ops'))],
+  (table) => [
+    index('publication_removal_notices_item_id_index').using('btree', table.itemId.op('uuid_ops')),
+  ],
 );
