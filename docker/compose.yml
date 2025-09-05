@@ -177,7 +177,7 @@ services:
       - db
 
   meilisearch:
-    image: getmeili/meilisearch:v1.8
+    image: getmeili/meilisearch:v1.19
     hostname: meilisearch
     restart: on-failure
     environment:
