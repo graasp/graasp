@@ -101,7 +101,7 @@ services:
 
   meilisearch:
     hostname: meilisearch
-    image: getmeili/meilisearch:v1.8
+    image: getmeili/meilisearch:v1.19
     restart: on-failure
     environment:
       - MEILI_MASTER_KEY=masterKey
