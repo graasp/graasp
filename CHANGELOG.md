@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.8.1](https://github.com/graasp/graasp/compare/v2.8.0...v2.8.1) (2025-09-04)
+
+
+### Bug Fixes
+
+* update to support admin schemas ([#1971](https://github.com/graasp/graasp/issues/1971)) ([b53e019](https://github.com/graasp/graasp/commit/b53e019dee6078621baefb0c9c29d49dd91e89af))
+
 ## [2.8.0](https://github.com/graasp/graasp/compare/v2.7.0...v2.8.0) (2025-08-28)
 
 
