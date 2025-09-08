@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/node';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as decoding from 'lib0/decoding';
@@ -14,6 +15,8 @@ import * as syncProtocol from 'y-protocols/sync';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as Y from 'yjs';
+
+import { FastifyBaseLogger } from 'fastify';
 
 import { MESSAGE_AWARENESS_CODE, MESSAGE_SYNC_CODE } from './constants';
 import { PageItemService } from './page.service';
@@ -32,8 +35,14 @@ export class WSDoc extends Y.Doc {
   protected name: string;
   protected enableAwareness: boolean;
   protected pageItemService: PageItemService;
+  protected logger: FastifyBaseLogger;
 
-  constructor(pageItemService: PageItemService, name: string, enableAwareness: boolean) {
+  constructor(
+    pageItemService: PageItemService,
+    name: string,
+    enableAwareness: boolean,
+    logger: FastifyBaseLogger,
+  ) {
     super();
     this.name = name;
     this.conns = new Map();
@@ -41,6 +50,7 @@ export class WSDoc extends Y.Doc {
     this.awareness = new awarenessProtocol.Awareness(this);
     this.awareness.setLocalState(null);
     this.pageItemService = pageItemService;
+    this.logger = logger;
   }
 
   protected broadcastUpdate(update: Uint8Array) {
@@ -57,6 +67,7 @@ export class WSDoc extends Y.Doc {
    * @param conn
    */
   addConnection(conn: WebSocket) {
+    this.logger.info('Page', this.name, ': add connection to reach', this.conns.size + 1);
     this.conns.set(conn, new Set());
     // listen and reply to events
     conn.on('message', (message: ArrayBuffer) => {
@@ -74,6 +85,7 @@ export class WSDoc extends Y.Doc {
       const messageType = decoding.readVarUint(decoder);
       switch (messageType) {
         case MESSAGE_SYNC_CODE:
+          this.logger.debug(`Page ${this.name}: receive message`);
           encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
           syncProtocol.readSyncMessage(decoder, encoder, this, conn);
 
@@ -86,6 +98,7 @@ export class WSDoc extends Y.Doc {
           break;
         case MESSAGE_AWARENESS_CODE: {
           if (this.enableAwareness) {
+            this.logger.debug(`Page ${this.name}: receive awareness`);
             awarenessProtocol.applyAwarenessUpdate(
               this.awareness,
               decoding.readVarUint8Array(decoder),
@@ -96,7 +109,9 @@ export class WSDoc extends Y.Doc {
         }
       }
     } catch (err) {
-      console.error(err);
+      this.logger.error(err);
+      // send error to sentry
+      captureException(err, { tags: { feature: 'page', pageId: this.name } });
       // close connection because receive message is unsupported
       this.closeConn(conn, 1003);
     }
@@ -117,7 +132,9 @@ export class WSDoc extends Y.Doc {
         err != null && this.closeConn(conn);
       });
     } catch (e) {
-      console.error(e);
+      this.logger.error(e);
+      // send error to sentry
+      captureException(e, { tags: { feature: 'page', pageId: this.name } });
       this.closeConn(conn);
     }
   }
@@ -127,7 +144,7 @@ export class WSDoc extends Y.Doc {
    * @param conn connection to close
    */
   closeConn(conn: WebSocket, code = 1000, reason?: string) {
-    console.debug('Page: close connection', code, reason);
+    this.logger.info(`Page ${this.name}: close connection ${code} ${reason}`);
     if (this.conns.has(conn)) {
       const controlledIds: Set<number> = this.conns.get(conn)!;
       this.conns.delete(conn);
