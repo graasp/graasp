@@ -107,7 +107,7 @@ export class ItemThumbnailService {
       settings: Pick<ItemRaw['settings'], 'hasThumbnail'>;
     })[],
     sizes: ItemThumbnailSize[] = DEFAULT_ITEM_THUMBNAIL_SIZES,
-  ) {
+  ): Promise<ItemsThumbnails> {
     if (!items?.length || !sizes.length) {
       return {};
     }
@@ -117,32 +117,28 @@ export class ItemThumbnailService {
       .map((i) => i.id);
     const thumbnailSizes = Array.from(new Set(sizes)); // Ensures that sizes are unique.
 
-    const thumbnailsPerItem = await Promise.allSettled<ItemsThumbnails>(
+    const thumbnailsPerItem = await Promise.all(
       itemsIdWithThumbnail.map(async (id) => {
-        const thumbnails = await Promise.all(
-          thumbnailSizes.map(async (size) => {
+        const thumbnailsBySize = {};
+
+        for (const size of thumbnailSizes) {
+          try {
             const url = await this.thumbnailService.getUrl({
               size: String(size),
               id,
             });
-            return [size, url];
-          }),
-        );
-        return { [id]: Object.fromEntries(thumbnails) };
+            thumbnailsBySize[size] = url;
+          } catch (error) {
+            // Handle error if needed, e.g., log or use fallback
+            console.error(`Failed to get thumbnail for ID ${id} and size ${size}:`, error);
+            return {};
+          }
+        }
+        return thumbnailsBySize;
       }),
     );
 
-    // As thumbnailsPerItem is an array, convert the array into an object where each key is the itemId.
-    return thumbnailsPerItem.reduce<ItemsThumbnails>((acc, res) => {
-      if (res.status === 'fulfilled') {
-        return { ...acc, ...res.value };
-      }
-
-      this.logger.error(
-        `An error occured while fetching the item's thumbnails. The reason: ${JSON.stringify(res.reason)}`,
-      );
-      return acc;
-    }, {});
+    return thumbnailsPerItem.reduce((acc, curr) => ({ ...acc, ...curr }), {});
   }
 
   async deleteAllThumbnailSizes(
