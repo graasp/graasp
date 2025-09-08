@@ -112,33 +112,42 @@ export class ItemThumbnailService {
       return {};
     }
 
+    // Ensures that sizes are unique.
+    const thumbnailSizes = Array.from(new Set(sizes));
+    // Create a flat array of [{itemId, size}] tuple
     const itemsIdWithThumbnail = items
       .filter((i) => Boolean(i.settings.hasThumbnail))
-      .map((i) => i.id);
-    const thumbnailSizes = Array.from(new Set(sizes)); // Ensures that sizes are unique.
+      .map((i) => thumbnailSizes.map((size) => ({ id: i.id, size })))
+      .flat();
 
-    const thumbnailsPerItem = await Promise.all(
-      itemsIdWithThumbnail.map(async (id) => {
-        const thumbnailsBySize = {};
-
-        for (const size of thumbnailSizes) {
-          try {
-            const url = await this.thumbnailService.getUrl({
-              size: String(size),
-              id,
-            });
-            thumbnailsBySize[size] = url;
-          } catch (error) {
-            // Handle error if needed, e.g., log or use fallback
-            console.error(`Failed to get thumbnail for ID ${id} and size ${size}:`, error);
-            return {};
-          }
-        }
-        return thumbnailsBySize;
-      }),
+    // fetch all thumbnails
+    const thumbnails = await Promise.allSettled(
+      itemsIdWithThumbnail.map(
+        async ({ id, size }) =>
+          await this.thumbnailService.getUrl({
+            size: String(size),
+            id,
+          }),
+      ),
     );
 
-    return thumbnailsPerItem.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    // Map results back to { [itemId]: { [size]: url } }
+    const itemsThumbnails: ItemsThumbnails = {};
+
+    thumbnails.forEach((result, idx) => {
+      const { id, size } = itemsIdWithThumbnail[idx];
+      if (result.status === 'fulfilled') {
+        if (!itemsThumbnails[id]) {
+          itemsThumbnails[id] = {};
+        }
+        itemsThumbnails[id][size] = result.value;
+      } else {
+        // log error
+        console.error(`Failed to get thumbnail for ID ${id} and size ${size}:`, result.reason);
+      }
+    });
+
+    return itemsThumbnails;
   }
 
   async deleteAllThumbnailSizes(

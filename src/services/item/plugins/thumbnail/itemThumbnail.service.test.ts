@@ -103,5 +103,40 @@ describe('ItemThumbnailService', () => {
     it('Empty sizes array should return empty object', async () => {
       expect(await itemThumbnailService.getUrlsByItems(mockedItemsId, [])).toEqual({});
     });
+
+    it('Hanldes failures gracefully', async () => {
+      // define a flacky thumbnail service that fails for small sizes
+      const stubThumbnailService = {
+        getUrl: async ({ size }) => {
+          // fail for small sizes
+          if (size === ThumbnailSize.Small) {
+            throw new Error();
+          }
+          return 'abcd';
+        },
+      } as unknown as ThumbnailService;
+
+      const flackyItemThumbnailService = new ItemThumbnailService(
+        dummyItemService,
+        stubThumbnailService,
+        stubAuthorizedItemService,
+        MOCK_LOGGER,
+      );
+      // request medium and small sizes
+      const expectedSizes = [ThumbnailSize.Medium, ThumbnailSize.Small];
+
+      // fetch the thumbnails
+      const result = await flackyItemThumbnailService.getUrlsByItems(mockedItemsId, expectedSizes);
+      // expected result has medium thumbnails for all items but no small thumbnails
+      const expectedResult = mockedItemsId
+        .map((item) => ({
+          [item.id]:
+            // only medium is retured, small is not returned
+            { medium: 'abcd' },
+        }))
+        .reduce((acc, curr) => ({ ...acc, ...curr }));
+
+      expect(result).toEqual(expectedResult);
+    });
   });
 });
