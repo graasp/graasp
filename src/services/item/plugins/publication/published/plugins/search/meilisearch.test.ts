@@ -4,7 +4,6 @@ import {
   Index,
   MeiliSearch,
   type MultiSearchParams,
-  type MultiSearchResponse,
   Task,
   TaskStatus,
 } from 'meilisearch';
@@ -106,7 +105,7 @@ describe('MeilisearchWrapper', () => {
   describe('search', () => {
     const searchSpy = jest
       .spyOn(MeiliSearch.prototype, 'multiSearch')
-      .mockResolvedValue({} as MultiSearchResponse);
+      .mockResolvedValue({ hits: [], query: '', processingTimeMs: 0 });
 
     it('search is delegated to meilisearch SDK', async () => {
       // Create a mock DataSource object

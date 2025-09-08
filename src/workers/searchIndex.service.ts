@@ -187,7 +187,7 @@ export class SearchIndexService {
       const index = await this.meilisearchClient.getIndex(name);
       return index;
     } catch (err) {
-      if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
+      if (err instanceof MeiliSearchApiError && err.cause?.code === 'index_not_found') {
         const task = await this.meilisearchClient.createIndex(name);
         await this.meilisearchClient.waitForTask(task.taskUid);
 
