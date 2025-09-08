@@ -134,7 +134,7 @@ describe('ItemThumbnailService', () => {
             // only medium is retured, small is not returned
             { medium: 'abcd' },
         }))
-        .reduce((acc, curr) => ({ ...acc, ...curr }));
+        .reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
       expect(result).toEqual(expectedResult);
     });
