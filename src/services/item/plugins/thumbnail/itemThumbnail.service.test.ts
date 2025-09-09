@@ -104,7 +104,7 @@ describe('ItemThumbnailService', () => {
       expect(await itemThumbnailService.getUrlsByItems(mockedItemsId, [])).toEqual({});
     });
 
-    it('Hanldes failures gracefully', async () => {
+    it('Handles failures gracefully', async () => {
       // define a flacky thumbnail service that fails for small sizes
       const stubThumbnailService = {
         getUrl: async ({ size }) => {

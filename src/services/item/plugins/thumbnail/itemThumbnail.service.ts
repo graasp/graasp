@@ -138,7 +138,7 @@ export class ItemThumbnailService {
       const { id, size } = itemsIdWithThumbnail[idx];
       if (result.status === 'fulfilled') {
         if (!itemsThumbnails[id]) {
-          itemsThumbnails[id] = {};
+          itemsThumbnails[id] = { small: '', medium: '' };
         }
         itemsThumbnails[id][size] = result.value;
       } else {
@@ -147,7 +147,14 @@ export class ItemThumbnailService {
       }
     });
 
-    return itemsThumbnails;
+    // filter itemThumbnails that are not complete
+    const filteredItemsThumbnails = Object.fromEntries(
+      Object.entries(itemsThumbnails).filter((itemT) =>
+        thumbnailSizes.every((size) => itemT[size] !== ''),
+      ),
+    );
+
+    return filteredItemsThumbnails;
   }
 
   async deleteAllThumbnailSizes(

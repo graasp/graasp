@@ -36,20 +36,20 @@ export type PackedItem = GraaspItem & {
   permission: ItemMembershipRaw['permission'] | null;
   hidden?: ItemVisibilityRaw;
   public?: ItemVisibilityRaw;
-  thumbnails?: Partial<ThumbnailsBySize>;
+  thumbnails?: ThumbnailsBySize;
 };
 
 export class ItemWrapper {
   item: ItemWithCreator;
   actorPermission?: { permission: ItemMembershipRaw['permission'] } | null;
   visibilities?: ItemVisibilityRaw[] | null;
-  private readonly thumbnails?: Partial<ThumbnailsBySize>;
+  private readonly thumbnails?: ThumbnailsBySize;
 
   constructor(
     item: ItemWithCreator,
     im?: { permission: ItemMembershipRaw['permission'] } | null,
     visibilities?: ItemVisibilityRaw[] | null,
-    thumbnails?: Partial<ThumbnailsBySize>,
+    thumbnails?: ThumbnailsBySize,
   ) {
     this.item = item;
     this.actorPermission = im;
