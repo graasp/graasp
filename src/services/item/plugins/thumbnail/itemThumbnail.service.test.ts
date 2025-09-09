@@ -105,15 +105,15 @@ describe('ItemThumbnailService', () => {
     });
 
     it('Handles failures gracefully', async () => {
-      // define a flacky thumbnail service that fails for small sizes
+      // define a flacky thumbnail service that fails for the first itemId
       const stubThumbnailService = {
-        getUrl: async ({ size }) => {
-          // fail for small sizes
-          if (size === ThumbnailSize.Small) {
+        getUrl: jest.fn().mockImplementation(async ({ id }) => {
+          // fail for the first one
+          if (id === mockedItemsId[0].id) {
             throw new Error();
           }
           return 'abcd';
-        },
+        }),
       } as unknown as ThumbnailService;
 
       const flackyItemThumbnailService = new ItemThumbnailService(
@@ -127,12 +127,11 @@ describe('ItemThumbnailService', () => {
 
       // fetch the thumbnails
       const result = await flackyItemThumbnailService.getUrlsByItems(mockedItemsId, expectedSizes);
-      // expected result has medium thumbnails for all items but no small thumbnails
+      // expected result to not have the first one
       const expectedResult = mockedItemsId
+        .slice(1)
         .map((item) => ({
-          [item.id]:
-            // only medium is retured, small is not returned
-            { medium: 'abcd' },
+          [item.id]: { small: 'abcd', medium: 'abcd' },
         }))
         .reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
