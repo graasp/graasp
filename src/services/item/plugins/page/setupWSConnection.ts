@@ -17,6 +17,8 @@ import * as syncProtocol from 'y-protocols/sync';
 // @ts-expect-error
 import * as Y from 'yjs';
 
+import { FastifyBaseLogger } from 'fastify';
+
 import { db } from '../../../../drizzle/db';
 import { WSDoc } from './WSDoc';
 import { MESSAGE_AWARENESS_CODE, MESSAGE_SYNC_CODE, PING_TIMEOUT } from './constants';
@@ -40,8 +42,8 @@ class WSSharedDoc extends WSDoc {
     return name + '_shared';
   }
 
-  constructor(pageItemService: PageItemService, name: string) {
-    super(pageItemService, name, true);
+  constructor(pageItemService: PageItemService, name: string, logger: FastifyBaseLogger) {
+    super(pageItemService, name, true, logger);
 
     const awarenessChangeHandler = (
       {
@@ -113,9 +115,9 @@ class WSSharedDoc extends WSDoc {
         this.pageItemService.storeUpdate(db, pageId, update);
       });
     } catch (e) {
-      console.error('An error occured while binding the state:', e);
+      this.logger.error(`Page ${pageId}: An error occured while binding the state: ${e}`);
       // send error to sentry
-      captureException(e);
+      captureException(e, { tags: { feature: 'page', pageId: this.name } });
 
       this.conns.forEach((v, conn) => {
         // close connections for unexpected error
@@ -132,8 +134,8 @@ class WSSharedDoc extends WSDoc {
 class WSReadDoc extends WSDoc {
   private SYNC_ORIGIN = 'sync';
 
-  constructor(pageItemService: PageItemService, name: string) {
-    super(pageItemService, name, false);
+  constructor(pageItemService: PageItemService, name: string, logger: FastifyBaseLogger) {
+    super(pageItemService, name, false, logger);
     this.bindState(name);
 
     // send yjs doc updates to all connections
@@ -150,9 +152,9 @@ class WSReadDoc extends WSDoc {
       const persistedYdoc = await this.pageItemService.getById(db, pageId);
       Y.applyUpdate(this, Y.encodeStateAsUpdate(persistedYdoc), this.SYNC_ORIGIN);
     } catch (e) {
-      console.error('An error occured while binding the state:', e);
+      this.logger.error(`Page ${pageId}: An error occured while binding the state: ${e}`);
       // send error to sentry
-      captureException(e);
+      captureException(e, { tags: { feature: 'page', pageId: this.name } });
       this.conns.forEach((v, conn) => {
         // close connections for unexpected error
         this.closeConn(conn, 1011);
@@ -173,7 +175,7 @@ class WSReadDoc extends WSDoc {
  * @param conn websocket connection
  * @param doc yjs document
  */
-function setupPingPong(conn: WebSocket, doc: WSDoc) {
+function setupPingPong(conn: WebSocket, doc: WSDoc, pageId: string, logger: FastifyBaseLogger) {
   // Check if connection is still alive
   let pongReceived = true;
   const pingInterval = setInterval(() => {
@@ -187,7 +189,7 @@ function setupPingPong(conn: WebSocket, doc: WSDoc) {
       try {
         conn.ping();
       } catch (e) {
-        console.error(e);
+        logger.error(`Page ${pageId}: ${e}`);
         doc.closeConn(conn);
         clearInterval(pingInterval);
       }
@@ -213,11 +215,13 @@ export const setupWSConnectionForWriters = (
   conn: WebSocket,
   pageId: string,
   pageItemService: PageItemService,
+  logger: FastifyBaseLogger,
 ) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
   const doc = map.setIfUndefined(docs, pageId, () => {
-    const doc = new WSSharedDoc(pageItemService, pageId);
+    logger.info(`Page ${pageId}: Initializing new doc`);
+    const doc = new WSSharedDoc(pageItemService, pageId, logger);
 
     docs.set(pageId, doc);
 
@@ -225,18 +229,20 @@ export const setupWSConnectionForWriters = (
   });
   doc.addConnection(conn);
 
-  setupPingPong(conn, doc);
+  setupPingPong(conn, doc, pageId, logger);
 
   // put the following in a variables in a block so the interval handlers don't keep in in
   // scope
   {
     // send sync step 1
+    logger.info(`Page ${pageId}: send sync step 1 `);
     const encoder = encoding.createEncoder();
     encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
     syncProtocol.writeSyncStep1(encoder, doc);
     doc.send(conn, encoding.toUint8Array(encoder));
 
     // send init awareness
+    logger.info(`Page ${pageId}: send init awareness`);
     const awarenessStates = doc.awareness.getStates();
     if (awarenessStates.size > 0) {
       const encoder = encoding.createEncoder();
@@ -259,23 +265,26 @@ export const setupWSConnectionForRead = (
   conn: WebSocket,
   pageId: string,
   pageItemService: PageItemService,
+  logger: FastifyBaseLogger,
 ) => {
   conn.binaryType = 'arraybuffer';
   // get doc, initialize if it does not exist yet
   const doc = map.setIfUndefined(readDocs, pageId, () => {
-    const doc = new WSReadDoc(pageItemService, pageId);
+    logger.info(`Page ${pageId}: Initializing new doc`);
+    const doc = new WSReadDoc(pageItemService, pageId, logger);
     readDocs.set(pageId, doc);
 
     return doc;
   });
   doc.addConnection(conn);
 
-  setupPingPong(conn, doc);
+  setupPingPong(conn, doc, pageId, logger);
 
   // put the following in a variables in a block so the interval handlers don't keep in in
   // scope
   {
     // send sync step 1
+    logger.info(`Page ${pageId}: send sync step 1`);
     const encoder = encoding.createEncoder();
     encoding.writeVarUint(encoder, MESSAGE_SYNC_CODE);
     syncProtocol.writeSyncStep1(encoder, doc);

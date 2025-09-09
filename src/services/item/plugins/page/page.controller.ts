@@ -81,7 +81,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async (client, req) => {
       client.on('error', fastify.log.error);
-      setupWSConnectionForRead(client, req.params.id, pageItemService);
+      setupWSConnectionForRead(client, req.params.id, pageItemService, fastify.log);
     },
   );
 
@@ -111,7 +111,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async (client, req) => {
       client.on('error', fastify.log.error);
-      setupWSConnectionForWriters(client, req.params.id, pageItemService);
+      setupWSConnectionForWriters(client, req.params.id, pageItemService, fastify.log);
     },
   );
 };
