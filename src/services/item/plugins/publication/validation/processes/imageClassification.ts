@@ -1,44 +1,71 @@
+import FormData from 'form-data';
 import fetch from 'node-fetch';
-import sharp from 'sharp';
-
-import { HttpMethod, MimeTypes } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_PREDICTION_THRESHOLD } from '../constants';
 import { FailedImageClassificationRequestError } from '../errors';
 
-const imageToBase64 = async (buffer: ArrayBuffer, mimetype?: string) => {
-  let imageBuffer = buffer;
-
-  // if image is SVG or unkown, convert it to PNG to solve nudenet issues
-  if (!mimetype || mimetype === MimeTypes.Image.SVG) {
-    imageBuffer = await sharp(buffer).png().toBuffer();
-  }
-
-  return Buffer.from(imageBuffer).toString('base64');
+type ClassPrediction = {
+  class: string;
+  score: number;
+  box: [number, number, number, number];
 };
+type ClassificationResponse = {
+  prediction?: ClassPrediction[][];
+  success: boolean;
+};
+
+const CLASSIFIER_LABELS = [
+  // 'FEMALE_GENITALIA_COVERED',
+  // 'FACE_FEMALE',
+  'BUTTOCKS_EXPOSED',
+  'FEMALE_BREAST_EXPOSED',
+  'FEMALE_GENITALIA_EXPOSED',
+  // 'MALE_BREAST_EXPOSED',
+  'ANUS_EXPOSED',
+  // 'FEET_EXPOSED',
+  // 'BELLY_COVERED',
+  // 'FEET_COVERED',
+  // 'ARMPITS_COVERED',
+  // 'ARMPITS_EXPOSED',
+  // 'FACE_MALE',
+  // 'BELLY_EXPOSED',
+  'MALE_GENITALIA_EXPOSED',
+  // 'ANUS_COVERED',
+  // 'FEMALE_BREAST_COVERED',
+  // 'BUTTOCKS_COVERED',
+];
 
 const sendRequestToClassifier = async (
   classifierApi: string,
   url: string,
-  mimetype?: string,
-): Promise<{
-  prediction?: {
-    image?: {
-      unsafe: number;
-      safe: number;
-    };
-  };
-}> => {
+): Promise<ClassificationResponse> => {
   try {
     const imageUrlData = await fetch(url);
-    const buffer = await imageUrlData.arrayBuffer();
-    const encodedImage = await imageToBase64(buffer, mimetype);
-    const response = await fetch(classifierApi, {
-      method: HttpMethod.Post,
-      body: JSON.stringify({ data: { image: encodedImage } }),
-      headers: { 'Content-Type': 'application/json' },
+    const buffer = await imageUrlData.buffer();
+
+    // Create a FormData instance
+    const form = new FormData();
+    form.append('f1', buffer, {
+      filename: 'file',
+      contentType: imageUrlData.headers.get('content-type') || 'application/octet-stream',
+      knownLength: buffer.length,
     });
-    return response.json();
+
+    const contentLength = form.getLengthSync();
+
+    const headers = {
+      ...form.getHeaders(),
+      'Content-Length': contentLength.toString(),
+    };
+
+    // Send the form using fetch
+    const response = await fetch(classifierApi, {
+      method: 'POST',
+      body: form,
+      headers,
+    });
+    const classificationResult: ClassificationResponse = await response.json();
+    return classificationResult;
   } catch (error) {
     console.error(error);
     throw new FailedImageClassificationRequestError(error);
@@ -48,15 +75,20 @@ const sendRequestToClassifier = async (
 export const classifyImage = async (
   classifierApi: string,
   url: string,
-  mimetype?: string,
-): Promise<boolean> => {
-  const response = await sendRequestToClassifier(classifierApi, url, mimetype);
-  console.debug('image classification result', response);
+): Promise<ClassPrediction[]> => {
+  const response = await sendRequestToClassifier(classifierApi, url);
+  console.debug('image classification result', response.prediction);
 
-  const prediction = response?.prediction?.image;
+  // only a single image at a time
+  const prediction = response?.prediction?.at(0);
   if (!prediction) {
     throw new FailedImageClassificationRequestError('Invalid Response');
   }
 
-  return prediction.unsafe < IMAGE_CLASSIFIER_PREDICTION_THRESHOLD;
+  const nudityLabels = prediction.filter(
+    ({ class: label, score }) =>
+      CLASSIFIER_LABELS.includes(label) && score >= IMAGE_CLASSIFIER_PREDICTION_THRESHOLD,
+  );
+
+  return nudityLabels;
 };
