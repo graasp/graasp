@@ -4,6 +4,7 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
+import { AccountType } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { AccountRepository } from '../account/account.repository';
 import {
@@ -45,11 +46,32 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: getCurrent,
       preHandler: isAuthenticated,
     },
-    async ({ user }) => {
+    async (request) => {
+      const { user } = request;
       if (user?.account) {
         const account = await accountRepository.get(db, user?.account?.id);
-        // TODO: this type is wrong. Should accountRepository.get return either MemberDTO or GuestDTO (implementing AccountDTO)?
-        return account.toCurrent() as never;
+        const currentAccount = account.toCurrent();
+        if (currentAccount && currentAccount.type === AccountType.Guest) {
+          const itemLoginSchema = await accountRepository.getItemLoginSchemaForGuest(
+            db,
+            currentAccount.itemLoginSchemaId,
+          );
+          if (!itemLoginSchema) {
+            // logout user, so subsequent calls can not make use of the current user.
+            request.logout();
+            // remove session so the cookie is removed by the browser
+            request.session.delete();
+            return null;
+          }
+          const value = {
+            ...currentAccount,
+            lang: itemLoginSchema.item.lang,
+            itemLoginSchema: { item: { path: itemLoginSchema.item.path } },
+          };
+
+          return value;
+        }
+        return currentAccount;
       }
       return null;
     },
