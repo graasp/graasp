@@ -46,19 +46,23 @@ sequenceDiagram
 
 ## Assets
 
+A page can contain files (ie. images, videos, documents, etc), that we will call assets. The challenges are storage and reference to these assets given a page content.
+
 **page_assets**
 
-- local_id: uuid, not unique
+- asset_id: uuid, not unique
 - page_id: uuid, foreign on item id (page), delete cascade
 - size: number
 - created_at: date (default: now())
 - referenced_at: date (default: null)
 - deleted_at: date (default: null, null if not deleted)
 
+Each asset should not be bigger than 1GB.
+
 ```mermaid
 erDiagram
     page_assets {
-        local_id uuid
+        asset_id uuid
         page_id uuid FK
         size number
         created_at date
@@ -67,11 +71,11 @@ erDiagram
     }
 ```
 
-For a row in this table, the related asset will be stored under `pages/<page-id>`. This will be easier for deletion. For copy purposes, we allow the `id` to be non-unique. However, [pageId, id] must be unique (and indexed).
+For a row in this table, the related asset will be stored under `pages/<page-id>`. This will be easier for deletion. For copy purposes, we allow the `id` to be non-unique. However, [page_id, asset_id] must be unique (and indexed).
 
-On access, an asset get `deleted_at` cleared and set `referenced=true`.
+On access, an asset get `deleted_at` cleared and set `referenced_at=now`.
 
-On upload, a row is created with a generated <assetId> and the asset is stored at `pages/<page-id>/<asset-id>`. The client is expected to wait for the request, to reference to the asset with given `assetId`.
+On upload, a row is created with a generated <asset-id> and the asset is stored at `pages/<page-id>/<asset-id>`. The client is expected to wait for the request, to reference the asset with given `<asset-id>`.
 A possible edge case: an upload is actually successful but is never used (ie. the uploaded asset isn't integrated in the corresponding page) and end in state (`deleted_at = null` && `referenced_at != null`). We rely on cleaning solutions (see more below).
 
 A deleted asset will be marked by `deleted_at`. This allows for the history mechanism to still function. If an asset is accessed again, the `deleted_at` property is cleared. An edge case (race condition where someone accesses the asset after it has been deleted): a deleted asset is not marked and remains in the storage (state (`deleted_at = null` && `referenced_at != null`)). We rely on cleaning solutions (see more below).
@@ -102,16 +106,16 @@ sequenceDiagram
 
 ### Cleaning solutions
 
-- Delete assets where `created_at` is old and `referenced=false` by a scheduled job.
-- Delete assets where `deleted_at` is old by a scheduled job.
+- Delete assets where `created_at` is older than 7 days and `referenced_at=null` by a scheduled job.
+- Delete assets where `deleted_at` is older than 7 days by a scheduled job.
 - If a page is deleted, we delete it's corresponding assets folder and related `page_assets` rows (only way to delete assets with `referenced` not null and `deleted_at` null).
-- Question?: comparing potential page's `accessed_at` and assets's `referenced` could be falsy in case assets are lazyly loaded.
+- Possible solution: Endpoint optimization: that send all asset ids and remove non existant assets
 
 ### User Storage
 
-All assets will count in the user storage (`deleted_at = null` && `referenced_at != null`).
+A hard limit is set to 10GB. It becomes impossible to upload assets above this limit. We expect majority of pages to be less than 5GB, so there are some margin for inconsistent data.
 
-Glitches might happen for assets where `deleted_at = null` null and `referenced != null` but actually not being used anymore, because the user won't be able to delete them himself (unless deleting the page). Alternative solution would be to provide a gallery to manage related assets.
+Inconsistences might happen for assets where `deleted_at = null` and `referenced != null` but actually not being used anymore, because the user won't be able to delete them himself (unless deleting the page). Alternative solution would be to provide a gallery to manage related assets.
 
 ### Endpoints
 
