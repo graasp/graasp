@@ -78,7 +78,12 @@ const compositeCurrentGuestSchema = Type.Composite([
   customType.StrictObject(
     {
       type: accountTypeGuestRef,
-      extra: Type.Object({}, { additionalProperties: true }),
+      itemLoginSchema: Type.Object({
+        item: Type.Object({
+          name: Type.String(),
+          path: Type.String(),
+        }),
+      }),
     },
     { description: 'Current guest information' },
   ),

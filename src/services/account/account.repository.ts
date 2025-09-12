@@ -4,8 +4,8 @@ import { singleton } from 'tsyringe';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import type { DBConnection } from '../../drizzle/db';
-import { accountsTable } from '../../drizzle/schema';
-import type { AccountRaw } from '../../drizzle/types';
+import { accountsTable, itemLoginSchemasTable } from '../../drizzle/schema';
+import type { AccountRaw, ItemLoginSchemaWithItem } from '../../drizzle/types';
 import { AccountType, type MaybeUser } from '../../types';
 
 export class AccountDTO {
@@ -56,19 +56,30 @@ export class AccountDTO {
     if (!this.account) {
       return undefined;
     }
+    if (this.type === AccountType.Individual) {
+      return {
+        id: this.account.id,
+        name: this.account.name,
+        type: 'individual' as const,
+        isValidated: this.account.isValidated ?? false,
+        email: this.account.email ?? undefined,
+        lang: this.account.extra.lang ?? DEFAULT_LANG,
+        createdAt: this.account.createdAt,
+        updatedAt: this.account.updatedAt,
+        lastAuthenticatedAt: this.account.lastAuthenticatedAt,
+        userAgreementsDate: this.account.userAgreementsDate,
+        extra: this.account.extra,
+        enableSaveActions: this.account.enableSaveActions ?? true,
+      };
+    }
     return {
       id: this.account.id,
       name: this.account.name,
-      type: this.account.type,
-      isValidated: this.account.isValidated ?? false,
-      email: this.account.email,
-      lang: this.account.extra.lang ?? DEFAULT_LANG,
+      type: 'guest' as const,
       createdAt: this.account.createdAt,
       updatedAt: this.account.updatedAt,
       lastAuthenticatedAt: this.account.lastAuthenticatedAt,
-      userAgreementsDate: this.account.userAgreementsDate,
-      extra: this.account.extra,
-      enableSaveActions: this.account.enableSaveActions ?? true,
+      itemLoginSchemaId: this.account.itemLoginSchemaId!,
     };
   }
 }
@@ -81,5 +92,19 @@ export class AccountRepository {
     });
 
     return new AccountDTO(result);
+  }
+
+  async getItemLoginSchemaForGuest(
+    dbConnection: DBConnection,
+    itemLoginSchemaId: string,
+  ): Promise<ItemLoginSchemaWithItem | undefined> {
+    const result = await dbConnection.query.itemLoginSchemasTable.findFirst({
+      where: eq(itemLoginSchemasTable.id, itemLoginSchemaId),
+      with: {
+        item: true,
+      },
+    });
+
+    return result;
   }
 }

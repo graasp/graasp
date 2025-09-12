@@ -68,6 +68,7 @@ describe('Member routes tests', () => {
     it('Returns successfully if signed in as guest', async () => {
       const {
         guests: [guest],
+        items: [item],
       } = await seedFromJson({
         items: [
           {
@@ -82,12 +83,14 @@ describe('Member routes tests', () => {
         method: HttpMethod.Get,
         url: '/members/current',
       });
-      const m = response.json();
+      const m = await response.json();
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(m.name).toEqual(guest.name);
       expect(m.id).toEqual(guest.id);
       expect(m.email).toBeUndefined();
       expect(m.password).toBeUndefined();
+      expect(m.lang).toEqual(item.lang);
+      expect(m.itemLoginSchema).toBeDefined();
     });
     it('Throws if signed out', async () => {
       const response = await app.inject({
