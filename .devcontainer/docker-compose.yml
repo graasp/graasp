@@ -178,8 +178,8 @@ services:
     hostname: nudenet
     image: public.ecr.aws/graasp/graasp:nudenet-latest
     # exposing these ports is not necessary
-    ports:
-      - 8080:8080
+    # ports:
+    #   - 8080:8080
 
   # a mock mailbox on port 1025 (web UI at http://localhost:1080)
   mailer:
