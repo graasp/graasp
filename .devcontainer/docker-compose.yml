@@ -135,20 +135,19 @@ services:
       - 8000:3000
 
   # Localstack is used to test aws services locally
-  localstack:
-    hostname: localstack
-    image: localstack/localstack
+  garage:
+    hostname: garage
+    image: dxflrs/garage:v2.0.0
     volumes:
-      - ../tmp:/tmp/graasp-localstack
-      - './localstack/init.sh:/etc/localstack/init/ready.d/init-aws.sh'
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - SERVICES=s3
-      - DEBUG=1
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - AWS_DEFAULT_REGION=us-east-1
+      - ../tmp/garage/data:/var/lib/garage/data
+      - ../tmp/garage/meta:/var/lib/garage/meta
+      - ./garage/garage.toml:/etc/garage.toml
+      # - './localstack/init.sh:/etc/localstack/init/ready.d/init-aws.sh'
     ports:
-      - 4566-4583:4566-4583
+      - "3900:3900"
+      - "3901:3901"
+      - "3902:3902"
+      - "3903:3903"
 
   localfile:
     hostname: localfile
