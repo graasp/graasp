@@ -14,7 +14,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemService } from '../../item.service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
-import type { ItemThumbnailSize, ItemsThumbnails } from './types';
+import type { ItemsThumbnails } from './types';
 
 @injectable()
 export class ItemThumbnailService {
@@ -106,18 +106,15 @@ export class ItemThumbnailService {
     items: (Pick<ItemRaw, 'id'> & {
       settings: Pick<ItemRaw['settings'], 'hasThumbnail'>;
     })[],
-    sizes: ItemThumbnailSize[] = DEFAULT_ITEM_THUMBNAIL_SIZES,
   ): Promise<ItemsThumbnails> {
-    if (!items?.length || !sizes.length) {
+    if (!items?.length) {
       return {};
     }
 
-    // Ensures that sizes are unique.
-    const thumbnailSizes = Array.from(new Set(sizes));
     // Create a flat array of [{itemId, size}] tuple
     const itemsIdWithThumbnail = items
       .filter((i) => Boolean(i.settings.hasThumbnail))
-      .map((i) => thumbnailSizes.map((size) => ({ id: i.id, size })))
+      .map((i) => DEFAULT_ITEM_THUMBNAIL_SIZES.map((size) => ({ id: i.id, size })))
       .flat();
 
     // fetch all thumbnails
@@ -150,7 +147,7 @@ export class ItemThumbnailService {
     // filter itemThumbnails that are not complete
     const filteredItemsThumbnails = Object.fromEntries(
       Object.entries(itemsThumbnails).filter((itemT) =>
-        thumbnailSizes.every((size) => itemT[size] !== ''),
+        DEFAULT_ITEM_THUMBNAIL_SIZES.every((size) => itemT[size] !== ''),
       ),
     );
 

@@ -80,28 +80,15 @@ describe('ItemThumbnailService', () => {
       expectValidUrls(mockedItemsId, results, expectedSizes);
     });
 
-    it('Retrieve the specified size', async () => {
-      const expectedSizes = [ThumbnailSize.Medium, ThumbnailSize.Small];
-
-      expectedSizes.forEach(async (size) => {
-        const results = await itemThumbnailService.getUrlsByItems(mockedItemsId, [size]);
-        expectValidUrls(mockedItemsId, results, [size]);
-      });
-    });
-
     it('Retrieve the specified sizes', async () => {
       const expectedSizes = [ThumbnailSize.Medium, ThumbnailSize.Small];
 
-      const results = await itemThumbnailService.getUrlsByItems(mockedItemsId, expectedSizes);
+      const results = await itemThumbnailService.getUrlsByItems(mockedItemsId);
       expectValidUrls(mockedItemsId, results, expectedSizes);
     });
 
     it('Empty item ids array should return empty object', async () => {
       expect(await itemThumbnailService.getUrlsByItems([])).toEqual({});
-    });
-
-    it('Empty sizes array should return empty object', async () => {
-      expect(await itemThumbnailService.getUrlsByItems(mockedItemsId, [])).toEqual({});
     });
 
     it('Handles failures gracefully', async () => {
@@ -122,11 +109,9 @@ describe('ItemThumbnailService', () => {
         stubAuthorizedItemService,
         MOCK_LOGGER,
       );
-      // request medium and small sizes
-      const expectedSizes = [ThumbnailSize.Medium, ThumbnailSize.Small];
 
       // fetch the thumbnails
-      const result = await flackyItemThumbnailService.getUrlsByItems(mockedItemsId, expectedSizes);
+      const result = await flackyItemThumbnailService.getUrlsByItems(mockedItemsId);
       // expected result to not have the first one
       const expectedResult = mockedItemsId
         .slice(1)
