@@ -149,7 +149,9 @@ export class WSDoc extends Y.Doc {
       const controlledIds: Set<number> = this.conns.get(conn)!;
       this.conns.delete(conn);
       awarenessProtocol.removeAwarenessStates(this.awareness, Array.from(controlledIds), null);
-      this.destroy();
+      if (this.conns.size === 0) {
+        this.destroy();
+      }
     }
     conn.close(code, reason);
   }
