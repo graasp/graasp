@@ -82,7 +82,7 @@ services:
       CORS_ORIGIN_REGEX: '^http?:\/\/(localhost)?:[0-9]{4}$'
 
       # endpoint of the nudenet model
-      IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
+      IMAGE_CLASSIFIER_API: http://nudenet:8080/infer
 
       OPENAI_API_KEY: <token> # replace with your own KEY
 
@@ -199,7 +199,7 @@ services:
       - "1081:80"
 
   nudenet:
-    image: notaitech/nudenet:classifier
+    image: public.ecr.aws/graasp/graasp:nudenet-latest
     hostname: nudenet
 
   iframely:

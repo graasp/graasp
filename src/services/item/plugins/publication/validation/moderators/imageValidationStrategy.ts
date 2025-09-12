@@ -1,6 +1,6 @@
 import { inject, singleton } from 'tsyringe';
 
-import { ItemType, ItemValidationProcess, ItemValidationStatus, getMimetype } from '@graasp/sdk';
+import { ItemType, ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
 import { type ItemRaw } from '../../../../../../drizzle/types';
@@ -41,9 +41,10 @@ export class ImageValidationStrategy implements ValidationStrategy {
       path: filepath,
     });
 
-    const mimetype = getMimetype(item.extra);
-    const isSafe = await classifyImage(this.imageClassifierApi, url, mimetype);
+    const classes = await classifyImage(this.imageClassifierApi, url);
+    const isSafe = classes.length === 0;
+    const result = classes.map((c) => `${c.class}: ${c.score}`).join(' | ');
     const status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
-    return { status };
+    return { status, result };
   }
 }

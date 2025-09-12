@@ -190,7 +190,8 @@ export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = requiredEnvVar(
 );
 
 // validation
-export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API ?? '';
+export const IMAGE_CLASSIFIER_API =
+  process.env.IMAGE_CLASSIFIER_API ?? 'http://localhost:8080/infer';
 
 export const ITEMS_ROUTE_PREFIX = '/items';
 export const APP_ITEMS_PREFIX = '/app-items';
