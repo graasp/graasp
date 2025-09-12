@@ -64,7 +64,7 @@ describe('Item routes tests', () => {
   it('Thumbnails do not crash the server', async () => {
     const {
       actor,
-      items: [parent, child1, childOfChild],
+      items: [_parent, _child1, childOfChild],
     } = await seedFromJson({
       items: [
         {
