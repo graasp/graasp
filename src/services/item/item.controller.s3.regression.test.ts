@@ -61,7 +61,7 @@ describe('Item routes tests', () => {
     jest.clearAllMocks();
     unmockAuthenticate();
   });
-  it('Returns successfully in order', async () => {
+  it('Thumbnails do not crash the server', async () => {
     const {
       actor,
       items: [parent, child1, childOfChild],
@@ -94,7 +94,7 @@ describe('Item routes tests', () => {
     // server should still not be dead
     const otherCall = await app.inject({
       method: HttpMethod.Get,
-      url: '/status',
+      url: '/version',
     });
     expect(otherCall.statusCode).toBe(StatusCodes.OK);
   });
