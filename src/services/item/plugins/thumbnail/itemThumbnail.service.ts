@@ -14,7 +14,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemService } from '../../item.service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
-import type { ItemThumbnailSize, ItemsThumbnails } from './types';
+import type { ItemsThumbnails } from './types';
 
 @injectable()
 export class ItemThumbnailService {
@@ -106,43 +106,52 @@ export class ItemThumbnailService {
     items: (Pick<ItemRaw, 'id'> & {
       settings: Pick<ItemRaw['settings'], 'hasThumbnail'>;
     })[],
-    sizes: ItemThumbnailSize[] = DEFAULT_ITEM_THUMBNAIL_SIZES,
-  ) {
-    if (!items?.length || !sizes.length) {
+  ): Promise<ItemsThumbnails> {
+    if (!items?.length) {
       return {};
     }
 
+    // Create a flat array of [{itemId, size}] tuple
     const itemsIdWithThumbnail = items
       .filter((i) => Boolean(i.settings.hasThumbnail))
-      .map((i) => i.id);
-    const thumbnailSizes = Array.from(new Set(sizes)); // Ensures that sizes are unique.
+      .map((i) => DEFAULT_ITEM_THUMBNAIL_SIZES.map((size) => ({ id: i.id, size })))
+      .flat();
 
-    const thumbnailsPerItem = await Promise.allSettled<ItemsThumbnails>(
-      itemsIdWithThumbnail.map(async (id) => {
-        const thumbnails = await Promise.all(
-          thumbnailSizes.map(async (size) => {
-            const url = await this.thumbnailService.getUrl({
-              size: String(size),
-              id,
-            });
-            return [size, url];
+    // fetch all thumbnails
+    const thumbnails = await Promise.allSettled(
+      itemsIdWithThumbnail.map(
+        async ({ id, size }) =>
+          await this.thumbnailService.getUrl({
+            size: String(size),
+            id,
           }),
-        );
-        return { [id]: Object.fromEntries(thumbnails) };
-      }),
+      ),
     );
 
-    // As thumbnailsPerItem is an array, convert the array into an object where each key is the itemId.
-    return thumbnailsPerItem.reduce<ItemsThumbnails>((acc, res) => {
-      if (res.status === 'fulfilled') {
-        return { ...acc, ...res.value };
-      }
+    // Map results back to { [itemId]: { [size]: url } }
+    const itemsThumbnails: ItemsThumbnails = {};
 
-      this.logger.error(
-        `An error occured while fetching the item's thumbnails. The reason: ${JSON.stringify(res.reason)}`,
-      );
-      return acc;
-    }, {});
+    thumbnails.forEach((result, idx) => {
+      const { id, size } = itemsIdWithThumbnail[idx];
+      if (result.status === 'fulfilled') {
+        if (!itemsThumbnails[id]) {
+          itemsThumbnails[id] = { small: '', medium: '' };
+        }
+        itemsThumbnails[id][size] = result.value;
+      } else {
+        // log error
+        console.error(`Failed to get thumbnail for ID ${id} and size ${size}:`, result.reason);
+      }
+    });
+
+    // filter itemThumbnails that are not complete
+    const filteredItemsThumbnails = Object.fromEntries(
+      Object.entries(itemsThumbnails).filter((itemT) =>
+        DEFAULT_ITEM_THUMBNAIL_SIZES.every((size) => itemT[size] !== ''),
+      ),
+    );
+
+    return filteredItemsThumbnails;
   }
 
   async deleteAllThumbnailSizes(

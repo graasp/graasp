@@ -80,19 +80,10 @@ describe('ItemThumbnailService', () => {
       expectValidUrls(mockedItemsId, results, expectedSizes);
     });
 
-    it('Retrieve the specified size', async () => {
-      const expectedSizes = [ThumbnailSize.Medium, ThumbnailSize.Small];
-
-      expectedSizes.forEach(async (size) => {
-        const results = await itemThumbnailService.getUrlsByItems(mockedItemsId, [size]);
-        expectValidUrls(mockedItemsId, results, [size]);
-      });
-    });
-
     it('Retrieve the specified sizes', async () => {
       const expectedSizes = [ThumbnailSize.Medium, ThumbnailSize.Small];
 
-      const results = await itemThumbnailService.getUrlsByItems(mockedItemsId, expectedSizes);
+      const results = await itemThumbnailService.getUrlsByItems(mockedItemsId);
       expectValidUrls(mockedItemsId, results, expectedSizes);
     });
 
@@ -100,8 +91,36 @@ describe('ItemThumbnailService', () => {
       expect(await itemThumbnailService.getUrlsByItems([])).toEqual({});
     });
 
-    it('Empty sizes array should return empty object', async () => {
-      expect(await itemThumbnailService.getUrlsByItems(mockedItemsId, [])).toEqual({});
+    it('Handles failures gracefully', async () => {
+      // define a flacky thumbnail service that fails for the first itemId
+      const stubThumbnailService = {
+        getUrl: jest.fn().mockImplementation(async ({ id }) => {
+          // fail for the first one
+          if (id === mockedItemsId[0].id) {
+            throw new Error();
+          }
+          return 'abcd';
+        }),
+      } as unknown as ThumbnailService;
+
+      const flackyItemThumbnailService = new ItemThumbnailService(
+        dummyItemService,
+        stubThumbnailService,
+        stubAuthorizedItemService,
+        MOCK_LOGGER,
+      );
+
+      // fetch the thumbnails
+      const result = await flackyItemThumbnailService.getUrlsByItems(mockedItemsId);
+      // expected result to not have the first one
+      const expectedResult = mockedItemsId
+        .slice(1)
+        .map((item) => ({
+          [item.id]: { small: 'abcd', medium: 'abcd' },
+        }))
+        .reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
+      expect(result).toEqual(expectedResult);
     });
   });
 });
