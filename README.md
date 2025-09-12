@@ -51,18 +51,18 @@ First open the folder in the dev-container by using the command palette <kbd>cmd
 
 This will create 10 containers :
 
-- `graasp-core` : Node.js backend of Graasp
+- `core` : Node.js backend of Graasp
 - `db` : PostgreSQL cluster used by multiple services
-- `graasp-etherpad` : Container for the etherpad service
-- `graasp-meilisearch` : Container for the meilisearch service
-- `graasp-redis` : Redis instance to enable websockets
-- `graasp-localstack` : Localstack instance use to fake S3 storage locally
-- `localfile` : Simple static file server to get files stored in graasp when using the `local` storage option (see the [Utilities section](#utilities))
-- `graasp-iframely` : Iframely instance used to get embeds for links
+- `etherpad` : Container for the etherpad service
+- `meilisearch` : Container for the meilisearch service
+- `redis` : Redis instance to enable websockets
+- `garage` : An s3-compatible service that works locally
+<!-- - `localfile` : Simple static file server to get files stored in graasp when using the `local` storage option (see the [Utilities section](#utilities)) -->
+- `iframely` : Iframely instance used to get embeds for links
 - `mailer` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
 
 > **Important**
-> To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the development machine cannot resolve the `http://localstack` hostname.
+> To use garage with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 .s3.garage.localhost`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the development machine cannot resolve the `http://localstack` hostname.
 
 Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
 
@@ -89,7 +89,7 @@ First a running and accessible instance of PostgreSQL is required.
 
 To enable websockets capabilities, it is required to have a running instance of [Redis](https://redis.io).
 
-To use the backend with S3, it is required to have a running instance of [localstack](https://github.com/localstack/localstack).
+To use the backend with S3, it is required to have a running instance of [garage](https://git.deuxfleurs.fr/Deuxfleurs/garage).
 
 Then open the folder locally and run the following command to install the required npm packages.
 
@@ -219,6 +219,80 @@ OPENAI_API_KEY=<openai-api-key>
 # GEOLOCATION API - this can be empty if you don't use geolocation
 GEOLOCATION_API_KEY=
 ```
+
+### Garage
+
+You will need to configure the garage instance so you can use the s3 buckets with the proper access keys.
+
+To simplify the commands you can create an alias to the docker exec command:
+
+Run this on the host machine
+```sh
+# get the container name for the garage service
+docker ps
+
+# complete the command with the container name of the garage service (something like `core_devcontainer-garage-1`)
+alias garage="docker exec -it <container-name> /garage"
+```
+
+You should now be able to run commands against the garage executable running inside the container. Check that it works by running: 
+
+```sh
+garrage status
+```
+
+You should see an output similar to: 
+
+```
+2025-09-11T05:42:45.393828Z  INFO garage_net::netapp: Connected to 127.0.0.1:3901, negotiating handshake...    
+2025-09-11T05:42:45.436392Z  INFO garage_net::netapp: Connection established to fca7df6b0fe8115c    
+==== HEALTHY NODES ====
+ID                Hostname    Address         Tags  Zone  Capacity   DataAvail         Version
+fca7df6b0fe8115c  localstack  127.0.0.1:3901  []    dc1   1000.0 MB  365.8 GB (36.8%)  v2.0.0
+```
+
+#### Config
+
+Now for the real configuration part.
+
+We will:
+- setup the layout for the storage(this is required by garage to know how it allocates the capacity)
+- create buckets (file-items, h5p)
+- create access keys for the buckets
+- make the correct configurations to be able to access the buckets
+
+Layout setup
+```sh
+# get the node id
+garage status
+
+# -z defines the zone for the node, -c defined the capacity, in single node this has no impact
+garage layout assign -z dc1 -c 1G <node-id>
+
+# apply the layout
+garage layout apply --version 1
+```
+
+Create a bucket
+```sh
+garage bucket create file-items
+
+garage bucket list
+
+garage bucket info file-items
+```
+
+Create an access key
+```sh
+garage key create core-s3-key
+# make note of the secret key as it will not be shown again
+
+# allow the key to access the bucket
+garage bucket allow --read --write --owner file-items --key core-s3-key
+```
+
+
+
 
 ### Umami
 
