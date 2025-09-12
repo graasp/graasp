@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.1](https://github.com/graasp/graasp/compare/v2.9.0...v2.9.1) (2025-09-12)
+
+
+### Bug Fixes
+
+* destroy document only on empty connections ([#1988](https://github.com/graasp/graasp/issues/1988)) ([272e6e1](https://github.com/graasp/graasp/commit/272e6e1b22921a9d749e842e6e03a503590b3e3d))
+
 ## [2.9.0](https://github.com/graasp/graasp/compare/v2.8.1...v2.9.0) (2025-09-12)
 
 
