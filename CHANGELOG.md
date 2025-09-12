@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.0](https://github.com/graasp/graasp/compare/v2.8.1...v2.9.0) (2025-09-12)
+
+
+### Features
+
+* add logs to pages ([#1979](https://github.com/graasp/graasp/issues/1979)) ([65dcd23](https://github.com/graasp/graasp/commit/65dcd23aed0b9bf682c5b723faff25904f33c021))
+
+
+### Bug Fixes
+
+* catch error when getting thumbnail ([#1977](https://github.com/graasp/graasp/issues/1977)) ([93eb419](https://github.com/graasp/graasp/commit/93eb419d5c3322012a02729e56bd802629da6ada))
+* logout guest of deleted item and return itemLoginSchema in /current ([#1986](https://github.com/graasp/graasp/issues/1986)) ([19a75cd](https://github.com/graasp/graasp/commit/19a75cdac42bda28e723375677774c90ee0e0fff))
+* remove AWS task defs ([#1981](https://github.com/graasp/graasp/issues/1981)) ([64b5538](https://github.com/graasp/graasp/commit/64b55381b1bd95780c5b18bd62817b1a72683de0))
+* update nudenet to use latest release and control the classes that are inferred ([#1987](https://github.com/graasp/graasp/issues/1987)) ([628f19b](https://github.com/graasp/graasp/commit/628f19b842064b8594925bd24cc85a9f30c2c6fa))
+* use arm build ([#1980](https://github.com/graasp/graasp/issues/1980)) ([17ff722](https://github.com/graasp/graasp/commit/17ff722743a0e7430dc234c32eaaeca274aec29e))
+
 ## [2.8.1](https://github.com/graasp/graasp/compare/v2.8.0...v2.8.1) (2025-09-04)
 
 
