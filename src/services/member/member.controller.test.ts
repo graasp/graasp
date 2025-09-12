@@ -91,6 +91,11 @@ describe('Member routes tests', () => {
       expect(m.password).toBeUndefined();
       expect(m.lang).toEqual(item.lang);
       expect(m.itemLoginSchema).toBeDefined();
+      expect(m.itemLoginSchema.item).toMatchObject({
+        id: item.id,
+        name: item.name,
+        path: item.path,
+      });
     });
     it('Throws if signed out', async () => {
       const response = await app.inject({
