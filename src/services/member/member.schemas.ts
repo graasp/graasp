@@ -80,6 +80,7 @@ const compositeCurrentGuestSchema = Type.Composite([
       type: accountTypeGuestRef,
       itemLoginSchema: Type.Object({
         item: Type.Object({
+          id: customType.UUID(),
           name: Type.String(),
           path: Type.String(),
         }),

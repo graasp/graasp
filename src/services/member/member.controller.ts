@@ -67,7 +67,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
             ...currentAccount,
             lang: itemLoginSchema.item.lang,
             itemLoginSchema: {
-              item: { name: itemLoginSchema.item.name, path: itemLoginSchema.item.path },
+              item: {
+                id: itemLoginSchema.item.id,
+                name: itemLoginSchema.item.name,
+                path: itemLoginSchema.item.path,
+              },
             },
           };
 
