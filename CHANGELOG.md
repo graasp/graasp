@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.2](https://github.com/graasp/graasp/compare/v2.9.1...v2.9.2) (2025-09-15)
+
+
+### Bug Fixes
+
+* add item id in current guest itemloginSchema ([#1990](https://github.com/graasp/graasp/issues/1990)) ([4a64e55](https://github.com/graasp/graasp/commit/4a64e5510e87e1afbd0ab30b5161c9e4151c1409))
+
 ## [2.9.1](https://github.com/graasp/graasp/compare/v2.9.0...v2.9.1) (2025-09-12)
 
 
