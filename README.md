@@ -49,20 +49,25 @@ We recommend to set up the development environment using Docker, as it allows to
 
 First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd> (or <kbd>ctrl</kbd> instead of <kbd>cmd</kbd>), and typing `Open Folder in Container`.
 
-This will create 10 containers :
+This will create 11 containers :
 
-- `graasp-core` : Node.js backend of Graasp
+- `core` : Node.js backend of Graasp
 - `db` : PostgreSQL cluster used by multiple services
-- `graasp-etherpad` : Container for the etherpad service
-- `graasp-meilisearch` : Container for the meilisearch service
-- `graasp-redis` : Redis instance to enable websockets
-- `graasp-localstack` : Localstack instance use to fake S3 storage locally
+- `etherpad` : Container for the etherpad service
+- `meilisearch` : Container for the meilisearch service
+- `redis` : Redis instance to enable websockets
+- `localstack` : Localstack instance use to fake S3 storage locally
 - `localfile` : Simple static file server to get files stored in graasp when using the `local` storage option (see the [Utilities section](#utilities))
-- `graasp-iframely` : Iframely instance used to get embeds for links
+- `iframely` : Iframely instance used to get embeds for links
 - `mailer` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
+- `umami`: An analytics service used instead of Google Analytics
 
 > **Important**
 > To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the development machine cannot resolve the `http://localstack` hostname.
+
+> **Troubleshoot**
+> If during setup of the devcontainer you get an error like `nudenet Error pull access denied for public.ecr.aws/g...` 
+> This can occure if you previously logged in to the public ECR. When you want to pull from the public ECR, you should be unauthenticated. Simply run the following on you host: `docker logout public.ecr.aws`. It will log you out of the public ECR and you should be able to rebuild the containers without issue. If it persissts please [open an issue](https://github.com/graasp/graasp/issues/new?title=NudeNet%20DevContainer%20Docker%20Install%20Issue)
 
 Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
 
@@ -222,8 +227,7 @@ GEOLOCATION_API_KEY=
 
 ### Umami
 
-To log into umami in your local instance:
-<https://umami.is/docs/login>
+To log into umami in your local instance: [Umami login documentation](https://umami.is/docs/login)
 
 The first time you log in use username: `admin` and password: `umami`. It is recommended to change these.
 
@@ -283,6 +287,8 @@ Up tests start from the previous migration state, insert mock data and apply the
 
 ## Known issues
 
+### Data persistence
+
 The development environnement uses `localstack` as a local alternative to AWS s3 storage. But persistence accross restarts is not supported without the premium license.
 This means that it is expected that you see 404 on uploaded files after a restart of your computer.
 In details:
@@ -291,6 +297,11 @@ In details:
 - the files stored on the fake s3 are not.
 
 In the future we might investigate different solutions to mocking s3 storage, or improve the local storage to provide a durable local storage option.
+
+### Container installation
+
+It is possible that the nudenet container pull fails with a 403 status code. This is likely because you are authenticated to the public AWS ECR and trying to pull a public image. Log out of the public ECR with `docker logout public.ecr.aws` and try building the devContainer again. 
+
 
 ## Openapi
 
