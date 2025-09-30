@@ -29,5 +29,7 @@ runs:
       shell: bash
 
     - name: Build and push the images
-      run: bash ./docker/build.sh ${{ inputs.aws-ecr-uri }} ${{ inputs.tag }}
+      env:
+        TAG: ${{ inputs.tag }}
+      run: bash ./docker/build.sh ${{ inputs.aws-ecr-uri }} $TAG
       shell: bash
