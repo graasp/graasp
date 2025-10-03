@@ -161,10 +161,10 @@ EMAIL_CHANGE_JWT_SECRET=<secret-key>
 
 # Graasp s3 file item
 FILE_STORAGE_TYPE=s3
-S3_FILE_ITEM_REGION=us-east-1
-S3_FILE_ITEM_BUCKET=graasp
-S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
-S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
+S3_FILE_ITEM_REGION=garage
+S3_FILE_ITEM_BUCKET=file-items
+S3_FILE_ITEM_ACCESS_KEY_ID=<your bucket key>
+S3_FILE_ITEM_SECRET_ACCESS_KEY=<your bucket secret>
 
 # Graasp H5P
 H5P_FILE_STORAGE_TYPE=local
@@ -376,6 +376,13 @@ In the future we might investigate different solutions to mocking s3 storage, or
 
 It is possible that the nudenet container pull fails with a 403 status code. This is likely because you are authenticated to the public AWS ECR and trying to pull a public image. Log out of the public ECR with `docker logout public.ecr.aws` and try building the devContainer again. 
 
+### Uploading files resulst in "AuthorizationHeaderMalformed: Authorization header malformed, unexpected scope"
+
+This upload error occurs when we try to upload a file to s3 (mocked by garage on local dev setup).
+
+You need to check that you:
+- have access and secret keys in your env
+- have set the region to the same value as the ".devcontainer/garage/garage.toml" file (look under the `s3.api` section for the `s3_region` value.) By default is should be `garage` and not `us-east-1`. Update the value in your `.env.development` file.
 
 ## Openapi
 

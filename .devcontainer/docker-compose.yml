@@ -16,9 +16,9 @@ services:
       # sane default to allow the server to bind to any interface in the container
       HOSTNAME: localhost
       # temporary storage for files inside the container
-      FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
-      # the localfile config host points to the static file server defined below
-      FILE_STORAGE_HOST: http://localfile:1081
+      # FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
+      # # the localfile config host points to the static file server defined below
+      # FILE_STORAGE_HOST: http://localfile:1081
       # H5P local storage host used in local only
       H5P_FILE_STORAGE_HOST: http://localfile:1081
       # endpoint of the nudenet model
@@ -39,7 +39,8 @@ services:
       S3_FILE_ITEM_HOST: http://localstack:4566
       # the Iframely config is set by the "iframely" service below
       EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
-
+    links:
+      - garage:s3.garage.localhost
     volumes:
       - ..:/workspace:cached
       - ../tmp:/tmp/graasp-file-item-storage
