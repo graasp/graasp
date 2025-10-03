@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.2](https://github.com/graasp/graasp/compare/v2.9.1...v2.9.2) (2025-09-30)
+
+
+### Bug Fixes
+
+* add instruction related to nudenet pull issues ([#1993](https://github.com/graasp/graasp/issues/1993)) ([8b49cf0](https://github.com/graasp/graasp/commit/8b49cf0e3fc985a92414eabd515bd6e264b9304d))
+* add item id in current guest itemloginSchema ([#1990](https://github.com/graasp/graasp/issues/1990)) ([4a64e55](https://github.com/graasp/graasp/commit/4a64e5510e87e1afbd0ab30b5161c9e4151c1409))
+* **ci:** use an env var to mitigate input injection ([#1995](https://github.com/graasp/graasp/issues/1995)) ([b73fbe6](https://github.com/graasp/graasp/commit/b73fbe66c3a5404430b88487eb62187f075b9d6f))
+
 ## [2.9.1](https://github.com/graasp/graasp/compare/v2.9.0...v2.9.1) (2025-09-12)
 
 
