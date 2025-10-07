@@ -226,7 +226,7 @@ const getGptVersion = (): GPTVersionType => {
   if ((Object.values(GPTVersion) as string[]).includes(GPTVersionEnv)) {
     return GPTVersionEnv as GPTVersionType;
   }
-  return GPTVersion.GPT_4_O_MINI;
+  return GPTVersion.GPT_5_NANO;
 };
 export const OPENAI_GPT_VERSION = getGptVersion();
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
