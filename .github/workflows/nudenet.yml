@@ -1,0 +1,17 @@
+name: Build and push Nudenet
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write # This is required for requesting the JWT for OIDC
+
+jobs:
+  build:
+    name: Build Nudenet
+    runs-on: ubuntu-24.04-arm
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
