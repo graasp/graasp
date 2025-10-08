@@ -38,4 +38,4 @@ jobs:
           docker push ${TAG}
         shell: bash
         env:
-          TAG: '${{ vars.GRAASP_PUBLIC_ECR }}:nudenet-latest'
+          TAG: '${{ vars.GRAASP_PUBLIC_ECR }}/graasp:nudenet-latest'
