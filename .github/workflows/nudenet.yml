@@ -10,6 +10,7 @@ jobs:
   build:
     name: Build Nudenet
     runs-on: ubuntu-24.04-arm
+    environment: production
 
     steps:
       - name: Checkout
@@ -25,7 +26,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: eu-central-2
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Auth to the ECR
         run: bash ./docker/auth.sh ${{ vars.GRAASP_PUBLIC_ECR }} ${{ vars.AWS_REGION }}
