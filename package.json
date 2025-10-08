@@ -99,7 +99,7 @@
     "mime": "3.0.0",
     "mimetics": "1.0.4",
     "node-fetch": "2",
-    "nodemailer": "6.10.1",
+    "nodemailer": "7.0.7",
     "openai": "4.91.1",
     "papaparse": "^5.4.1",
     "passport-custom": "1.1.1",
