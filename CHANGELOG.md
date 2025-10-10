@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.3](https://github.com/graasp/graasp/compare/v2.9.2...v2.9.3) (2025-10-10)
+
+
+### Bug Fixes
+
+* allow the use of older gpt models in the api ([#2001](https://github.com/graasp/graasp/issues/2001)) ([9a9f63e](https://github.com/graasp/graasp/commit/9a9f63ea7a282b42a8678c381027e347e67b9fed))
+
 ## [2.9.2](https://github.com/graasp/graasp/compare/v2.9.1...v2.9.2) (2025-10-08)
 
 
