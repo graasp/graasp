@@ -34,7 +34,10 @@ export const create = {
   }),
   querystring: customType.StrictObject({
     gptVersion: Type.Optional(
-      Type.Enum(GPTVersion, { description: 'Model to use', default: OPENAI_GPT_VERSION }),
+      Type.Union([
+        Type.Literal('gpt-4'),
+        Type.Enum(GPTVersion, { description: 'Model to use', default: OPENAI_GPT_VERSION }),
+      ]),
     ),
     temperature: Type.Optional(
       Type.Number({ maximum: OPENAI_MAX_TEMPERATURE, minimum: OPENAI_MIN_TEMPERATURE }),

@@ -41,6 +41,7 @@
     "openapi:generate": "node dist/scripts/generateOpenAPI.js",
     "openapi:lint": "vacuum lint ./openapi.json",
     "openapi:report": "vacuum html-report ./openapi.json vacuum-report.html",
+    "migration:apply-test": "DB_CONNECTION=postgres://test:test@db:5432/test yarn migration:run",
     "migration:generate": "yarn drizzle-kit generate",
     "migration:run": "yarn drizzle-kit migrate",
     "migration:check": "yarn drizzle-kit generate --name=migrationtest --out=./src/drizzle --schema=./src/drizzle/schema.ts --dialect=postgresql && [ -f '$(find ./src/drizzle | grep migrationtest)' ] && exit 1 || exit 0"

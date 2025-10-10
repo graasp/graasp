@@ -12,7 +12,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { assertIsDefined } from '../../../../../utils/assertions';
-import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
+import { APP_ITEMS_PREFIX, OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import { OpenAILengthError, OpenAIUnknownStopError } from '../../../../../utils/errors';
 import { getAccessToken } from '../test/fixtures';
 import { FinishReason } from './chatBot.types';
@@ -302,6 +302,36 @@ describe('Chat Bot Tests', () => {
           payload: DOCKER_MOCKED_BODY,
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+
+      it('OK if using accepted version but default to newer model', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?gptVersion=gpt-4`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: DOCKER_MOCKED_BODY,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.json().model).toBe(OPENAI_GPT_VERSION);
       });
 
       it('Bad request if post chat with invalid temperature', async () => {
