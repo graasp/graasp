@@ -592,17 +592,19 @@ export class ItemService {
     });
     const parents = await this.itemRepository.getAncestors(dbConnection, item);
 
-    const { itemMemberships, visibilities } =
-      await this.authorizedItemService.getPropertiesForItems(dbConnection, {
+    const { itemMemberships } = await this.authorizedItemService.getPropertiesForItems(
+      dbConnection,
+      {
         permission: PermissionLevel.Read,
         accountId: maybeUser?.id,
         items: parents,
-      });
+      },
+    );
     // remove parents actor does not have access
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
-    const thumbnails = await this.itemThumbnailService.getUrlsByItems(items);
-    return this.itemWrapperService.merge(items, itemMemberships, visibilities, thumbnails);
+
+    return items;
   }
 
   async patch(
