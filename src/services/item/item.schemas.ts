@@ -124,7 +124,9 @@ export const getParentItems = {
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Array(itemSchemaRef),
+    [StatusCodes.OK]: Type.Array(
+      customType.StrictObject({ id: Type.String(), name: Type.String(), path: Type.String() }),
+    ),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

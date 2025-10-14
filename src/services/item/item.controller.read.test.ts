@@ -12,12 +12,7 @@ import { assertIsDefined } from '../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
 import { ItemWrapper, type PackedItem } from './ItemWrapper';
-import {
-  expectManyItemsInOrder,
-  expectManyPackedItems,
-  expectPackedItem,
-  expectThumbnails,
-} from './test/fixtures/items';
+import { expectManyPackedItems, expectPackedItem, expectThumbnails } from './test/fixtures/items';
 import { Ordering, SortBy } from './types';
 
 // Mock S3 libraries
@@ -53,6 +48,19 @@ jest.mock('@aws-sdk/lib-storage', () => {
     }),
   };
 });
+
+export const expectParents = (
+  data: { name: string; id: string; path: string }[],
+  parents: { name: string; id: string; path: string }[],
+) => {
+  expect(data).toHaveLength(parents.length);
+
+  for (let i = 0; i < parents.length; i++) {
+    expect(data[i].id).toEqual(parents[i].id);
+    expect(data[i].name).toEqual(parents[i].name);
+    expect(data[i].path).toEqual(parents[i].path);
+  }
+};
 
 describe('Item routes tests', () => {
   let app: FastifyInstance;
@@ -1378,7 +1386,7 @@ describe('Item routes tests', () => {
 
         const data = response.json();
 
-        expectManyItemsInOrder(data, parents);
+        expectParents(data, parents);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
@@ -1446,7 +1454,7 @@ describe('Item routes tests', () => {
 
         const data = response.json();
         expect(data).toHaveLength(parents.length);
-        expectManyItemsInOrder(data, parents);
+        expectParents(data, parents);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });

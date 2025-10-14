@@ -118,11 +118,3 @@ export const expectThumbnails = (
     expect(item.thumbnails).toBeUndefined();
   }
 };
-
-export const expectManyItemsInOrder = (data: ItemRaw[], parents: ItemRaw[]) => {
-  expect(data).toHaveLength(parents.length);
-
-  for (let i = 0; i < parents.length; i++) {
-    expectItem(data[i], parents[i]);
-  }
-};
