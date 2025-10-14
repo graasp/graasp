@@ -11,6 +11,7 @@ import {
   ilike,
   inArray,
   isNotNull,
+  isNull,
   lt,
   lte,
   ne,
@@ -46,6 +47,7 @@ import {
 import {
   accountsTable,
   itemMembershipsTable,
+  itemVisibilitiesTable,
   items,
   itemsRawTable,
   membersView,
@@ -59,7 +61,7 @@ import type {
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
-import type { MaybeUser, MinimalMember } from '../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import { getSearchLang } from '../../utils/config';
 import {
   HierarchyTooDeep,
@@ -274,6 +276,82 @@ export class ItemRepository {
     return result.map(({ account, item_view }) => ({
       ...item_view,
       creator: account as MemberRaw,
+    }));
+  }
+
+  async getParentsForPublic(dbConnection: DBConnection, item: ItemRaw) {
+    const itemTree = await dbConnection
+      .select()
+      .from(items)
+      .where(isAncestorOrSelf(items.path, item.path))
+      .as('item_tree');
+
+    const ivTree = await dbConnection
+      .select()
+      .from(itemVisibilitiesTable)
+      .where(isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path))
+      .as('iv_tree');
+
+    const conditions = and(ne(itemTree.id, item.id), or(eq(ivTree.type, 'public')));
+
+    const result = dbConnection
+      .select()
+      .from(itemTree)
+      .leftJoin(ivTree, isAncestorOrSelf(ivTree.itemPath, itemTree.path))
+      .where(conditions)
+      .orderBy(asc(sql`nlevel(path)`));
+
+    return (await result).map(({ item_tree }) => ({
+      ...item_tree,
+    }));
+  }
+
+  async getParentsForAccount(dbConnection: DBConnection, item: ItemRaw, user: AuthenticatedUser) {
+    const itemTree = await dbConnection
+      .select()
+      .from(items)
+      .where(isAncestorOrSelf(items.path, item.path))
+      .as('item_tree');
+
+    const imTree = await dbConnection
+      .select()
+      .from(itemMembershipsTable)
+      .where(
+        and(
+          isAncestorOrSelf(itemMembershipsTable.itemPath, item.path),
+          eq(itemMembershipsTable.accountId, user.id),
+        ),
+      )
+      .as('im_tree');
+
+    const ivTree = await dbConnection
+      .select()
+      .from(itemVisibilitiesTable)
+      .where(isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path))
+      .as('iv_tree');
+
+    const conditions = and(
+      ne(itemTree.id, item.id),
+      or(
+        eq(imTree.permission, 'admin'),
+        eq(imTree.permission, 'write'),
+        eq(ivTree.type, 'public'),
+        and(ne(ivTree.type, 'hidden'), eq(imTree.permission, 'read')),
+        and(isNull(ivTree.type), eq(imTree.permission, 'read')),
+      ),
+    );
+
+    const result = dbConnection
+      .select()
+      .from(itemTree)
+      .leftJoin(imTree, isAncestorOrSelf(imTree.itemPath, itemTree.path))
+      .leftJoin(ivTree, isAncestorOrSelf(ivTree.itemPath, itemTree.path))
+      .where(conditions)
+      .orderBy(asc(sql`nlevel(path)`));
+
+    return (await result).map(({ item_tree }) => ({
+      ...item_tree,
+      // creator: account as MemberRaw,
     }));
   }
 
