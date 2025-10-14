@@ -1438,8 +1438,9 @@ describe('Item routes tests', () => {
           actor: null,
           items: [
             {
+              name: 'parent',
               isPublic: true,
-              children: [{ children: [{}] }],
+              children: [{ name: 'secondParent', children: [{ name: 'child' }] }],
             },
             {},
           ],
