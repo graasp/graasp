@@ -57,13 +57,13 @@ This will create 11 containers :
 - `meilisearch` : Container for the meilisearch service
 - `redis` : Redis instance to enable websockets
 - `garage` : An s3-compatible service that works locally
-<!-- - `localfile` : Simple static file server to get files stored in graasp when using the `local` storage option (see the [Utilities section](#utilities)) -->
+- `localfile` : Simple static file server alternative to s3. Used currently for H5P in local development
 - `iframely` : Iframely instance used to get embeds for links
 - `mailer` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
 - `umami`: An analytics service used instead of Google Analytics
 
 > **Important**
-> To use garage with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 .s3.garage.localhost`. This is necessary because the backend creates signed urls pointing to this subdomain. Without changing the hosts, the development machine cannot resolve urls like `http://file-items.s3.garage.localhost` .
+> To use garage with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 .s3.garage.localhost`. This is necessary because the backend creates signed urls pointing to this subdomain. Without changing the hosts, the development machine cannot resolve urls like `http://s3.garage.localhost:3900` .
 
 > **Troubleshoot**
 > If during setup of the devcontainer you get an error like `nudenet Error pull access denied for public.ecr.aws/g...` 
@@ -261,17 +261,17 @@ fca7df6b0fe8115c  garage  127.0.0.1:3901  []    dc1   1000.0 MB  365.8 GB (36.8%
 Now for the real configuration part.
 
 We will:
-- setup the layout for the storage(this is required by garage to know how it allocates the capacity)
-- create buckets (file-items, h5p)
-- create access keys for the buckets
-- make the correct configurations to be able to access the buckets
+- setup the layout for the storage (this is required by garage to know how it allocates the capacity)
+- create the file-items bucket (h5p bucket can be configured too, guide does not do it currently)
+- create an access key for the bucket
+- make the correct configurations to be able to access the bucket
 
 Layout setup
 ```sh
 # get the node id
 garage status
 
-# -z defines the zone for the node, -c defined the capacity, in single node this has no impact
+# -z defines the zone for the node, -c defines the capacity, in single node this has no impact
 garage layout assign -z dc1 -c 1G <node-id>
 
 # apply the layout
@@ -287,10 +287,9 @@ garage bucket list
 garage bucket info file-items
 ```
 
-Create an access key
+Create an access key. Make not of the secret key as it will not be shown again !
 ```sh
 garage key create core-s3-key
-# make note of the secret key as it will not be shown again
 
 # allow the key to access the bucket
 garage bucket allow --read --write --owner file-items --key core-s3-key
@@ -359,19 +358,23 @@ Each migration should have its own test to verify the `up` and `down` procedures
 
 Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
 
-## Known issues
+## Troubleshooting
 
-### Container installation
+### Nudenet Container can not be pulled
 
 It is possible that the nudenet container pull fails with a 403 status code. This is likely because you are authenticated to the public AWS ECR and trying to pull a public image. Log out of the public ECR with `docker logout public.ecr.aws` and try building the devContainer again. 
 
-### Uploading files resulst in "AuthorizationHeaderMalformed: Authorization header malformed, unexpected scope"
+### Uploading files results in "AuthorizationHeaderMalformed: Authorization header malformed, unexpected scope"
 
 This upload error occurs when we try to upload a file to s3 (mocked by garage on local dev setup).
 
 You need to check that you:
 - have access and secret keys in your env
-- have set the region to the same value as the ".devcontainer/garage/garage.toml" file (look under the `s3.api` section for the `s3_region` value.) By default is should be `garage` and not `us-east-1`. Update the value in your `.env.development` file.
+- have set the region to the same value as the ".devcontainer/garage/garage.toml" file (look under the `s3.api` section for the `s3_region` value.) By default it should be `garage` and not `us-east-1`. Update the value in your `.env.development` file.
+
+### Uploading files throws with "Invalid signature"
+
+This error indicated that the keys to access the buckets are not correct, ensure that you have copied the full key (beware line breaks) and that they are available from the process env.
 
 ## Openapi
 

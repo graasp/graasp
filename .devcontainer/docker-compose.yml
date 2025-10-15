@@ -15,10 +15,6 @@ services:
     environment:
       # sane default to allow the server to bind to any interface in the container
       HOSTNAME: localhost
-      # temporary storage for files inside the container
-      # FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
-      # # the localfile config host points to the static file server defined below
-      # FILE_STORAGE_HOST: http://localfile:1081
       # H5P local storage host used in local only
       H5P_FILE_STORAGE_HOST: http://localfile:1081
       # endpoint of the nudenet model
