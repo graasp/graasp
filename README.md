@@ -63,7 +63,7 @@ This will create 11 containers :
 - `umami`: An analytics service used instead of Google Analytics
 
 > **Important**
-> To use garage with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 .s3.garage.localhost`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the development machine cannot resolve the `http://localstack` hostname.
+> To use garage with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 .s3.garage.localhost`. This is necessary because the backend creates signed urls pointing to this subdomain. Without changing the hosts, the development machine cannot resolve urls like `http://file-items.s3.garage.localhost` .
 
 > **Troubleshoot**
 > If during setup of the devcontainer you get an error like `nudenet Error pull access denied for public.ecr.aws/g...` 
@@ -150,9 +150,9 @@ EMAIL_CHANGE_JWT_SECRET=<secret-key>
 
 ### File storages configuration
 
-# If you are using a local installation of localstack replace by http://localhost:4566
+# If you are using a different service than garage for s3-compatible operations update this value.
 # Otherwise this value is already set by ./.devcontainer/docker-compose.yml
-# S3_FILE_ITEM_HOST=http://graasp-localstack:4566
+# S3_FILE_ITEM_HOST=http://s3.garage.localhost:3900
 
 # Graasp file item file storage path
 # File item storage is set by ./.devcontainer/docker-compose.yml
@@ -243,7 +243,7 @@ alias garage="docker exec -it <container-name> /garage"
 You should now be able to run commands against the garage executable running inside the container. Check that it works by running: 
 
 ```sh
-garrage status
+garage status
 ```
 
 You should see an output similar to: 
@@ -253,7 +253,7 @@ You should see an output similar to:
 2025-09-11T05:42:45.436392Z  INFO garage_net::netapp: Connection established to fca7df6b0fe8115c    
 ==== HEALTHY NODES ====
 ID                Hostname    Address         Tags  Zone  Capacity   DataAvail         Version
-fca7df6b0fe8115c  localstack  127.0.0.1:3901  []    dc1   1000.0 MB  365.8 GB (36.8%)  v2.0.0
+fca7df6b0fe8115c  garage  127.0.0.1:3901  []    dc1   1000.0 MB  365.8 GB (36.8%)  v2.0.0
 ```
 
 #### Config
@@ -315,7 +315,7 @@ You can also run `yarn seed` to feed the database with predefined mock data.
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080).
 
-The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [static file server](https://static-web-server.net/) for serving files when using the `local` storage option (alternative to the `s3` option). This option has the added benefit of being persistent when used locally in opposition to localstack (see the [known issues section](#known-issues) for more informations). The server is available at `http://localhost:1081`.
+The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [s3-compatible service](https://garagehq.deuxfleurs.fr/) for serving files. Ensure you have setup your /etc/hosts so that it works. 
 
 ## Testing
 
@@ -360,17 +360,6 @@ Each migration should have its own test to verify the `up` and `down` procedures
 Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
 
 ## Known issues
-
-### Data persistence
-
-The development environnement uses `localstack` as a local alternative to AWS s3 storage. But persistence accross restarts is not supported without the premium license.
-This means that it is expected that you see 404 on uploaded files after a restart of your computer.
-In details:
-
-- the items are persisted in the DB
-- the files stored on the fake s3 are not.
-
-In the future we might investigate different solutions to mocking s3 storage, or improve the local storage to provide a durable local storage option.
 
 ### Container installation
 

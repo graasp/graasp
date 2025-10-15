@@ -35,8 +35,8 @@ services:
       REDIS_CONNECTION: redis://redis:6379
       # the Mailer config is set by the "mailer" service below
       MAILER_CONNECTION: smtp://docker:docker@mailer:1025
-      # the Localstack config is set by the "localstack" service below
-      S3_FILE_ITEM_HOST: http://localstack:4566
+      # the Garage config is set by the "garage" service below
+      S3_FILE_ITEM_HOST: http://s3.garage.localhost:3900
       # the Iframely config is set by the "iframely" service below
       EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
     links:
@@ -143,7 +143,6 @@ services:
       - ../tmp/garage/data:/var/lib/garage/data
       - ../tmp/garage/meta:/var/lib/garage/meta
       - ./garage/garage.toml:/etc/garage.toml
-      # - './localstack/init.sh:/etc/localstack/init/ready.d/init-aws.sh'
     ports:
       - "3900:3900"
       - "3901:3901"
