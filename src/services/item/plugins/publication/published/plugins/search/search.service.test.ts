@@ -4,6 +4,7 @@ import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import { GRAASPER_CREATOR_ID } from '../../../../../../../utils/config';
 import HookManager from '../../../../../../../utils/hook';
 import { ItemService } from '../../../../../item.service';
+import { ItemThumbnailService } from '../../../../thumbnail/itemThumbnail.service';
 import { ItemPublishedService } from '../../itemPublished.service';
 import { MeiliSearchWrapper } from './meilisearch';
 import { SearchService } from './search.service';
@@ -25,6 +26,7 @@ const searchService = new SearchService(
     hooks: { setPostHook: jest.fn() } as unknown as HookManager<any>,
   } as ItemPublishedService,
   meilisearchClient,
+  { getUrlsByItems: jest.fn() } as unknown as ItemThumbnailService,
   MOCK_LOGGER,
 );
 

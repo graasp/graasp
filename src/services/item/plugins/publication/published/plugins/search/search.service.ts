@@ -11,6 +11,7 @@ import {
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
 import { ItemService } from '../../../../../item.service';
+import { ItemThumbnailService } from '../../../../thumbnail/itemThumbnail.service';
 import { ItemPublishedService } from '../../itemPublished.service';
 import { MeiliSearchWrapper } from './meilisearch';
 
@@ -29,15 +30,18 @@ type SearchFilters = Partial<{
 @singleton()
 export class SearchService {
   private readonly meilisearchClient: MeiliSearchWrapper;
+  private readonly itemThumbnailService: ItemThumbnailService;
   private readonly logger: BaseLogger;
 
   constructor(
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
     meilisearchClient: MeiliSearchWrapper,
+    itemThumbnailService: ItemThumbnailService,
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchClient;
+    this.itemThumbnailService = itemThumbnailService;
     this.logger = logger;
     this.registerSearchHooks(itemService, itemPublishedService);
   }
@@ -130,8 +134,24 @@ export class SearchService {
       ],
     };
 
-    const searchResult = await this.meilisearchClient.search(updatedQueries);
-    return searchResult.results[0];
+    const multiSearchResult = await this.meilisearchClient.search(updatedQueries);
+    const searchResult = multiSearchResult.results[0];
+
+    // add thumbnails to search results
+    const thumbnailResults = await this.itemThumbnailService.getUrlsByItems(
+      searchResult.hits.map((s) => ({
+        id: s.id,
+        // here we fake the settings with a `hasThumbnail: true` to force the service to fetch the thumbnail.
+        // this could be avoided if we knew the setting of the item in the index.
+        // for now it is okay, we might have to change this later.
+        settings: { hasThumbnail: true },
+      })),
+    );
+    searchResult.hits = searchResult.hits.map((s) => ({
+      ...s,
+      thumbnails: thumbnailResults[s.id],
+    }));
+    return searchResult;
   }
 
   async getFacets(facetName: string, body: SearchFilters & Pick<MultiSearchQuery, 'facets'>) {

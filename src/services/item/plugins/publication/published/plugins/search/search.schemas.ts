@@ -37,6 +37,15 @@ const meilisearchHitRef = registerSchemaAsRef(
     publicationUpdatedAt: customType.DateTime(),
     lang: Type.String(),
     likes: Type.Number(),
+    thumbnails: Type.Optional(
+      customType.StrictObject(
+        {
+          small: Type.String({ format: 'uri' }),
+          medium: Type.String({ format: 'uri' }),
+        },
+        { additionalProperties: true },
+      ),
+    ),
     _formatted: customType.StrictObject({
       name: Type.String(),
       description: Type.String(),
