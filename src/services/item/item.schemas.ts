@@ -114,6 +114,23 @@ export const itemUpdateSchema = Type.Partial(
   ),
 );
 
+export const getParentItems = {
+  operationId: 'getParentItems',
+  tags: ['item'],
+  summary: 'Get parents of item',
+  description: 'Get parent items of item given its id.',
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+  response: {
+    [StatusCodes.OK]: Type.Array(
+      customType.StrictObject({ id: Type.String(), name: Type.String(), path: Type.String() }),
+    ),
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
 export const updateOne = {
   operationId: 'updateItem',
   tags: ['item'],

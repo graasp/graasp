@@ -49,6 +49,19 @@ jest.mock('@aws-sdk/lib-storage', () => {
   };
 });
 
+export const expectParents = (
+  data: { name: string; id: string; path: string }[],
+  parents: { name: string; id: string; path: string }[],
+) => {
+  expect(data).toHaveLength(parents.length);
+
+  for (let i = 0; i < parents.length; i++) {
+    expect(data[i].id).toEqual(parents[i].id);
+    expect(data[i].name).toEqual(parents[i].name);
+    expect(data[i].path).toEqual(parents[i].path);
+  }
+};
+
 describe('Item routes tests', () => {
   let app: FastifyInstance;
 
@@ -1364,63 +1377,19 @@ describe('Item routes tests', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        const parents = [parent, child1].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: PermissionLevel.Admin }).packed(),
-        );
+        const parents = [parent, child1];
 
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${childOfChild.id}/parents`,
         });
 
-        const data = response.json<PackedItem[]>();
-        expect(data).toHaveLength(parents.length);
-        data.forEach((p, idx) => {
-          expectPackedItem(p, parents[idx]);
-          expectThumbnails(p, MOCK_SIGNED_URL, false);
-        });
+        const data = response.json();
+
+        expectParents(data, parents);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
-      it('Returns successfully with thumbnails', async () => {
-        const {
-          actor,
-          items: [parent, child1, childOfChild],
-        } = await seedFromJson({
-          items: [
-            {
-              settings: { hasThumbnail: true },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [
-                {
-                  settings: { hasThumbnail: true },
-                  children: [{ settings: { hasThumbnail: true } }],
-                },
-              ],
-            },
-            {},
-          ],
-        });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
-
-        const response = await app.inject({
-          method: HttpMethod.Get,
-          url: `/items/${childOfChild.id}/parents`,
-        });
-
-        const parents = [parent, child1].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: PermissionLevel.Admin }).packed(),
-        );
-        const data = response.json<PackedItem[]>();
-        expect(data).toHaveLength(parents.length);
-        data.forEach((p, idx) => {
-          expectPackedItem(p, parents[idx]);
-          expectThumbnails(p, MOCK_SIGNED_URL, true);
-        });
-        expect(response.statusCode).toBe(StatusCodes.OK);
-      });
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1465,7 +1434,6 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         const {
           items: [parent, child1, childOfChild],
-          itemVisibilities: [publicVisibility],
         } = await seedFromJson({
           actor: null,
           items: [
@@ -1486,11 +1454,7 @@ describe('Item routes tests', () => {
 
         const data = response.json();
         expect(data).toHaveLength(parents.length);
-        data.forEach((p, idx) => {
-          expectPackedItem(p, { ...parents[idx], permission: null }, undefined, undefined, [
-            publicVisibility,
-          ]);
-        });
+        expectParents(data, parents);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });

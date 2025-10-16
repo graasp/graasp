@@ -138,18 +138,3 @@ export const getDescendantItems = {
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
-
-export const getParentItems = {
-  operationId: 'getParentItems',
-  tags: ['item'],
-  summary: 'Get parent items of item',
-  description: 'Get parent items of item given its id.',
-
-  params: customType.StrictObject({
-    id: customType.UUID(),
-  }),
-  response: {
-    [StatusCodes.OK]: Type.Array(packedItemSchemaRef),
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;

@@ -13,15 +13,9 @@ import { assertIsMember } from '../authentication';
 import { memberAccountRole } from '../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from './constants';
-import { copyMany, deleteMany, moveMany, reorder, updateOne } from './item.schemas';
+import { copyMany, deleteMany, getParentItems, moveMany, reorder, updateOne } from './item.schemas';
 import { create, createWithThumbnail } from './item.schemas.create';
-import {
-  getAccessible,
-  getChildren,
-  getDescendantItems,
-  getOne,
-  getParentItems,
-} from './item.schemas.packed';
+import { getAccessible, getChildren, getDescendantItems, getOne } from './item.schemas.packed';
 import { ItemService } from './item.service';
 import { ItemActionService } from './plugins/action/itemAction.service';
 import { getPostItemPayloadFromFormData } from './utils';
