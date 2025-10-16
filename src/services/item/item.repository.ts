@@ -294,21 +294,21 @@ export class ItemRepository {
 
     const conditions = and(ne(itemTree.id, item.id), or(eq(ivTree.type, 'public')));
 
-    const result = dbConnection
+    const result = await dbConnection
       .select()
       .from(itemTree)
       .leftJoin(ivTree, isAncestorOrSelf(ivTree.itemPath, itemTree.path))
       .where(conditions)
       .orderBy(asc(sql`nlevel(path)`));
 
-    return (await result).map(({ item_tree }) => ({
+    return result.map(({ item_tree }) => ({
       ...item_tree,
     }));
   }
 
   async getParentsForAccount(dbConnection: DBConnection, item: ItemRaw, user: AuthenticatedUser) {
     const itemTree = await dbConnection
-      .select()
+      .select({ id: items.id, name: items.name, path: items.path })
       .from(items)
       .where(isAncestorOrSelf(items.path, item.path))
       .as('item_tree');
@@ -341,7 +341,7 @@ export class ItemRepository {
       ),
     );
 
-    const result = dbConnection
+    const result = await dbConnection
       .select()
       .from(itemTree)
       .leftJoin(imTree, isAncestorOrSelf(imTree.itemPath, itemTree.path))
@@ -349,7 +349,7 @@ export class ItemRepository {
       .where(conditions)
       .orderBy(asc(sql`nlevel(path)`));
 
-    return (await result).map(({ item_tree }) => ({
+    return result.map(({ item_tree }) => ({
       ...item_tree,
       // creator: account as MemberRaw,
     }));
