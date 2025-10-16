@@ -310,7 +310,7 @@ export class ItemRepository {
     const itemTree = await dbConnection
       .select({ id: items.id, name: items.name, path: items.path })
       .from(items)
-      .where(isAncestorOrSelf(items.path, item.path))
+      .where(and(isAncestorOrSelf(items.path, item.path), ne(items.id, item.id)))
       .as('item_tree');
 
     const imTree = await dbConnection
@@ -320,6 +320,7 @@ export class ItemRepository {
         and(
           isAncestorOrSelf(itemMembershipsTable.itemPath, item.path),
           eq(itemMembershipsTable.accountId, user.id),
+          ne(itemMembershipsTable.itemPath, item.path),
         ),
       )
       .as('im_tree');
@@ -327,29 +328,38 @@ export class ItemRepository {
     const ivTree = await dbConnection
       .select()
       .from(itemVisibilitiesTable)
-      .where(isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path))
+      .where(
+        and(
+          isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path),
+          ne(itemVisibilitiesTable.itemPath, item.path),
+        ),
+      )
       .as('iv_tree');
 
-    const conditions = and(
-      ne(itemTree.id, item.id),
-      or(
-        eq(imTree.permission, 'admin'),
-        eq(imTree.permission, 'write'),
-        eq(ivTree.type, 'public'),
-        and(ne(ivTree.type, 'hidden'), eq(imTree.permission, 'read')),
-        and(isNull(ivTree.type), eq(imTree.permission, 'read')),
-      ),
+    const conditions = or(
+      eq(imTree.permission, 'admin'),
+      eq(imTree.permission, 'write'),
+      eq(ivTree.type, 'public'),
+      and(ne(ivTree.type, 'hidden'), eq(imTree.permission, 'read')),
+      and(isNull(ivTree.type), eq(imTree.permission, 'read')),
     );
 
-    const result = await dbConnection
-      .select({ id: itemTree.id, name: itemTree.name, path: itemTree.path })
+    const parents = await dbConnection
+      .selectDistinctOn([itemTree.id], {
+        id: itemTree.id,
+        name: itemTree.name,
+        path: itemTree.path,
+      })
       .from(itemTree)
       .leftJoin(imTree, isAncestorOrSelf(imTree.itemPath, itemTree.path))
       .leftJoin(ivTree, isAncestorOrSelf(ivTree.itemPath, itemTree.path))
       .where(conditions)
-      .orderBy(asc(sql`nlevel(path)`));
+      .as('parents');
 
-    return result;
+    return await dbConnection
+      .select()
+      .from(parents)
+      .orderBy(asc(sql`nlevel(path)`));
   }
 
   /**
