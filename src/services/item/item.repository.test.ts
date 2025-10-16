@@ -1539,4 +1539,121 @@ describe('Item Repository', () => {
       expect(i!.order).toEqual(12);
     });
   });
+
+  describe('getParentsForPublic', () => {
+    it('return parents up to public root', async () => {
+      const {
+        items: [_private, publicParent, child],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            children: [{ isPublic: true, children: [{}] }],
+          },
+        ],
+      });
+
+      const parents = await itemRepository.getParentsForPublic(db, child);
+      expect(parents.length).toEqual(1);
+      expect(parents[0].id).toEqual(publicParent.id);
+      expect(parents[0].name).toEqual(publicParent.name);
+      expect(parents[0].path).toEqual(publicParent.path);
+    });
+  });
+
+  describe('getParentsForAccount', () => {
+    it('return parents up to public root', async () => {
+      const {
+        actor,
+        items: [_private, publicParent, child],
+      } = await seedFromJson({
+        items: [
+          {
+            children: [{ isPublic: true, children: [{}] }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
+      const parents = await itemRepository.getParentsForAccount(db, child, actor);
+      expect(parents.length).toEqual(1);
+      expect(parents[0].id).toEqual(publicParent.id);
+      expect(parents[0].name).toEqual(publicParent.name);
+      expect(parents[0].path).toEqual(publicParent.path);
+    });
+
+    it('return parents up to membership root', async () => {
+      const {
+        actor,
+        items: [_private, parent, child],
+      } = await seedFromJson({
+        items: [
+          {
+            children: [
+              {
+                memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+                children: [{}],
+              },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
+      const parents = await itemRepository.getParentsForAccount(db, child, actor);
+      expect(parents.length).toEqual(1);
+      expect(parents[0].id).toEqual(parent.id);
+      expect(parents[0].name).toEqual(parent.name);
+      expect(parents[0].path).toEqual(parent.path);
+    });
+
+    it('return parents for read permission', async () => {
+      const {
+        actor,
+        items: [parent, subparent, child],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ permission: PermissionLevel.Read, account: 'actor' }],
+            children: [{ children: [{}] }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
+      const parents = await itemRepository.getParentsForAccount(db, child, actor);
+      expect(parents.length).toEqual(2);
+      expect(parents[0].id).toEqual(parent.id);
+      expect(parents[0].name).toEqual(parent.name);
+      expect(parents[0].path).toEqual(parent.path);
+      expect(parents[1].id).toEqual(subparent.id);
+      expect(parents[1].name).toEqual(subparent.name);
+      expect(parents[1].path).toEqual(subparent.path);
+    });
+
+    it('return parents without hidden', async () => {
+      const {
+        actor,
+        items: [parent, _hidden, child],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ permission: PermissionLevel.Read, account: 'actor' }],
+            children: [{ isHidden: true, children: [{}] }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
+      const parents = await itemRepository.getParentsForAccount(db, child, actor);
+      expect(parents.length).toEqual(1);
+      expect(parents[0].id).toEqual(parent.id);
+      expect(parents[0].name).toEqual(parent.name);
+      expect(parents[0].path).toEqual(parent.path);
+    });
+  });
 });

@@ -342,17 +342,14 @@ export class ItemRepository {
     );
 
     const result = await dbConnection
-      .select()
+      .select({ id: itemTree.id, name: itemTree.name, path: itemTree.path })
       .from(itemTree)
       .leftJoin(imTree, isAncestorOrSelf(imTree.itemPath, itemTree.path))
       .leftJoin(ivTree, isAncestorOrSelf(ivTree.itemPath, itemTree.path))
       .where(conditions)
       .orderBy(asc(sql`nlevel(path)`));
 
-    return result.map(({ item_tree }) => ({
-      ...item_tree,
-      // creator: account as MemberRaw,
-    }));
+    return result;
   }
 
   /**
