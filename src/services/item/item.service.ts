@@ -594,19 +594,7 @@ export class ItemService {
       ? await this.itemRepository.getParentsForAccount(dbConnection, item, maybeUser)
       : await this.itemRepository.getParentsForPublic(dbConnection, item);
 
-    const { itemMemberships } = await this.authorizedItemService.getPropertiesForItems(
-      dbConnection,
-      {
-        permission: PermissionLevel.Read,
-        accountId: maybeUser?.id,
-        items: parents,
-      },
-    );
-    // remove parents actor does not have access
-    const parentsIds = Object.keys(itemMemberships.data);
-    const items = parents.filter((p) => parentsIds.includes(p.id));
-
-    return items;
+    return parents;
   }
 
   async patch(
