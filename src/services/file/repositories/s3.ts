@@ -47,10 +47,10 @@ export class S3FileRepository implements FileRepository {
       region,
       useAccelerateEndpoint,
       credentials: { accessKeyId, secretAccessKey },
-      // this is necessary because localstack doesn't support hostnames eg: <bucket>.s3.<region>.amazonaws.com/<key>
-      // so it we must use pathStyle buckets eg: localhost:4566/<bucket>/<key>
+      // This was required when we used localstack in development, now it is legacy.
+      // Previously localstack did not allow the use of subdomains for bucket names and instead we had to use path-style urls: localhost:4566/<bucket>/<key> Instead of <bucket>.s3.<region>.amazonaws.com/<key>
       forcePathStyle: true,
-      // this is necessary to use the localstack instance running on graasp-localstack or localhost
+      // this is necessary to use the garage instance
       // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
       endpoint: S3_FILE_ITEM_HOST,
     });

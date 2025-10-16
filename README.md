@@ -56,14 +56,14 @@ This will create 11 containers :
 - `etherpad` : Container for the etherpad service
 - `meilisearch` : Container for the meilisearch service
 - `redis` : Redis instance to enable websockets
-- `localstack` : Localstack instance use to fake S3 storage locally
-- `localfile` : Simple static file server to get files stored in graasp when using the `local` storage option (see the [Utilities section](#utilities))
+- `garage` : An s3-compatible service that works locally
+- `localfile` : Simple static file server alternative to s3. Used currently for H5P in local development
 - `iframely` : Iframely instance used to get embeds for links
 - `mailer` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
 - `umami`: An analytics service used instead of Google Analytics
 
 > **Important**
-> To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the development machine cannot resolve the `http://localstack` hostname.
+> To use garage with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 .s3.garage.localhost`. This is necessary because the backend creates signed urls pointing to this subdomain. Without changing the hosts, the development machine cannot resolve urls like `http://s3.garage.localhost:3900` .
 
 > **Troubleshoot**
 > If during setup of the devcontainer you get an error like `nudenet Error pull access denied for public.ecr.aws/g...` 
@@ -94,7 +94,7 @@ First a running and accessible instance of PostgreSQL is required.
 
 To enable websockets capabilities, it is required to have a running instance of [Redis](https://redis.io).
 
-To use the backend with S3, it is required to have a running instance of [localstack](https://github.com/localstack/localstack).
+To use the backend with S3, it is required to have a running instance of [garage](https://git.deuxfleurs.fr/Deuxfleurs/garage).
 
 Then open the folder locally and run the following command to install the required npm packages.
 
@@ -150,9 +150,9 @@ EMAIL_CHANGE_JWT_SECRET=<secret-key>
 
 ### File storages configuration
 
-# If you are using a local installation of localstack replace by http://localhost:4566
+# If you are using a different service than garage for s3-compatible operations update this value.
 # Otherwise this value is already set by ./.devcontainer/docker-compose.yml
-# S3_FILE_ITEM_HOST=http://graasp-localstack:4566
+# S3_FILE_ITEM_HOST=http://s3.garage.localhost:3900
 
 # Graasp file item file storage path
 # File item storage is set by ./.devcontainer/docker-compose.yml
@@ -161,10 +161,10 @@ EMAIL_CHANGE_JWT_SECRET=<secret-key>
 
 # Graasp s3 file item
 FILE_STORAGE_TYPE=s3
-S3_FILE_ITEM_REGION=us-east-1
-S3_FILE_ITEM_BUCKET=graasp
-S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
-S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
+S3_FILE_ITEM_REGION=garage
+S3_FILE_ITEM_BUCKET=file-items
+S3_FILE_ITEM_ACCESS_KEY_ID=<your bucket key>
+S3_FILE_ITEM_SECRET_ACCESS_KEY=<your bucket secret>
 
 # Graasp H5P
 H5P_FILE_STORAGE_TYPE=local
@@ -225,6 +225,79 @@ OPENAI_API_KEY=<openai-api-key>
 GEOLOCATION_API_KEY=
 ```
 
+### Garage
+
+You will need to configure the garage instance so you can use the s3 buckets with the proper access keys.
+
+To simplify the commands you can create an alias to the docker exec command:
+
+Run this on the host machine
+```sh
+# get the container name for the garage service
+docker ps
+
+# complete the command with the container name of the garage service (something like `core_devcontainer-garage-1`)
+alias garage="docker exec -it <container-name> /garage"
+```
+
+You should now be able to run commands against the garage executable running inside the container. Check that it works by running: 
+
+```sh
+garage status
+```
+
+You should see an output similar to: 
+
+```
+2025-09-11T05:42:45.393828Z  INFO garage_net::netapp: Connected to 127.0.0.1:3901, negotiating handshake...    
+2025-09-11T05:42:45.436392Z  INFO garage_net::netapp: Connection established to fca7df6b0fe8115c    
+==== HEALTHY NODES ====
+ID                Hostname    Address         Tags  Zone  Capacity   DataAvail         Version
+fca7df6b0fe8115c  garage  127.0.0.1:3901  []    dc1   1000.0 MB  365.8 GB (36.8%)  v2.0.0
+```
+
+#### Config
+
+Now for the real configuration part.
+
+We will:
+- setup the layout for the storage (this is required by garage to know how it allocates the capacity)
+- create the file-items bucket (h5p bucket can be configured too, guide does not do it currently)
+- create an access key for the bucket
+- make the correct configurations to be able to access the bucket
+
+Layout setup
+```sh
+# get the node id
+garage status
+
+# -z defines the zone for the node, -c defines the capacity, in single node this has no impact
+garage layout assign -z dc1 -c 1G <node-id>
+
+# apply the layout
+garage layout apply --version 1
+```
+
+Create a bucket
+```sh
+garage bucket create file-items
+
+garage bucket list
+
+garage bucket info file-items
+```
+
+Create an access key. Make not of the secret key as it will not be shown again !
+```sh
+garage key create core-s3-key
+
+# allow the key to access the bucket
+garage bucket allow --read --write --owner file-items --key core-s3-key
+```
+
+
+
+
 ### Umami
 
 To log into umami in your local instance: [Umami login documentation](https://umami.is/docs/login)
@@ -241,7 +314,7 @@ You can also run `yarn seed` to feed the database with predefined mock data.
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080).
 
-The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [static file server](https://static-web-server.net/) for serving files when using the `local` storage option (alternative to the `s3` option). This option has the added benefit of being persistent when used locally in opposition to localstack (see the [known issues section](#known-issues) for more informations). The server is available at `http://localhost:1081`.
+The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [s3-compatible service](https://garagehq.deuxfleurs.fr/) for serving files. Ensure you have setup your /etc/hosts so that it works. 
 
 ## Testing
 
@@ -285,23 +358,23 @@ Each migration should have its own test to verify the `up` and `down` procedures
 
 Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
 
-## Known issues
+## Troubleshooting
 
-### Data persistence
-
-The development environnement uses `localstack` as a local alternative to AWS s3 storage. But persistence accross restarts is not supported without the premium license.
-This means that it is expected that you see 404 on uploaded files after a restart of your computer.
-In details:
-
-- the items are persisted in the DB
-- the files stored on the fake s3 are not.
-
-In the future we might investigate different solutions to mocking s3 storage, or improve the local storage to provide a durable local storage option.
-
-### Container installation
+### Nudenet Container can not be pulled
 
 It is possible that the nudenet container pull fails with a 403 status code. This is likely because you are authenticated to the public AWS ECR and trying to pull a public image. Log out of the public ECR with `docker logout public.ecr.aws` and try building the devContainer again. 
 
+### Uploading files results in "AuthorizationHeaderMalformed: Authorization header malformed, unexpected scope"
+
+This upload error occurs when we try to upload a file to s3 (mocked by garage on local dev setup).
+
+You need to check that you:
+- have access and secret keys in your env
+- have set the region to the same value as the ".devcontainer/garage/garage.toml" file (look under the `s3.api` section for the `s3_region` value.) By default it should be `garage` and not `us-east-1`. Update the value in your `.env.development` file.
+
+### Uploading files throws with "Invalid signature"
+
+This error indicated that the keys to access the buckets are not correct, ensure that you have copied the full key (beware line breaks) and that they are available from the process env.
 
 ## Openapi
 

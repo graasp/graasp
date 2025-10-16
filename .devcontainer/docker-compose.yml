@@ -15,10 +15,6 @@ services:
     environment:
       # sane default to allow the server to bind to any interface in the container
       HOSTNAME: localhost
-      # temporary storage for files inside the container
-      FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
-      # the localfile config host points to the static file server defined below
-      FILE_STORAGE_HOST: http://localfile:1081
       # H5P local storage host used in local only
       H5P_FILE_STORAGE_HOST: http://localfile:1081
       # endpoint of the nudenet model
@@ -35,11 +31,12 @@ services:
       REDIS_CONNECTION: redis://redis:6379
       # the Mailer config is set by the "mailer" service below
       MAILER_CONNECTION: smtp://docker:docker@mailer:1025
-      # the Localstack config is set by the "localstack" service below
-      S3_FILE_ITEM_HOST: http://localstack:4566
+      # the Garage config is set by the "garage" service below
+      S3_FILE_ITEM_HOST: http://s3.garage.localhost:3900
       # the Iframely config is set by the "iframely" service below
       EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
-
+    links:
+      - garage:s3.garage.localhost
     volumes:
       - ..:/workspace:cached
       - ../tmp:/tmp/graasp-file-item-storage
@@ -135,20 +132,18 @@ services:
       - 8000:3000
 
   # Localstack is used to test aws services locally
-  localstack:
-    hostname: localstack
-    image: localstack/localstack
+  garage:
+    hostname: garage
+    image: dxflrs/garage:v2.0.0
     volumes:
-      - ../tmp:/tmp/graasp-localstack
-      - './localstack/init.sh:/etc/localstack/init/ready.d/init-aws.sh'
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - SERVICES=s3
-      - DEBUG=1
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - AWS_DEFAULT_REGION=us-east-1
+      - ../tmp/garage/data:/var/lib/garage/data
+      - ../tmp/garage/meta:/var/lib/garage/meta
+      - ./garage/garage.toml:/etc/garage.toml
     ports:
-      - 4566-4583:4566-4583
+      - "3900:3900"
+      - "3901:3901"
+      - "3902:3902"
+      - "3903:3903"
 
   localfile:
     hostname: localfile
