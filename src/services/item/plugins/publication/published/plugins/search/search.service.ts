@@ -138,9 +138,12 @@ export class SearchService {
     const searchResult = multiSearchResult.results[0];
 
     // add thumbnails to search results
-    const thumbnailResults = await this.addThumbnailsToSearchResults(
+    const thumbnailResults = await this.itemThumbnailService.getUrlsByItems(
       searchResult.hits.map((s) => ({
         id: s.id,
+        // here we fake the settings with a `hasThumbnail: true` to force the service to fetch the thumbnail.
+        // this could be avoided if we knew the setting of the item in the index.
+        // for now it is okay, we might have to change this later.
         settings: { hasThumbnail: true },
       })),
     );
@@ -172,12 +175,6 @@ export class SearchService {
 
     const searchResult = await this.meilisearchClient.search(updatedQueries);
     return searchResult.results[0].facetDistribution?.[facetName] ?? {};
-  }
-
-  private async addThumbnailsToSearchResults(
-    items: { id: string; settings: { hasThumbnail: boolean } }[],
-  ) {
-    return await this.itemThumbnailService.getUrlsByItems(items);
   }
 
   // Registers all hooks related to sync between database and meilisearch index
