@@ -117,7 +117,7 @@ export const itemUpdateSchema = Type.Partial(
 export const getParentItems = {
   operationId: 'getParentItems',
   tags: ['item'],
-  summary: 'Get parent items of item',
+  summary: 'Get parents of item',
   description: 'Get parent items of item given its id.',
 
   params: customType.StrictObject({
