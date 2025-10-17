@@ -92,6 +92,13 @@
       "when": 1756305500468,
       "tag": "0012_table_name_update",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1760626541452,
+      "tag": "0013_add-planned-maintenance-phoenix",
+      "breakpoints": true
     }
   ]
 }
