@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.10.0](https://github.com/graasp/graasp/compare/v2.9.3...v2.10.0) (2025-10-17)
+
+
+### Features
+
+* **local-dev:** use garage for s3 ([#1996](https://github.com/graasp/graasp/issues/1996)) ([8873b7f](https://github.com/graasp/graasp/commit/8873b7f99882f68b2cd53d77844ad1fa6a96fa1d))
+* return minimal item parent ([#2004](https://github.com/graasp/graasp/issues/2004)) ([2075906](https://github.com/graasp/graasp/commit/20759060047e011845510a21d3ae1c96f1d0eb5c))
+
+
+### Bug Fixes
+
+* add migration to insert migration from phoenix for planned migration ([#2011](https://github.com/graasp/graasp/issues/2011)) ([472ebfa](https://github.com/graasp/graasp/commit/472ebfa4e58f11d8afbfaa9502eb6de5e33b35ba))
+* add thumbnails in search ([#2006](https://github.com/graasp/graasp/issues/2006)) ([65f9801](https://github.com/graasp/graasp/commit/65f980138c1004b195f4554a864eda8e82557727))
+* upgrade openai to v6.3 ([#2007](https://github.com/graasp/graasp/issues/2007)) ([8856134](https://github.com/graasp/graasp/commit/88561341eb464dbd8f32b5f519aae6df449dc3ba))
+
 ## [2.9.3](https://github.com/graasp/graasp/compare/v2.9.2...v2.9.3) (2025-10-10)
 
 
