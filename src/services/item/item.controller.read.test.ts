@@ -1488,9 +1488,9 @@ describe('Item routes tests', () => {
       });
       it('Cannot get parents if item is public and hidden', async () => {
         const {
-          actor,
           items: [_parent, child],
         } = await seedFromJson({
+          actor: null,
           items: [
             {
               isPublic: true,
@@ -1502,9 +1502,6 @@ describe('Item routes tests', () => {
             },
           ],
         });
-        assertIsDefined(actor);
-        assertIsMemberForTest(actor);
-        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Get,
