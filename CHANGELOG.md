@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.10.1](https://github.com/graasp/graasp/compare/v2.10.0...v2.10.1) (2025-10-20)
+
+
+### Bug Fixes
+
+* optimize get item parents ([#2005](https://github.com/graasp/graasp/issues/2005)) ([b5c5822](https://github.com/graasp/graasp/commit/b5c58223a3ab4271260df6593c74199dc8932742))
+
 ## [2.10.0](https://github.com/graasp/graasp/compare/v2.9.3...v2.10.0) (2025-10-17)
 
 
