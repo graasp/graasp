@@ -329,25 +329,30 @@ export class ItemMembershipRepository {
     dbConnection: DBConnection,
     item: ItemRaw,
   ): Promise<ItemMembershipWithItemAndCompleteAccount[]> {
+    const imTree = dbConnection
+      .select()
+      .from(itemMembershipsTable)
+      .where(isAncestorOrSelf(itemMembershipsTable.itemPath, item.path))
+      .as('im_tree');
+    const itemTree = dbConnection
+      .select()
+      .from(itemsRawTable)
+      .where(isAncestorOrSelf(itemsRawTable.path, item.path))
+      .as('item_tree');
+
     const memberships = await dbConnection
       // return only one membership per account
       .selectDistinctOn([accountsTable.id])
-      .from(itemMembershipsTable)
-      .innerJoin(
-        itemsRawTable,
-        and(
-          isAncestorOrSelf(itemsRawTable.path, item.path),
-          eq(itemMembershipsTable.itemPath, itemsRawTable.path),
-        ),
-      )
-      .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
+      .from(imTree)
+      .innerJoin(itemTree, eq(imTree.itemPath, itemTree.path))
+      .innerJoin(accountsTable, eq(imTree.accountId, accountsTable.id))
       // select lowest membership per account
-      .orderBy(() => [asc(accountsTable.id), desc(itemsRawTable.path)]);
+      .orderBy(() => [asc(accountsTable.id), desc(itemTree.path)]);
 
-    const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
-      item,
+    const mappedMemberships = memberships.map(({ item_tree, account, im_tree }) => ({
+      item: item_tree,
       account,
-      ...item_membership,
+      ...im_tree,
     })) as ItemMembershipWithItemAndCompleteAccount[];
 
     return mappedMemberships;
