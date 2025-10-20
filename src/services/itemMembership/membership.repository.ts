@@ -329,14 +329,21 @@ export class ItemMembershipRepository {
     dbConnection: DBConnection,
     item: ItemRaw,
   ): Promise<ItemMembershipWithItemAndCompleteAccount[]> {
-    const andConditions: SQL[] = [eq(itemsRawTable.id, item.id)];
-
     const memberships = await dbConnection
-      .select()
+      // return only one membership per account
+      .selectDistinctOn([accountsTable.id])
       .from(itemMembershipsTable)
+      .innerJoin(
+        itemsRawTable,
+        and(
+          isAncestorOrSelf(itemsRawTable.path, item.path),
+          eq(itemMembershipsTable.itemPath, itemsRawTable.path),
+        ),
+      )
       .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
-      .innerJoin(itemsRawTable, isAncestorOrSelf(itemMembershipsTable.itemPath, itemsRawTable.path))
-      .where(and(...andConditions));
+      // select lowest membership per account
+      .orderBy(() => [asc(accountsTable.id), desc(itemsRawTable.path)]);
+
     const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
       item,
       account,
