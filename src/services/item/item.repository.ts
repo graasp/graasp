@@ -46,6 +46,7 @@ import {
 import {
   accountsTable,
   itemMembershipsTable,
+  itemVisibilitiesTable,
   items,
   itemsRawTable,
   membersView,
@@ -59,7 +60,7 @@ import type {
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
-import type { MaybeUser, MinimalMember } from '../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import { getSearchLang } from '../../utils/config';
 import {
   HierarchyTooDeep,
@@ -275,6 +276,108 @@ export class ItemRepository {
       ...item_view,
       creator: account as MemberRaw,
     }));
+  }
+
+  /**
+   * Return public parents of item
+   * Do not consider hidden setting, because a parent that is hidden will hide its child, so in that case the child won't be accessible anyway
+   */
+  async getParentsForPublic(dbConnection: DBConnection, item: ItemRaw) {
+    const itemTree = await dbConnection
+      .select()
+      .from(items)
+      .where(and(isAncestorOrSelf(items.path, item.path), ne(items.id, item.id)))
+      .as('item_tree');
+
+    const publicTree = dbConnection
+      .select()
+      .from(itemVisibilitiesTable)
+      .where(
+        and(
+          isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path),
+          ne(itemVisibilitiesTable.itemPath, item.path),
+          eq(itemVisibilitiesTable.type, 'public'),
+        ),
+      )
+      .as('is_public');
+
+    // duplicate can happen if there are multiple public visibilities in the tree
+    const parents = dbConnection
+      .selectDistinctOn([itemTree.id], {
+        id: itemTree.id,
+        name: itemTree.name,
+        path: itemTree.path,
+      })
+      .from(itemTree)
+      .leftJoin(publicTree, isAncestorOrSelf(publicTree.itemPath, itemTree.path))
+      .where(isNotNull(publicTree.type))
+      .as('parents');
+
+    return await dbConnection
+      .select()
+      .from(parents)
+      .orderBy(asc(sql`nlevel(path)`));
+  }
+
+  /**
+   * Return parents of item that the user has access to
+   * Do not consider hidden setting, because a parent that is hidden will hide its child, so in that case the child won't be accessible anyway
+   */
+  async getParentsForAccount(dbConnection: DBConnection, item: ItemRaw, user: AuthenticatedUser) {
+    const itemTree = await dbConnection
+      .select({ id: items.id, name: items.name, path: items.path })
+      .from(items)
+      .where(and(isAncestorOrSelf(items.path, item.path), ne(items.id, item.id)))
+      .as('item_tree');
+
+    const imTree = dbConnection
+      .select()
+      .from(itemMembershipsTable)
+      .where(
+        and(
+          isAncestorOrSelf(itemMembershipsTable.itemPath, item.path),
+          eq(itemMembershipsTable.accountId, user.id),
+          ne(itemMembershipsTable.itemPath, item.path),
+        ),
+      )
+      .as('im_tree');
+
+    const publicTree = dbConnection
+      .select()
+      .from(itemVisibilitiesTable)
+      .where(
+        and(
+          isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path),
+          ne(itemVisibilitiesTable.itemPath, item.path),
+          eq(itemVisibilitiesTable.type, 'public'),
+        ),
+      )
+      .as('is_public');
+
+    const conditions = or(
+      eq(imTree.permission, 'admin'),
+      eq(imTree.permission, 'write'),
+      eq(imTree.permission, 'read'),
+      isNotNull(publicTree.type),
+    );
+
+    // duplicate can happen if there are multiple public visibilities or memberships in the tree
+    const parents = dbConnection
+      .selectDistinctOn([itemTree.id], {
+        id: itemTree.id,
+        name: itemTree.name,
+        path: itemTree.path,
+      })
+      .from(itemTree)
+      .leftJoin(imTree, isAncestorOrSelf(imTree.itemPath, itemTree.path))
+      .leftJoin(publicTree, isAncestorOrSelf(publicTree.itemPath, itemTree.path))
+      .where(conditions)
+      .as('parents');
+
+    return await dbConnection
+      .select()
+      .from(parents)
+      .orderBy(asc(sql`nlevel(path)`));
   }
 
   /**
