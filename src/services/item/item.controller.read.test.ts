@@ -1428,6 +1428,34 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
+      it('Cannot get parents if item is hidden', async () => {
+        const {
+          actor,
+          items: [_parent, child],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              children: [
+                {
+                  isHidden: true,
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${child.id}/parents`,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotAccess(child.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
     });
 
     describe('Public', () => {
@@ -1457,6 +1485,34 @@ describe('Item routes tests', () => {
         expect(data).toHaveLength(parents.length);
         expectParents(data, parents);
         expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Cannot get parents if item is public and hidden', async () => {
+        const {
+          actor,
+          items: [_parent, child],
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              children: [
+                {
+                  isHidden: true,
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${child.id}/parents`,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotAccess(child.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
     });
   });
