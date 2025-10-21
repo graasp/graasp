@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+# -e: exit on any command with a non-zero status
+# -u: treat unset variables as errors
+# -o pipefail: fail a pipeline if any command in it fails
+
+# Optional: make errors show the line number and command that failed
+trap 'echo "Error on line $LINENO: ${BASH_COMMAND}" >&2' ERR
+
 function show_help() {
     echo "This script allows to build and push the docker images for the core and the migration"
     echo "Usage: bash docker/build.sh ECR_URI VERSION"
@@ -37,11 +45,11 @@ workers_tag_full="$aws_ecr_uri/$workers_tag_short"
 migrate_tag_short="graasp:migrate-$tag_version"
 migrate_tag_full="$aws_ecr_uri/$migrate_tag_short"
 
-docker build -t $core_tag_full -f docker/Dockerfile --build-arg APP_VERSION=$tag_version --build-arg BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S) . || exit 1
+docker build -t $core_tag_full -f docker/Dockerfile --build-arg APP_VERSION=$tag_version --build-arg BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S) .
 docker push $core_tag_full
 
-docker build -t $workers_tag_full -f docker/workers.Dockerfile --build-arg APP_VERSION=$tag_version --build-arg BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S) . || exit 1
+docker build -t $workers_tag_full -f docker/workers.Dockerfile --build-arg APP_VERSION=$tag_version --build-arg BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S) .
 docker push $workers_tag_full
 
-docker build -t $migrate_tag_full -f docker/migrate.Dockerfile . || exit 1
+docker build -t $migrate_tag_full -f docker/migrate.Dockerfile .
 docker push $migrate_tag_full
