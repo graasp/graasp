@@ -1,0 +1,2 @@
+CREATE INDEX "IDX_app_data_item_id" ON "app_data" USING btree ("item_id" uuid_ops);--> statement-breakpoint
+CREATE INDEX "IDX_app_data_account_id" ON "app_data" USING btree ("account_id" uuid_ops);
