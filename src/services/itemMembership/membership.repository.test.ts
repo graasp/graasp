@@ -195,4 +195,92 @@ describe('ItemMembership Repository', () => {
       expect(names).not.toContain(i3.name);
     });
   });
+  describe('getForItem', () => {
+    it('return direct memberships', async () => {
+      const {
+        items: [item],
+        itemMemberships: [adminMembership, readMembership],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [
+              { account: 'actor', permission: PermissionLevel.Admin },
+              { account: { name: 'bob' }, permission: PermissionLevel.Read },
+            ],
+          },
+          // noise
+          {
+            memberships: [{ account: { name: 'cedric' }, permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+
+      const result = await itemMembershipRepository.getForItem(db, item);
+      expect(result).toHaveLength(2);
+
+      const adminM = result.find((m) => m.id === adminMembership.id);
+      assertIsDefined(adminM);
+      expect(adminM.item.path).toEqual(item.path);
+      expect(adminM.permission).toEqual(PermissionLevel.Admin);
+
+      const readM = result.find((m) => m.id === readMembership.id);
+      assertIsDefined(readM);
+      expect(readM.item.path).toEqual(item.path);
+      expect(readM.permission).toEqual(PermissionLevel.Read);
+    });
+    it('return inherited memberships', async () => {
+      const {
+        items: [item, child],
+        itemMemberships: [adminMembership, _readMembership, bobAdminMembership, writeMembership],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [
+              { account: 'actor', permission: PermissionLevel.Admin },
+              { account: { name: 'bob' }, permission: PermissionLevel.Read },
+            ],
+            children: [
+              {
+                memberships: [
+                  { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+                  { account: { name: 'alice' }, permission: PermissionLevel.Write },
+                ],
+              },
+            ],
+          },
+          // noise
+          {
+            memberships: [{ account: { name: 'cedric' }, permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+
+      const result = await itemMembershipRepository.getForItem(db, child);
+      expect(result).toHaveLength(3);
+
+      // actor admin membership on parent
+      const adminM = result.find(
+        (m) => m.id === adminMembership.id && m.accountId === adminMembership.accountId,
+      );
+      assertIsDefined(adminM);
+      expect(adminM.item.path).toEqual(item.path);
+      expect(adminM.permission).toEqual(PermissionLevel.Admin);
+
+      // bob admin membership on item
+      const readM = result.find(
+        (m) => m.id === bobAdminMembership.id && m.accountId === bobAdminMembership.accountId,
+      );
+      assertIsDefined(readM);
+      expect(readM.item.path).toEqual(child.path);
+      expect(readM.permission).toEqual(PermissionLevel.Admin);
+
+      // alice write membership on item
+      const writeM = result.find(
+        (m) => m.id === writeMembership.id && m.accountId === writeMembership.accountId,
+      );
+      assertIsDefined(writeM);
+      expect(writeM.item.path).toEqual(child.path);
+      expect(writeM.permission).toEqual(PermissionLevel.Write);
+    });
+  });
 });
