@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+# -e: exit on any command with a non-zero status
+# -u: treat unset variables as errors
+# -o pipefail: fail a pipeline if any command in it fails
+
+# Optional: make errors show the line number and command that failed
+trap 'echo "Error on line $LINENO: ${BASH_COMMAND}" >&2' ERR
+
 function show_help() {
     echo "This script allows to build and push the docker images for the core and the migration"
     echo "Usage: bash docker/build.sh ECR_URI VERSION"
     echo "Arguments:"
     echo "  ECR_URI      URI of the ECR in AWS, example: public.ecr.aws/qzuer78 or a private ECR XXXXXXXX.dkr.ecr.region.amazonaws.com/repo."
-    echo "  VERSION      The version that is deployed, should be a semantic version i.e 1.45.8"
+    echo "  VERSION      The version that is deployed, should be a semantic version i.e v1.45.8"
 }
 
 # Check if no arguments are provided
