@@ -398,6 +398,11 @@ export const appDataTable = pgTable(
       'btree',
       table.type.asc().nullsLast().op('text_ops'),
     ),
+    index('IDX_app_data_item_id').using('btree', table.itemId.asc().nullsLast().op('uuid_ops')),
+    index('IDX_app_data_account_id').using(
+      'btree',
+      table.accountId.asc().nullsLast().op('uuid_ops'),
+    ),
     foreignKey({
       columns: [table.itemId],
       foreignColumns: [itemsRawTable.id],
