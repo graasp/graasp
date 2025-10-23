@@ -1,9 +1,14 @@
+/**
+ * This file is names with a leading 0- so that the import reorder does not change its place.
+ *
+ * It NEEDS to be the first imported file otherwise sentry instrumentation does not work.
+ */
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 // Ensure to call this before importing any other modules!
 Sentry.init({
-  dsn: 'https://ded7c79d01134707b9a5d86df211a68f@o244065.ingest.us.sentry.io/6177699', // process.env.SENTRY_DSN,
+  dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENV,
   release: process.env.APP_VERSION ?? 'not-specified',
   // Adds request headers and IP for users, for more info visit:
@@ -32,9 +37,4 @@ Sentry.init({
 
   // Enable if you need to troubleshoot the Sentry config
   // debug: true,
-
-  enableLogs: true,
-  beforeSendLog: (log) => {
-    return log;
-  },
 });

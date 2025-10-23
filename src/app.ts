@@ -32,11 +32,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
     },
   });
 
-  await instance.get('/fails', async () => {
-    throw new Error('woops');
-    return 'nothing';
-  });
-
   await instance
     .register(fp(swaggerPlugin))
     .register(fp(schemaRegisterPlugin))
