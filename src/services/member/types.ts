@@ -1,5 +1,4 @@
-import { AccountType, type CompleteMember } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
+import { AccountType, type CompleteMember, DEFAULT_LANG } from '@graasp/sdk';
 
 import { membersView } from '../../drizzle/schema';
 import type { MaybeUser, MemberInfo, MinimalMember } from '../../types';

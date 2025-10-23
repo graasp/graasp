@@ -5,7 +5,7 @@ import { iso1A2Code } from '@rapideditor/country-coder';
 import { SQL, and, between, desc, eq, or } from 'drizzle-orm';
 import fetch from 'node-fetch';
 
-import { DEFAULT_LANG } from '@graasp/translations';
+import { DEFAULT_LANG } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import {

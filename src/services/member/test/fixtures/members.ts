@@ -1,5 +1,4 @@
-import { AccountType } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
+import { AccountType, DEFAULT_LANG } from '@graasp/sdk';
 
 import type { MemberRaw, MinimalAccount } from '../../../../drizzle/types';
 

@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DEFAULT_LANG } from '@graasp/translations';
+import { DEFAULT_LANG } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
 import { accountsTable, itemLoginSchemasTable } from '../../drizzle/schema';

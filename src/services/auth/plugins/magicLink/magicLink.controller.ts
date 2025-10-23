@@ -4,8 +4,7 @@ import fastifyPassport from '@fastify/passport';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import type { PassportUser } from 'fastify';
 
-import { ClientManager, Context, RecaptchaAction } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
+import { ClientManager, Context, DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';

@@ -10,8 +10,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
-import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
-import { FAILURE_MESSAGES } from '@graasp/translations';
+import { FAILURE_MESSAGES, HttpMethod, RecaptchaAction } from '@graasp/sdk';
 
 import build, {
   MOCK_CAPTCHA,

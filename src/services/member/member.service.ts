@@ -1,8 +1,7 @@
 import { sign as jwtSign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, type UUID } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
+import { ClientManager, Context, DEFAULT_LANG, type UUID } from '@graasp/sdk';
 
 import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
