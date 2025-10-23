@@ -37,3 +37,4 @@ jobs:
           aws-ecr-uri: ${{ vars.PRIVATE_ECR }}
           aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+          sentry-token: ${{ secrets.SENTRY_AUTH_TOKEN }}

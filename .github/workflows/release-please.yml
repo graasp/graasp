@@ -33,6 +33,7 @@ jobs:
           aws-ecr-uri: ${{ vars.GRAASP_PUBLIC_ECR }}
           aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
+          sentry-token: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Auto Tag
         uses: graasp/graasp-deploy/.github/actions/auto-tag-after-release@v1
