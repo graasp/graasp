@@ -23,6 +23,8 @@ RUN yarn set version berry && yarn install --immutable
 ENV NODE_ENV=production
 COPY . .
 RUN yarn build-ts
+# send sourcemaps to Sentry
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN,env=SENTRY_AUTH_TOKEN yarn sentry:sourcemaps
 
 # -------------------------------------------------------
 FROM base AS deps

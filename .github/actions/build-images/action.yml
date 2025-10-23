@@ -14,6 +14,9 @@ inputs:
   aws-role-arn:
     description: 'AWS Role to assume'
     required: true
+  sentry-token:
+    description: 'Sentry auth token to push sourcemaps'
+    required: true
 
 runs:
   using: composite
@@ -33,3 +36,5 @@ runs:
         TAG: ${{ inputs.tag }}
       run: bash ./docker/build.sh ${{ inputs.aws-ecr-uri }} $TAG
       shell: bash
+      env:
+        SENTRY_AUTH_TOKEN: ${{ inputs.sentry-token }}

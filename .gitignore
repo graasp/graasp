@@ -60,3 +60,6 @@ secret-key
 # Generated
 openapi.json
 vacuum-report.html
+
+# Sentry Config File
+.sentryclirc
