@@ -30,7 +30,8 @@ Sentry.init({
   // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#profilesSampleRate
   profilesSampleRate: 1.0,
 
-  debug: true,
+  // Enable if you need to troubleshoot the Sentry config
+  // debug: true,
 
   enableLogs: true,
   beforeSendLog: (log) => {
