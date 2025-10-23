@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.10.3](https://github.com/graasp/graasp/compare/v2.10.2...v2.10.3) (2025-10-23)
+
+
+### Bug Fixes
+
+* optimise get app data with indexes ([#2018](https://github.com/graasp/graasp/issues/2018)) ([288b725](https://github.com/graasp/graasp/commit/288b725bbee6bb23ca3327806f7d4e4df3765548))
+* return correct item reference for membership ([#2013](https://github.com/graasp/graasp/issues/2013)) ([7976925](https://github.com/graasp/graasp/commit/797692550bb6c6b56615054deb6938d90596e27f))
+
 ## [2.10.2](https://github.com/graasp/graasp/compare/v2.10.1...v2.10.2) (2025-10-20)
 
 ### Bug Fixes
