@@ -1,7 +1,6 @@
 import os from 'os';
 
-import { ClientManager, Context, GPTVersion, type GPTVersionType } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
+import { ClientManager, Context, DEFAULT_LANG, GPTVersion, type GPTVersionType } from '@graasp/sdk';
 
 import { requiredEnvVar } from '../config/helpers';
 import type {

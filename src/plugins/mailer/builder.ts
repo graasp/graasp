@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-import { DEFAULT_LANG } from '@graasp/translations';
+import { DEFAULT_LANG } from '@graasp/sdk';
 
 import i18next from '../../i18n';
 import { TRANSLATIONS } from '../../langs/constants';

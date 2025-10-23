@@ -2,8 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createError } from '@fastify/error';
 
-import { ErrorFactory } from '@graasp/sdk';
-import { FAILURE_MESSAGES } from '@graasp/translations';
+import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
 
 export const ConfigurationError = ErrorFactory('config');
 

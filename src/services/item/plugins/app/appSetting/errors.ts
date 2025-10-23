@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory } from '@graasp/sdk';
-import { FAILURE_MESSAGES } from '@graasp/translations';
+import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
 
 import { PLUGIN_NAME } from '../constants';
 

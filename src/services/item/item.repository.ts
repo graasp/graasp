@@ -21,6 +21,7 @@ import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
 import {
+  DEFAULT_LANG,
   type ItemSettings,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
@@ -32,7 +33,6 @@ import {
   getChildFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
 
 import type { DBConnection } from '../../drizzle/db';
 import {

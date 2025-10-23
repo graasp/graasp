@@ -10,11 +10,11 @@ import type { FastifyInstance } from 'fastify';
 import {
   ClientManager,
   Context,
+  FAILURE_MESSAGES,
   HttpMethod,
   RecaptchaAction,
   type RecaptchaActionType,
 } from '@graasp/sdk';
-import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { MOCK_CAPTCHA, clearDatabase } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
