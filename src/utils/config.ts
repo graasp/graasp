@@ -18,6 +18,7 @@ export const APP_VERSION = process.env.APP_VERSION;
 export const BUILD_TIMESTAMP = process.env.BUILD_TIMESTAMP;
 
 export const CLIENT_HOST = process.env.CLIENT_HOST ?? 'http://localhost:3114';
+export const ALIAS_SERVICE_ORIGIN = process.env.ALIAS_SERVICE_ORIGIN ?? 'https://go.graasp.org';
 
 export const LIBRARY_HOST = process.env.LIBRARY_CLIENT_HOST ?? CLIENT_HOST;
 

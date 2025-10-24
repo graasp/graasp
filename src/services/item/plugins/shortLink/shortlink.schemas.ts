@@ -15,6 +15,10 @@ const shortLink = customType.StrictObject({
 });
 
 const shortLinkAlias = Type.Pick(shortLink, ['alias']);
+const shortLinkPlatformResponse = Type.Object({
+  alias: Type.String(),
+  url: Type.String({ format: 'uri' }),
+});
 
 export const getRedirection = {
   operationId: 'getShortLinkRedirection',
@@ -56,9 +60,9 @@ export const getAllByItem = {
     [StatusCodes.OK]: Type.Union([
       customType.StrictObject(
         {
-          [ShortLinkPlatform.Builder]: Type.Optional(Type.String()),
-          [ShortLinkPlatform.Player]: Type.Optional(Type.String()),
-          [ShortLinkPlatform.Library]: Type.Optional(Type.String()),
+          [ShortLinkPlatform.Builder]: Type.Optional(shortLinkPlatformResponse),
+          [ShortLinkPlatform.Player]: Type.Optional(shortLinkPlatformResponse),
+          [ShortLinkPlatform.Library]: Type.Optional(shortLinkPlatformResponse),
         },
         { minProperties: 1 },
       ),

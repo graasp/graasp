@@ -12,7 +12,7 @@ import {
 
 import { type DBConnection } from '../../../../drizzle/db';
 import type { AuthenticatedUser, MinimalMember } from '../../../../types';
-import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
+import { ALIAS_SERVICE_ORIGIN, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemPublishedNotFound } from '../publication/published/errors';
@@ -79,14 +79,21 @@ export class ShortLinkService {
     });
 
     const res = await this.shortLinkRepository.getByItem(dbConnection, itemId);
-
     return res.reduce<ShortLinksOfItem>((acc, { alias, platform }) => {
       if (acc[platform]) {
         // This should never happen.
         throw new Error(`An alias for the platform "${platform}" already exist!`);
       }
 
-      return { ...acc, [platform]: alias };
+      return {
+        ...acc,
+        [platform]: {
+          alias,
+          // something of the form: https://go.graasp.org/:alias
+          // or in local it would be: http://localhost:3000/short-links/:alias
+          url: `${ALIAS_SERVICE_ORIGIN}/${alias}`,
+        },
+      };
     }, {});
   }
 
