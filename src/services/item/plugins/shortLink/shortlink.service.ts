@@ -10,9 +10,10 @@ import {
   type UpdateShortLink,
 } from '@graasp/sdk';
 
+import { ALIAS_SERVICE_ORIGIN } from '../../../../config/hosts';
 import { type DBConnection } from '../../../../drizzle/db';
 import type { AuthenticatedUser, MinimalMember } from '../../../../types';
-import { ALIAS_SERVICE_ORIGIN, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemPublishedNotFound } from '../publication/published/errors';
