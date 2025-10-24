@@ -7,6 +7,15 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to use for the image
+        default: 'nightly'
+        type: choice
+        options:
+        - nightly
+        - latest
+
 
 permissions:
   id-token: write # This is required for requesting the JWT for OIDC
@@ -24,7 +33,7 @@ jobs:
       - name: Build images
         uses: ./.github/actions/build-images
         with:
-          tag: nightly
+          tag: ${{ inputs.tag || 'nightly' }}
           aws-ecr-uri: ${{ vars.PRIVATE_ECR }}
           aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
