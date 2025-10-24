@@ -82,6 +82,11 @@ export default async function (instance: FastifyInstance): Promise<void> {
         return json.$id?.toString() ?? `my-fragment-${i}`;
       },
     },
+
+    transform: ({ schema, url }) => {
+      const transformedUrl = url.startsWith('/api') ? url : `/api${url}`;
+      return { schema, url: transformedUrl };
+    },
   });
 
   await instance.register(swaggerUiPlugin, {
