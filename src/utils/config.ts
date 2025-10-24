@@ -21,6 +21,10 @@ export const CLIENT_HOST = process.env.CLIENT_HOST ?? 'http://localhost:3114';
 
 export const LIBRARY_HOST = process.env.LIBRARY_CLIENT_HOST ?? CLIENT_HOST;
 
+// TODO: add the fallback to the server-provided integration (available only in dev)
+export const H5P_INTEGRATION_URL =
+  process.env.H5P_INTEGRATION_URL ?? 'http://localhost:3000/h5p-integration';
+
 export const ALLOWED_ORIGINS = [new URL(CLIENT_HOST).origin, new URL(LIBRARY_HOST).origin];
 
 // Add the hosts of the different clients
