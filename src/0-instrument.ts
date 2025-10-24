@@ -26,15 +26,15 @@ Sentry.init({
   // We recommend adjusting this value in production
   // Learn more at
   // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#tracesSampleRate
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.2,
 
   // Set profilesSampleRate to 1.0 to profile 100%
   // of sampled transactions.
   // This is relative to tracesSampleRate
   // Learn more at
   // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#profilesSampleRate
-  profilesSampleRate: 1.0,
+  profilesSampleRate: 0.2,
 
   // Enable if you need to troubleshoot the Sentry config
-  // debug: true,
+  debug: true,
 });
