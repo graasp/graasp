@@ -2,6 +2,7 @@ import { Readable } from 'stream';
 import { delay, inject, singleton } from 'tsyringe';
 
 import {
+  H5PItemExtra,
   ItemType,
   ItemVisibilityType,
   MAX_DESCENDANTS_FOR_COPY,
@@ -31,6 +32,7 @@ import type {
 } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
+import { H5P_INTEGRATION_URL } from '../../utils/config';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -464,7 +466,13 @@ export class ItemService {
     );
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
-    return new ItemWrapper(item, itemMembership, visibilities, thumbnails[item.id]).packed();
+    const packedItem = new ItemWrapper(
+      item,
+      itemMembership,
+      visibilities,
+      thumbnails[item.id],
+    ).packed();
+    return this.transformItemByType(packedItem);
   }
 
   async getAccessible(
@@ -527,7 +535,7 @@ export class ItemService {
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(children);
 
     // TODO optimize?
-    return filterOutPackedItems(
+    const filteredChildren = await filterOutPackedItems(
       dbConnection,
       actor,
       {
@@ -537,6 +545,7 @@ export class ItemService {
       children,
       thumbnails,
     );
+    return filteredChildren.map((children) => this.transformItemByType(children));
   }
 
   async getDescendants(
@@ -1043,6 +1052,26 @@ export class ItemService {
         itemId: parentId,
       })) as FolderItem;
       await this.itemRepository.rescaleOrder(dbConnection, parentItem);
+    }
+  }
+
+  private transformItemByType(item: PackedItem) {
+    switch (item.type) {
+      case ItemType.H5P: {
+        const { h5p: h5pExtraProperties } = item.extra as H5PItemExtra;
+        const integrationUrl = new URL(H5P_INTEGRATION_URL);
+        // add the contentId param to the integration
+        integrationUrl.searchParams.set('contentId', h5pExtraProperties.contentId);
+        const newExtra = {
+          h5p: {
+            ...h5pExtraProperties,
+            integrationUrl: integrationUrl.toString(),
+          },
+        };
+        return { ...item, extra: newExtra };
+      }
+      default:
+        return item;
     }
   }
 }

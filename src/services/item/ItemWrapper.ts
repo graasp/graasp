@@ -1,12 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import {
-  H5PItemExtra,
-  ItemType,
-  ItemVisibilityType,
-  type ResultOf,
-  type ThumbnailsBySize,
-} from '@graasp/sdk';
+import { ItemVisibilityType, type ResultOf, type ThumbnailsBySize } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
 import type {
@@ -16,7 +10,6 @@ import type {
   ItemWithCreator,
   MemberRaw,
 } from '../../drizzle/types';
-import { H5P_INTEGRATION_URL } from '../../utils/config';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
@@ -69,9 +62,6 @@ export class ItemWrapper {
    * @returns item unit with permission
    */
   packed(): PackedItem {
-    // apply item specific transformations
-    this.tranformItemByType();
-
     // sort visibilities to retrieve the most restrictive (highest) visibility first
     if (this.visibilities) {
       this.visibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
@@ -84,25 +74,6 @@ export class ItemWrapper {
       public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
       thumbnails: this.thumbnails,
     };
-  }
-
-  private tranformItemByType() {
-    switch (this.item.type) {
-      case ItemType.H5P: {
-        const { h5p: h5pExtraProperties } = this.item.extra as H5PItemExtra;
-        const integrationUrl = new URL(H5P_INTEGRATION_URL);
-        // add the contentId param to the integration
-        integrationUrl.searchParams.set('contentId', h5pExtraProperties.contentId);
-        this.item.extra = {
-          h5p: {
-            ...h5pExtraProperties,
-            integrationUrl: integrationUrl.toString(),
-          },
-        };
-      }
-      default:
-        break;
-    }
   }
 }
 
