@@ -11,7 +11,7 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { ALIAS_SERVICE_ORIGIN } from '../../../../config/hosts';
+import { SHORT_LINK_BASE_URL } from '../../../../config/hosts';
 import { db } from '../../../../drizzle/db';
 import { shortLinksTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -769,7 +769,7 @@ describe('Short links routes tests', () => {
           expect(response.json()).toEqual({
             [shortLink.platform]: {
               alias: shortLink.alias,
-              url: `${ALIAS_SERVICE_ORIGIN}/${shortLink.alias}`,
+              url: `${SHORT_LINK_BASE_URL}/${shortLink.alias}`,
             },
           });
         });

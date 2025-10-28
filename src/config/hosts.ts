@@ -2,4 +2,5 @@ import { getEnv } from './env';
 
 getEnv();
 
-export const ALIAS_SERVICE_ORIGIN = process.env.ALIAS_SERVICE_ORIGIN ?? 'https://go.graasp.org';
+export const SHORT_LINK_BASE_URL =
+  process.env.SHORT_LINK_BASE_URL ?? 'http://localhost:3000/short-links';

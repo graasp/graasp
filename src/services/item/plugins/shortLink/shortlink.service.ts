@@ -10,7 +10,7 @@ import {
   type UpdateShortLink,
 } from '@graasp/sdk';
 
-import { ALIAS_SERVICE_ORIGIN } from '../../../../config/hosts';
+import { SHORT_LINK_BASE_URL } from '../../../../config/hosts';
 import { type DBConnection } from '../../../../drizzle/db';
 import type { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
@@ -92,7 +92,7 @@ export class ShortLinkService {
           alias,
           // something of the form: https://go.graasp.org/:alias
           // or in local it would be: http://localhost:3000/short-links/:alias
-          url: `${ALIAS_SERVICE_ORIGIN}/${alias}`,
+          url: `${SHORT_LINK_BASE_URL}/${alias}`,
         },
       };
     }, {});
