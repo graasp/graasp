@@ -69,7 +69,7 @@
     "@graasp/etherpad-api": "2.1.1",
     "@graasp/sdk": "5.16.3",
     "@rapideditor/country-coder": "5.4.0",
-    "@sentry/node": "7.119.2",
+    "@sentry/node": "7.120.4",
     "@sentry/tracing": "7.120.3",
     "@sinclair/typebox": "0.34.33",
     "ajv": "8.17.1",
