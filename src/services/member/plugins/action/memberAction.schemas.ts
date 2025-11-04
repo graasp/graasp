@@ -14,6 +14,7 @@ export const deleteAllById = {
 } as const satisfies FastifySchema;
 
 export const getMemberFilteredActions = {
+  operationId: 'getMembersActions',
   querystring: customType.StrictObject({
     startDate: Type.Optional(Type.String({ format: 'date-time' })),
     endDate: Type.Optional(Type.String({ format: 'date-time' })),
