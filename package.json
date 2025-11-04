@@ -70,7 +70,7 @@
     "@graasp/sdk": "5.16.3",
     "@rapideditor/country-coder": "5.4.0",
     "@sentry/node": "7.119.2",
-    "@sentry/tracing": "7.120.3",
+    "@sentry/tracing": "7.120.4",
     "@sinclair/typebox": "0.34.33",
     "ajv": "8.17.1",
     "bcrypt": "5.1.1",
