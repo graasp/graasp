@@ -11,6 +11,7 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
+import { SHORT_LINK_BASE_URL } from '../../../../config/hosts';
 import { db } from '../../../../drizzle/db';
 import { shortLinksTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -765,7 +766,12 @@ describe('Short links routes tests', () => {
 
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          expect(response.json()).toEqual({ [shortLink.platform]: shortLink.alias });
+          expect(response.json()).toEqual({
+            [shortLink.platform]: {
+              alias: shortLink.alias,
+              url: `${SHORT_LINK_BASE_URL}/${shortLink.alias}`,
+            },
+          });
         });
         it('Success if read permission', async () => {
           const {

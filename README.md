@@ -207,6 +207,9 @@ CLIENT_HOST=http://localhost:3114
 LIBRARY_CLIENT_HOST=http://localhost:3005
 GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
+# Base url used to redirect shortlink aliases
+# SHORT_LINK_BASE_URL=http://localhost:3000/short-links
+
 # This is already set in the docker-compose file, un-comment below if you want to override it
 # IMAGE_CLASSIFIER_API=<url>
 

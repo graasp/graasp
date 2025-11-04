@@ -35,6 +35,8 @@ services:
       S3_FILE_ITEM_HOST: http://s3.garage.localhost:3900
       # the Iframely config is set by the "iframely" service below
       EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
+      # Redirection for shortlinks
+      SHORT_LINK_BASE_URL: http://localhost:3000/short-links
     links:
       - garage:s3.garage.localhost
     volumes:

@@ -10,6 +10,7 @@ import {
   type UpdateShortLink,
 } from '@graasp/sdk';
 
+import { SHORT_LINK_BASE_URL } from '../../../../config/hosts';
 import { type DBConnection } from '../../../../drizzle/db';
 import type { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
@@ -79,14 +80,21 @@ export class ShortLinkService {
     });
 
     const res = await this.shortLinkRepository.getByItem(dbConnection, itemId);
-
     return res.reduce<ShortLinksOfItem>((acc, { alias, platform }) => {
       if (acc[platform]) {
         // This should never happen.
         throw new Error(`An alias for the platform "${platform}" already exist!`);
       }
 
-      return { ...acc, [platform]: alias };
+      return {
+        ...acc,
+        [platform]: {
+          alias,
+          // something of the form: https://go.graasp.org/:alias
+          // or in local it would be: http://localhost:3000/short-links/:alias
+          url: `${SHORT_LINK_BASE_URL}/${alias}`,
+        },
+      };
     }, {});
   }
 
