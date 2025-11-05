@@ -62,3 +62,8 @@ CREATE UNLOGGED TABLE public.oban_peers (
 	expires_at timestamp NOT NULL,
 	CONSTRAINT oban_peers_pkey PRIMARY KEY (name)
 );
+
+-- add migration in migration table for phoenix
+INSERT INTO "schema_migrations" ("version", "inserted_at") VALUES
+('20251103104204', '2025-11-05 10:28:02'),
+('20251103143048', '2025-11-05 10:29:02');
