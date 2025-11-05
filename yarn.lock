@@ -2299,13 +2299,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:9.7.0":
-  version: 9.7.0
-  resolution: "@faker-js/faker@npm:9.7.0"
-  checksum: 10/5167cc179bbf5f140b957f600af24772ca8c6e7e42405c312c25a6b4278b851b84bd8e3065f80e667dd4c35dd5aeb0ed490b0b1872f908d58ffae1cef9a5ef72
-  languageName: node
-  linkType: hard
-
 "@faker-js/faker@npm:9.9.0":
   version: 9.9.0
   resolution: "@faker-js/faker@npm:9.9.0"
@@ -2592,17 +2585,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:5.16.3":
-  version: 5.16.3
-  resolution: "@graasp/sdk@npm:5.16.3"
+"@graasp/sdk@npm:5.16.4":
+  version: 5.16.4
+  resolution: "@graasp/sdk@npm:5.16.4"
   dependencies:
-    "@faker-js/faker": "npm:9.7.0"
+    "@faker-js/faker": "npm:9.9.0"
     filesize: "npm:10.1.6"
     js-cookie: "npm:3.0.5"
   peerDependencies:
-    date-fns: ^3 || ^4.0.0
-    uuid: ^9 || ^10 || ^11.0.0
-  checksum: 10/8610596f4a16d597275a53877e7ed385ebe834defef8141246aa0a62ef94d686e25c71eb9e81509d65e9c84121eaf896d0cfb529706520bac1b55b9e66a376f7
+    date-fns: ^4.0.0
+    uuid: ^11.0.0
+  checksum: 10/73e1fc0ba8b299b1f67bca02a14366e8088a681cd5dfc8dba6411aeca3e2daf00d9281248c2f6c2bf3d8f143bc6fd05403d90fabb5b03546746bc568b472aa92
   languageName: node
   linkType: hard
 
@@ -8593,7 +8586,7 @@ __metadata:
     "@fastify/type-provider-typebox": "npm:5.1.0"
     "@fastify/websocket": "npm:11.0.2"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:5.16.3"
+    "@graasp/sdk": "npm:5.16.4"
     "@jest/globals": "npm:29.7.0"
     "@quobix/vacuum": "npm:0.18.5"
     "@rapideditor/country-coder": "npm:5.4.0"
