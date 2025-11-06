@@ -122,7 +122,7 @@ export class MemberService {
    * @param lang The language to use for the email.
    * @returns void
    */
-  sendEmailChangeRequest(newEmail: string, token: string, lang: string): void {
+  async sendEmailChangeRequest(newEmail: string, token: string, lang: string): Promise<void> {
     const destination = ClientManager.getInstance().getURLByContext(
       Context.Account,
       '/email/change',
@@ -140,10 +140,11 @@ export class MemberService {
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
-    // don't wait for mailer's response; log error and link if it fails.
-    this.mailerService
-      .send(mail, newEmail)
-      .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
+    try {
+      await this.mailerService.send(mail, newEmail);
+    } catch (err) {
+      this.log.warn(err, `mailer failed. link: ${link}`);
+    }
   }
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {

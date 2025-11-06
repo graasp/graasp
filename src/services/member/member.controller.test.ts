@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { sign } from 'jsonwebtoken';
 import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
@@ -9,6 +10,7 @@ import { HttpMethod, ItemLoginSchemaType, ItemType, MAX_USERNAME_LENGTH } from '
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { MemberFactory } from '../../../test/factories/member.factory';
 import { seedFromJson } from '../../../test/mocks/seed';
+import { EMAIL_CHANGE_JWT_SECRET } from '../../config/secrets';
 import { db } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
@@ -461,6 +463,45 @@ describe('Member routes tests', () => {
 
         const m = await getMemberUtil(actor.id);
         expect(m).toBeFalsy();
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      });
+    });
+  });
+
+  describe('PATCH members/current/email/change', () => {
+    it('Throws if signed out', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `members/current/email/change`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      it('Returns successfully', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+        const newEmail = 'newemail@weoij.com';
+
+        const token = sign(
+          { uuid: actor.id, oldEmail: actor.email, newEmail },
+          EMAIL_CHANGE_JWT_SECRET,
+        );
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `members/current/email/change`,
+          headers: { authorization: `Bearer ${token}` },
+        });
+
+        console.log(response);
+
+        // const m = await getMemberUtil(actor.id);
+        // expect(m).toBeFalsy();
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       });
