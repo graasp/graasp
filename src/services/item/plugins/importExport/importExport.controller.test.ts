@@ -218,7 +218,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/zip-import',
+        url: '/api/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
       });
@@ -229,7 +229,7 @@ describe('ZIP routes tests', () => {
         // get actor's root items
         const rootItemResponse = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/accessible',
+          url: '/api/items/accessible',
         });
         const rootItems = rootItemResponse.json().data;
         expect(rootItems).toHaveLength(7);
@@ -291,7 +291,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/zip-import',
+        url: '/api/items/zip-import',
         payload: form,
         query: { parentId: parentItem.id },
         headers: form.getHeaders(),
@@ -354,7 +354,7 @@ describe('ZIP routes tests', () => {
       const form = createFormData('empty.zip');
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/zip-import',
+        url: '/api/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
         query: { parentId: parentItem.id },
@@ -383,7 +383,7 @@ describe('ZIP routes tests', () => {
       const form = createFormData('htmlAndText.zip');
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/zip-import',
+        url: '/api/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
         query: { parentId: parentItem.id },
@@ -437,7 +437,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/zip-import',
+        url: '/api/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
       });
@@ -466,7 +466,7 @@ describe('ZIP routes tests', () => {
       const form = createFormData('graasp-archive.zip');
       const importResponse = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/zip-import',
+        url: '/api/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
         query: { parentId: parentItem.id },
@@ -633,7 +633,7 @@ describe('ZIP routes tests', () => {
 
       const h5pUploadResponse = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/h5p-import',
+        url: '/api/items/h5p-import',
         payload: form,
         headers: form.getHeaders(),
       });

@@ -94,7 +94,7 @@ describe('Item routes tests', () => {
     // server should still not be dead
     const otherCall = await app.inject({
       method: HttpMethod.Get,
-      url: '/version',
+      url: '/api/version',
     });
     expect(otherCall.statusCode).toBe(StatusCodes.OK);
   });

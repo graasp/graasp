@@ -126,7 +126,7 @@ describe('File Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/upload',
+        url: '/api/items/upload',
         payload: form,
         headers: form.getHeaders(),
       });
@@ -1044,7 +1044,7 @@ describe('File Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: '/items/files/invalid-id',
+          url: '/api/items/files/invalid-id',
           payload,
         });
 

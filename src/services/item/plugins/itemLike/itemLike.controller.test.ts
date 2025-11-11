@@ -79,7 +79,7 @@ describe('Item Like', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/items/liked',
+        url: '/api/items/liked',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -96,7 +96,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/liked',
+          url: '/api/items/liked',
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
 
@@ -118,7 +118,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/liked',
+          url: '/api/items/liked',
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -276,7 +276,7 @@ describe('Item Like', () => {
 
       const res = await app.inject({
         method: HttpMethod.Get,
-        url: '/items/invalid-id/likes',
+        url: '/api/items/invalid-id/likes',
       });
       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
@@ -386,7 +386,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/invalid-id/like',
+          url: '/api/items/invalid-id/like',
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -492,7 +492,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items/invalid-id/like',
+          url: '/api/items/invalid-id/like',
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });

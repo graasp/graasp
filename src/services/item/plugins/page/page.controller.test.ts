@@ -43,7 +43,7 @@ async function getAppPort(app: FastifyInstance) {
 async function expectServerToBeResponsive(app: FastifyInstance) {
   const result = await app.inject({
     method: 'GET',
-    url: '/version',
+    url: '/api/version',
   });
   expect(result.statusCode).toEqual(StatusCodes.OK);
 }
@@ -60,7 +60,7 @@ async function connectToItemWs(
   const doc = new Doc();
   const provider = new WebsocketProvider(
     `ws://localhost:${port}`,
-    `items/pages/${itemId}/ws${readOnly ? '/read' : ''}`,
+    `/api/items/pages/${itemId}/ws${readOnly ? '/read' : ''}`,
     doc,
     {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -94,7 +94,7 @@ describe('Page routes tests', () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/pages',
+        url: '/api/items/pages',
         payload,
       });
 
@@ -110,7 +110,7 @@ describe('Page routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/pages',
+          url: '/api/items/pages',
           payload: { name: 'my page' },
         });
         expect(response.statusCode).toBe(StatusCodes.CREATED);
@@ -140,7 +140,7 @@ describe('Page routes tests', () => {
         method: HttpMethod.Get,
         path: {
           protocol: 'ws',
-          pathname: '/items/pages/wrong-id/ws',
+          pathname: '/api/items/pages/wrong-id/ws',
         },
       });
 
@@ -436,7 +436,7 @@ describe('Page routes tests', () => {
         method: HttpMethod.Get,
         path: {
           protocol: 'ws',
-          pathname: '/items/pages/wrong-id/ws/read',
+          pathname: '/api/items/pages/wrong-id/ws/read',
         },
       });
 
@@ -832,7 +832,7 @@ describe('Page routes tests', () => {
       await app.inject({
         method: HttpMethod.Post,
         path: {
-          pathname: '/items/copy',
+          pathname: '/api/items/copy',
           query: { id: item.id },
         },
       });
@@ -879,7 +879,7 @@ describe('Page routes tests', () => {
       const copyOp = await app.inject({
         method: HttpMethod.Post,
         path: {
-          pathname: '/items/copy',
+          pathname: '/api/items/copy',
           query: { id: folder.id },
         },
         payload: {},

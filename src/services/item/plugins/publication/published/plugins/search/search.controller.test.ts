@@ -290,7 +290,7 @@ describe('Collection Search endpoints', () => {
 
           const move1 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: item.id },
             payload: {
               parentId: unpublishedFolder.id,
@@ -332,7 +332,7 @@ describe('Collection Search endpoints', () => {
 
           const move2 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: item.id },
             payload: {
               parentId: publishedFolder.id,
@@ -368,7 +368,7 @@ describe('Collection Search endpoints', () => {
 
           const move3 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: unpublishedItem.id },
             payload: {
               parentId: publishedFolder.id,
@@ -404,7 +404,7 @@ describe('Collection Search endpoints', () => {
 
           const move4 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: unpublishedItem.id },
             payload: {
               parentId: unpublishedFolder.id,

@@ -110,7 +110,7 @@ describe('Item routes tests', () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items',
+        url: '/api/items',
         payload,
       });
 
@@ -148,7 +148,7 @@ describe('Item routes tests', () => {
         const newItem = FolderItemFactory({ name: '' });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items',
+          url: '/api/items',
           payload: newItem,
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -158,7 +158,7 @@ describe('Item routes tests', () => {
         const newItem1 = FolderItemFactory({ name: ' ' });
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: '/items',
+          url: '/api/items',
           payload: newItem1,
         });
         expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -170,7 +170,7 @@ describe('Item routes tests', () => {
         const newItem = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items',
+          url: '/api/items',
           payload: { ...newItem, type: 'invalid-type' },
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -223,7 +223,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items',
+          url: '/api/items',
           payload,
         });
 
@@ -948,7 +948,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: '/items/invalid-id',
+          url: '/api/items/invalid-id',
           payload,
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -1039,7 +1039,7 @@ describe('Item routes tests', () => {
       } = await seedFromJson({ actor: null, items: [{}] });
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: '/items',
+        url: '/api/items',
         query: { id: [item.id] },
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -1067,7 +1067,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items',
+          url: '/api/items',
           query: { id: items.map(({ id }) => id) },
         });
         expect(response.json()).toEqual(items.map(({ id }) => id));
@@ -1101,7 +1101,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items',
+          url: '/api/items',
           query: { id: [item1.id] },
         });
         expect(response.json()).toEqual([item1.id]);
@@ -1141,7 +1141,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items',
+          url: '/api/items',
           query: { id: [parent.id] },
         });
         expect(response.json()).toEqual([parent.id]);
@@ -1192,7 +1192,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items',
+          url: '/api/items',
           query: { id: items.map(({ id }) => id) },
         });
         expect(response.json()).toEqual(items.map(({ id }) => id));
@@ -1231,7 +1231,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items',
+          url: '/api/items',
           query: { id: items.map(({ id }) => id) },
         });
         expect(response.json()).toEqual(items.map(({ id }) => id));
@@ -1264,7 +1264,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items',
+          url: '/api/items',
           query: { id: [...items.map(({ id }) => id), 'invalid-id'] },
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -1287,7 +1287,7 @@ describe('Item routes tests', () => {
         const missingId = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: '/items',
+          url: '/api/items',
           query: { id: [...itemIds, missingId] },
         });
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -1479,7 +1479,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/move',
+        url: '/api/items/move',
         query: { id: [item.id] },
         payload: {
           parentId: parent.id,
@@ -1509,7 +1509,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/api/items/move',
           query: { id: items.map(({ id }) => id) },
           payload: {
             parentId: parent.id,
@@ -1556,7 +1556,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2, item3];
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/items/move',
           query: { id: items.map(({ id }) => id) },
           payload: {},
         });
@@ -1594,7 +1594,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/items/move',
           query: { id: item.id },
           payload: {},
         });
@@ -1635,7 +1635,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/items/move',
           query: { id: item.id },
           payload: { parentId: parentItem.id },
         });
@@ -1678,7 +1678,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2, item3];
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/items/move',
           query: { id: items.map(({ id }) => id) },
           payload: {
             parentId: parentItem.id,
@@ -1718,7 +1718,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/items/move',
           query: { id: items.map(({ id }) => id) },
           payload: {
             parentId: parentItem.id,
@@ -1746,7 +1746,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/items/move',
           query: { id: [uuidv4(), 'invalid-id'] },
           payload: {},
         });
@@ -1771,7 +1771,7 @@ describe('Item routes tests', () => {
         const websocketMock = jest.spyOn(WebsocketService.prototype, 'publish');
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/move',
+          url: '/api/items/move',
           query: { id: [uuidv4()] },
           payload: {
             parentId: parentItem.id,
@@ -1799,7 +1799,7 @@ describe('Item routes tests', () => {
       } = await seedFromJson({ items: [{}] });
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/copy',
+        url: '/api/items/copy',
         query: { id: [item.id] },
         payload: {},
       });
@@ -1836,7 +1836,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: items.map(({ id }) => id) },
           payload: {},
         });
@@ -1905,7 +1905,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: items.map(({ id }) => id) },
           payload: {
             parentId: targetItem.id,
@@ -1967,7 +1967,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: items.map(({ id }) => id) },
           payload: {
             parentId: targetItem.id,
@@ -2026,7 +2026,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: item.id },
           payload: {},
         });
@@ -2075,7 +2075,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: items.map(({ id }) => id) },
           payload: {},
         });
@@ -2123,7 +2123,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: items.map(({ id }) => id) },
           payload: {
             parentId: parentItem.id,
@@ -2163,7 +2163,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: [item.id] },
           payload: {
             parentId: parentItem.id,
@@ -2211,7 +2211,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: [parentItem.id] },
           payload: {
             parentId: targetItem.id,
@@ -2252,7 +2252,7 @@ describe('Item routes tests', () => {
         mockAuthenticate(actor);
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: [...items.map(({ id }) => id), 'invalid-id'] },
           payload: {},
         });
@@ -2280,7 +2280,7 @@ describe('Item routes tests', () => {
         const websocketMock = jest.spyOn(WebsocketService.prototype, 'publish');
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: [item.id, missingId] },
           payload: { parentId: target.id },
         });
@@ -2323,7 +2323,7 @@ describe('Item routes tests', () => {
         const websocketMock = jest.spyOn(WebsocketService.prototype, 'publish');
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/copy',
+          url: '/api/items/copy',
           query: { id: [item.id] },
           payload: {
             parentId: parentItem.id,

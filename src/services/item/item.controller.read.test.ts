@@ -188,7 +188,7 @@ describe('Item routes tests', () => {
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/invalid-id',
+          url: '/api/items/invalid-id',
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -278,7 +278,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/items/accessible',
+        url: '/api/items/accessible',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -342,7 +342,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/accessible',
+          url: '/api/items/accessible',
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const { data } = response.json<{ data: PackedItem[] }>();
@@ -405,7 +405,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/accessible',
+          url: '/api/items/accessible',
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1087,7 +1087,7 @@ describe('Item routes tests', () => {
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/invalid-id/children',
+          url: '/api/items/invalid-id/children',
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -1292,7 +1292,7 @@ describe('Item routes tests', () => {
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/invalid-id/descendants',
+          url: '/api/items/invalid-id/descendants',
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -1393,7 +1393,7 @@ describe('Item routes tests', () => {
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/invalid-id/parents',
+          url: '/api/items/invalid-id/parents',
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);

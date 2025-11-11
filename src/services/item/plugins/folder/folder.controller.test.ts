@@ -99,7 +99,7 @@ describe('Folder routes tests', () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/folders',
+        url: '/api/items/folders',
         payload,
       });
 
@@ -135,7 +135,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/folders',
+          url: '/api/items/folders',
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -496,7 +496,7 @@ describe('Folder routes tests', () => {
         const newItem = FolderItemFactory({ name: '' });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/folders',
+          url: '/api/items/folders',
           payload: newItem,
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -506,7 +506,7 @@ describe('Folder routes tests', () => {
         const newItem1 = FolderItemFactory({ name: ' ' });
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/folders',
+          url: '/api/items/folders',
           payload: newItem1,
         });
         expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -865,7 +865,7 @@ describe('Folder routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: '/items/folders/invalid-id',
+          url: '/api/items/folders/invalid-id',
           payload,
         });
 

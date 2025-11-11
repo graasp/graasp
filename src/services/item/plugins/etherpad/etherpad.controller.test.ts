@@ -54,7 +54,7 @@ const createEtherpad = async (app, parentId?: string) => {
   });
   const res = await app.inject({
     method: HttpMethod.Post,
-    url: '/items/etherpad/create',
+    url: '/api/items/etherpad/create',
     payload: {
       name: faker.word.sample(),
     },
@@ -103,7 +103,7 @@ describe('Etherpad service API', () => {
       };
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload,
       });
 
@@ -139,7 +139,7 @@ describe('Etherpad service API', () => {
       const name = faker.word.sample();
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name,
           readerPermission: EtherpadPermission.Write,
@@ -178,7 +178,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name: faker.word.sample(),
         },
@@ -209,7 +209,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name: faker.word.sample(),
         },
@@ -244,7 +244,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name: faker.word.sample(),
         },
@@ -965,7 +965,7 @@ describe('Etherpad service API', () => {
       });
       await app.inject({
         method: 'POST',
-        url: '/items/copy',
+        url: '/api/items/copy',
         query: {
           id: [item.id],
         },
@@ -1011,7 +1011,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: 'POST',
-        url: '/items/copy',
+        url: '/api/items/copy',
         query: {
           id: [bogusItem.id],
         },

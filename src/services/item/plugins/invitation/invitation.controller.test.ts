@@ -938,7 +938,7 @@ describe('Invitation Plugin', () => {
       // register
       await app.inject({
         method: HttpMethod.Post,
-        url: '/register',
+        url: '/api/register',
         payload: { email: invitation.email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
       const member = await db.query.accountsTable.findFirst({
@@ -987,7 +987,7 @@ describe('Invitation Plugin', () => {
       // register
       await app.inject({
         method: HttpMethod.Post,
-        url: '/register',
+        url: '/api/register',
         payload: { email: faker.internet.email(), name: 'some-name', captcha: MOCK_CAPTCHA },
       });
       await new Promise((done) => {

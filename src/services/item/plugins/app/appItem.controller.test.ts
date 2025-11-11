@@ -43,7 +43,7 @@ describe('App Item tests', () => {
       const payload = { name: 'name', url: MOCK_URL };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/apps',
+        url: '/api/items/apps',
         payload,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -59,7 +59,7 @@ describe('App Item tests', () => {
         const payload = { name: 'name', url: MOCK_URL, description: 'description' };
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/apps',
+          url: '/api/items/apps',
           payload,
         });
 
@@ -104,7 +104,7 @@ describe('App Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/apps',
+          url: '/api/items/apps',
           payload,
         });
 
@@ -124,7 +124,7 @@ describe('App Item tests', () => {
 
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/apps',
+          url: '/api/items/apps',
           payload: payload1,
         });
 

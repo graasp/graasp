@@ -695,7 +695,7 @@ describe('Item Geolocation', () => {
 
         if (GEOLOCATION_API_HOST) {
           nock(GEOLOCATION_API_HOST)
-            .get('/reverse')
+            .get('/api/reverse')
             .query(true)
             .reply(200, {
               results: [{ formatted: 'address', country: 'country' }],
@@ -762,7 +762,7 @@ describe('Item Geolocation', () => {
         const id2 = uuid();
         if (GEOLOCATION_API_HOST) {
           nock(GEOLOCATION_API_HOST)
-            .get('/search')
+            .get('/api/search')
             .query(true)
             .reply(200, {
               results: [

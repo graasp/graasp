@@ -61,7 +61,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -182,7 +182,7 @@ describe('POST /register', () => {
 
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { ...member, captcha: MOCK_CAPTCHA },
     });
     expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -203,7 +203,7 @@ describe('POST /register', () => {
     const name = 'anna';
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -219,7 +219,7 @@ describe('POST /register', () => {
     const name = '<div>%"^';
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -238,7 +238,7 @@ describe('POST /register', () => {
     // register
     await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email: invitation.email, name: 'some-name', captcha: MOCK_CAPTCHA },
     });
     const member = await getMemberByEmail(invitation.email);
@@ -268,7 +268,7 @@ describe('POST /register', () => {
     // register
     await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
     });
 

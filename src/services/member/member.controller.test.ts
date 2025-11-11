@@ -54,7 +54,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current',
+        url: '/api/members/current',
       });
       const m = response.json();
 
@@ -81,7 +81,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current',
+        url: '/api/members/current',
       });
       const m = await response.json();
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -100,7 +100,7 @@ describe('Member routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current',
+        url: '/api/members/current',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -173,7 +173,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage',
+        url: '/api/members/current/storage',
       });
       const { current, maximum } = response.json();
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -204,7 +204,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage',
+        url: '/api/members/current/storage',
       });
       const { current, maximum } = response.json();
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -214,7 +214,7 @@ describe('Member routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage',
+        url: '/api/members/current/storage',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
