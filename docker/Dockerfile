@@ -25,6 +25,38 @@ COPY . .
 RUN yarn build-ts
 
 # -------------------------------------------------------
+FROM base AS build-sources
+
+WORKDIR /app
+COPY package.json yarn.lock .yarnrc.yml ./
+# We need a specific command because we need to copy the folder with it, not just the content.
+COPY .yarn/releases ./.yarn/releases/
+RUN yarn set version berry && yarn install --immutable
+
+ENV NODE_ENV=production
+COPY . .
+RUN yarn build-ts --sourceMap true --sourceRoot '/'
+
+# send sourcemaps to Sentry
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN,env=SENTRY_AUTH_TOKEN yarn sentry:sourcemaps
+
+# -------------------------------------------------------
+FROM base AS build-sources
+
+WORKDIR /app
+COPY package.json yarn.lock .yarnrc.yml ./
+# We need a specific command because we need to copy the folder with it, not just the content.
+COPY .yarn/releases ./.yarn/releases/
+RUN yarn set version berry && yarn install --immutable
+
+ENV NODE_ENV=production
+COPY . .
+RUN yarn build-ts --sourceMap true --sourceRoot '/'
+
+# send sourcemaps to Sentry
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN,env=SENTRY_AUTH_TOKEN yarn sentry:sourcemaps
+
+# -------------------------------------------------------
 FROM base AS deps
 
 WORKDIR /app
