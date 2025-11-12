@@ -1,4 +1,5 @@
 import { and, eq } from 'drizzle-orm';
+import { describe, expect, it } from 'vitest';
 
 import { Context } from '@graasp/sdk';
 

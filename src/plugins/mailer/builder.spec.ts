@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { describe, expect, it } from 'vitest';
 
 import { TRANSLATIONS } from '../../langs/constants';
 import enTranslations from '../../langs/en.json';

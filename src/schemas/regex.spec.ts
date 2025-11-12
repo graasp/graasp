@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { EMPTY_OR_SPACED_WORDS_REGEX, ITEM_NAME_REGEX } from './regex';
 
 describe('Globals', () => {
