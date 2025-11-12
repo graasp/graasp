@@ -40,6 +40,7 @@ describe('SearchIndex worker', { sequential: true }, () => {
 
     // expect the exportFolder to have been called
     expect(searchIndexService.buildIndex).toHaveBeenCalled();
+    await queue.close();
   });
 
   it('fail if processing throws', async () => {
@@ -63,5 +64,6 @@ describe('SearchIndex worker', { sequential: true }, () => {
       .toBeTruthy();
     // expect the exportFolder to have been called
     expect(searchIndexService.buildIndex).toHaveBeenCalled();
+    await queue.close();
   });
 });

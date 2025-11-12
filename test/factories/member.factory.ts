@@ -46,7 +46,7 @@ export const MemberFactory = (m: Partial<AccountRaw> = {}): MemberRaw => {
  * Ensures RFC-safe local-part characters and keeps domain from faker.
  * Example output: "john.doe+1731401674001-8f3a@example.com"
  */
-function uniqueEmail() {
+export function uniqueEmail() {
   const base = faker.internet.email();
   const [local, domain] = base.split('@');
 

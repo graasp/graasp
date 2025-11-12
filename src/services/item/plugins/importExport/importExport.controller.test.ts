@@ -194,6 +194,7 @@ describe('ZIP routes tests', () => {
   afterAll(async () => {
     await clearDatabase(db);
     app.close();
+    await importExportQueue.close();
   });
 
   beforeEach(() => {
@@ -208,7 +209,7 @@ describe('ZIP routes tests', () => {
     jest.clearAllMocks();
   });
 
-  describe('POST /zip-import', () => {
+  describe('POST /api/zip-import', () => {
     it('Import successfully at root if signed in', async () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
@@ -238,7 +239,7 @@ describe('ZIP routes tests', () => {
         const parent = rootItems.find(({ name }) => name === ARCHIVE_CONTENT.folder.name);
         const itemsResponse = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children`,
+          url: `/api/items/${parent.id}/children`,
         });
         const children = itemsResponse.json();
         expect(children).toHaveLength(1);
@@ -536,7 +537,7 @@ describe('ZIP routes tests', () => {
     });
   });
 
-  describe('POST /download-file', () => {
+  describe('POST /api/download-file', () => {
     it('Export successfully if has access', async () => {
       const {
         actor,
@@ -556,7 +557,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/download-file`,
+        url: `/api/items/${item.id}/download-file`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -581,7 +582,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/download-file`,
+        url: `/api/items/${item.id}/download-file`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -604,7 +605,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/download-file`,
+        url: `/api/items/${item.id}/download-file`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -642,7 +643,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${h5pId}/download-file`,
+        url: `/api/items/${h5pId}/download-file`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -663,7 +664,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/download-file`,
+        url: `/api/items/${item.id}/download-file`,
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
@@ -682,7 +683,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/export`,
+        url: `/api/items/${item.id}/export`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -712,7 +713,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/export`,
+        url: `/api/items/${item.id}/export`,
       });
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
@@ -731,14 +732,14 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${documentId}/export`,
+        url: `/api/items/${documentId}/export`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
   });
 
-  describe('POST /graasp-export', () => {
+  describe('POST /api/graasp-export', () => {
     it('Exports successfully if signed in', async () => {
       const { actor, items } = await seedFromJson({
         actor: {},
@@ -754,7 +755,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${items[0].id}/graasp-export`,
+        url: `/api/items/${items[0].id}/graasp-export`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.headers['content-disposition']).toContain(items[0].name);
@@ -768,7 +769,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${folderItem!.id}/graasp-export`,
+        url: `/api/items/${folderItem!.id}/graasp-export`,
       });
 
       const { targetFolder, manifestItems } = await readResponseStream(response.stream());

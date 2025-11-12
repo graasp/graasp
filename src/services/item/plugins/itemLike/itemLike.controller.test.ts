@@ -21,7 +21,7 @@ import { MemberCannotAccess } from '../../../../utils/errors';
 import { assertIsMember } from '../../../authentication';
 import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
 import { expectManyPackedItems } from '../../test/fixtures/items';
-import { ItemLikeNotFound } from './utils/errors';
+import { ItemLikeNotFound } from './itemLike.errors';
 
 export const expectItemLike = (
   newLike: ItemLikeRaw | undefined,
@@ -75,7 +75,7 @@ describe('Item Like', () => {
     unmockAuthenticate();
   });
 
-  describe('GET /liked', () => {
+  describe('GET /api/items/liked', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -133,7 +133,7 @@ describe('Item Like', () => {
     });
   });
 
-  describe('GET /:itemId/likes', () => {
+  describe('GET /api/items/:itemId/likes', () => {
     describe('Signed Out', () => {
       it('Throws if signed out', async () => {
         const {
@@ -144,7 +144,7 @@ describe('Item Like', () => {
         });
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/likes`,
+          url: `/api/items/${item.id}/likes`,
         });
 
         expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
@@ -162,7 +162,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/likes`,
+          url: `/api/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         // get item like from repository with item (not returned in request)
@@ -183,7 +183,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/likes`,
+          url: `/api/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
@@ -213,7 +213,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item1.id}/likes`,
+          url: `/api/items/${item1.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         // get item like from repository with item (not returned in request)
@@ -234,7 +234,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/likes`,
+          url: `/api/items/${item.id}/likes`,
         });
         expect(res.json()).toEqual(new MemberCannotAccess(item.id));
       });
@@ -258,7 +258,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/likes`,
+          url: `/api/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
 
@@ -282,7 +282,7 @@ describe('Item Like', () => {
     });
   });
 
-  describe('POST /:itemId/like', () => {
+  describe('POST /api/items/:itemId/like', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -290,7 +290,7 @@ describe('Item Like', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/like`,
+        url: `/api/items/${item.id}/like`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -315,7 +315,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/like`,
+          url: `/api/items/${item.id}/like`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
 
@@ -345,7 +345,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/like`,
+          url: `/api/items/${item.id}/like`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         // the creatorId should be the same
@@ -373,7 +373,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/like`,
+          url: `/api/items/${item.id}/like`,
         });
         expect(res.json()).toEqual(new MemberCannotAccess(item.id));
       });
@@ -393,7 +393,7 @@ describe('Item Like', () => {
     });
   });
 
-  describe('DELETE :itemId/like', () => {
+  describe('DELETE /api/items/:itemId/like', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -401,7 +401,7 @@ describe('Item Like', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/like`,
+        url: `/api/items/${item.id}/like`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -427,7 +427,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/like`,
+          url: `/api/items/${item.id}/like`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.body).toEqual(itemLike.id);
@@ -451,7 +451,7 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/like`,
+          url: `/api/items/${item.id}/like`,
         });
         expect(res.json()).toEqual(new MemberCannotAccess(item.id));
 
@@ -477,9 +477,13 @@ describe('Item Like', () => {
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/like`,
+          url: `/api/items/${item.id}/like`,
         });
-        expect(res.json()).toEqual(new ItemLikeNotFound({ creatorId: actor.id, itemId: item.id }));
+        const response = await res.json();
+        const expectedRes = new ItemLikeNotFound({ creatorId: actor.id, itemId: item.id });
+        expect(response.message).toEqual(expectedRes.message);
+        expect(response.statusCode).toEqual(expectedRes.statusCode);
+        expect(response.code).toEqual(expectedRes.code);
       });
 
       it('Bad request if item id is invalid', async () => {
