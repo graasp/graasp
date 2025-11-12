@@ -54,7 +54,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current',
+        url: '/api/members/current',
       });
       const m = response.json();
 
@@ -81,7 +81,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current',
+        url: '/api/members/current',
       });
       const m = await response.json();
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -100,7 +100,7 @@ describe('Member routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current',
+        url: '/api/members/current',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -173,7 +173,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage',
+        url: '/api/members/current/storage',
       });
       const { current, maximum } = response.json();
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -204,7 +204,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage',
+        url: '/api/members/current/storage',
       });
       const { current, maximum } = response.json();
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -214,7 +214,7 @@ describe('Member routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage',
+        url: '/api/members/current/storage',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -229,7 +229,7 @@ describe('Member routes tests', () => {
         } = await seedFromJson({ members: [{}] });
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members/${member.id}`,
+          url: `/api/members/${member.id}`,
         });
 
         const m = response.json();
@@ -251,7 +251,7 @@ describe('Member routes tests', () => {
         const memberId = member.id;
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members/${memberId}`,
+          url: `/api/members/${memberId}`,
         });
 
         const m = response.json();
@@ -268,7 +268,7 @@ describe('Member routes tests', () => {
         mockAuthenticate(actor);
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members/invalid-id`,
+          url: `/api/members/invalid-id`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -283,7 +283,7 @@ describe('Member routes tests', () => {
         const memberId = v4();
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members/${memberId}`,
+          url: `/api/members/${memberId}`,
         });
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
         expect(response.json().message).toEqual(new MemberNotFound({ id: memberId }).message);
@@ -297,7 +297,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/members/current`,
+        url: `/api/members/current`,
         payload: {
           name: newName,
           extra: {
@@ -322,7 +322,7 @@ describe('Member routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/current`,
+          url: `/api/members/current`,
           payload: {
             name: newName,
             extra: newExtra,
@@ -350,7 +350,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/current`,
+          url: `/api/members/current`,
           payload: {
             name: newName,
           },
@@ -372,7 +372,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/current`,
+          url: `/api/members/current`,
           payload: {
             name: newName,
           },
@@ -393,7 +393,7 @@ describe('Member routes tests', () => {
         const enableSaveActions = true;
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/current`,
+          url: `/api/members/current`,
           payload: { enableSaveActions },
         });
 
@@ -413,7 +413,7 @@ describe('Member routes tests', () => {
         // Start by enabling save actions
         await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/current`,
+          url: `/api/members/current`,
           payload: { enableSaveActions: true },
         });
         const memberBeforePatch = await db.query.accountsTable.findFirst({
@@ -424,7 +424,7 @@ describe('Member routes tests', () => {
         const enableSaveActions = false;
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/current`,
+          url: `/api/members/current`,
           payload: { enableSaveActions },
         });
 
@@ -441,7 +441,7 @@ describe('Member routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/members/current`,
+        url: `/api/members/current`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -456,7 +456,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/members/current`,
+          url: `/api/members/current`,
         });
 
         const m = await getMemberUtil(actor.id);

@@ -19,7 +19,7 @@ import { MemberCannotAccess } from '../../../../utils/errors';
 import { assertIsMemberForTest } from '../../../authentication';
 import { ItemWrapper } from '../../ItemWrapper';
 import { expectPackedItem, expectThumbnails } from '../../test/fixtures/items';
-import { expectPackedItemGeolocations } from './test/utils';
+import { PackedItemGeolocation } from './itemGeolocation.service';
 
 // Mock S3 libraries
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
@@ -55,6 +55,35 @@ jest.mock('@aws-sdk/lib-storage', () => {
     }),
   };
 });
+
+const expectPackedItemGeolocations = (
+  results: PackedItemGeolocation[] | null,
+  expected: PackedItemGeolocation[],
+) => {
+  expect(results).toHaveLength(expected.length);
+
+  for (const ig of expected) {
+    const publicTest = ig.item.public?.id
+      ? { public: expect.objectContaining({ id: ig.item.public.id }) }
+      : {};
+
+    expect(results).toContainEqual(
+      expect.objectContaining({
+        lat: ig.lat,
+        lng: ig.lng,
+        addressLabel: ig.addressLabel,
+        helperLabel: ig.helperLabel,
+        country: ig.country,
+        item: expect.objectContaining({
+          id: ig.item.id,
+          creator: ig.item.creator ? expect.objectContaining({ id: ig.item.creator.id }) : null,
+          permission: ig.item.permission,
+          ...publicTest,
+        }),
+      }),
+    );
+  }
+};
 
 describe('Item Geolocation', () => {
   let app: FastifyInstance;
@@ -692,7 +721,6 @@ describe('Item Geolocation', () => {
         const { actor } = await seedFromJson();
         assertIsDefined(actor);
         mockAuthenticate(actor);
-
         if (GEOLOCATION_API_HOST) {
           nock(GEOLOCATION_API_HOST)
             .get('/reverse')

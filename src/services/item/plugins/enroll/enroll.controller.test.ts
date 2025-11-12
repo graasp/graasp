@@ -54,7 +54,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/enroll`,
+        url: `/api/items/${item.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -89,7 +89,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${anotherItem.id}/enroll`,
+        url: `/api/items/${anotherItem.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -115,7 +115,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${anotherItem.id}/enroll`,
+        url: `/api/items/${anotherItem.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -131,7 +131,7 @@ describe('Enroll', () => {
       });
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/enroll`,
+        url: `/api/items/${item.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -140,7 +140,7 @@ describe('Enroll', () => {
       unmockAuthenticate();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${uuid()}/enroll`,
+        url: `/api/items/${uuid()}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -152,7 +152,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${uuid()}/enroll`,
+        url: `/api/items/${uuid()}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -170,7 +170,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/enroll`,
+        url: `/api/items/${item.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -198,7 +198,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/enroll`,
+        url: `/api/items/${item.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -215,7 +215,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/enroll`,
+        url: `/api/items/${item.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -233,7 +233,7 @@ describe('Enroll', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/enroll`,
+        url: `/api/items/${item.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);

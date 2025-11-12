@@ -110,7 +110,7 @@ describe('Item websocket hooks', () => {
       const payload = { accountId: bob.id, permission: PermissionLevel.Read };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships`,
+        url: `/api/items/${item.id}/memberships`,
         payload,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -151,7 +151,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/${item.id}/memberships/${membership.id}`,
+        url: `/api/items/${item.id}/memberships/${membership.id}`,
         payload: { permission: PermissionLevel.Admin },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -196,7 +196,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/${membership.id}`,
+        url: `/api/items/${item.id}/memberships/${membership.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 

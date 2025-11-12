@@ -259,7 +259,7 @@ describe('Collection Search endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -290,7 +290,7 @@ describe('Collection Search endpoints', () => {
 
           const move1 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: item.id },
             payload: {
               parentId: unpublishedFolder.id,
@@ -332,7 +332,7 @@ describe('Collection Search endpoints', () => {
 
           const move2 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: item.id },
             payload: {
               parentId: publishedFolder.id,
@@ -368,7 +368,7 @@ describe('Collection Search endpoints', () => {
 
           const move3 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: unpublishedItem.id },
             payload: {
               parentId: publishedFolder.id,
@@ -404,7 +404,7 @@ describe('Collection Search endpoints', () => {
 
           const move4 = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/move',
+            url: '/api/items/move',
             query: { id: unpublishedItem.id },
             payload: {
               parentId: unpublishedFolder.id,
@@ -421,7 +421,7 @@ describe('Collection Search endpoints', () => {
     });
   });
 
-  describe('GET /collections/facets', () => {
+  describe('GET /api/collections/facets', () => {
     it('throw if facet name is not provided', async () => {
       const res = await app.inject({
         method: HttpMethod.Post,
@@ -508,7 +508,7 @@ describe('Collection Search endpoints', () => {
     });
   });
 
-  describe('GET /collections/featured', () => {
+  describe('GET /api/collections/featured', () => {
     it('get featured collections', async () => {
       // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
       const fakeResponse = {
@@ -619,7 +619,7 @@ describe('Collection Search endpoints', () => {
     });
   });
 
-  describe('GET /collections/liked', () => {
+  describe('GET /api/collections/liked', () => {
     it('get most liked items', async () => {
       // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
       const fakeResponse = {
@@ -729,7 +729,7 @@ describe('Collection Search endpoints', () => {
       });
     });
   });
-  describe('GET /collections/recent', () => {
+  describe('GET /api/collections/recent', () => {
     describe('Signed Out', () => {
       it('Get 2 most recent collections', async () => {
         // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;

@@ -19,7 +19,6 @@ import { assertIsDefined } from '../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../utils/config';
 import { MemberCannotAdminItem } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
-import { expectAccount } from '../member/test/fixtures/members';
 import { CannotNestItemLoginSchema, ValidMemberSession } from './errors';
 
 const getGuest = async ({
@@ -64,7 +63,7 @@ describe('Item Login Tests', () => {
     unmockAuthenticate();
   });
 
-  describe('GET /:id/login-schema-type', () => {
+  describe('GET /api/items/:id/login-schema-type', () => {
     it('Get item login if signed out', async () => {
       const {
         items: [item],
@@ -621,7 +620,8 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             const member = res.json();
-            expectAccount(member, guest);
+            expect(member.name).toEqual(guest.name);
+            expect(member.id).toEqual(guest.id);
 
             const guestInDb = await getGuest({
               name: guest.name,
@@ -662,7 +662,8 @@ describe('Item Login Tests', () => {
             });
 
             const member = res.json();
-            expectAccount(member, guest);
+            expect(member.name).toEqual(guest.name);
+            expect(member.id).toEqual(guest.id);
 
             expect(res.statusCode).toBe(StatusCodes.OK);
           });
@@ -730,7 +731,9 @@ describe('Item Login Tests', () => {
               payload: { username: 'bob', password: 'alice' },
             });
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectAccount(res.json(), guest);
+            const member = await res.json();
+            expect(member.name).toEqual(guest.name);
+            expect(member.id).toEqual(guest.id);
           });
 
           it('Throws if item login with username and wrong password', async () => {

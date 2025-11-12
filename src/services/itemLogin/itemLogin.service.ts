@@ -24,12 +24,16 @@ import {
 } from './errors';
 import { GuestRepository } from './guest.repository';
 import { GuestPasswordRepository } from './guestPassword.repository';
-import type { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   ItemLoginSchemaRepository,
   type ItemSchemaTypeOptions,
 } from './itemLoginSchema.repository';
 import { loginSchemaRequiresPassword } from './utils';
+
+interface ItemLoginMemberCredentials {
+  username?: string;
+  password?: string;
+}
 
 @singleton()
 export class ItemLoginService {

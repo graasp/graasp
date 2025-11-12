@@ -31,7 +31,7 @@ describe('Tag Endpoints', () => {
       it('Throw for undefined search', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/tags`,
+          url: `/api/tags`,
           query: { category: TagCategory.Discipline },
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -39,7 +39,7 @@ describe('Tag Endpoints', () => {
       it('Throw for empty search', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/tags`,
+          url: `/api/tags`,
           query: { search: '', category: TagCategory.Discipline },
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -62,7 +62,7 @@ describe('Tag Endpoints', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/tags`,
+        url: `/api/tags`,
         query: { search: commonString, category: TagCategory.Discipline },
       });
 

@@ -20,7 +20,7 @@ import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
-import { UploadFileNotImageError } from './utils/errors';
+import { UploadFileNotImageError } from './errors';
 
 const filepath = path.resolve(__dirname, './test/fixtures/image.png');
 const textPath = path.resolve(__dirname, './test/fixtures/emptyFile');
@@ -295,7 +295,10 @@ describe('Thumbnail Plugin Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(res.json()).toEqual(new UploadFileNotImageError());
+        const response = await res.json();
+        const expectedRes = new UploadFileNotImageError();
+        expect(response.message).toEqual(expectedRes.message);
+        expect(response.code).toEqual(expectedRes.code);
         const savedItem = await db.query.itemsRawTable.findFirst({
           where: eq(itemsRawTable.id, item.id),
         });

@@ -38,7 +38,7 @@ async function login(
   mockCaptchaValidationOnce(RecaptchaAction.SignInWithPassword);
   return app.inject({
     method: 'POST',
-    url: '/login-password',
+    url: '/api/login-password',
     payload: {
       email,
       password,
@@ -87,7 +87,7 @@ describe('Password', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: {
           email: actor.email,
           password: pwd,
@@ -116,7 +116,7 @@ describe('Password', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: {
           email: actor.email,
           password: pwd,
@@ -140,7 +140,7 @@ describe('Password', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: {
           email: actor.email,
           password: pwd,
@@ -164,7 +164,7 @@ describe('Password', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: {
           email: actor.email,
           password: pwd,
@@ -182,7 +182,7 @@ describe('Password', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: { email: actor.email, password: wrongPassword, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -197,7 +197,7 @@ describe('Password', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: { email: actor.email, password, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
@@ -209,7 +209,7 @@ describe('Password', () => {
       const password = faker.internet.password({ prefix: '!1Aa' });
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: { email, password, captcha: MOCK_CAPTCHA },
       });
 
@@ -223,7 +223,7 @@ describe('Password', () => {
       const password = '1234';
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: { email, password, captcha: MOCK_CAPTCHA },
       });
 
@@ -247,7 +247,7 @@ describe('Password', () => {
         mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
         const response = await app.inject({
           method: 'POST',
-          url: '/password/reset',
+          url: '/api/password/reset',
           payload: {
             email: member.email,
             captcha: MOCK_CAPTCHA,
@@ -266,7 +266,7 @@ describe('Password', () => {
         mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
         const response = await app.inject({
           method: 'POST',
-          url: '/password/reset',
+          url: '/api/password/reset',
           payload: {
             email: faker.internet.email().toLowerCase(),
             captcha: MOCK_CAPTCHA,
@@ -285,7 +285,7 @@ describe('Password', () => {
         mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
         const response = await app.inject({
           method: 'POST',
-          url: '/password/reset',
+          url: '/api/password/reset',
           payload: {
             email: actor.email,
             captcha: MOCK_CAPTCHA,
@@ -304,7 +304,7 @@ describe('Password', () => {
         mockCaptchaValidationOnce(RecaptchaAction.SignIn);
         const response = await app.inject({
           method: 'POST',
-          url: '/password/reset',
+          url: '/api/password/reset',
           payload: {
             email: actor.email,
             captcha: 'bad captcha',
@@ -339,7 +339,7 @@ describe('Password', () => {
           // insert request in caching for patch to work
           const response = await app.inject({
             method: 'POST',
-            url: '/password/reset',
+            url: '/api/password/reset',
             payload: {
               email: actor.email,
               captcha: MOCK_CAPTCHA,
@@ -359,7 +359,7 @@ describe('Password', () => {
           const newPassword = faker.internet.password({ prefix: '!1Aa' });
           const responseReset = await app.inject({
             method: 'PATCH',
-            url: '/password/reset',
+            url: '/api/password/reset',
             payload: {
               password: newPassword,
             },
@@ -400,7 +400,7 @@ describe('Password', () => {
           // token should be single use
           const responseSecondReset = await app.inject({
             method: 'PATCH',
-            url: '/password/reset',
+            url: '/api/password/reset',
             payload: {
               password: `${newPassword}a`,
             },
@@ -415,7 +415,7 @@ describe('Password', () => {
           const newPassword = faker.internet.password({ prefix: '!1Aa' });
           const response = await app.inject({
             method: 'PATCH',
-            url: '/password/reset',
+            url: '/api/password/reset',
             payload: {
               password: newPassword,
             },
@@ -434,7 +434,7 @@ describe('Password', () => {
           const newPassword = faker.internet.password({ prefix: '!1Aa' });
           const response = await app.inject({
             method: 'PATCH',
-            url: '/password/reset',
+            url: '/api/password/reset',
             payload: {
               password: newPassword,
             },
@@ -466,7 +466,7 @@ describe('Password', () => {
         mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
         const responseCreateReset = await app.inject({
           method: 'POST',
-          url: '/password/reset',
+          url: '/api/password/reset',
           payload: {
             email: expiredMember.email,
             captcha: MOCK_CAPTCHA,
@@ -487,7 +487,7 @@ describe('Password', () => {
         const newPassword = faker.internet.password({ prefix: '!1Aa' });
         const responseReset = await app.inject({
           method: 'PATCH',
-          url: '/password/reset',
+          url: '/api/password/reset',
           payload: {
             password: newPassword,
           },
@@ -508,7 +508,7 @@ describe('Password', () => {
     it('Throws when signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/password',
+        url: '/api/password',
         payload: {
           password: faker.internet.password({ prefix: '!1Aa' }),
         },
@@ -524,7 +524,7 @@ describe('Password', () => {
       mockAuthenticate(currentMember);
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/password',
+        url: '/api/password',
         payload: {
           password: newPassword,
         },
@@ -548,7 +548,7 @@ describe('Password', () => {
       mockAuthenticate(currentMember);
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/password',
+        url: '/api/password',
         payload: {
           password: newPassword,
         },
@@ -571,7 +571,7 @@ describe('Password', () => {
       mockAuthenticate(currentMember);
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/password',
+        url: '/api/password',
         payload: {
           password: newPassword,
         },
@@ -586,7 +586,7 @@ describe('Password', () => {
       const currentPassword = faker.internet.password({ prefix: '!1Aa' });
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/password',
+        url: '/api/password',
         payload: {
           currentPassword,
           password: newPassword,
@@ -604,7 +604,7 @@ describe('Password', () => {
       mockAuthenticate(currentMember);
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/password',
+        url: '/api/password',
         payload: {
           currentPassword,
           password: newPassword,
@@ -630,7 +630,7 @@ describe('Password', () => {
       mockAuthenticate(currentMember);
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/password',
+        url: '/api/password',
         payload: {
           currentPassword,
           password: newPassword,
@@ -654,7 +654,7 @@ describe('Password', () => {
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/password',
+        url: '/api/password',
         payload: {
           currentPassword: '',
           password: newPassword,
@@ -671,7 +671,7 @@ describe('Password', () => {
       mockAuthenticate(currentMember);
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/password',
+        url: '/api/password',
         payload: {
           currentPassword,
           password: 'weak',
@@ -685,7 +685,7 @@ describe('Password', () => {
     it('Throws when signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/password/status',
+        url: '/api/members/current/password/status',
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     });
@@ -698,7 +698,7 @@ describe('Password', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/password/status',
+        url: '/api/members/current/password/status',
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.json()).toEqual({ hasPassword: false });
@@ -711,7 +711,7 @@ describe('Password', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/password/status',
+        url: '/api/members/current/password/status',
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.json()).toEqual({ hasPassword: true });
@@ -732,7 +732,7 @@ describe('Password', () => {
       // login
       const loginResponse = await app.inject({
         method: HttpMethod.Post,
-        url: '/login-password',
+        url: '/api/login-password',
         payload: { email: actor.email, password: pwd, captcha: MOCK_CAPTCHA },
       });
       expect(loginResponse.statusCode).toEqual(StatusCodes.NO_CONTENT);

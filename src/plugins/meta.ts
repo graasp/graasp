@@ -90,7 +90,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     return 'OK' as const;
   });
 
-  fastify.get('/status', async (_, reply) => {
+  fastify.get('/api/status', async (_, reply) => {
     const searchService = resolveDependency(SearchService);
     const api = new HealthyStatus().format();
     const database = (await getDBStatusCheck(fastify.log)).format();
@@ -110,7 +110,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     };
   });
 
-  fastify.get('/version', async (_, reply) => {
+  fastify.get('/api/version', async (_, reply) => {
     // allow request cross origin
     reply.header('Access-Control-Allow-Origin', '*');
     return `${APP_VERSION} @ ${BUILD_TIMESTAMP}`;

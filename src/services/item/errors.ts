@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory, type ItemTypeUnion } from '@graasp/sdk';
+import { createError } from '@fastify/error';
+
+import { ErrorFactory } from '@graasp/sdk';
 
 const PLUGIN_NAME = 'graasp-plugin-item';
 
@@ -10,18 +12,11 @@ const PLUGIN_NAME = 'graasp-plugin-item';
 
 export const GraaspItemError = ErrorFactory(PLUGIN_NAME);
 
-export class WrongItemTypeError extends GraaspItemError {
-  constructor(data?: ItemTypeUnion) {
-    super(
-      {
-        code: 'GIERR001',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Item does not have the correct type',
-      },
-      data,
-    );
-  }
-}
+export const WrongItemTypeError = createError(
+  'GIERR001',
+  'Item does not have the correct type',
+  StatusCodes.BAD_REQUEST,
+);
 
 export class ItemOrderingError extends GraaspItemError {
   constructor(reason?: string) {

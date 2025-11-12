@@ -1,3 +1,5 @@
+import { expect } from 'vitest';
+
 import { AccountType, DEFAULT_LANG } from '@graasp/sdk';
 
 import type { MemberRaw, MinimalAccount } from '../../../../drizzle/types';
