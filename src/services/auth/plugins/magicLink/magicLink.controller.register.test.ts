@@ -107,7 +107,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register?lang=${lang}`,
+      url: `/api/register?lang=${lang}`,
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -129,7 +129,7 @@ describe('POST /register', () => {
 
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register`,
+      url: `/api/register`,
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -146,7 +146,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register`,
+      url: `/api/register`,
       payload: { email, name, captcha: MOCK_CAPTCHA, enableSaveActions },
     });
 
@@ -171,7 +171,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register`,
+      url: `/api/register`,
       payload: { email, name, enableSaveActions, captcha: MOCK_CAPTCHA },
     });
 

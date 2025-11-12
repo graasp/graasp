@@ -35,7 +35,7 @@ export function injectH5PImport(
 
   return app.inject({
     method: 'POST',
-    url: '/items/h5p-import',
+    url: '/api/items/h5p-import',
     payload: formData,
     headers: formData.getHeaders(),
     query,
