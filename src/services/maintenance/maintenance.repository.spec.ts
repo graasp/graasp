@@ -1,4 +1,5 @@
 import { add, sub } from 'date-fns';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { db } from '../../drizzle/db';
 import { maintenanceTable } from '../../drizzle/schema';
