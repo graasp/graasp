@@ -65,7 +65,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/?id=${item.id}`,
+        url: `/api/items/?id=${item.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -106,7 +106,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/?id=${item.id}`,
+        url: `/api/items/?id=${item.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -140,7 +140,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/move?id=${item.id}`,
+        url: `/api/items/move?id=${item.id}`,
         payload: { parentId: newParent.id },
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -185,7 +185,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/move?id=${item.id}`,
+        url: `/api/items/move?id=${item.id}`,
         payload: { parentId: newParent.id },
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -220,7 +220,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/copy?id=${item.id}`,
+        url: `/api/items/copy?id=${item.id}`,
         payload: { parentId: newParent.id },
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -264,7 +264,7 @@ describe('Item websocket hooks', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/copy?id=${item.id}`,
+        url: `/api/items/copy?id=${item.id}`,
         payload: { parentId: newParent.id },
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);

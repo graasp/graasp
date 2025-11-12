@@ -85,7 +85,7 @@ describe('asynchronous feedback', () => {
 
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/items/${item.id}/actions/export`,
+      url: `/api/items/${item.id}/actions/export`,
     });
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
@@ -113,7 +113,7 @@ describe('asynchronous feedback', () => {
 
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/items/${item.id}/actions/export`,
+      url: `/api/items/${item.id}/actions/export`,
     });
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 

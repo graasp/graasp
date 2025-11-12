@@ -1,12 +1,13 @@
-import type { FastifyInstance } from 'fastify';
+import Redis from 'ioredis';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import build from '../../../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../../../test/app.vitest';
+import { registerDependencies } from '../../../../../../di/container';
 import { resolveDependency } from '../../../../../../di/utils';
 import { ItemValidationAlreadyExist } from '../errors';
 import { ValidationQueue } from '../validationQueue';
 
 describe('Validation Queue Tests', () => {
-  let app: FastifyInstance;
   let validationQueue: ValidationQueue;
   const itemPath = '1b304da5_b342_46e8_a484_1712d5209e43';
   const childPath = `${itemPath}.cc24344a_9745_42d6_ae03_17ef686ee824`;
@@ -17,17 +18,14 @@ describe('Validation Queue Tests', () => {
   };
 
   beforeAll(async () => {
-    ({ app } = await build());
-    validationQueue = resolveDependency(ValidationQueue);
-  });
-
-  afterAll(() => {
-    app.close();
+    registerDependencies(MOCK_LOGGER);
+    const redisInstance = resolveDependency(Redis);
+    validationQueue = new ValidationQueue(redisInstance);
   });
 
   afterEach(async () => {
     await resetValidations();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('Adds new validation', async () => {
@@ -43,7 +41,7 @@ describe('Validation Queue Tests', () => {
       await validationQueue.addInProgress(itemPath);
     };
 
-    expect(addTwice()).rejects.toBeInstanceOf(ItemValidationAlreadyExist);
+    await expect(addTwice()).rejects.toBeInstanceOf(ItemValidationAlreadyExist);
   });
 
   it('Adds validation of parent and child should throw', async () => {
