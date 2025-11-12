@@ -148,7 +148,7 @@ describe('Document Item tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/${item.id}`,
+        url: `/api/items/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -193,7 +193,7 @@ describe('Document Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         // this test a bit how we deal with extra: it replaces existing keys
@@ -242,7 +242,7 @@ describe('Document Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
 
