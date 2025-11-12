@@ -105,7 +105,7 @@ describe('Item routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe('POST /items', () => {
+  describe('POST /api/items', () => {
     it('Throws if signed out', async () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
@@ -122,7 +122,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: '/api/items',
           payload: { ...payload, geolocation: { lat: 1 } },
         });
 
@@ -130,7 +130,7 @@ describe('Item routes tests', () => {
 
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: '/api/items',
           payload: { ...payload, geolocation: { lng: 1 } },
         });
 
@@ -182,7 +182,7 @@ describe('Item routes tests', () => {
         const parentId = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parentId}`,
+          url: `/api/items?parentId=${parentId}`,
           payload,
         });
 
@@ -269,7 +269,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
+          url: `/api/items?parentId=${parent.id}`,
           payload,
         });
         const newItem = response.json();
@@ -309,7 +309,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
+          url: `/api/items?parentId=${parent.id}`,
           payload,
         });
 
@@ -338,7 +338,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
         });
 
@@ -363,7 +363,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory({ lang: 'fr' });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           payload,
         });
 
@@ -387,7 +387,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
           query: { parentId: parentItem.id },
         });
@@ -409,7 +409,7 @@ describe('Item routes tests', () => {
         });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           payload,
         });
 
@@ -438,7 +438,7 @@ describe('Item routes tests', () => {
         });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           payload,
         });
 
@@ -469,7 +469,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           query: { parentId: parentItem.id, previousItemId: previousItem.id },
           payload,
         });
@@ -503,7 +503,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           query: { parentId: parentItem.id, previousItemId: lastItem.id },
           payload,
         });
@@ -537,7 +537,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items`,
+          url: `/api/items`,
           query: { parentId: parentItem.id, previousItemId: anotherChild.id },
           payload,
         });
@@ -563,7 +563,7 @@ describe('Item routes tests', () => {
         const parentId = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parentId}`,
+          url: `/api/items?parentId=${parentId}`,
           payload,
         });
 
@@ -583,7 +583,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
+          url: `/api/items?parentId=${parent.id}`,
           payload,
         });
 
@@ -605,7 +605,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
+          url: `/api/items?parentId=${parent.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -631,7 +631,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
+          url: `/api/items?parentId=${parent.id}`,
           payload,
         });
 
@@ -656,7 +656,7 @@ describe('Item routes tests', () => {
         const deepestItem = items.pop()!;
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${deepestItem.id}`,
+          url: `/api/items?parentId=${deepestItem.id}`,
           payload,
         });
 
@@ -683,7 +683,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
+          url: `/api/items?parentId=${parent.id}`,
           payload,
         });
 
@@ -693,7 +693,7 @@ describe('Item routes tests', () => {
     });
   });
 
-  describe('POST /items/with-thumbnail', () => {
+  describe('POST /api/items/with-thumbnail', () => {
     it('Post item with thumbnail', async () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
@@ -708,7 +708,7 @@ describe('Item routes tests', () => {
       payload.append('file', imageStream);
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/with-thumbnail`,
+        url: `/api/items/with-thumbnail`,
         payload,
         headers: payload.getHeaders(),
       });
@@ -730,14 +730,14 @@ describe('Item routes tests', () => {
     });
   });
 
-  describe('PATCH /items/:id', () => {
+  describe('PATCH /api/items/:id', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
       } = await seedFromJson({ actor: null, items: [{}] });
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/${item.id}`,
+        url: `/api/items/${item.id}`,
         payload: { name: 'new name' },
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -777,7 +777,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -815,7 +815,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -848,7 +848,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -884,7 +884,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -923,7 +923,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -961,7 +961,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${uuidv4()}`,
+          url: `/api/items/${uuidv4()}`,
           payload,
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -978,7 +978,7 @@ describe('Item routes tests', () => {
         const id = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${id}`,
+          url: `/api/items/${id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -1001,7 +1001,7 @@ describe('Item routes tests', () => {
         mockAuthenticate(actor);
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
         expect(response.json()).toEqual(new MemberCannotAccess(item.id));
@@ -1023,7 +1023,7 @@ describe('Item routes tests', () => {
         mockAuthenticate(actor);
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload: { name: 'newname' },
         });
         expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
@@ -1032,7 +1032,7 @@ describe('Item routes tests', () => {
     });
   });
   // delete many items
-  describe('DELETE /items', () => {
+  describe('DELETE /api/items', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -1302,14 +1302,14 @@ describe('Item routes tests', () => {
     });
   });
 
-  describe('PATCH /items/id/reorder', () => {
+  describe('PATCH /api/items/id/reorder', () => {
     it('Throws if signed out', async () => {
       const {
         items: [toReorder, previousItem],
       } = await seedFromJson({ actor: null, items: [{}, {}] });
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/${toReorder.id}/reorder`,
+        url: `/api/items/${toReorder.id}/reorder`,
         payload: {
           previousItemId: previousItem.id,
         },
@@ -1336,7 +1336,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${toReorder.id}/reorder`,
+          url: `/api/items/${toReorder.id}/reorder`,
           payload: {},
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1365,7 +1365,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${toReorder.id}/reorder`,
+          url: `/api/items/${toReorder.id}/reorder`,
           payload: {
             previousItemId: previousItem.id,
           },
@@ -1395,7 +1395,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${toReorder.id}/reorder`,
+          url: `/api/items/${toReorder.id}/reorder`,
           payload: {
             previousItemId: previousItem.id,
           },
@@ -1425,7 +1425,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${toReorder.id}/reorder`,
+          url: `/api/items/${toReorder.id}/reorder`,
           payload: {
             previousItemId: previousItem.id,
           },
@@ -1457,7 +1457,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${toReorder.id}/reorder`,
+          url: `/api/items/${toReorder.id}/reorder`,
           payload: {
             previousItemId: previousItem.id,
           },
@@ -1468,7 +1468,7 @@ describe('Item routes tests', () => {
     });
   });
   // move many items
-  describe('POST /items/move', () => {
+  describe('POST /api/items/move', () => {
     it('Throws if signed out', async () => {
       const {
         items: [parent, item],
@@ -1509,7 +1509,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/api/items/move',
+          url: 'api/items/move',
           query: { id: items.map(({ id }) => id) },
           payload: {
             parentId: parent.id,
@@ -1792,7 +1792,7 @@ describe('Item routes tests', () => {
     });
   });
   // copy many items
-  describe('POST /items/copy', () => {
+  describe('POST /api/items/copy', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],

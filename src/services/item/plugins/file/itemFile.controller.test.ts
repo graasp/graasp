@@ -873,7 +873,7 @@ describe('File Item routes tests', () => {
     });
   });
 
-  describe('PATCH /items/files/:id', () => {
+  describe('PATCH /api/items/files/:id', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -884,7 +884,7 @@ describe('File Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/files/${item.id}`,
+        url: `/api/items/files/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -914,7 +914,7 @@ describe('File Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/files/${item.id}`,
+          url: `/api/items/files/${item.id}`,
           payload,
         });
 
@@ -945,7 +945,7 @@ describe('File Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/files/${item.id}`,
+          url: `/api/items/files/${item.id}`,
           payload,
         });
 
@@ -979,7 +979,7 @@ describe('File Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/files/${item.id}`,
+          url: `/api/items/files/${item.id}`,
           payload,
         });
 
@@ -1019,7 +1019,7 @@ describe('File Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/files/${item.id}`,
+          url: `/api/items/files/${item.id}`,
           payload,
         });
 
@@ -1067,7 +1067,7 @@ describe('File Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/files/${item.id}`,
+          url: `/api/items/files/${item.id}`,
           payload,
         });
 
@@ -1094,7 +1094,7 @@ describe('File Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/files/${item.id}`,
+          url: `/api/items/files/${item.id}`,
           payload,
         });
 

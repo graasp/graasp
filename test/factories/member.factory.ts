@@ -35,14 +35,39 @@ export const MemberFactory = (m: Partial<AccountRaw> = {}): MemberRaw => {
     userAgreementsDate: m.userAgreementsDate ?? faker.date.past().toISOString(),
     ...baseAccount,
     ...m,
-    email:
-      m.email?.toLowerCase() ??
-      baseAccount.email?.toLowerCase() ??
-      faker.internet.email().toLowerCase(),
+    email: m.email?.toLowerCase() ?? baseAccount.email?.toLowerCase() ?? uniqueEmail(),
     type: AccountType.Individual,
     isValidated,
   };
 };
+
+/**
+ * Creates a unique-ish email by appending timestamp + random bytes.
+ * Ensures RFC-safe local-part characters and keeps domain from faker.
+ * Example output: "john.doe+1731401674001-8f3a@example.com"
+ */
+function uniqueEmail() {
+  const base = faker.internet.email();
+  const [local, domain] = base.split('@');
+
+  const ts = Date.now(); // ms since epoch
+  const rand = Math.random().toString(16).slice(2, 6); // short non-crypto random
+  const suffix = `${ts}-${rand}`;
+
+  // Use plus addressing to keep domain valid and readable
+  const uniqueLocal = `${sanitizeLocal(local)}+${suffix}`;
+
+  return `${uniqueLocal}@${domain}`;
+}
+
+function sanitizeLocal(local) {
+  // Keep alphanumerics and . _ - only (safe common set)
+  return local
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, '.')
+    .replace(/\.+/g, '.')
+    .replace(/^\.+|\.+$/g, '');
+}
 
 export const GuestFactory = (g: Partial<GuestRaw> & Pick<GuestRaw, 'itemLoginSchemaId'>) => ({
   ...BaseAccountFactory({ type: AccountType.Guest }),

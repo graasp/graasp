@@ -3,7 +3,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { APPS_JWT_SECRET } from '../../config/secrets';
-import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX, ITEMS_ROUTE_PREFIX } from '../../utils/config';
+import { APPS_PUBLISHER_ID } from '../../utils/config';
 import chatController from '../chat/chatMessage.controller';
 import graaspItemLogin from '../itemLogin/itemLogin.controller';
 import { itemMembershipsController } from '../itemMembership/membership.controller';
@@ -44,7 +44,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // because graaspApps extends the schemas
   await fastify.register(graaspApps, {
     jwtSecret: APPS_JWT_SECRET,
-    prefix: APP_ITEMS_PREFIX,
+    prefix: '/app-items',
     publisherId: APPS_PUBLISHER_ID,
   });
 
@@ -124,7 +124,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(itemController);
       });
     },
-    { prefix: ITEMS_ROUTE_PREFIX },
+    { prefix: '/items' },
   );
 };
 

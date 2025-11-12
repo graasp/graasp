@@ -64,7 +64,7 @@ describe('Item Login Tests', () => {
     unmockAuthenticate();
   });
 
-  describe('GET /:id/login-schema-type', () => {
+  describe('GET /api/items/:id/login-schema-type', () => {
     it('Get item login if signed out', async () => {
       const {
         items: [item],

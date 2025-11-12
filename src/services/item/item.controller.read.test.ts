@@ -79,7 +79,7 @@ describe('Item routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe('GET /items/:id', () => {
+  describe('GET /api/items/:id', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -87,7 +87,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}`,
+        url: `/api/items/${item.id}`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -108,7 +108,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
         });
 
         const returnedItem = response.json();
@@ -140,7 +140,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
         });
 
         const returnedItem = response.json();
@@ -173,7 +173,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
         });
 
         const returnedItem = response.json();
@@ -207,7 +207,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
         });
 
         expect(response.json()).toEqual(new MemberCannotAccess(item.id));
@@ -230,7 +230,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
         });
 
         const returnedItem = response.json();
@@ -258,7 +258,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
         });
 
         const returnedItem = response.json();
@@ -448,7 +448,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible?creatorId=${bob.id}`,
+          url: `/api/items/accessible?creatorId=${bob.id}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -487,7 +487,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible?sortBy=${SortBy.ItemName}&ordering=asc`,
+          url: `/api/items/accessible?sortBy=${SortBy.ItemName}&ordering=asc`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
@@ -527,7 +527,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible?sortBy=${SortBy.ItemType}&ordering=desc`,
+          url: `/api/items/accessible?sortBy=${SortBy.ItemType}&ordering=desc`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -568,7 +568,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible?sortBy=${SortBy.ItemCreatorName}&ordering=asc`,
+          url: `/api/items/accessible?sortBy=${SortBy.ItemCreatorName}&ordering=asc`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -616,7 +616,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible`,
+          url: '/api/items/accessible',
           query: { keywords: ['dogs'] },
         });
 
@@ -654,7 +654,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible`,
+          url: '/api/items/accessible',
           query: {
             sortBy: SortBy.ItemCreatorName,
             ordering: 'asc',
@@ -693,7 +693,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible`,
+          url: '/api/items/accessible',
           query: {
             permissions: [PermissionLevel.Write, PermissionLevel.Admin],
           },
@@ -744,7 +744,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible`,
+          url: '/api/items/accessible',
           query: {
             types: [ItemType.FOLDER],
           },
@@ -777,7 +777,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible`,
+          url: '/api/items/accessible',
           query: {
             sortBy: 'nimp',
             ordering: Ordering.DESC,
@@ -804,7 +804,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible`,
+          url: '/api/items/accessible',
           query: {
             sortBy: SortBy.ItemName,
             ordering: 'nimp',
@@ -831,7 +831,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/accessible`,
+          url: '/api/items/accessible',
           query: {
             types: 'nimp',
           },
@@ -861,7 +861,7 @@ describe('Item routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.Get,
           // add sorting for result to be less flacky
-          url: `/items/accessible?ordering=asc&sortBy=${SortBy.ItemName}&pageSize=1&page=3`,
+          url: `/api/items/accessible?ordering=asc&sortBy=${SortBy.ItemName}&pageSize=1&page=3`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -881,7 +881,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/children`,
+        url: `/api/items/${item.id}/children`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -912,7 +912,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parentItem.id}/children`,
+          url: `/api/items/${parentItem.id}/children`,
         });
 
         const data = response.json<PackedItem[]>();
@@ -951,7 +951,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parentItem.id}/children`,
+          url: `/api/items/${parentItem.id}/children`,
         });
 
         const data = response.json<PackedItem[]>();
@@ -979,7 +979,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children`,
+          url: `/api/items/${parent.id}/children`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1019,7 +1019,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children?types=folder`,
+          url: `/api/items/${parent.id}/children?types=folder`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1070,7 +1070,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children`,
+          url: `/api/items/${parent.id}/children`,
           query: { keywords: ['dogs'] },
         });
 
@@ -1097,7 +1097,7 @@ describe('Item routes tests', () => {
         const id = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${id}/children`,
+          url: `/api/items/${id}/children`,
         });
 
         expect(response.json().message).toEqual(new ItemNotFound(id).message);
@@ -1110,7 +1110,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children`,
+          url: `/api/items/${parent.id}/children`,
         });
 
         expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
@@ -1154,7 +1154,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children`,
+          url: `/api/items/${parent.id}/children`,
         });
 
         const children = [child1, child2, child3].map((i) =>
@@ -1181,7 +1181,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/descendants`,
+        url: `/api/items/${item.id}/descendants`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -1210,7 +1210,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/descendants`,
+          url: `/api/items/${parent.id}/descendants`,
         });
 
         const data = response.json<PackedItem[]>();
@@ -1244,7 +1244,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/descendants`,
+          url: `/api/items/${parent.id}/descendants`,
         });
 
         const data = response.json<PackedItem[]>();
@@ -1274,7 +1274,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/descendants`,
+          url: `/api/items/${parent.id}/descendants`,
         });
 
         const result = response.json();
@@ -1302,7 +1302,7 @@ describe('Item routes tests', () => {
         const id = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${id}/descendants`,
+          url: `/api/items/${id}/descendants`,
         });
 
         expect(response.json().message).toEqual(new ItemNotFound(id).message);
@@ -1315,7 +1315,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/descendants`,
+          url: `/api/items/${item.id}/descendants`,
         });
 
         expect(response.json()).toEqual(new MemberCannotAccess(item.id));
@@ -1331,7 +1331,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/descendants`,
+          url: `/api/items/${parent.id}/descendants`,
         });
 
         const data = response.json();
@@ -1353,7 +1353,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/parents`,
+        url: `/api/items/${item.id}/parents`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -1381,7 +1381,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${childOfChild.id}/parents`,
+          url: `/api/items/${childOfChild.id}/parents`,
         });
 
         const data = response.json();
@@ -1403,7 +1403,7 @@ describe('Item routes tests', () => {
         const id = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${id}/parents`,
+          url: `/api/items/${id}/parents`,
         });
 
         expect(response.json().message).toEqual(new ItemNotFound(id).message);
@@ -1422,7 +1422,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/parents`,
+          url: `/api/items/${parent.id}/parents`,
         });
 
         expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
@@ -1450,7 +1450,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${child.id}/parents`,
+          url: `/api/items/${child.id}/parents`,
         });
 
         expect(response.json()).toEqual(new MemberCannotAccess(child.id));
@@ -1478,7 +1478,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${childOfChild.id}/parents`,
+          url: `/api/items/${childOfChild.id}/parents`,
         });
 
         const data = response.json();
@@ -1505,7 +1505,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${child.id}/parents`,
+          url: `/api/items/${child.id}/parents`,
         });
 
         expect(response.json()).toEqual(new MemberCannotAccess(child.id));
