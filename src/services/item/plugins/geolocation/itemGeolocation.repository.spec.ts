@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { eq } from 'drizzle-orm/sql';
+import { describe, expect, it } from 'vitest';
 
 import { ItemType } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../../test/app';
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemGeolocationsTable } from '../../../../drizzle/schema';
@@ -25,10 +25,6 @@ const getGeolocationByItemPath = async (itemPath: ItemRaw['path']) => {
 };
 
 describe('ItemGeolocationRepository', () => {
-  afterAll(async () => {
-    await clearDatabase(db);
-  });
-
   describe('copy', () => {
     it('copy geolocation on item copy', async () => {
       const {
