@@ -203,3 +203,12 @@ jobs:
 
       - name: yarn test
         run: yarn test:ci --shard=${{ matrix.shard }}
+
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      - test-node
+      - build-unit
+    steps:
+      - name: summary
+        run: echo "Done!"
