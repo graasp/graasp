@@ -61,7 +61,7 @@ describe('Membership routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships`,
+        url: `/api/items/${item.id}/memberships`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);

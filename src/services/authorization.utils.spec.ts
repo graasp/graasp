@@ -1,4 +1,5 @@
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ItemVisibilityType,
@@ -10,12 +11,12 @@ import {
 import { ItemFactory } from '../../test/factories/item.factory';
 import { MemberFactory } from '../../test/factories/member.factory';
 import type { DBConnection } from '../drizzle/db';
-import type { ItemVisibilityWithItem } from '../drizzle/types';
-import { AccountType } from '../types';
+import type { ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../drizzle/types';
+import { AccountType, MinimalMember } from '../types';
 import { filterOutPackedDescendants } from './authorization.utils';
 import type { PackedItem } from './item/ItemWrapper';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
-import { expectPackedItem } from './item/test/fixtures/items';
+import { expectItem } from './item/test/fixtures/items.vitest';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
 const OWNER = { id: 'owner', name: 'owner', type: AccountType.Individual, isValidated: true };
@@ -58,9 +59,38 @@ const buildPackedDescendants = (
   return arr as unknown as PackedItem[];
 };
 
+const expectPackedItem = (
+  newItem: Partial<PackedItem> | undefined | null,
+  correctItem:
+    | (Partial<Omit<PackedItem, 'createdAt' | 'updatedAt' | 'creator'>> &
+        Pick<PackedItem, 'permission'>)
+    | undefined
+    | null,
+  creator?: MinimalMember,
+  parent?: ItemRaw,
+  visibilities?: Pick<ItemVisibilityRaw, 'id' | 'type' | 'itemPath'>[],
+) => {
+  expectItem(newItem, correctItem, creator, parent);
+
+  expect(newItem!.permission).toEqual(correctItem?.permission);
+
+  const pVisibility = visibilities?.find((t) => t.type === ItemVisibilityType.Public);
+  if (pVisibility) {
+    expect(newItem!.public!.type).toEqual(pVisibility.type);
+    expect(newItem!.public!.id).toEqual(pVisibility.id);
+    expect(newItem!.public!.itemPath).toEqual(pVisibility.itemPath);
+  }
+  const hVisibility = visibilities?.find((t) => t.type === ItemVisibilityType.Hidden);
+  if (hVisibility) {
+    expect(newItem!.hidden!.type).toEqual(hVisibility.type);
+    expect(newItem!.hidden!.id).toEqual(hVisibility.id);
+    expect(newItem!.hidden!.itemPath).toEqual(hVisibility.itemPath);
+  }
+};
+
 describe('filterOutPackedDescendants', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('Admin returns all', async () => {
@@ -72,10 +102,10 @@ describe('filterOutPackedDescendants', () => {
 
     const repositories = {
       itemMembershipRepository: {
-        getAllBelow: jest.fn(async () => memberships),
+        getAllBelow: vi.fn(async () => memberships),
       } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
+        getManyBelowAndSelf: vi.fn(async () => [hiddenVisibility]),
       } as unknown as ItemVisibilityRepository,
     };
 
@@ -102,10 +132,10 @@ describe('filterOutPackedDescendants', () => {
 
     const repositories = {
       itemMembershipRepository: {
-        getAllBelow: jest.fn(async () => memberships),
+        getAllBelow: vi.fn(async () => memberships),
       } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
+        getManyBelowAndSelf: vi.fn(async () => [hiddenVisibility]),
       } as unknown as ItemVisibilityRepository,
     };
 
@@ -132,10 +162,10 @@ describe('filterOutPackedDescendants', () => {
 
     const repositories = {
       itemMembershipRepository: {
-        getAllBelow: jest.fn(async () => memberships),
+        getAllBelow: vi.fn(async () => memberships),
       } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
+        getManyBelowAndSelf: vi.fn(async () => [hiddenVisibility]),
       } as unknown as ItemVisibilityRepository,
     };
 
@@ -161,10 +191,10 @@ describe('filterOutPackedDescendants', () => {
 
     const repositories = {
       itemMembershipRepository: {
-        getAllBelow: jest.fn(async () => []),
+        getAllBelow: vi.fn(async () => []),
       } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
+        getManyBelowAndSelf: vi.fn(async () => [hiddenVisibility]),
       } as unknown as ItemVisibilityRepository,
     };
 

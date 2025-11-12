@@ -267,7 +267,7 @@ describe('Etherpad service API', () => {
   describe('view a pad', () => {
     const payloadView = (mode: 'read' | 'write', itemId: string) => ({
       method: HttpMethod.Get,
-      url: `items/etherpad/view/${itemId}`,
+      url: `/api/items/etherpad/view/${itemId}`,
       query: {
         mode,
       },

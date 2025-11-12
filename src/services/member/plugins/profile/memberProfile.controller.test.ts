@@ -53,7 +53,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -70,7 +70,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -88,7 +88,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -103,7 +103,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -114,7 +114,7 @@ describe('Profile Member routes tests', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -132,7 +132,7 @@ describe('Profile Member routes tests', () => {
       };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
         payload,
       });
 
@@ -155,7 +155,7 @@ describe('Profile Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
+          url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
           payload,
         });
 
@@ -208,7 +208,7 @@ describe('Profile Member routes tests', () => {
       const memberId = member.id;
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
       expect(response.json()).toBeNull();
@@ -223,7 +223,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${member.id}`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/${member.id}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
 
@@ -240,7 +240,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${member.id}`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}/${member.id}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
 
@@ -253,7 +253,7 @@ describe('Profile Member routes tests', () => {
       const payload = { bio: 'Random Bio' };
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
+        url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
         payload,
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -267,7 +267,7 @@ describe('Profile Member routes tests', () => {
         const payload = { bio: 'Random Bio' };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
+          url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
           payload,
         });
 

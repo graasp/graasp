@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { TagCategory, type TagCategoryType, TagFactory } from '@graasp/sdk';
 

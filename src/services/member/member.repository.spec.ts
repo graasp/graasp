@@ -1,4 +1,5 @@
 import { v4 } from 'uuid';
+import { describe, expect, it } from 'vitest';
 
 import { EmailFrequency } from '@graasp/sdk';
 
