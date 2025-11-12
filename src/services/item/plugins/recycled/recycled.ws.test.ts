@@ -32,8 +32,8 @@ describe('Recycle websocket hooks', () => {
 
   afterAll(async () => {
     await clearDatabase(db);
-    app.close();
     ws.close();
+    await app.close();
   });
 
   afterEach(() => {

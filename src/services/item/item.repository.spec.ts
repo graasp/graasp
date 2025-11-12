@@ -3,6 +3,7 @@
 import { faker } from '@faker-js/faker/locale/en';
 import { eq, inArray } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   ItemType,
@@ -31,7 +32,7 @@ import { MemberDTO } from '../member/types';
 import { DEFAULT_ORDER } from './constants';
 import type { FolderItem } from './discrimination';
 import { ItemRepository } from './item.repository';
-import { expectItem, expectManyItems } from './test/fixtures/items';
+import { expectItem, expectManyItems } from './test/fixtures/items.vitest';
 
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 
@@ -1303,7 +1304,7 @@ describe('Item Repository', () => {
     //   } = await seedFromJson({
     //     items: [{}],
     //   });
-    //   // const updateFn = jest.spyOn(itemRawRepository, 'update');
+    //   // const updateFn = vi.spyOn(itemRawRepository, 'update');
     //   await itemRepository.rescaleOrder(db, actor, parentItem);
     //   // expect(updateFn).not.toHaveBeenCalled();
     // });
@@ -1398,7 +1399,7 @@ describe('Item Repository', () => {
       let updateMock;
       try {
         await db.transaction(async (tx) => {
-          updateMock = jest.spyOn(tx, 'update').mockImplementationOnce(() => {
+          updateMock = vi.spyOn(tx, 'update').mockImplementationOnce(() => {
             throw new Error('mock update error');
           });
 

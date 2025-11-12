@@ -240,7 +240,7 @@ describe('Recycle Bin Tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/recycle?id=${item.id}`,
+          url: `/api/items/recycle?id=${item.id}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -551,7 +551,7 @@ describe('Recycle Bin Tests', () => {
 
       const recycle = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/recycle?id=${parentItem.id}`,
+        url: `/api/items/recycle?id=${parentItem.id}`,
       });
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -570,7 +570,7 @@ describe('Recycle Bin Tests', () => {
 
       const restore = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/restore?id=${parentItem.id}`,
+        url: `/api/items/restore?id=${parentItem.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 

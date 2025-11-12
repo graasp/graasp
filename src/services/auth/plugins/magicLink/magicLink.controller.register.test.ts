@@ -6,7 +6,14 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MAX_USERNAME_LENGTH, MemberFactory, RecaptchaAction } from '@graasp/sdk';
+import {
+  AccountType,
+  DEFAULT_LANG,
+  HttpMethod,
+  MAX_USERNAME_LENGTH,
+  MemberFactory,
+  RecaptchaAction,
+} from '@graasp/sdk';
 
 import build, { MOCK_CAPTCHA, clearDatabase, unmockAuthenticate } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
@@ -17,7 +24,6 @@ import { accountsTable, invitationsTable, itemMembershipsTable } from '../../../
 import type { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
-import { expectMember } from '../../../member/test/fixtures/members';
 
 jest.mock('node-fetch');
 (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
@@ -29,6 +35,19 @@ const getMemberByEmail = async (lowercaseEmail: string) => {
   return (await db.query.accountsTable.findFirst({
     where: eq(accountsTable.email, lowercaseEmail),
   })) as MemberRaw | undefined;
+};
+
+const expectMember = (
+  m: MemberRaw | undefined | null,
+  expectation: Partial<Pick<MemberRaw, 'type' | 'extra'>> & Pick<MemberRaw, 'name' | 'email'>,
+) => {
+  if (!m) {
+    throw 'member does not exist';
+  }
+  expect(m.name).toEqual(expectation.name);
+  expect(m.email).toEqual(expectation.email);
+  expect(m.type).toEqual(expectation.type ?? AccountType.Individual);
+  expect(m.extra).toEqual(expectation.extra ?? { lang: DEFAULT_LANG });
 };
 
 describe('POST /register', () => {

@@ -141,7 +141,7 @@ describe('App Item tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/apps/${item.id}`,
+        url: `/api/items/apps/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -174,7 +174,7 @@ describe('App Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/apps/${item.id}`,
+          url: `/api/items/apps/${item.id}`,
           payload,
         });
 

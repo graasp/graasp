@@ -43,7 +43,7 @@ describe('Item Tag Endpoints', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/invalid/tags`,
+        url: `/api/items/invalid/tags`,
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
@@ -64,7 +64,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json()).toEqual(expect.arrayContaining(tags));
@@ -83,7 +83,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -109,7 +109,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -128,7 +128,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -147,7 +147,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -159,7 +159,7 @@ describe('Item Tag Endpoints', () => {
     it('Throw for invalid item id', async () => {
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/invalid/tags`,
+        url: `/api/items/invalid/tags`,
         payload: { name: 'name', category: TagCategory.Discipline },
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -173,7 +173,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
           payload: { name: 'name', category: TagCategory.Discipline },
         });
         expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -198,7 +198,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
           payload: { name: 'name', category: TagCategory.Discipline },
         });
 
@@ -222,7 +222,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
           payload: { name: 'name', category: 'wrong' },
         });
 
@@ -245,7 +245,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/tags`,
+          url: `/api/items/${item.id}/tags`,
           payload: { name: 'name', category: TagCategory.Discipline },
         });
 
@@ -258,14 +258,14 @@ describe('Item Tag Endpoints', () => {
       it('Throw for invalid item id', async () => {
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/invalid/tags/${v4()}`,
+          url: `/api/items/invalid/tags/${v4()}`,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Throw for invalid tag id', async () => {
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${v4()}/tags/invalid}`,
+          url: `/api/items/${v4()}/tags/invalid}`,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -275,7 +275,7 @@ describe('Item Tag Endpoints', () => {
       it('Throw if signed out', async () => {
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${v4()}/tags/${v4()}`,
+          url: `/api/items/${v4()}/tags/${v4()}`,
         });
         expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       });
@@ -300,7 +300,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/tags/${tag.id}`,
+          url: `/api/items/${item.id}/tags/${tag.id}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -324,7 +324,7 @@ describe('Item Tag Endpoints', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/tags/${tag.id}`,
+          url: `/api/items/${item.id}/tags/${tag.id}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);

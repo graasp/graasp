@@ -1,5 +1,6 @@
 import { EnqueuedTask } from 'meilisearch';
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { TagFactory } from '@graasp/sdk';
 
@@ -13,22 +14,22 @@ import { ItemRepository } from '../../item.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemTagRepository } from './ItemTag.repository';
+import { ItemTagRepository } from './itemTag.repository';
 import { ItemTagService } from './itemTag.service';
 
 const meilisearchWrapper = {
-  indexOne: jest.fn() as MeiliSearchWrapper['indexOne'],
+  indexOne: vi.fn() as MeiliSearchWrapper['indexOne'],
 } as MeiliSearchWrapper;
 
 const itemTagRepository = {
-  create: jest.fn() as ItemTagRepository['create'],
-  delete: jest.fn() as ItemTagRepository['delete'],
+  create: vi.fn() as ItemTagRepository['create'],
+  delete: vi.fn() as ItemTagRepository['delete'],
 } as ItemTagRepository;
 const tagRepository = {
-  addOneIfDoesNotExist: jest.fn(async () => TagFactory() as TagRaw),
+  addOneIfDoesNotExist: vi.fn(async () => TagFactory() as TagRaw),
 } as unknown as TagRepository;
 const itemPublishedRepository = {
-  getForItem: jest.fn() as ItemPublishedRepository['getForItem'],
+  getForItem: vi.fn() as ItemPublishedRepository['getForItem'],
 } as ItemPublishedRepository;
 const authorizedItemService = new AuthorizedItemService(
   new ItemMembershipRepository(),
@@ -46,15 +47,15 @@ const itemTagService = new ItemTagService(
 
 describe('Item Tag create', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('does not index item if it is not published', async () => {
-    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
-    jest.spyOn(itemTagRepository, 'create').mockResolvedValue();
-    const indexOneMock = jest
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
+    vi.spyOn(itemTagRepository, 'create').mockResolvedValue();
+    const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')
       .mockResolvedValue({} as unknown as EnqueuedTask);
-    jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
+    vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
 
     await itemTagService.create(db, {} as MinimalMember, v4(), TagFactory());
 
@@ -62,14 +63,14 @@ describe('Item Tag create', () => {
   });
 
   it('index item if it is published', async () => {
-    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
-    jest.spyOn(itemTagRepository, 'create').mockResolvedValue();
-    const indexOneMock = jest
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
+    vi.spyOn(itemTagRepository, 'create').mockResolvedValue();
+    const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')
       .mockResolvedValue({} as unknown as EnqueuedTask);
-    jest
-      .spyOn(itemPublishedRepository, 'getForItem')
-      .mockResolvedValue({} as ItemPublishedWithItemWithCreator);
+    vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(
+      {} as ItemPublishedWithItemWithCreator,
+    );
 
     await itemTagService.create(db, {} as MinimalMember, v4(), TagFactory());
 
@@ -79,15 +80,15 @@ describe('Item Tag create', () => {
 
 describe('Item Tag delete', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('does not index item if it is not published', async () => {
-    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
-    jest.spyOn(itemTagRepository, 'delete').mockResolvedValue();
-    const indexOneMock = jest
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
+    vi.spyOn(itemTagRepository, 'delete').mockResolvedValue();
+    const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')
       .mockResolvedValue({} as unknown as EnqueuedTask);
-    jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
+    vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
 
     await itemTagService.delete(db, {} as MinimalMember, v4(), v4());
 
@@ -95,14 +96,14 @@ describe('Item Tag delete', () => {
   });
 
   it('index item if it is published', async () => {
-    jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
-    jest.spyOn(itemTagRepository, 'delete').mockResolvedValue();
-    const indexOneMock = jest
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemRaw);
+    vi.spyOn(itemTagRepository, 'delete').mockResolvedValue();
+    const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')
       .mockResolvedValue({} as unknown as EnqueuedTask);
-    jest
-      .spyOn(itemPublishedRepository, 'getForItem')
-      .mockResolvedValue({} as ItemPublishedWithItemWithCreator);
+    vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(
+      {} as ItemPublishedWithItemWithCreator,
+    );
 
     await itemTagService.delete(db, {} as MinimalMember, v4(), v4());
 

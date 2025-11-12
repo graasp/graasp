@@ -1,6 +1,7 @@
+import { describe, expect, it } from 'vitest';
+
 import { PermissionLevel } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { assertIsDefined } from '../../utils/assertions';
@@ -10,11 +11,6 @@ import { ItemMembershipRepository } from './membership.repository';
 const itemMembershipRepository = new ItemMembershipRepository();
 
 describe('ItemMembership Repository', () => {
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(db);
-  });
-
   describe('getAdminsForItem', () => {
     it('should return empty array when there is no corresponding permission', async () => {
       const {

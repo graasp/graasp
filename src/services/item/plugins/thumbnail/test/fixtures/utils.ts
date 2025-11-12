@@ -1,3 +1,5 @@
+import { expect } from 'vitest';
+
 import type { ThumbnailSizeType } from '@graasp/sdk';
 
 import type { ItemsThumbnails } from '../../types';

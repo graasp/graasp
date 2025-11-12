@@ -1,4 +1,5 @@
 import { describe } from 'node:test';
+import { expect, it, vi } from 'vitest';
 
 import { ItemVisibilityType } from '@graasp/sdk';
 
@@ -63,9 +64,9 @@ describe('ItemWrapperService', () => {
       assertIsMemberForTest(actor);
 
       const itemVisibilityRepository = {
-        getForManyItems: jest.fn(),
+        getForManyItems: vi.fn(),
       } as unknown as ItemVisibilityRepository;
-      jest.spyOn(itemVisibilityRepository, 'getForManyItems').mockImplementation(async () => ({
+      vi.spyOn(itemVisibilityRepository, 'getForManyItems').mockImplementation(async () => ({
         data: {
           [items[0].id]: [itemVisibilities[0]],
           [items[1].id]: [itemVisibilities[1]],
@@ -78,14 +79,14 @@ describe('ItemWrapperService', () => {
         errors: [],
       } as any;
       const itemMembershipRepository = {
-        getForManyItems: jest.fn(),
+        getForManyItems: vi.fn(),
       } as unknown as ItemMembershipRepository;
-      jest
-        .spyOn(itemMembershipRepository, 'getForManyItems')
-        .mockImplementation(async () => resultOfMemberships);
+      vi.spyOn(itemMembershipRepository, 'getForManyItems').mockImplementation(
+        async () => resultOfMemberships,
+      );
 
-      const itemThumbnailService = { getUrlsByItems: jest.fn() } as unknown as ItemThumbnailService;
-      jest.spyOn(itemThumbnailService, 'getUrlsByItems').mockImplementation(async () => ({}));
+      const itemThumbnailService = { getUrlsByItems: vi.fn() } as unknown as ItemThumbnailService;
+      vi.spyOn(itemThumbnailService, 'getUrlsByItems').mockImplementation(async () => ({}));
 
       const packedItems = await new ItemWrapperService(
         itemVisibilityRepository,

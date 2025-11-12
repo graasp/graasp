@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { ItemFactory } from '../../../test/factories/item.factory';
 import type { FolderItem } from './discrimination';
 import { sortChildrenForTreeWith } from './utils';

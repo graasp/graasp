@@ -1,8 +1,9 @@
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ItemType } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
@@ -45,7 +46,7 @@ const shortcutService = new ShortcutItemService(
 
 describe('Shortcut Service', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('postWithOptions', () => {
@@ -107,7 +108,7 @@ describe('Shortcut Service', () => {
     //   });
     // });
     it('throw if target does not exist', async () => {
-      jest.spyOn(AuthorizedItemService.prototype, 'getItemById').mockRejectedValue(new Error());
+      vi.spyOn(AuthorizedItemService.prototype, 'getItemById').mockRejectedValue(new Error());
 
       await expect(() =>
         shortcutService.postWithOptions(db, MOCK_MEMBER, {
@@ -138,7 +139,7 @@ describe('Shortcut Service', () => {
     // });
 
     it('Cannot update not found item given id', async () => {
-      jest.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
+      vi.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
         throw new Error();
       });
 

@@ -39,3 +39,20 @@ export const expectItem = (
     }
   }
 };
+
+export const expectManyItems = (
+  items: ItemRaw[],
+  correctItems: Partial<
+    Pick<ItemRaw, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
+  >[],
+  creator?: MinimalMember,
+  parent?: ItemRaw,
+) => {
+  expect(items).toHaveLength(correctItems.length);
+
+  items.forEach(({ id }) => {
+    const item = items.find(({ id: thisId }) => thisId === id);
+    const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
+    expectItem(item, correctItem, creator, parent);
+  });
+};

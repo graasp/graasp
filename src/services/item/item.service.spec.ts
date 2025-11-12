@@ -1,5 +1,6 @@
 // TODO
 // import { Readable } from 'node:stream';
+import { expect, it } from 'vitest';
 
 // import { ItemGeolocation, ItemType, ItemVisibilityType } from '@graasp/sdk';
 

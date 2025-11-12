@@ -80,7 +80,7 @@ describe('Item routes tests', () => {
 
     const response = await app.inject({
       method: HttpMethod.Get,
-      url: `/items/${childOfChild.id}/parents`,
+      url: `/api/items/${childOfChild.id}/parents`,
     });
 
     expect(response.json()[1]).not.toHaveProperty('thumbnails');

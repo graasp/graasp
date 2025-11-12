@@ -158,7 +158,7 @@ describe('Shortcut routes tests', () => {
         const parentId = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/shortcuts?parentId=${parentId}`,
+          url: `/api/items/shortcuts?parentId=${parentId}`,
           payload,
         });
 
@@ -173,7 +173,7 @@ describe('Shortcut routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/shortcuts`,
+          url: `/api/items/shortcuts`,
           payload: { target: 'target' },
         });
 
@@ -191,7 +191,7 @@ describe('Shortcut routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/shortcuts/${item.id}`,
+        url: `/api/items/shortcuts/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -222,7 +222,7 @@ describe('Shortcut routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/shortcuts/${item.id}`,
+          url: `/api/items/shortcuts/${item.id}`,
           payload,
         });
 
@@ -259,7 +259,7 @@ describe('Shortcut routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/shortcuts/${item.id}`,
+          url: `/api/items/shortcuts/${item.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -312,7 +312,7 @@ describe('Shortcut routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/shortcuts/${shortcut.id}`,
+          url: `/api/items/shortcuts/${shortcut.id}`,
           payload,
         });
 
@@ -343,7 +343,7 @@ describe('Shortcut routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/shortcuts/${shortcut.id}`,
+          url: `/api/items/shortcuts/${shortcut.id}`,
           payload,
         });
 
