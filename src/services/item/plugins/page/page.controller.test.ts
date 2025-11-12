@@ -43,7 +43,7 @@ async function getAppPort(app: FastifyInstance) {
 async function expectServerToBeResponsive(app: FastifyInstance) {
   const result = await app.inject({
     method: 'GET',
-    url: '/api/version',
+    url: '/health',
   });
   expect(result.statusCode).toEqual(StatusCodes.OK);
 }
@@ -59,8 +59,8 @@ async function connectToItemWs(
   // connect to ws with yjs specific websocket provider
   const doc = new Doc();
   const provider = new WebsocketProvider(
-    `ws://localhost:${port}`,
-    `/api/items/pages/${itemId}/ws${readOnly ? '/read' : ''}`,
+    `ws://localhost:${port}/api`,
+    `items/pages/${itemId}/ws${readOnly ? '/read' : ''}`,
     doc,
     {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -89,7 +89,7 @@ describe('Page routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe('POST /api/items/pages', () => {
+  describe('POST /items/pages', () => {
     it('Throws if signed out', async () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
@@ -125,7 +125,7 @@ describe('Page routes tests', () => {
     });
   });
 
-  describe('GET /api/items/pages/ws', () => {
+  describe('GET /items/pages/ws', () => {
     it('Throw if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -430,7 +430,7 @@ describe('Page routes tests', () => {
     });
   });
 
-  describe('GET /api/items/pages/ws/read', () => {
+  describe('GET /items/pages/ws/read', () => {
     it('Throws if id is incorrect', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
