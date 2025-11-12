@@ -1,8 +1,9 @@
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AppItemFactory, FolderItemFactory, ItemType } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -50,12 +51,12 @@ const MOCK_MEMBER = MemberFactory();
 
 describe('App Service', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('postWithOptions', () => {
     it('set correct default values for type, extra and settings', async () => {
-      const itemServicePostMock = jest
+      const itemServicePostMock = vi
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
           return {} as ItemRaw;
@@ -83,7 +84,7 @@ describe('App Service', () => {
       });
     });
     it('set defined values', async () => {
-      const itemServicePostMock = jest
+      const itemServicePostMock = vi
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
           return {} as ItemRaw;
@@ -127,9 +128,9 @@ describe('App Service', () => {
       ).rejects.toThrow();
     });
     it('patch item settings', async () => {
-      jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(MOCK_ITEM);
+      vi.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(MOCK_ITEM);
 
-      const itemServicePatchMock = jest
+      const itemServicePatchMock = vi
         .spyOn(ItemService.prototype, 'patch')
         .mockImplementation(async () => {
           return MOCK_ITEM;
@@ -148,7 +149,7 @@ describe('App Service', () => {
       });
     });
     it('patch many properties without changing url', async () => {
-      const itemServicePatchMock = jest
+      const itemServicePatchMock = vi
         .spyOn(ItemService.prototype, 'patch')
         .mockImplementation(async () => {
           return MOCK_ITEM;
@@ -172,7 +173,7 @@ describe('App Service', () => {
     });
 
     it('Cannot update not found item given id', async () => {
-      jest.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
+      vi.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
         throw new Error();
       });
 

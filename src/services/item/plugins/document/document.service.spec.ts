@@ -1,4 +1,5 @@
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   DocumentItemExtraFlavor,
@@ -7,7 +8,7 @@ import {
   ItemType,
 } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { db } from '../../../../drizzle/db';
 import type { ItemRaw } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
@@ -52,12 +53,12 @@ const documentService = new DocumentItemService(
 
 describe('Document Service', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('postWithOptions', () => {
     it('set correct default values for type and extra', async () => {
-      const itemServicePostMock = jest
+      const itemServicePostMock = vi
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
           return {} as ItemRaw;
@@ -85,7 +86,7 @@ describe('Document Service', () => {
       });
     });
     it('sanitize content', async () => {
-      const itemServicePostMock = jest
+      const itemServicePostMock = vi
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
           return {} as ItemRaw;
@@ -113,7 +114,7 @@ describe('Document Service', () => {
       });
     });
     it('set defined values', async () => {
-      const itemServicePostMock = jest
+      const itemServicePostMock = vi
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
           return {} as ItemRaw;
@@ -161,7 +162,7 @@ describe('Document Service', () => {
       ).rejects.toThrow();
     });
     it('sanitize content', async () => {
-      const itemServicePatchMock = jest
+      const itemServicePatchMock = vi
         .spyOn(ItemService.prototype, 'patch')
         .mockImplementation(async () => {
           return MOCK_ITEM;
@@ -188,7 +189,7 @@ describe('Document Service', () => {
       });
     });
     it('patch many properties', async () => {
-      const itemServicePatchMock = jest
+      const itemServicePatchMock = vi
         .spyOn(ItemService.prototype, 'patch')
         .mockImplementation(async () => {
           return MOCK_ITEM;
@@ -222,7 +223,7 @@ describe('Document Service', () => {
     });
 
     it('Cannot update not found item given id', async () => {
-      jest.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
+      vi.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
         throw new Error();
       });
 

@@ -1,10 +1,10 @@
-import { expect, jest } from '@jest/globals';
 import { EnqueuedTask, Index, MeiliSearch, Task, TaskStatus } from 'meilisearch';
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { type IndexItem } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../test/app';
+import { MOCK_LOGGER } from '../../test/app.vitest';
 import { ItemFactory } from '../../test/factories/item.factory';
 import { db } from '../drizzle/db';
 import { ItemPublishedWithItemWithCreator } from '../drizzle/types';
@@ -34,25 +34,25 @@ const mockItemPublished = ({
 
 const mockIndex = {
   uid: ACTIVE_INDEX,
-  addDocuments: jest.fn(() => {
+  addDocuments: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  waitForTask: jest.fn(() => {
+  waitForTask: vi.fn(() => {
     return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
   }),
-  waitForTasks: jest.fn(() => {
+  waitForTasks: vi.fn(() => {
     return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
   }),
-  deleteDocuments: jest.fn(() => {
+  deleteDocuments: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  deleteAllDocuments: jest.fn(() => {
+  deleteAllDocuments: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  updateSettings: jest.fn(() => {
+  updateSettings: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-} as unknown as jest.Mocked<Index<IndexItem>>;
+} as unknown as Index<IndexItem>;
 
 const fakeClient = new MeiliSearch({
   host: 'fake',
@@ -60,30 +60,28 @@ const fakeClient = new MeiliSearch({
   httpClient: () => Promise.resolve(),
 });
 
-jest.spyOn(fakeClient, 'getIndex').mockResolvedValue(mockIndex);
-jest.spyOn(fakeClient, 'index').mockReturnValue({
-  updateFaceting: jest.fn(async () => {
+vi.spyOn(fakeClient, 'getIndex').mockResolvedValue(mockIndex);
+vi.spyOn(fakeClient, 'index').mockReturnValue({
+  updateFaceting: vi.fn(async () => {
     return { taskUid: '1' } as unknown as EnqueuedTask;
   }),
-  updateSettings: jest.fn(() => {
+  updateSettings: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  waitForTask: jest.fn(() => {
+  waitForTask: vi.fn(() => {
     return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
   }),
 } as never);
-jest
-  .spyOn(fakeClient, 'swapIndexes')
-  .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
-jest
-  .spyOn(fakeClient, 'waitForTask')
-  .mockResolvedValue({ status: TaskStatus.TASK_SUCCEEDED } as Task);
+vi.spyOn(fakeClient, 'swapIndexes').mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
+vi.spyOn(fakeClient, 'waitForTask').mockResolvedValue({
+  status: TaskStatus.TASK_SUCCEEDED,
+} as Task);
 
-jest.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as never));
+vi.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as never));
 
 const itemPublishedRepository = new ItemPublishedRepository();
 const meilisearchWrapper = {
-  index: jest.fn(),
+  index: vi.fn(),
 } as unknown as MeiliSearchWrapper;
 
 const meilisearch = new SearchIndexService(
@@ -95,19 +93,18 @@ const meilisearch = new SearchIndexService(
 
 describe('SearchIndexService', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('builds index', () => {
     it('index all items', async () => {
-      jest.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [mockIndex], total: 1 });
-      jest.spyOn(fakeClient, 'createIndex').mockResolvedValue({ taskUid: 1 } as EnqueuedTask);
+      vi.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [mockIndex], total: 1 });
+      vi.spyOn(fakeClient, 'createIndex').mockResolvedValue({ taskUid: 1 } as EnqueuedTask);
       const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
         return mockItemPublished({ id: index.toString(), path: index.toString() });
       });
-      jest
-        .spyOn(itemPublishedRepository, 'getPaginatedItems')
-        .mockImplementation(async (_db, page, _) => {
+      vi.spyOn(itemPublishedRepository, 'getPaginatedItems').mockImplementation(
+        async (_db, page, _) => {
           if (page === 1) {
             return [publishedItemsInDb.slice(0, 10), publishedItemsInDb.length];
           } else if (page === 2) {
@@ -115,8 +112,9 @@ describe('SearchIndexService', () => {
           } else {
             throw new Error();
           }
-        });
-      const indexSpy = jest
+        },
+      );
+      const indexSpy = vi
         .spyOn(meilisearchWrapper, 'index')
         .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
 
@@ -129,15 +127,14 @@ describe('SearchIndexService', () => {
     it('index all items when active index does not exist', async () => {
       // throw error when getting active index
       // should create index and start indexing
-      jest.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [], total: 0 });
-      jest.spyOn(fakeClient, 'createIndex').mockResolvedValue({ taskUid: 1 } as EnqueuedTask);
+      vi.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [], total: 0 });
+      vi.spyOn(fakeClient, 'createIndex').mockResolvedValue({ taskUid: 1 } as EnqueuedTask);
 
       const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
         return mockItemPublished({ id: index.toString(), path: index.toString() });
       });
-      jest
-        .spyOn(itemPublishedRepository, 'getPaginatedItems')
-        .mockImplementation(async (_db, page, _) => {
+      vi.spyOn(itemPublishedRepository, 'getPaginatedItems').mockImplementation(
+        async (_db, page, _) => {
           if (page === 1) {
             return [publishedItemsInDb.slice(0, 10), publishedItemsInDb.length];
           } else if (page === 2) {
@@ -145,8 +142,9 @@ describe('SearchIndexService', () => {
           } else {
             throw new Error();
           }
-        });
-      const indexSpy = jest
+        },
+      );
+      const indexSpy = vi
         .spyOn(meilisearchWrapper, 'index')
         .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
 
@@ -158,7 +156,7 @@ describe('SearchIndexService', () => {
     });
     it('throw for unexpected error on getting index', async () => {
       const error = new Error('some error');
-      jest.spyOn(fakeClient, 'getIndex').mockRejectedValue(error);
+      vi.spyOn(fakeClient, 'getIndex').mockRejectedValue(error);
 
       await expect(meilisearch.buildIndex({ pageSize: 10 })).rejects.toThrow(error);
     });

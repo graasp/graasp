@@ -1,3 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { ItemVisibilityType, PermissionLevel, type PermissionLevelOptions } from '@graasp/sdk';
 
 import { ItemFactory } from '../../test/factories/item.factory';
@@ -37,16 +39,16 @@ const authorizationService = new AuthorizedItemService(
 
 describe('getPropertiesForItems for one item', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('Invalid saved membership', async () => {
-    jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+    vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
       data: { [ITEM.id]: [] },
       errors: [],
     });
 
-    jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockResolvedValue({
+    vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockResolvedValue({
       data: {
         [ITEM.id]: { permission: 'anything' } as unknown as ItemMembershipWithItemAndAccount,
       },
@@ -69,12 +71,12 @@ describe('getPropertiesForItems for one item', () => {
       { permission: PermissionLevel.Write, rejects: MemberCannotAccess },
       { permission: PermissionLevel.Admin, rejects: MemberCannotAccess },
     ])('request $permission should return error', async ({ permission, rejects }) => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: {}, errors: [] };
       });
       expect(
@@ -91,12 +93,12 @@ describe('getPropertiesForItems for one item', () => {
 
   describe('private item shared with read permission', () => {
     beforeEach(() => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: readMembership }, errors: [] };
       });
     });
@@ -131,12 +133,12 @@ describe('getPropertiesForItems for one item', () => {
 
   describe('private item shared with write permission', () => {
     beforeEach(() => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: writeMembership }, errors: [] };
       });
     });
@@ -174,12 +176,12 @@ describe('getPropertiesForItems for one item', () => {
     it.each([PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin])(
       'request %s should return',
       async (permission) => {
-        jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+        vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
           data: { [ITEM.id]: [] },
           errors: [],
         });
 
-        jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+        vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
           return { data: { [ITEM.id]: adminMembership }, errors: [] };
         });
         expect(
@@ -197,12 +199,12 @@ describe('getPropertiesForItems for one item', () => {
 
   describe('public item shared without permission', () => {
     beforeEach(() => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [publicVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: {}, errors: [] };
       });
     });
@@ -235,12 +237,12 @@ describe('getPropertiesForItems for one item', () => {
 
   describe('public item shared with read permission', () => {
     beforeEach(() => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [publicVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: readMembership }, errors: [] };
       });
     });
@@ -273,12 +275,12 @@ describe('getPropertiesForItems for one item', () => {
 
   describe('public item shared with write permission', () => {
     beforeEach(() => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [publicVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: writeMembership }, errors: [] };
       });
     });
@@ -316,12 +318,12 @@ describe('getPropertiesForItems for one item', () => {
     it.each([PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin])(
       'request %s should return',
       async (permission) => {
-        jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+        vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
           data: { [ITEM.id]: [publicVisibility] },
           errors: [],
         });
 
-        jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+        vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
           return { data: { [ITEM.id]: adminMembership }, errors: [] };
         });
         expect(
@@ -343,12 +345,12 @@ describe('getPropertiesForItems for one item', () => {
       { permission: PermissionLevel.Write, rejects: MemberCannotAccess },
       { permission: PermissionLevel.Admin, rejects: MemberCannotAccess },
     ])('request $permission should return error', async ({ permission, rejects }) => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [hiddenVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: {}, errors: [] };
       });
       expect(
@@ -369,12 +371,12 @@ describe('getPropertiesForItems for one item', () => {
       { permission: PermissionLevel.Write, rejects: MemberCannotAccess },
       { permission: PermissionLevel.Admin, rejects: MemberCannotAccess },
     ])('request $permission should return error', async ({ permission, rejects }) => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [hiddenVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: readMembership }, errors: [] };
       });
       expect(
@@ -391,12 +393,12 @@ describe('getPropertiesForItems for one item', () => {
 
   describe('hidden item shared with write permission', () => {
     beforeEach(() => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [hiddenVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: writeMembership }, errors: [] };
       });
     });
@@ -434,12 +436,12 @@ describe('getPropertiesForItems for one item', () => {
     it.each([PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin])(
       'request %s should return',
       async (permission) => {
-        jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+        vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
           data: { [ITEM.id]: [hiddenVisibility] },
           errors: [],
         });
 
-        jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+        vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
           return { data: { [ITEM.id]: adminMembership }, errors: [] };
         });
         expect(
@@ -461,12 +463,12 @@ describe('getPropertiesForItems for one item', () => {
       { permission: PermissionLevel.Write, rejects: MemberCannotAccess },
       { permission: PermissionLevel.Admin, rejects: MemberCannotAccess },
     ])('request $permission should return error', async ({ permission, rejects }) => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [publicVisibility, hiddenVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: {}, errors: [] };
       });
       expect(
@@ -487,12 +489,12 @@ describe('getPropertiesForItems for one item', () => {
       { permission: PermissionLevel.Write, rejects: MemberCannotAccess },
       { permission: PermissionLevel.Admin, rejects: MemberCannotAccess },
     ])('request $permission should return error', async ({ permission, rejects }) => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [publicVisibility, hiddenVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: readMembership }, errors: [] };
       });
       expect(
@@ -509,12 +511,12 @@ describe('getPropertiesForItems for one item', () => {
 
   describe('public and hidden item shared with write permission', () => {
     beforeEach(() => {
-      jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+      vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
         data: { [ITEM.id]: [publicVisibility, hiddenVisibility] },
         errors: [],
       });
 
-      jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+      vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
         return { data: { [ITEM.id]: writeMembership }, errors: [] };
       });
     });
@@ -552,12 +554,12 @@ describe('getPropertiesForItems for one item', () => {
     it.each([PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin])(
       'request %s should return',
       async (permission) => {
-        jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+        vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
           data: { [ITEM.id]: [publicVisibility, hiddenVisibility] },
           errors: [],
         });
 
-        jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
+        vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(async () => {
           return { data: { [ITEM.id]: adminMembership }, errors: [] };
         });
         expect(
@@ -581,11 +583,11 @@ describe('getPropertiesForItems for many items', () => {
   const sharedMembership = buildSharedMembership(PermissionLevel.Write, SHARED_ITEM);
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('Public item & Shared write item', async () => {
-    jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockImplementation(async () => ({
+    vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockImplementation(async () => ({
       data: {
         [PUBLIC_ITEM.id]: [ItemVisibilityFactory({ type: ItemVisibilityType.Public, item: ITEM })],
         [SHARED_ITEM.id]: [],
@@ -593,12 +595,12 @@ describe('getPropertiesForItems for many items', () => {
       errors: [],
     }));
 
-    jest
-      .spyOn(itemMembershipRepository, 'getInheritedMany')
-      .mockImplementation(async (_db, _items, _memberId) => ({
+    vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockImplementation(
+      async (_db, _items, _memberId) => ({
         data: { [SHARED_ITEM.id]: sharedMembership },
         errors: [],
-      }));
+      }),
+    );
     // shared member can read both items
     const { itemMemberships: result } = await authorizationService.getPropertiesForItems(MOCK_DB, {
       permission: PermissionLevel.Read,
@@ -632,15 +634,15 @@ describe('getPropertiesForItems for many items', () => {
 
 describe('getPropertiesForItems for no items', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
   it('Should return empty data', async () => {
-    jest.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
+    vi.spyOn(itemVisibilityRepository, 'getManyForMany').mockResolvedValue({
       data: { [ITEM.id]: [] },
       errors: [],
     });
 
-    jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockResolvedValue({
+    vi.spyOn(itemMembershipRepository, 'getInheritedMany').mockResolvedValue({
       data: {},
       errors: [],
     });

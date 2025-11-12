@@ -1,4 +1,5 @@
-import { clearDatabase } from '../../../../../test/app';
+import { afterEach, describe, it, vi } from 'vitest';
+
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -38,14 +39,8 @@ describe('DataMember Export', () => {
   // });
 
   afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(db);
+    vi.clearAllMocks();
   });
-
-  // afterAll(async () => {
-  //   await clearDatabase(db);
-  //   app.close();
-  // });
 
   describe('Actions', () => {
     it('get all Actions for the member', async () => {

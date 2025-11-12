@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { eq } from 'drizzle-orm';
+import { describe, expect, it } from 'vitest';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';

@@ -1,3 +1,5 @@
+import { expect, it } from 'vitest';
+
 // import build, { MOCK_LOGGER, clearDatabase } from '../../../../../../test/app';
 // import { resolveDependency } from '../../../../../di/utils';
 // import { asDefined } from '../../../../../utils/assertions';

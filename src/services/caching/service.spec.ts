@@ -1,14 +1,13 @@
 import { faker } from '@faker-js/faker';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import type { FastifyInstance } from 'fastify';
-
-import build from '../../../test/app';
+import { MOCK_LOGGER } from '../../../test/app.vitest';
 import { FILE_SERVICE_URLS_CACHING_DI_KEY } from '../../di/constants';
+import { registerDependencies } from '../../di/container';
 import { resolveDependency } from '../../di/utils';
 import { CachingService } from './service';
 
 describe('CachingService Tests', () => {
-  let app: FastifyInstance;
   let cache: CachingService;
   const MOCKED_PATH = '1b304da5_b342_46e8_a484_1712d5209e43';
   const getRandomUrl = async () => faker.internet.url(); // returns a new URL at each run
@@ -20,17 +19,13 @@ describe('CachingService Tests', () => {
   };
 
   beforeAll(async () => {
-    ({ app } = await build());
+    registerDependencies(MOCK_LOGGER);
     cache = resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY);
-  });
-
-  afterAll(async () => {
-    app.close();
   });
 
   afterEach(async () => {
     await resetValidations();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('Empty cache returns given URL once, but then returns the cached URL', async () => {

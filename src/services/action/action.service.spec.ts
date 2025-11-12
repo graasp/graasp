@@ -1,3 +1,5 @@
+import { expect, it } from 'vitest';
+
 // TODO
 // import type { FastifyInstance, FastifyRequest } from 'fastify';
 

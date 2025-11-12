@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { ItemType } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../../test/mocks/seed';
