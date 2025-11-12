@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { describe, expect, it } from 'vitest';
 
 import { seedFromJson } from '../../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../../drizzle/db';

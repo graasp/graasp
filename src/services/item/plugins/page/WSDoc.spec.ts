@@ -1,16 +1,17 @@
+import { describe, expect, it, vi } from 'vitest';
 import { WebSocket } from 'ws';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { WSDoc } from './WSDoc';
 
 const conn1 = {
-  on: jest.fn(),
-  close: jest.fn(),
+  on: vi.fn(),
+  close: vi.fn(),
 } as unknown as WebSocket;
 
 const conn2 = {
-  on: jest.fn(),
-  close: jest.fn(),
+  on: vi.fn(),
+  close: vi.fn(),
 } as unknown as WebSocket;
 
 describe('WSDoc', () => {

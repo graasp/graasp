@@ -1,4 +1,3 @@
-import { expect, jest } from '@jest/globals';
 import {
   EnqueuedTask,
   Index,
@@ -9,10 +8,11 @@ import {
   TaskStatus,
 } from 'meilisearch';
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { type IndexItem } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../../../../test/app.vitest';
 import { ItemFactory } from '../../../../../../../../test/factories/item.factory';
 import { type DBConnection } from '../../../../../../../drizzle/db';
 import type { ItemPublishedWithItemWithCreator } from '../../../../../../../drizzle/types';
@@ -20,8 +20,6 @@ import { ItemRepository } from '../../../../../item.repository';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { ACTIVE_INDEX, MeiliSearchWrapper } from './meilisearch';
 import { MeilisearchRepository } from './meilisearch.repository';
-
-jest.unmock('./meilisearch');
 
 const mockItemPublished = ({
   id,
@@ -44,22 +42,22 @@ const MOCK_DB = {} as DBConnection;
 
 const mockIndex = {
   uid: ACTIVE_INDEX,
-  addDocuments: jest.fn(() => {
+  addDocuments: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  waitForTask: jest.fn(() => {
+  waitForTask: vi.fn(() => {
     return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
   }),
-  waitForTasks: jest.fn(() => {
+  waitForTasks: vi.fn(() => {
     return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
   }),
-  deleteDocuments: jest.fn(() => {
+  deleteDocuments: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  deleteAllDocuments: jest.fn(() => {
+  deleteAllDocuments: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-} as unknown as jest.Mocked<Index<IndexItem>>;
+} as unknown as Index<IndexItem>;
 
 const fakeClient = new MeiliSearch({
   host: 'fake',
@@ -67,25 +65,23 @@ const fakeClient = new MeiliSearch({
   httpClient: () => Promise.resolve(),
 });
 
-jest.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [mockIndex], total: 1 });
-jest.spyOn(fakeClient, 'getIndex').mockResolvedValue(mockIndex);
-jest.spyOn(fakeClient, 'index').mockReturnValue({
-  updateFaceting: jest.fn(async () => {
+vi.spyOn(fakeClient, 'getIndexes').mockResolvedValue({ results: [mockIndex], total: 1 });
+vi.spyOn(fakeClient, 'getIndex').mockResolvedValue(mockIndex);
+vi.spyOn(fakeClient, 'index').mockReturnValue({
+  updateFaceting: vi.fn(async () => {
     return { taskUid: '1' } as unknown as EnqueuedTask;
   }),
-  updateSettings: jest.fn(() => {
+  updateSettings: vi.fn(() => {
     return Promise.resolve({ taskUid: '1' } as unknown as EnqueuedTask);
   }),
-  waitForTask: jest.fn(() => {
+  waitForTask: vi.fn(() => {
     return Promise.resolve({ status: TaskStatus.TASK_SUCCEEDED } as Task);
   }),
 } as never);
-jest
-  .spyOn(fakeClient, 'swapIndexes')
-  .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
-jest
-  .spyOn(fakeClient, 'waitForTask')
-  .mockResolvedValue({ status: TaskStatus.TASK_SUCCEEDED } as Task);
+vi.spyOn(fakeClient, 'swapIndexes').mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
+vi.spyOn(fakeClient, 'waitForTask').mockResolvedValue({
+  status: TaskStatus.TASK_SUCCEEDED,
+} as Task);
 
 const itemPublishedRepository = new ItemPublishedRepository();
 const itemRepository = new ItemRepository();
@@ -100,11 +96,11 @@ const meilisearch = new MeiliSearchWrapper(
 
 describe('MeilisearchWrapper', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('search', () => {
-    const searchSpy = jest
+    const searchSpy = vi
       .spyOn(MeiliSearch.prototype, 'multiSearch')
       .mockResolvedValue({} as MultiSearchResponse);
 
@@ -126,11 +122,11 @@ describe('MeilisearchWrapper', () => {
       const item = ItemFactory();
 
       // Given
-      jest.spyOn(itemRepository, 'getDescendants').mockResolvedValue([]);
+      vi.spyOn(itemRepository, 'getDescendants').mockResolvedValue([]);
       const itemPublished = mockItemPublished(item);
-      jest.spyOn(meilisearchRepository, 'getIndexedTree').mockResolvedValue([{} as never]);
+      vi.spyOn(meilisearchRepository, 'getIndexedTree').mockResolvedValue([{} as never]);
 
-      const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
+      const addDocumentSpy = vi.spyOn(mockIndex, 'addDocuments');
 
       // When
       await meilisearch.indexOne(MOCK_DB, itemPublished);
@@ -142,13 +138,13 @@ describe('MeilisearchWrapper', () => {
     it('can index multiple items', async () => {
       // Given
       const itemPublished1 = mockItemPublished(ItemFactory());
-      jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished1);
+      vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished1);
       const itemPublished2 = mockItemPublished(ItemFactory());
-      jest.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished2);
-      const getIndexTreeMock = jest
+      vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(itemPublished2);
+      const getIndexTreeMock = vi
         .spyOn(meilisearchRepository, 'getIndexedTree')
         .mockResolvedValue([{} as never]);
-      const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
+      const addDocumentSpy = vi.spyOn(mockIndex, 'addDocuments');
 
       // When
       await meilisearch.index(MOCK_DB, [itemPublished1, itemPublished2]);
@@ -165,9 +161,9 @@ describe('MeilisearchWrapper', () => {
       const descendant = ItemFactory();
       const descendant2 = ItemFactory();
 
-      jest.spyOn(itemRepository, 'getDescendants').mockResolvedValue([descendant, descendant2]);
+      vi.spyOn(itemRepository, 'getDescendants').mockResolvedValue([descendant, descendant2]);
 
-      const deleteSpy = jest.spyOn(mockIndex, 'deleteDocuments');
+      const deleteSpy = vi.spyOn(mockIndex, 'deleteDocuments');
 
       await meilisearch.deleteOne(MOCK_DB, item);
 

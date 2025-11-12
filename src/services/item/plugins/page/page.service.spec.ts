@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm/sql';
+import { describe, expect, it } from 'vitest';
 import waitForExpect from 'wait-for-expect';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error

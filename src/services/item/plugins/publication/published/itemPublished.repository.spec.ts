@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { ItemPublishedRepository } from './itemPublished.repository';
@@ -10,8 +12,8 @@ describe('ItemPublishedRepository', () => {
       await expect(() =>
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        repository.touchUpdatedAt(undefined),
-      ).rejects.toThrow();
+        repository.touchUpdatedAt(db, undefined),
+      ).rejects.toThrowError(new Error('path is not defined'));
     });
 
     it('update updatedAt on current time', async () => {

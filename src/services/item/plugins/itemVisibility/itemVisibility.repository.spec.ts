@@ -1,9 +1,11 @@
+import { describe, expect, it } from 'vitest';
+
 import { type ItemVisibilityOptionsType, ItemVisibilityType } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemVisibilitiesTable } from '../../../../drizzle/schema';
-import { expectItem } from '../../test/fixtures/items';
+import { expectItem } from '../../test/fixtures/items.vitest';
 import { ItemVisibilityRepository } from './itemVisibility.repository';
 
 const repository = new ItemVisibilityRepository();

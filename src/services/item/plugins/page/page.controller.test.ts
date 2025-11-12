@@ -89,7 +89,7 @@ describe('Page routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe('POST /items/pages', () => {
+  describe('POST /api/items/pages', () => {
     it('Throws if signed out', async () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
@@ -125,11 +125,11 @@ describe('Page routes tests', () => {
     });
   });
 
-  describe('GET /items/pages/ws', () => {
+  describe('GET /api/items/pages/ws', () => {
     it('Throw if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: { protocol: 'ws', pathname: `/items/pages/${v4()}/ws` },
+        url: { protocol: 'ws', pathname: `/api/items/pages/${v4()}/ws` },
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -161,7 +161,7 @@ describe('Page routes tests', () => {
         method: HttpMethod.Get,
         path: {
           protocol: 'ws',
-          pathname: `/items/pages/${item.id}/ws`,
+          pathname: `/api/items/pages/${item.id}/ws`,
         },
       });
 
@@ -187,7 +187,7 @@ describe('Page routes tests', () => {
         method: HttpMethod.Get,
         path: {
           protocol: 'ws',
-          pathname: `/items/pages/${item.id}/ws`,
+          pathname: `/api/items/pages/${item.id}/ws`,
         },
       });
 
@@ -211,7 +211,7 @@ describe('Page routes tests', () => {
 
       // start server to correctly listen to websockets
       const port = await getAppPort(app);
-      const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws`);
+      const ws = new WebSocket(`http://localhost:${port}/api/items/pages/${item.id}/ws`);
 
       await new Promise((done, reject) => {
         ws.on('error', (e) => {
@@ -405,7 +405,7 @@ describe('Page routes tests', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
       const port = await getAppPort(app);
-      const ws = new WebSocket(`ws://localhost:${port}/items/pages/${item.id}/ws`);
+      const ws = new WebSocket(`ws://localhost:${port}/api/items/pages/${item.id}/ws`);
 
       // connection should close
       let hasClosed = false;
@@ -430,7 +430,7 @@ describe('Page routes tests', () => {
     });
   });
 
-  describe('GET /items/pages/ws/read', () => {
+  describe('GET /api/items/pages/ws/read', () => {
     it('Throws if id is incorrect', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -452,7 +452,7 @@ describe('Page routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: { protocol: 'ws', pathname: `/items/pages/${item.id}/ws/read` },
+        url: { protocol: 'ws', pathname: `/api/items/pages/${item.id}/ws/read` },
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -469,7 +469,7 @@ describe('Page routes tests', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: { protocol: 'ws', pathname: `/items/pages/${item.id}/ws/read` },
+        url: { protocol: 'ws', pathname: `/api/items/pages/${item.id}/ws/read` },
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -489,7 +489,7 @@ describe('Page routes tests', () => {
         method: HttpMethod.Get,
         path: {
           protocol: 'ws',
-          pathname: `/items/pages/${item.id}/ws/read`,
+          pathname: `/api/items/pages/${item.id}/ws/read`,
         },
       });
 
@@ -514,7 +514,7 @@ describe('Page routes tests', () => {
       // start server to correctly listen to websockets
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
-      const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws/read`);
+      const ws = new WebSocket(`http://localhost:${port}/api/items/pages/${item.id}/ws/read`);
 
       await new Promise((done, reject) => {
         ws.on('error', (e) => {
@@ -550,7 +550,7 @@ describe('Page routes tests', () => {
       // start server to correctly listen to websockets
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
-      const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws/read`);
+      const ws = new WebSocket(`http://localhost:${port}/api/items/pages/${item.id}/ws/read`);
 
       await new Promise((done, reject) => {
         ws.on('error', (e) => {
@@ -584,7 +584,7 @@ describe('Page routes tests', () => {
       // start server to correctly listen to websockets
       await app.ready();
       const port = (app.server.address() as AddressInfo)!.port;
-      const ws = new WebSocket(`http://localhost:${port}/items/pages/${item.id}/ws/read`);
+      const ws = new WebSocket(`http://localhost:${port}/api/items/pages/${item.id}/ws/read`);
 
       await new Promise((done, reject) => {
         ws.on('error', (e) => {
@@ -793,7 +793,7 @@ describe('Page routes tests', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
       const port = await getAppPort(app);
-      const ws = new WebSocket(`ws://localhost:${port}/items/pages/${item.id}/ws/read`);
+      const ws = new WebSocket(`ws://localhost:${port}/api/items/pages/${item.id}/ws/read`);
 
       // connection should close
       let hasClosed = false;

@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { MOCK_LOGGER } from '../../../../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../../../../test/app.vitest';
 import { GRAASPER_CREATOR_ID } from '../../../../../../../utils/config';
 import HookManager from '../../../../../../../utils/hook';
 import { ItemService } from '../../../../../item.service';
@@ -10,35 +11,33 @@ import { MeiliSearchWrapper } from './meilisearch';
 import { SearchService } from './search.service';
 
 const meilisearchClient = {
-  search: jest.fn(async () => {
+  search: vi.fn(async () => {
     return {} as never;
   }),
-  getActiveIndexName: jest.fn(() => 'indexname'),
+  getActiveIndexName: vi.fn(() => 'indexname'),
 } as unknown as MeiliSearchWrapper;
 
 const searchService = new SearchService(
   {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    hooks: { setPostHook: jest.fn() } as unknown as HookManager<any>,
+    hooks: { setPostHook: vi.fn() } as unknown as HookManager<any>,
   } as ItemService,
   {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    hooks: { setPostHook: jest.fn() } as unknown as HookManager<any>,
+    hooks: { setPostHook: vi.fn() } as unknown as HookManager<any>,
   } as ItemPublishedService,
   meilisearchClient,
-  { getUrlsByItems: jest.fn() } as unknown as ItemThumbnailService,
+  { getUrlsByItems: vi.fn() } as unknown as ItemThumbnailService,
   MOCK_LOGGER,
 );
 
 describe('search', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('filter by tags', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.search({
       tags: {
@@ -57,9 +56,7 @@ describe('search', () => {
   });
   it('filter by langs', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.search({
       langs: ['fr', 'en'],
@@ -72,9 +69,7 @@ describe('search', () => {
   });
   it('filter by published root', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.search({
       isPublishedRoot: true,
@@ -87,9 +82,7 @@ describe('search', () => {
   });
   it('filter by query', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.search({
       query: 'hello',
@@ -101,9 +94,7 @@ describe('search', () => {
   });
   it('filter by creator id', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const creatorId = v4();
     const results = await searchService.search({
@@ -116,9 +107,7 @@ describe('search', () => {
   });
   it('apply sort', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.search({
       sort: ['likes:desc'],
@@ -132,13 +121,11 @@ describe('search', () => {
 
 describe('getMostLiked', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('apply sort by likes', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.getMostLiked(4);
     expect(results).toEqual(MOCK_RESULT);
@@ -151,13 +138,11 @@ describe('getMostLiked', () => {
 
 describe('getMostRecent', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('apply sort by publication updatedAt', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.getMostRecent(4);
     expect(results).toEqual(MOCK_RESULT);
@@ -170,14 +155,12 @@ describe('getMostRecent', () => {
 
 describe('getFeatured', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('apply creator and sort by publication updatedAt', async () => {
     const MOCK_RESULT = { hits: [] } as never;
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
-    const serviceSpy = jest.spyOn(searchService, 'search');
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
+    const serviceSpy = vi.spyOn(searchService, 'search');
 
     const results = await searchService.getFeatured(GRAASPER_CREATOR_ID, 4);
     expect(results).toEqual(MOCK_RESULT);
@@ -194,7 +177,7 @@ describe('getFeatured', () => {
 
 describe('getFacets', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('filter by tags', async () => {
     const MOCK_RESULT = {
@@ -204,7 +187,7 @@ describe('getFacets', () => {
       processingTimeMs: 1,
       query: '',
     };
-    const spy = jest
+    const spy = vi
       .spyOn(meilisearchClient, 'search')
       .mockResolvedValue({ results: [MOCK_RESULT as never] });
 
@@ -230,9 +213,7 @@ describe('getFacets', () => {
       processingTimeMs: 1,
       query: '',
     };
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.getFacets('lang', {
       langs: ['fr', 'en'],
@@ -250,9 +231,7 @@ describe('getFacets', () => {
       processingTimeMs: 1,
       query: '',
     };
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.getFacets('lang', {
       isPublishedRoot: true,
@@ -270,9 +249,7 @@ describe('getFacets', () => {
       processingTimeMs: 1,
       query: '',
     };
-    const spy = jest
-      .spyOn(meilisearchClient, 'search')
-      .mockResolvedValue({ results: [MOCK_RESULT] });
+    const spy = vi.spyOn(meilisearchClient, 'search').mockResolvedValue({ results: [MOCK_RESULT] });
 
     const results = await searchService.getFacets('lang', {
       query: 'hello',

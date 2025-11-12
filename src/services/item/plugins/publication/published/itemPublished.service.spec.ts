@@ -1,8 +1,9 @@
 import { v4 } from 'uuid';
+import { describe, expect, it, vi } from 'vitest';
 
 import { buildPathFromIds } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../../test/app';
+import { MOCK_LOGGER } from '../../../../../../test/app.vitest';
 import { db } from '../../../../../drizzle/db';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
@@ -17,7 +18,7 @@ import { ItemPublishedService } from './itemPublished.service';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
 
 const meiliSearchWrapper = {
-  updateItem: jest.fn(),
+  updateItem: vi.fn(),
 } as unknown as MeiliSearchWrapper;
 
 const itemPublishedRepository = new ItemPublishedRepository();
@@ -44,8 +45,8 @@ describe('ItemPublishedService - touchUpdatedAt', () => {
     const updatedAt = new Date().toISOString();
 
     // MOCK
-    const updateItemMock = jest.spyOn(meiliSearchWrapper, 'updateItem');
-    jest.spyOn(itemPublishedRepository, 'touchUpdatedAt').mockResolvedValue(updatedAt);
+    const updateItemMock = vi.spyOn(meiliSearchWrapper, 'updateItem');
+    vi.spyOn(itemPublishedRepository, 'touchUpdatedAt').mockResolvedValue(updatedAt);
 
     // WHEN
     await itemPublishedService.touchUpdatedAt(db, item);
