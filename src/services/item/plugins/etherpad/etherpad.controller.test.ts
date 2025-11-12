@@ -937,7 +937,7 @@ describe('Etherpad service API', () => {
       });
       await app.inject({
         method: 'DELETE',
-        url: `/items/`,
+        url: `/api/items`,
         query: {
           id: [item.id],
         },
@@ -1046,7 +1046,7 @@ describe('Etherpad service API', () => {
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
-        url: `items/etherpad/${item.id}`,
+        url: `/api/items/etherpad/${item.id}`,
         payload: {
           name: 'new-name',
         },
@@ -1076,7 +1076,7 @@ describe('Etherpad service API', () => {
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
-        url: `items/etherpad/${item.id}`,
+        url: `/api/items/etherpad/${item.id}`,
         payload: {
           name: 'new-name',
           readerPermission: EtherpadPermission.Write,
@@ -1090,7 +1090,7 @@ describe('Etherpad service API', () => {
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
-        url: `items/etherpad/${v4()}`,
+        url: `/api/items/etherpad/${v4()}`,
       });
       expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });

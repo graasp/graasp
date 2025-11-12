@@ -100,7 +100,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           return appSettingFileService.upload(tx, account, file, app.item);
         })
         .catch((e) => {
-          console.error(e);
+          request.log.error(e);
 
           // TODO rollback uploaded file
 

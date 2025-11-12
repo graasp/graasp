@@ -180,7 +180,7 @@ describe('Profile Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
+          url: `/api/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
           payload,
         });
 

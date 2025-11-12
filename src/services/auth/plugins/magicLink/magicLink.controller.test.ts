@@ -87,7 +87,7 @@ describe('Auth routes tests', () => {
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/login?lang=${lang}`,
+        url: `/api/login?lang=${lang}`,
         payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
@@ -146,7 +146,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
@@ -166,7 +166,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: member.id, emailValidation: true }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
@@ -182,7 +182,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: undefined }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const url = AUTH_CLIENT_HOST;
@@ -194,7 +194,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: v4() }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const url = AUTH_CLIENT_HOST;
@@ -210,7 +210,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: member.id }, 'secret');
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);

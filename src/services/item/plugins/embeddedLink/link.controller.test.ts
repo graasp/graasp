@@ -202,7 +202,7 @@ describe('Tests Embedded Link Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/embedded-links`,
+        url: `/api/items/embedded-links`,
         payload: { name: 'name', url: MOCK_URL },
       });
 
@@ -215,7 +215,7 @@ describe('Tests Embedded Link Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/embedded-links`,
+        url: `/api/items/embedded-links`,
         payload: { name: 'name', url: MOCK_URL },
       });
 
@@ -300,7 +300,7 @@ describe('Tests Embedded Link Controller', () => {
       it('Throws if name is invalid', async () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/embedded-links/${v4()}`,
+          url: `/api/items/embedded-links/${v4()}`,
           payload: { name: '' },
         });
 
@@ -309,7 +309,7 @@ describe('Tests Embedded Link Controller', () => {
       it('Throws if url is invalid', async () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/embedded-links/${v4()}`,
+          url: `/api/items/embedded-links/${v4()}`,
           payload: { url: 'url' },
         });
 
@@ -318,7 +318,7 @@ describe('Tests Embedded Link Controller', () => {
       it('Throws if id is invalid', async () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/embedded-links/invalid`,
+          url: `/api/items/embedded-links/invalid`,
           payload: { url: 'url' },
         });
 
@@ -328,7 +328,7 @@ describe('Tests Embedded Link Controller', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/embedded-links/${v4()}`,
+        url: `/api/items/embedded-links/${v4()}`,
         payload: { name: 'name', url: MOCK_URL },
       });
 
@@ -351,7 +351,7 @@ describe('Tests Embedded Link Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/embedded-links/${v4()}`,
+        url: `/api/items/embedded-links/${v4()}`,
         payload: { name: 'name', url: MOCK_URL },
       });
 
@@ -364,7 +364,7 @@ describe('Tests Embedded Link Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/embedded-links/${v4()}`,
+        url: `/api/items/embedded-links/${v4()}`,
         payload: { name: 'name', url: MOCK_URL },
       });
 
@@ -388,7 +388,7 @@ describe('Tests Embedded Link Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/embedded-links/${item.id}`,
+        url: `/api/items/embedded-links/${item.id}`,
         payload: { name: 'name', url: MOCK_URL },
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -415,7 +415,7 @@ describe('Tests Embedded Link Controller', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/embedded-links/${item.id}`,
+          url: `/api/items/embedded-links/${item.id}`,
           payload: { name: 'name', url: MOCK_URL },
         });
 
@@ -443,7 +443,7 @@ describe('Tests Embedded Link Controller', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/embedded-links/${initialItem.id}`,
+          url: `/api/items/embedded-links/${initialItem.id}`,
           payload: {
             name: 'name',
             showLinkIframe: true,
