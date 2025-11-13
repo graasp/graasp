@@ -29,8 +29,10 @@ export default (
         }: { uuid: string; oldEmail: string; newEmail: string },
         done: StrictVerifiedCallback,
       ) => {
+        console.log('woiefjm');
         try {
           const newEmail = newEmailRaw.toLowerCase();
+          console.log(newEmail);
           // We shouldn't fetch the member by email, so we keep track of the actual member.
           const member = await memberRepository.get(db, uuid);
           // We check the email, so we invalidate the token if the email has changed in the meantime.
