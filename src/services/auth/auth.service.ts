@@ -38,7 +38,7 @@ export class AuthService {
 
     const redirectionUrl = getRedirectionLink(this.log, url);
     const domain = PUBLIC_URL;
-    const destination = new URL('/auth', domain);
+    const destination = new URL('/api/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set('url', redirectionUrl);
     const link = destination.toString();
@@ -73,7 +73,7 @@ export class AuthService {
 
     const redirectionUrl = getRedirectionLink(this.log, url);
     const domain = PUBLIC_URL;
-    const destination = new URL('/auth', domain);
+    const destination = new URL('/api/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set('url', redirectionUrl);
     const link = destination.toString();

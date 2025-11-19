@@ -1,5 +1,6 @@
 import { Ajv, type JSONSchemaType, type Schema } from 'ajv';
 import fastJson from 'fast-json-stringify';
+import { expect } from 'vitest';
 
 export const expectNoLeaksAndEquality = <T extends object & { id: string }>(
   results: T[],

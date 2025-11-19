@@ -11,7 +11,7 @@ import type {
   ItemLikeWithItemWithCreator,
 } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
-import { ItemLikeNotFound } from './utils/errors';
+import { ItemLikeNotFound } from './itemLike.errors';
 
 type CreatorId = ItemLikeRaw['creatorId'];
 type ItemId = ItemLikeRaw['itemId'];

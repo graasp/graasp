@@ -38,7 +38,7 @@ describe('Maintenance Controller Tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `maintenance/next`,
+        url: `/api/maintenance/next`,
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
       expect(response.json().slug).toEqual(value.slug);
@@ -54,7 +54,7 @@ describe('Maintenance Controller Tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `maintenance/next`,
+        url: `/api/maintenance/next`,
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
       expect(response.json()).toBeNull();

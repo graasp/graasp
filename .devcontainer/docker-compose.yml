@@ -45,7 +45,7 @@ services:
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
     ports:
-      - 3000:3000
+      - 3001:3000
 
   db:
     hostname: db
@@ -184,6 +184,17 @@ services:
     image: schickling/mailcatcher
     ports:
       - "1080:1080"
+
+  nginx:
+    image: nginx:1.25-alpine
+    hostname: nginx
+    depends_on:
+      - core
+    ports:
+      - "3000:3000" # expose nginx on localhost:3000
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
 
 volumes:
   postgres-data:

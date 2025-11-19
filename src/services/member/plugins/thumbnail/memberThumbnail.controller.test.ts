@@ -83,7 +83,7 @@ describe('Thumbnail Plugin Tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `members/${member.id}/avatar/${ThumbnailSize.Small}`,
+        url: `/api/members/${member.id}/avatar/${ThumbnailSize.Small}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.body).toBe(MOCK_SIGNED_URL);
@@ -97,7 +97,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}`,
+          url: `/api/members/${member.id}/avatar/${size}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.body).toBe(MOCK_SIGNED_URL);
@@ -112,7 +112,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}`,
+          url: `/api/members/${member.id}/avatar/${size}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.body).toBe(MOCK_SIGNED_URL);
@@ -127,7 +127,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}`,
+          url: `/api/members/${member.id}/avatar/${size}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.body).toBe(MOCK_SIGNED_URL);
@@ -142,7 +142,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}`,
+          url: `/api/members/${member.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -158,7 +158,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}`,
+          url: `/api/members/${member.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -176,7 +176,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${guest.id}/avatar/${size}`,
+          url: `/api/members/${guest.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -187,7 +187,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${v4()}/avatar/${size}`,
+          url: `/api/members/${v4()}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -206,7 +206,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}`,
+          url: `/api/members/${member.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -222,7 +222,7 @@ describe('Thumbnail Plugin Tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: 'members/avatar',
+        url: '/api/members/avatar',
         payload: form,
         headers: form.getHeaders(),
       });
@@ -242,7 +242,7 @@ describe('Thumbnail Plugin Tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: 'members/avatar',
+          url: '/api/members/avatar',
           payload: form2,
           headers: form2.getHeaders(),
         });
@@ -261,7 +261,7 @@ describe('Thumbnail Plugin Tests', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: 'members/avatar',
+          url: '/api/members/avatar',
           payload: form,
           headers: form.getHeaders(),
         });

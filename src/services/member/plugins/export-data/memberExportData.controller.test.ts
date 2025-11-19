@@ -18,7 +18,7 @@ import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../utils/config';
 
-const POST_URL = `/members${MEMBER_EXPORT_DATA_ROUTE_PREFIX}`;
+const POST_URL = `/api/members${MEMBER_EXPORT_DATA_ROUTE_PREFIX}`;
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));

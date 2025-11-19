@@ -52,7 +52,7 @@ describe('Member Storage Controller', () => {
       assertIsMember(actor);
       const response = await app.inject({
         method: 'POST',
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         body: { email: faker.internet.email() },
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -72,7 +72,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).not.toHaveBeenCalled();
@@ -90,7 +90,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         body: { email: 'abc' },
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -114,7 +114,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         body: { email: member.email },
       });
 
@@ -136,7 +136,7 @@ describe('Member Storage Controller', () => {
       const email = faker.internet.email();
       const response = await app.inject({
         method: 'POST',
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         body: { email },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -163,7 +163,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       // Email didn't change
@@ -185,7 +185,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -211,7 +211,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(response.statusCode).toBe(StatusCodes.CONFLICT);
@@ -236,7 +236,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -256,7 +256,7 @@ describe('Member Storage Controller', () => {
       // JWT is invalidated
       const response2 = await app.inject({
         method: HttpMethod.Patch,
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(response2.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -279,7 +279,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: '/members/current/email/change',
+        url: '/api/members/current/email/change',
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -299,7 +299,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage/files',
+        url: '/api/members/current/storage/files',
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
@@ -311,7 +311,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage/files',
+        url: '/api/members/current/storage/files',
         query: { page: FILE_METADATA_MIN_PAGE - 1 + '' },
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -324,7 +324,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage/files',
+        url: '/api/members/current/storage/files',
         query: { pageSize: FILE_METADATA_MIN_PAGE_SIZE - 1 + '' },
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -337,7 +337,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage/files',
+        url: '/api/members/current/storage/files',
         query: { pageSize: FILE_METADATA_MAX_PAGE_SIZE + 1 + '' },
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -359,7 +359,7 @@ describe('Member Storage Controller', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: '/members/current/storage/files',
+        url: '/api/members/current/storage/files',
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const resultDefault = await response.json();
@@ -404,7 +404,7 @@ describe('Member Storage Controller', () => {
       it('default parameters when not specified', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultDefault = await response.json();
@@ -428,7 +428,7 @@ describe('Member Storage Controller', () => {
 
         let response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -440,7 +440,7 @@ describe('Member Storage Controller', () => {
         page = 2;
         response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -455,7 +455,7 @@ describe('Member Storage Controller', () => {
         page = 3;
         response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -471,7 +471,7 @@ describe('Member Storage Controller', () => {
         page = 4;
         response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -501,7 +501,7 @@ describe('Member Storage Controller', () => {
 
         let response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -513,7 +513,7 @@ describe('Member Storage Controller', () => {
         page = 2;
         response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -528,7 +528,7 @@ describe('Member Storage Controller', () => {
         page = 3;
         response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -544,7 +544,7 @@ describe('Member Storage Controller', () => {
         page = 4;
         response = await app.inject({
           method: HttpMethod.Get,
-          url: '/members/current/storage/files',
+          url: '/api/members/current/storage/files',
           query: { page: page + '', pageSize: pageSize + '' },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);

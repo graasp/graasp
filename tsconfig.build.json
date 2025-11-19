@@ -10,6 +10,7 @@
     "test",
     "src/**/test/*.ts",
     "src/**/*.test.ts",
+    "src/**/*.spec.ts",
     "src/**/test/*.ts",
     "src/**/test/fixtures/*.ts"
   ]

@@ -12,9 +12,9 @@ import { assertIsMember } from '../../../authentication';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
+import { UploadFileNotImageError } from './errors';
 import { deleteSchema, download, upload } from './itemThumbnail.schemas';
 import { ItemThumbnailService } from './itemThumbnail.service';
-import { UploadFileNotImageError } from './utils/errors';
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;

@@ -121,6 +121,9 @@ export class ItemPublishedRepository {
   }
 
   async touchUpdatedAt(dbConnection: DBConnection, path: ItemRaw['path']): Promise<string | null> {
+    if (!path) {
+      throw new Error('path is not defined');
+    }
     const updatedAt = new Date().toISOString();
 
     const result = await dbConnection

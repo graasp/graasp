@@ -8,7 +8,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { TagRepository } from '../../../tag/tag.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemTagRepository } from './ItemTag.repository';
+import { ItemTagRepository } from './itemTag.repository';
 
 @singleton()
 export class ItemTagService {

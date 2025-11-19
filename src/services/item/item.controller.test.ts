@@ -40,7 +40,7 @@ describe('Item controller', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: 'GET',
-        url: `/items/${rootUUID}/descendants`,
+        url: `/api/items/${rootUUID}/descendants`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();
@@ -71,7 +71,7 @@ describe('Item controller', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: 'GET',
-        url: `/items/${rootUUID}/descendants?types=${ItemType.FOLDER}`,
+        url: `/api/items/${rootUUID}/descendants?types=${ItemType.FOLDER}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();
@@ -100,7 +100,7 @@ describe('Item controller', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: 'GET',
-        url: `/items/${rootUUID}/descendants?types=${ItemType.APP}`,
+        url: `/api/items/${rootUUID}/descendants?types=${ItemType.APP}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();
@@ -126,7 +126,7 @@ describe('Item controller', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: 'GET',
-        url: `/items/${rootUUID}/descendants?showHidden=false`,
+        url: `/api/items/${rootUUID}/descendants?showHidden=false`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();

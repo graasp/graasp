@@ -44,7 +44,7 @@ describe('Recycle Bin Tests', () => {
       it('Throws if signed out', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: '/items/recycled',
+          url: '/api/items/recycled',
         });
 
         expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -80,7 +80,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Get,
-            url: '/items/recycled',
+            url: '/api/items/recycled',
           });
 
           const response = res.json();
@@ -133,7 +133,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Get,
-            url: '/items/recycled',
+            url: '/api/items/recycled',
             query: { page: '2', pageSize: '5' },
           });
 
@@ -177,7 +177,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Get,
-            url: '/items/recycled',
+            url: '/api/items/recycled',
           });
 
           const response = res.json();
@@ -210,7 +210,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Get,
-            url: '/items/recycled',
+            url: '/api/items/recycled',
           });
 
           const response = res.json();
@@ -240,7 +240,7 @@ describe('Recycle Bin Tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/recycle?id=${item.id}`,
+          url: `/api/items/recycle?id=${item.id}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -267,7 +267,7 @@ describe('Recycle Bin Tests', () => {
           const itemIds = items.map((i) => i.id);
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/recycle',
+            url: '/api/items/recycle',
             query: { id: itemIds },
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -312,7 +312,7 @@ describe('Recycle Bin Tests', () => {
           const itemIds = items.map((i) => i.id);
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/recycle',
+            url: '/api/items/recycle',
             query: { id: itemIds },
           });
 
@@ -351,7 +351,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/recycle',
+            url: '/api/items/recycle',
             query: { id: items.map(({ id }) => id) },
           });
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -364,7 +364,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: '/items/recycle',
+            url: '/api/items/recycle',
             query: { id: ['invalid-id', v4()] },
           });
 
@@ -551,7 +551,7 @@ describe('Recycle Bin Tests', () => {
 
       const recycle = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/recycle?id=${parentItem.id}`,
+        url: `/api/items/recycle?id=${parentItem.id}`,
       });
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -570,7 +570,7 @@ describe('Recycle Bin Tests', () => {
 
       const restore = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/restore?id=${parentItem.id}`,
+        url: `/api/items/restore?id=${parentItem.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 

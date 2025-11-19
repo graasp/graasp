@@ -784,7 +784,7 @@ describe('Apps Settings Tests', () => {
       // copy item
       const response = await app.inject({
         method: 'POST',
-        url: 'items/copy',
+        url: '/api/items/copy',
         query: {
           id: [item.id],
         },
@@ -836,7 +836,7 @@ describe('Apps Settings Tests', () => {
       // copy parent
       const response = await app.inject({
         method: 'POST',
-        url: 'items/copy',
+        url: '/api/items/copy',
         query: {
           id: [parent.id],
         },
