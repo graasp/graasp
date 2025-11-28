@@ -6,7 +6,14 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MAX_USERNAME_LENGTH, MemberFactory, RecaptchaAction } from '@graasp/sdk';
+import {
+  AccountType,
+  DEFAULT_LANG,
+  HttpMethod,
+  MAX_USERNAME_LENGTH,
+  MemberFactory,
+  RecaptchaAction,
+} from '@graasp/sdk';
 
 import build, { MOCK_CAPTCHA, clearDatabase, unmockAuthenticate } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
@@ -17,7 +24,6 @@ import { accountsTable, invitationsTable, itemMembershipsTable } from '../../../
 import type { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
-import { expectMember } from '../../../member/test/fixtures/members';
 
 jest.mock('node-fetch');
 (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
@@ -29,6 +35,19 @@ const getMemberByEmail = async (lowercaseEmail: string) => {
   return (await db.query.accountsTable.findFirst({
     where: eq(accountsTable.email, lowercaseEmail),
   })) as MemberRaw | undefined;
+};
+
+const expectMember = (
+  m: MemberRaw | undefined | null,
+  expectation: Partial<Pick<MemberRaw, 'type' | 'extra'>> & Pick<MemberRaw, 'name' | 'email'>,
+) => {
+  if (!m) {
+    throw 'member does not exist';
+  }
+  expect(m.name).toEqual(expectation.name);
+  expect(m.email).toEqual(expectation.email);
+  expect(m.type).toEqual(expectation.type ?? AccountType.Individual);
+  expect(m.extra).toEqual(expectation.extra ?? { lang: DEFAULT_LANG });
 };
 
 describe('POST /register', () => {
@@ -61,7 +80,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -88,7 +107,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register?lang=${lang}`,
+      url: `/api/register?lang=${lang}`,
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -110,7 +129,7 @@ describe('POST /register', () => {
 
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register`,
+      url: `/api/register`,
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -127,7 +146,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register`,
+      url: `/api/register`,
       payload: { email, name, captcha: MOCK_CAPTCHA, enableSaveActions },
     });
 
@@ -152,7 +171,7 @@ describe('POST /register', () => {
     const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: `/register`,
+      url: `/api/register`,
       payload: { email, name, enableSaveActions, captcha: MOCK_CAPTCHA },
     });
 
@@ -182,7 +201,7 @@ describe('POST /register', () => {
 
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { ...member, captcha: MOCK_CAPTCHA },
     });
     expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -203,7 +222,7 @@ describe('POST /register', () => {
     const name = 'anna';
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -219,7 +238,7 @@ describe('POST /register', () => {
     const name = '<div>%"^';
     const response = await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name, captcha: MOCK_CAPTCHA },
     });
 
@@ -238,7 +257,7 @@ describe('POST /register', () => {
     // register
     await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email: invitation.email, name: 'some-name', captcha: MOCK_CAPTCHA },
     });
     const member = await getMemberByEmail(invitation.email);
@@ -268,7 +287,7 @@ describe('POST /register', () => {
     // register
     await app.inject({
       method: HttpMethod.Post,
-      url: '/register',
+      url: '/api/register',
       payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
     });
 

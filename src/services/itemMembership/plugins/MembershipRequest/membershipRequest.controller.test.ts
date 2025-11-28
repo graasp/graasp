@@ -72,7 +72,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -98,7 +98,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -133,7 +133,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -150,7 +150,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${uuid()}/memberships/requests`,
+        url: `/api/items/${uuid()}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -166,7 +166,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -183,7 +183,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -195,7 +195,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -215,7 +215,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests/own`,
+        url: `/api/items/${item.id}/memberships/requests/own`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const data = await response.json();
@@ -238,7 +238,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${childItem.id}/memberships/requests/own`,
+        url: `/api/items/${childItem.id}/memberships/requests/own`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -261,7 +261,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests/own`,
+        url: `/api/items/${item.id}/memberships/requests/own`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -284,7 +284,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests/own`,
+        url: `/api/items/${item.id}/memberships/requests/own`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -310,7 +310,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests/own`,
+        url: `/api/items/${item.id}/memberships/requests/own`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const data = await response.json();
@@ -323,7 +323,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${uuid()}/memberships/requests/own`,
+        url: `/api/items/${uuid()}/memberships/requests/own`,
       });
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
@@ -334,7 +334,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships/requests/own`,
+        url: `/api/items/${item.id}/memberships/requests/own`,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
@@ -359,7 +359,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -410,7 +410,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${targetItem.id}/memberships/requests`,
+        url: `/api/items/${targetItem.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -440,7 +440,7 @@ describe('MembershipRequest', () => {
 
       const responseSecondPost = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
       expect(responseSecondPost.statusCode).toBe(StatusCodes.BAD_REQUEST);
       // do not send email
@@ -453,7 +453,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
@@ -461,7 +461,7 @@ describe('MembershipRequest', () => {
     it('rejects when unauthenticated with non-existing item id', async () => {
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${uuid()}/memberships/requests`,
+        url: `/api/items/${uuid()}/memberships/requests`,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
@@ -474,7 +474,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${uuid()}/memberships/requests`,
+        url: `/api/items/${uuid()}/memberships/requests`,
       });
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
@@ -496,7 +496,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       const membershipRequest = await db.query.membershipRequestsTable.findFirst({
@@ -526,7 +526,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       const membershipRequest = await db.query.membershipRequestsTable.findFirst({
@@ -551,7 +551,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
+        url: `/api/items/${item.id}/memberships/requests`,
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
@@ -577,7 +577,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/requests/${member.id}`,
+        url: `/api/items/${item.id}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       const membershipRequest = await db.query.membershipRequestsTable.findFirst({
@@ -598,7 +598,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${uuid()}/memberships/requests/${member.id}`,
+        url: `/api/items/${uuid()}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
@@ -620,7 +620,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/requests/${member.id}`,
+        url: `/api/items/${item.id}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
@@ -640,7 +640,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/requests/${uuid()}`,
+        url: `/api/items/${item.id}/memberships/requests/${uuid()}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
@@ -658,7 +658,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/requests/${member.id}`,
+        url: `/api/items/${item.id}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
@@ -680,7 +680,7 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/requests/${member.id}`,
+        url: `/api/items/${item.id}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
@@ -692,14 +692,14 @@ describe('MembershipRequest', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/requests/${member.id}`,
+        url: `/api/items/${item.id}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('rejects unauthorized if unauthenticated with non-existing ids', async () => {
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${uuid()}/memberships/requests/${uuid()}`,
+        url: `/api/items/${uuid()}/memberships/requests/${uuid()}`,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });

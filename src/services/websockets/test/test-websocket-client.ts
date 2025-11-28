@@ -10,7 +10,7 @@ export class TestWsClient {
   private readonly ready: Promise<void>;
 
   constructor(address: string) {
-    this.ws = new WebSocket(address.replace('http', 'ws') + '/ws');
+    this.ws = new WebSocket(address.replace('http', 'ws') + '/api/ws');
     this.ready = new Promise((resolve) => {
       this.ws.on('open', () => {
         resolve();

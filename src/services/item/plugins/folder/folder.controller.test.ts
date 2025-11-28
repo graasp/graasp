@@ -94,12 +94,12 @@ describe('Folder routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe('POST /items/folders', () => {
+  describe('POST /api/items/folders', () => {
     it('Throws if signed out', async () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/folders',
+        url: '/api/items/folders',
         payload,
       });
 
@@ -135,7 +135,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/folders',
+          url: '/api/items/folders',
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -177,7 +177,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parent.id}`,
+          url: `/api/items/folders?parentId=${parent.id}`,
           payload,
         });
         const newItem = response.json();
@@ -213,7 +213,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parent.id}`,
+          url: `/api/items/folders?parentId=${parent.id}`,
           payload,
         });
 
@@ -246,7 +246,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
         });
 
@@ -271,7 +271,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory({ lang: 'fr' });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           payload,
         });
 
@@ -295,7 +295,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
           query: { parentId: parentItem.id },
         });
@@ -317,7 +317,7 @@ describe('Folder routes tests', () => {
         });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           payload,
         });
 
@@ -346,7 +346,7 @@ describe('Folder routes tests', () => {
         });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           payload,
         });
 
@@ -372,7 +372,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           query: { parentId: parentItem.id, previousItemId: previousItem.id },
           payload,
         });
@@ -404,7 +404,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           query: { parentId: parentItem.id, previousItemId: previousItem.id },
           payload,
         });
@@ -439,7 +439,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           query: { parentId: parentItem.id, previousItemId: anotherChild.id },
           payload,
         });
@@ -464,7 +464,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           payload: { ...payload, geolocation: { lat: 1 } },
         });
 
@@ -478,7 +478,7 @@ describe('Folder routes tests', () => {
 
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders`,
+          url: '/api/items/folders',
           payload: { ...payload, geolocation: { lng: 1 } },
         });
 
@@ -496,7 +496,7 @@ describe('Folder routes tests', () => {
         const newItem = FolderItemFactory({ name: '' });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/folders',
+          url: '/api/items/folders',
           payload: newItem,
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -506,7 +506,7 @@ describe('Folder routes tests', () => {
         const newItem1 = FolderItemFactory({ name: ' ' });
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/folders',
+          url: '/api/items/folders',
           payload: newItem1,
         });
         expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -518,7 +518,7 @@ describe('Folder routes tests', () => {
         const parentId = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parentId}`,
+          url: `/api/items/folders?parentId=${parentId}`,
           payload,
         });
 
@@ -534,7 +534,7 @@ describe('Folder routes tests', () => {
         const parentId = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parentId}`,
+          url: `/api/items/folders?parentId=${parentId}`,
           payload,
         });
 
@@ -555,7 +555,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parent.id}`,
+          url: `/api/items/folders?parentId=${parent.id}`,
           payload,
         });
 
@@ -576,7 +576,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parent.id}`,
+          url: `/api/items/folders?parentId=${parent.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -603,7 +603,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parent.id}`,
+          url: `/api/items/folders?parentId=${parent.id}`,
           payload,
         });
 
@@ -629,7 +629,7 @@ describe('Folder routes tests', () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/folders?parentId=${parent.id}`,
+          url: `/api/items/folders?parentId=${parent.id}`,
           payload,
         });
 
@@ -639,7 +639,7 @@ describe('Folder routes tests', () => {
     });
   });
 
-  describe('POST /items/folders-with-thumbnail', () => {
+  describe('POST /api/items/folders-with-thumbnail', () => {
     it('Post item with thumbnail', async () => {
       const { actor } = await seedFromJson({ actor: { extra: { lang: 'en' } } });
       assertIsDefined(actor);
@@ -656,7 +656,7 @@ describe('Folder routes tests', () => {
       payload.append('file', imageStream);
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/folders-with-thumbnail`,
+        url: `/api/items/folders-with-thumbnail`,
         payload,
         headers: payload.getHeaders(),
       });
@@ -678,7 +678,7 @@ describe('Folder routes tests', () => {
     });
   });
 
-  describe('PATCH /items/folders/:id', () => {
+  describe('PATCH /api/items/folders/:id', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -689,7 +689,7 @@ describe('Folder routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/folders/${item.id}`,
+        url: `/api/items/folders/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -726,7 +726,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
+          url: `/api/items/folders/${item.id}`,
           payload,
         });
 
@@ -762,7 +762,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
+          url: `/api/items/folders/${item.id}`,
           payload,
         });
 
@@ -798,7 +798,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
+          url: `/api/items/folders/${item.id}`,
           payload,
         });
 
@@ -841,7 +841,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
+          url: `/api/items/folders/${item.id}`,
           payload,
         });
 
@@ -865,7 +865,7 @@ describe('Folder routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: '/items/folders/invalid-id',
+          url: '/api/items/folders/invalid-id',
           payload,
         });
 
@@ -888,7 +888,7 @@ describe('Folder routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
+          url: `/api/items/folders/${item.id}`,
           payload,
         });
 
@@ -910,7 +910,7 @@ describe('Folder routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
+          url: `/api/items/folders/${item.id}`,
           payload,
         });
 

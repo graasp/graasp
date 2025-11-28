@@ -64,7 +64,7 @@ describe('Link Item tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/${item.id}`,
+        url: `/api/items/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -101,7 +101,7 @@ describe('Link Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
 
@@ -136,7 +136,7 @@ describe('Link Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
+          url: `/api/items/${item.id}`,
           payload,
         });
 

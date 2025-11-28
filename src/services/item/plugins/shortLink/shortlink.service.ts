@@ -12,18 +12,35 @@ import {
 
 import { SHORT_LINK_BASE_URL } from '../../../../config/hosts';
 import { type DBConnection } from '../../../../drizzle/db';
+import { ShortLinkRaw } from '../../../../drizzle/types';
 import type { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemPublishedNotFound } from '../publication/published/errors';
 import { ItemPublishedService } from '../publication/published/itemPublished.service';
-import { ShortLinkDTO } from './dto/ShortLinkDTO';
 import { ShortLinkRepository } from './shortlink.repository';
 
 export const SHORT_LINKS_ROUTE_PREFIX = '/short-links';
 export const SHORT_LINKS_LIST_ROUTE = '/list';
 export const SHORT_LINKS_FULL_PREFIX = `${ITEMS_ROUTE_PREFIX}${SHORT_LINKS_ROUTE_PREFIX}`;
+
+class ShortLinkDTO {
+  /**
+   * Strip sensible data
+   */
+  public static from({
+    alias,
+    platform,
+    itemId,
+  }: Pick<ShortLinkRaw, 'alias' | 'platform' | 'itemId'>): ShortLink {
+    return {
+      alias,
+      platform,
+      itemId,
+    };
+  }
+}
 
 @singleton()
 export class ShortLinkService {

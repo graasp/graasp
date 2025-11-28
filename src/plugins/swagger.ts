@@ -85,7 +85,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
   });
 
   await instance.register(swaggerUiPlugin, {
-    routePrefix: '/docs',
+    routePrefix: '/api/docs',
     transformSpecification: (swaggerObject, _request, _reply) => {
       return swaggerObject;
     },

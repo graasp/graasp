@@ -14,7 +14,7 @@ export const getDateBeforeOrAfterNow = (dateDiff: number) => {
   return date.toISOString();
 };
 
-const GET_URL = '/members/actions';
+const GET_URL = '/api/members/actions';
 
 describe('Get member actions', () => {
   let app: FastifyInstance;

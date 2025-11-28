@@ -69,7 +69,7 @@ describe('Auth routes tests', () => {
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login',
+        url: '/api/login',
         payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
@@ -87,7 +87,7 @@ describe('Auth routes tests', () => {
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/login?lang=${lang}`,
+        url: `/api/login?lang=${lang}`,
         payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
@@ -102,7 +102,7 @@ describe('Auth routes tests', () => {
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login',
+        url: '/api/login',
         payload: { email, captcha: MOCK_CAPTCHA },
       });
 
@@ -114,7 +114,7 @@ describe('Auth routes tests', () => {
       const email = 'wrongemail';
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login',
+        url: '/api/login',
         payload: { email, captcha: MOCK_CAPTCHA },
       });
 
@@ -127,7 +127,7 @@ describe('Auth routes tests', () => {
       const email = faker.internet.email();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/login',
+        url: '/api/login',
         payload: { email, captcha: MOCK_CAPTCHA },
       });
 
@@ -146,7 +146,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
@@ -166,7 +166,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: member.id, emailValidation: true }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
@@ -182,7 +182,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: undefined }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const url = AUTH_CLIENT_HOST;
@@ -194,7 +194,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: v4() }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const url = AUTH_CLIENT_HOST;
@@ -210,7 +210,7 @@ describe('Auth routes tests', () => {
       const t = sign({ sub: member.id }, 'secret');
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/auth?t=${t}`,
+        url: `/api/auth?t=${t}`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
@@ -224,7 +224,7 @@ describe('Auth routes tests', () => {
     it('Authenticate successfully', async () => {
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/logout',
+        url: '/api/logout',
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
@@ -240,7 +240,7 @@ describe('Auth routes tests', () => {
 
       const responseRegister = await app.inject({
         method: HttpMethod.Post,
-        url: '/register',
+        url: '/api/register',
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);

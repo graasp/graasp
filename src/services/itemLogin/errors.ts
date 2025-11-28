@@ -1,36 +1,24 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { createError } from '@fastify/error';
+
 import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
 
 const PLUGIN_NAME = 'graasp-plugin-item-login';
 
 export const GraaspItemLoginError = ErrorFactory(PLUGIN_NAME);
 
-export class MemberIdentifierNotFound extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR002',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'Member identifier not found',
-      },
-      data,
-    );
-  }
-}
+export const MemberIdentifierNotFound = createError(
+  'GILERR002',
+  'Member identifier not found',
+  StatusCodes.NOT_FOUND,
+);
 
-export class InvalidMember extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR003',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'This member cannot be used to login to an item',
-      },
-      data,
-    );
-  }
-}
+export const InvalidMember = createError(
+  'GILERR003',
+  'This member cannot be used to login to an item',
+  StatusCodes.NOT_FOUND,
+);
 
 export class MissingItemLoginSchema extends GraaspItemLoginError {
   constructor(data?: unknown) {

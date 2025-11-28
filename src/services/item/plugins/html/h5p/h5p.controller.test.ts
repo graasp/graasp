@@ -150,7 +150,7 @@ describe('Service plugin', () => {
       // delete item
       await app.inject({
         method: 'DELETE',
-        url: `/items/`,
+        url: `/api/items`,
         query: {
           id: [item.id],
         },
@@ -191,7 +191,7 @@ describe('Service plugin', () => {
       // copy item
       await app.inject({
         method: 'POST',
-        url: 'items/copy',
+        url: '/api/items/copy',
         query: {
           id: [item.id],
         },

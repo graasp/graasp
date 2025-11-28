@@ -54,7 +54,7 @@ const createEtherpad = async (app, parentId?: string) => {
   });
   const res = await app.inject({
     method: HttpMethod.Post,
-    url: '/items/etherpad/create',
+    url: '/api/items/etherpad/create',
     payload: {
       name: faker.word.sample(),
     },
@@ -103,7 +103,7 @@ describe('Etherpad service API', () => {
       };
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload,
       });
 
@@ -139,7 +139,7 @@ describe('Etherpad service API', () => {
       const name = faker.word.sample();
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name,
           readerPermission: EtherpadPermission.Write,
@@ -178,7 +178,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name: faker.word.sample(),
         },
@@ -209,7 +209,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name: faker.word.sample(),
         },
@@ -244,7 +244,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/etherpad/create',
+        url: '/api/items/etherpad/create',
         payload: {
           name: faker.word.sample(),
         },
@@ -267,7 +267,7 @@ describe('Etherpad service API', () => {
   describe('view a pad', () => {
     const payloadView = (mode: 'read' | 'write', itemId: string) => ({
       method: HttpMethod.Get,
-      url: `items/etherpad/view/${itemId}`,
+      url: `/api/items/etherpad/view/${itemId}`,
       query: {
         mode,
       },
@@ -937,7 +937,7 @@ describe('Etherpad service API', () => {
       });
       await app.inject({
         method: 'DELETE',
-        url: `/items/`,
+        url: `/api/items`,
         query: {
           id: [item.id],
         },
@@ -965,7 +965,7 @@ describe('Etherpad service API', () => {
       });
       await app.inject({
         method: 'POST',
-        url: '/items/copy',
+        url: '/api/items/copy',
         query: {
           id: [item.id],
         },
@@ -1011,7 +1011,7 @@ describe('Etherpad service API', () => {
       });
       const res = await app.inject({
         method: 'POST',
-        url: '/items/copy',
+        url: '/api/items/copy',
         query: {
           id: [bogusItem.id],
         },
@@ -1046,7 +1046,7 @@ describe('Etherpad service API', () => {
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
-        url: `items/etherpad/${item.id}`,
+        url: `/api/items/etherpad/${item.id}`,
         payload: {
           name: 'new-name',
         },
@@ -1076,7 +1076,7 @@ describe('Etherpad service API', () => {
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
-        url: `items/etherpad/${item.id}`,
+        url: `/api/items/etherpad/${item.id}`,
         payload: {
           name: 'new-name',
           readerPermission: EtherpadPermission.Write,
@@ -1090,7 +1090,7 @@ describe('Etherpad service API', () => {
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
-        url: `items/etherpad/${v4()}`,
+        url: `/api/items/etherpad/${v4()}`,
       });
       expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });

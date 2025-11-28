@@ -32,8 +32,8 @@ describe('Recycle websocket hooks', () => {
 
   afterAll(async () => {
     await clearDatabase(db);
-    app.close();
     ws.close();
+    await app.close();
   });
 
   afterEach(() => {
@@ -60,7 +60,7 @@ describe('Recycle websocket hooks', () => {
 
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/recycle?id=${item.id}`,
+        url: `/api/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -104,7 +104,7 @@ describe('Recycle websocket hooks', () => {
 
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/recycle?id=${item.id}`,
+        url: `/api/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -139,7 +139,7 @@ describe('Recycle websocket hooks', () => {
 
       const restore = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/restore?id=${item.id}`,
+        url: `/api/items/restore?id=${item.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 

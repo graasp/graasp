@@ -19,7 +19,6 @@ import type { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccessMention } from '../../errors';
-import { expectFullChatMentions } from '../../test/chatMentions.expectations';
 
 // create item, chat messages from another member and members
 // as well as mentions of actor
@@ -88,7 +87,14 @@ describe('Chat Mention tests', () => {
 
         const result = await response.json();
         // check response value
-        expectFullChatMentions(result, chatMentions);
+        expect(result).toHaveLength(chatMentions.length);
+        for (const m of result) {
+          const correctMention = chatMentions.find(({ id }) => id === m.id)!;
+
+          expect(m.message.id).toEqual(correctMention.messageId);
+          expect(m.message.creatorId).toBeDefined();
+          expect(m.account.id).toEqual(correctMention.accountId);
+        }
       });
     });
   });

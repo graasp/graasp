@@ -61,7 +61,7 @@ describe('Membership routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/memberships`,
+        url: `/api/items/${item.id}/memberships`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -82,7 +82,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/memberships`,
+          url: `/api/items/${item.id}/memberships`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
@@ -96,7 +96,7 @@ describe('Membership routes tests', () => {
       it('Bad request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/invalid-id/memberships`,
+          url: `/api/items/invalid-id/memberships`,
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -110,7 +110,7 @@ describe('Membership routes tests', () => {
         const itemId = v4();
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${itemId}/memberships`,
+          url: `/api/items/${itemId}/memberships`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -127,7 +127,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/memberships`,
+          url: `/api/items/${item.id}/memberships`,
         });
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
         expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
@@ -154,7 +154,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}/memberships`,
+          url: `/api/items/${item.id}/memberships`,
         });
         const data = response.json();
         for (const m of itemMemberships) {
@@ -179,7 +179,7 @@ describe('Membership routes tests', () => {
       };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships`,
+        url: `/api/items/${item.id}/memberships`,
         payload,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -202,7 +202,7 @@ describe('Membership routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/memberships`,
+          url: `/api/items/${item.id}/memberships`,
           payload,
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -246,7 +246,7 @@ describe('Membership routes tests', () => {
         const [_actorMembership, membership, anotherMembership] = itemMemberships;
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${parent.id}/memberships`,
+          url: `/api/items/${parent.id}/memberships`,
           payload: newMembership,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -290,7 +290,7 @@ describe('Membership routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${targetItem.id}/memberships`,
+          url: `/api/items/${targetItem.id}/memberships`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -341,7 +341,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/memberships`,
+          url: `/api/items/${item.id}/memberships`,
           payload: {
             permission: PermissionLevel.Read,
             itemId: item.id,
@@ -381,7 +381,7 @@ describe('Membership routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/memberships`,
+          url: `/api/items/${item.id}/memberships`,
           payload: newMembership,
         });
 
@@ -405,7 +405,7 @@ describe('Membership routes tests', () => {
         const id = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${id}/memberships`,
+          url: `/api/items/${id}/memberships`,
           payload: {
             permission: PermissionLevel.Read,
             itemId: item.id,
@@ -431,7 +431,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/${item.id}/memberships`,
+          url: `/api/items/${item.id}/memberships`,
           payload: {
             accountId: member.id,
             // missing permission
@@ -454,7 +454,7 @@ describe('Membership routes tests', () => {
       };
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/${item.id}/memberships/${itemMembership.id}`,
+        url: `/api/items/${item.id}/memberships/${itemMembership.id}`,
         payload,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -490,7 +490,7 @@ describe('Membership routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${child.id}/memberships/${writeMembership.id}`,
+          url: `/api/items/${child.id}/memberships/${writeMembership.id}`,
           payload: newMembership,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -523,7 +523,7 @@ describe('Membership routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}/memberships/${membership.id}`,
+          url: `/api/items/${item.id}/memberships/${membership.id}`,
           payload: newMembership,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -563,7 +563,7 @@ describe('Membership routes tests', () => {
         const newMembership = { permission: PermissionLevel.Write };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${parent.id}/memberships/${readMembership.id}`,
+          url: `/api/items/${parent.id}/memberships/${readMembership.id}`,
           payload: newMembership,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -578,7 +578,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${v4()}/memberships/${v4()}`,
+          url: `/api/items/${v4()}/memberships/${v4()}`,
           payload: { permission: 'permission' },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
@@ -592,7 +592,7 @@ describe('Membership routes tests', () => {
         const id = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${id}/memberships/${id}`,
+          url: `/api/items/${id}/memberships/${id}`,
           payload: { permission: PermissionLevel.Write },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
@@ -624,7 +624,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${child.id}/memberships/${adminMembership.id}`,
+          url: `/api/items/${child.id}/memberships/${adminMembership.id}`,
           payload: {
             permission: PermissionLevel.Read,
             accountId: member.id,
@@ -658,7 +658,7 @@ describe('Membership routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/${item.id}/memberships/${guestMembership.id}`,
+          url: `/api/items/${item.id}/memberships/${guestMembership.id}`,
           payload: newMembership,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -676,7 +676,7 @@ describe('Membership routes tests', () => {
       });
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/${itemMembership.id}`,
+        url: `/api/items/${item.id}/memberships/${itemMembership.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
@@ -705,7 +705,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/memberships/${membership.id}`,
+          url: `/api/items/${item.id}/memberships/${membership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
 
@@ -736,7 +736,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/memberships/${membership.id}?purgeBelow=true`,
+          url: `/api/items/${item.id}/memberships/${membership.id}?purgeBelow=true`,
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
 
@@ -752,7 +752,7 @@ describe('Membership routes tests', () => {
         const id = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${v4()}/memberships/${id}`,
+          url: `/api/items/${v4()}/memberships/${id}`,
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
@@ -768,7 +768,7 @@ describe('Membership routes tests', () => {
         const id = v4();
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/memberships/${id}`,
+          url: `/api/items/${item.id}/memberships/${id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
         expect(response.json()).toEqual(new ItemMembershipNotFound({ id }));
@@ -793,7 +793,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/memberships/${membership.id}`,
+          url: `/api/items/${item.id}/memberships/${membership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
         expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
@@ -819,7 +819,7 @@ describe('Membership routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/memberships/${membership.id}`,
+          url: `/api/items/${item.id}/memberships/${membership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
         expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
@@ -841,7 +841,7 @@ describe('Membership routes tests', () => {
         mockAuthenticate(actor);
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/memberships/${membership.id}`,
+          url: `/api/items/${item.id}/memberships/${membership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
         expect(response.json()).toMatchObject(new CannotDeleteOnlyAdmin({ id: expect.anything() }));

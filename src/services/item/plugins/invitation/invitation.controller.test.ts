@@ -17,6 +17,7 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
+import { uniqueEmail } from '../../../../../test/factories/member.factory';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -233,7 +234,7 @@ describe('Invitation Plugin', () => {
         mockAuthenticate(actor);
 
         const invitation = {
-          email: faker.internet.email({ firstName: 'Alice', lastName: 'Bob' }),
+          email: uniqueEmail(),
           permission: PermissionLevel.Read,
         };
         const response = await app.inject({
@@ -938,7 +939,7 @@ describe('Invitation Plugin', () => {
       // register
       await app.inject({
         method: HttpMethod.Post,
-        url: '/register',
+        url: '/api/register',
         payload: { email: invitation.email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
       const member = await db.query.accountsTable.findFirst({
@@ -987,7 +988,7 @@ describe('Invitation Plugin', () => {
       // register
       await app.inject({
         method: HttpMethod.Post,
-        url: '/register',
+        url: '/api/register',
         payload: { email: faker.internet.email(), name: 'some-name', captcha: MOCK_CAPTCHA },
       });
       await new Promise((done) => {

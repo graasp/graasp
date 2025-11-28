@@ -37,7 +37,7 @@ describe('Document Item tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/documents',
+        url: '/api/items/documents',
         payload,
       });
 
@@ -52,7 +52,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: 'content' };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/documents',
+        url: '/api/items/documents',
         payload,
       });
 
@@ -67,7 +67,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: 'content' };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/documents',
+        url: '/api/items/documents',
         payload,
       });
 
@@ -82,7 +82,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: '' };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/documents',
+        url: '/api/items/documents',
         payload,
       });
 
@@ -97,7 +97,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: 'content', isRaw: 'value' };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/documents',
+        url: '/api/items/documents',
         payload,
       });
 
@@ -112,7 +112,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: 'content', flavor: 'value' };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items/documents',
+        url: '/api/items/documents',
         payload,
       });
 
@@ -128,7 +128,7 @@ describe('Document Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/items/documents',
+          url: '/api/items/documents',
           payload: { name: 'name', content: 'content' },
         });
 
@@ -145,7 +145,7 @@ describe('Document Item tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/documents/${item.id}`,
+        url: `/api/items/documents/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -162,7 +162,7 @@ describe('Document Item tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/documents/${item.id}`,
+        url: `/api/items/documents/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -182,7 +182,7 @@ describe('Document Item tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/documents/${item.id}`,
+        url: `/api/items/documents/${item.id}`,
         payload: { name: 'new name' },
       });
 
@@ -202,7 +202,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: '' };
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/documents/${item.id}`,
+        url: `/api/items/documents/${item.id}`,
         payload,
       });
 
@@ -222,7 +222,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: 'content', isRaw: 'value' };
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/documents/${item.id}`,
+        url: `/api/items/documents/${item.id}`,
         payload,
       });
 
@@ -242,7 +242,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', content: 'content', flavor: 'value' };
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items/documents/${item.id}`,
+        url: `/api/items/documents/${item.id}`,
         payload,
       });
 
@@ -285,7 +285,7 @@ describe('Document Item tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/documents/${item.id}`,
+          url: `/api/items/documents/${item.id}`,
           payload,
         });
 

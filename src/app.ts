@@ -41,30 +41,30 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   // register some dependencies manually
   registerDependencies(instance.log);
-
-  await instance.register(fp(metaPlugin));
+  await instance.register(metaPlugin);
 
   await instance.register(fp(passportPlugin));
-  // need to be defined before member and item for auth check
 
-  await instance.register(maintenancePlugin);
-
-  await instance.register(fp(authPlugin));
-
-  await instance.register(async (instance) => {
-    // core API modules
-    await instance
-      // the websockets plugin must be registered before but in the same scope as the apis
-      // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
-      .register(fp(websocketsPlugin), {
-        prefix: '/ws',
-        redis: {
-          channelName: 'graasp-realtime-updates',
-          connection: REDIS_CONNECTION,
-        },
-      })
-      .register(fp(MemberServiceApi))
-      .register(fp(ItemServiceApi))
-      .register(tagPlugin);
-  });
+  await instance.register(
+    async (instance) => {
+      // need to be defined before member and item for auth check
+      await instance.register(fp(authPlugin));
+      // core API modules
+      await instance
+        // the websockets plugin must be registered before but in the same scope as the apis
+        // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
+        .register(fp(websocketsPlugin), {
+          prefix: '/ws',
+          redis: {
+            channelName: 'graasp-realtime-updates',
+            connection: REDIS_CONNECTION,
+          },
+        })
+        .register(fp(MemberServiceApi))
+        .register(fp(ItemServiceApi))
+        .register(tagPlugin)
+        .register(maintenancePlugin);
+    },
+    { prefix: '/api' },
+  );
 }

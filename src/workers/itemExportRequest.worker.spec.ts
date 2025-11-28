@@ -50,6 +50,7 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
 
     // expect the exportFolder to have been called
     expect(itemExportRequestService.exportFolderZipAndSendByEmail).toHaveBeenCalled();
+    await queue.close();
   });
 
   it('fail if processing throws', async () => {
@@ -82,6 +83,7 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
       .toBeTruthy();
     // expect the exportFolder to have been called
     expect(itemExportRequestService.exportFolderZipAndSendByEmail).toHaveBeenCalled();
+    await queue.close();
   });
 
   it('fail with wrong data', async () => {
@@ -106,5 +108,6 @@ describe('ItemExportRequest worker', { sequential: true }, () => {
       .toBeTruthy();
     // expect the exportFolder to not have been called
     expect(itemExportRequestService.exportFolderZipAndSendByEmail).not.toHaveBeenCalled();
+    await queue.close();
   });
 });

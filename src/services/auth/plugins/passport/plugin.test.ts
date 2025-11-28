@@ -53,7 +53,7 @@ async function logIn(app: FastifyInstance, member: { id: string }) {
   const token = sign({ sub: member.id }, JWT_SECRET);
   const response = await app.inject({
     method: HttpMethod.Get,
-    path: '/auth',
+    path: '/api/auth',
     query: { t: token },
   });
   return response.headers['set-cookie'];

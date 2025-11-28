@@ -52,7 +52,7 @@ env:
   GEOLOCATION_API_HOST: http://localhost:12345
 
 jobs:
-  build-node:
+  build-unit:
     runs-on: ubuntu-latest
 
     # Service containers to run with `container-job`
@@ -127,8 +127,9 @@ jobs:
         run: yarn vitest
 
   test-node:
-    needs: build-node
     strategy:
+      # NOTE: switch this on if you want to have the result of all the shards to fix more tests at once.
+      # fail-fast: false
       matrix:
         shard: [1/4, 2/4, 3/4, 4/4]
     runs-on: ubuntu-latest
