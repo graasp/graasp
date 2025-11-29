@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.10.4](https://github.com/graasp/graasp/compare/v2.10.3...v2.10.4) (2025-11-28)
+
+
+### Bug Fixes
+
+* add H5P integration url to packed item wrapper ([#2027](https://github.com/graasp/graasp/issues/2027)) ([c0173e7](https://github.com/graasp/graasp/commit/c0173e75b26a04a8ef3d681ffd807bdaea795b40))
+* add missing operationId for member action call ([#2033](https://github.com/graasp/graasp/issues/2033)) ([8ca72ed](https://github.com/graasp/graasp/commit/8ca72edfed7a69d8aafceaac433196f5f3c2a957))
+* deploy to latest tag ([0ce5204](https://github.com/graasp/graasp/commit/0ce5204aa6f0bc84a0bebea15e077ea8f9edc977))
+* expose with the /api prefix ([#2037](https://github.com/graasp/graasp/issues/2037)) ([dd56268](https://github.com/graasp/graasp/commit/dd562686a0dfb0f2a8414eae87297476046f8cbb))
+* remove translations package in favor of sdk ([#2020](https://github.com/graasp/graasp/issues/2020)) ([67e8e8a](https://github.com/graasp/graasp/commit/67e8e8ae00207cda520bf17c72cc2a7c4ec5d551))
+* send full url when requesting the short link ([#2025](https://github.com/graasp/graasp/issues/2025)) ([453b9f4](https://github.com/graasp/graasp/commit/453b9f43fd0c8b7f3fa296afc130b27ff341fc45))
+* upgrade sdk ([67e8e8a](https://github.com/graasp/graasp/commit/67e8e8ae00207cda520bf17c72cc2a7c4ec5d551))
+* upgrade sdk ([#2034](https://github.com/graasp/graasp/issues/2034)) ([b120bd2](https://github.com/graasp/graasp/commit/b120bd262e51158c4a1e378aab5b4d1c47029b3d))
+
 ## [2.10.3](https://github.com/graasp/graasp/compare/v2.10.2...v2.10.3) (2025-10-23)
 
 
