@@ -75,7 +75,7 @@ export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
  * }
  * >
  */
-export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
+export const PUBLIC_URL = new URL(process.env.CLIENT_HOST ?? HOST);
 
 /**
  * GRAASP FILE STORAGE CONFIG
