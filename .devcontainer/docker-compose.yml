@@ -185,15 +185,15 @@ services:
     ports:
       - "1080:1080"
 
-  nginx:
-    image: nginx:1.25-alpine
-    hostname: nginx
+  caddy:
+    image: caddy:2
+    hostname: caddy
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "3000:3000"
     depends_on:
       - core
-    ports:
-      - "3000:3000" # expose nginx on localhost:3000
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
 
 volumes:

@@ -1,0 +1,4 @@
+:3000 {
+    rewrite * /api{uri}
+    reverse_proxy core:3000
+}
