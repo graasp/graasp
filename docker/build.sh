@@ -45,7 +45,7 @@ workers_tag_full="$aws_ecr_uri/$workers_tag_short"
 migrate_tag_short="graasp:migrate-$tag_version"
 migrate_tag_full="$aws_ecr_uri/$migrate_tag_short"
 
-docker build -t $core_tag_full -f docker/Dockerfile --build-arg APP_VERSION=$tag_version --build-arg BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S) .
+docker build -t $core_tag_full -f docker/Dockerfile --build-arg APP_VERSION=$tag_version --build-arg BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S) --secret id=SENTRY_AUTH_TOKEN .
 docker push $core_tag_full
 
 docker build -t $workers_tag_full -f docker/workers.Dockerfile --build-arg APP_VERSION=$tag_version --build-arg BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S) .

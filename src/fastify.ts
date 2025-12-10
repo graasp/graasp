@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/node';
+
 import { fastifyHelmet } from '@fastify/helmet';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
@@ -6,7 +8,6 @@ import registerAppPlugins from './app';
 import { DEV, NODE_ENV, PROD } from './config/env';
 import { client } from './drizzle/db';
 import ajvFormats from './schemas/ajvFormats';
-import { initSentry } from './sentry';
 import { APP_VERSION, CORS_ORIGIN_REGEX, HOST_LISTEN_ADDRESS, PORT } from './utils/config';
 import { GREETING } from './utils/constants';
 import { queueDashboardPlugin } from './workers/dashboard.controller';
@@ -42,8 +43,7 @@ instance.addHook('onClose', async () => {
 });
 
 const start = async () => {
-  const { Sentry } = initSentry(instance);
-
+  Sentry.setupFastifyErrorHandler(instance);
   instance.register(fastifyHelmet);
 
   if (CORS_ORIGIN_REGEX) {
