@@ -1,0 +1,1 @@
+CREATE INDEX "IDX_item_deleted_at" ON "item" USING btree ("deleted_at");
