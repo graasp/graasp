@@ -44,7 +44,8 @@
     "migration:apply-test": "DB_CONNECTION=postgres://test:test@db:5432/test yarn migration:run",
     "migration:generate": "yarn drizzle-kit generate",
     "migration:run": "yarn drizzle-kit migrate",
-    "migration:check": "yarn drizzle-kit generate --name=migrationtest --out=./src/drizzle --schema=./src/drizzle/schema.ts --dialect=postgresql && [ -f '$(find ./src/drizzle | grep migrationtest)' ] && exit 1 || exit 0"
+    "migration:check": "yarn drizzle-kit generate --name=migrationtest --out=./src/drizzle --schema=./src/drizzle/schema.ts --dialect=postgresql && [ -f '$(find ./src/drizzle | grep migrationtest)' ] && exit 1 || exit 0",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org graasp --project graasp-core ./dist && sentry-cli sourcemaps upload --org graasp --project graasp-core ./dist"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.787.0",
@@ -69,7 +70,10 @@
     "@graasp/etherpad-api": "2.1.1",
     "@graasp/sdk": "5.16.5",
     "@rapideditor/country-coder": "5.4.0",
-    "@sentry/node": "7.119.2",
+    "@sentry/cli": "2.57.0",
+    "@sentry/node": "10.20.0",
+    "@sentry/opentelemetry": "10.20.0",
+    "@sentry/profiling-node": "10.20.0",
     "@sentry/tracing": "7.120.3",
     "@sinclair/typebox": "0.34.33",
     "ajv": "8.17.1",
