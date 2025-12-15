@@ -106,6 +106,13 @@
       "when": 1761050515292,
       "tag": "0014_app-data-indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1765449554653,
+      "tag": "0015_item-deleted-at-index",
+      "breakpoints": true
     }
   ]
 }
