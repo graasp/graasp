@@ -113,6 +113,13 @@
       "when": 1765449554653,
       "tag": "0015_item-deleted-at-index",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1765897848286,
+      "tag": "0016_item-deletion-indexes",
+      "breakpoints": true
     }
   ]
 }

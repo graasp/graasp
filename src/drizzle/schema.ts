@@ -167,6 +167,10 @@ export const itemMembershipsTable = pgTable(
       'btree',
       table.accountId.asc().nullsLast().op('uuid_ops'),
     ),
+    index('IDX_item_membership_creator_id').using(
+      'btree',
+      table.creatorId.asc().nullsLast().op('uuid_ops'),
+    ),
     index('IDX_item_membership_account_id_permission').using(
       'btree',
       table.accountId.asc().nullsLast().op('uuid_ops'),
@@ -309,6 +313,10 @@ export const itemCategoriesTable = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
+    index('IDX_item_category_item_path').using(
+      'gist',
+      table.itemPath.nullsLast().op('gist_ltree_ops'),
+    ),
     unique('category-item').on(table.itemPath, table.categoryId),
   ],
 );
@@ -439,11 +447,13 @@ export const appActionsTable = pgTable(
       foreignColumns: [itemsRawTable.id],
       name: 'FK_c415fc186dda51fa260d338d776',
     }).onDelete('cascade'),
+    index('IDX_app_action_item_id').using('btree', table.itemId.nullsLast().op('uuid_ops')),
     foreignKey({
       columns: [table.accountId],
       foreignColumns: [accountsTable.id],
       name: 'FK_app_action_account_id',
     }).onDelete('cascade'),
+    index('IDX_app_action_account_id').using('btree', table.accountId.nullsLast().op('uuid_ops')),
   ],
 );
 
@@ -487,9 +497,7 @@ export const invitationsTable = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     creatorId: uuid('creator_id').references(() => accountsTable.id),
-    itemPath: ltree('item_path')
-      .notNull()
-      .references(() => itemsRawTable.path),
+    itemPath: ltree('item_path').notNull(),
     name: varchar({ length: 100 }),
     email: varchar({ length: 100 }).notNull(),
     permission: permissionEnum().default('read').notNull(),
@@ -510,10 +518,14 @@ export const invitationsTable = pgTable(
     foreignKey({
       columns: [table.itemPath],
       foreignColumns: [itemsRawTable.path],
-      name: 'FK_dc1d92accde1c2fbb7e729e4dcc',
+      name: 'FK_invitation_item_path',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
+    index('IDX_invitation_item_path').using(
+      'gist',
+      table.itemPath.nullsLast().op('gist_ltree_ops'),
+    ),
     unique('item-email').on(table.itemPath, table.email),
   ],
 );
@@ -580,6 +592,10 @@ export const itemValidationGroupsTable = pgTable(
       foreignColumns: [itemsRawTable.id],
       name: 'FK_a9e83cf5f53c026b774b53d3c60',
     }).onDelete('cascade'),
+    index('IDX_item_validation_group_item_id').using(
+      'btree',
+      table.itemId.nullsLast().op('uuid_ops'),
+    ),
   ],
 );
 
@@ -606,11 +622,16 @@ export const itemValidationsTable = pgTable(
       foreignColumns: [itemsRawTable.id],
       name: 'FK_d60969d5e478e7c844532ac4e7f',
     }).onDelete('cascade'),
+    index('IDX_item_validation_item_id').using('btree', table.itemId.nullsLast().op('uuid_ops')),
     foreignKey({
       columns: [table.itemValidationGroupId],
       foreignColumns: [itemValidationGroupsTable.id],
       name: 'FK_e92da280941f666acf87baedc65',
     }).onDelete('cascade'),
+    index('IDX_item_validation_item_validation_group_id').using(
+      'btree',
+      table.itemValidationGroupId.nullsLast().op('uuid_ops'),
+    ),
   ],
 );
 
@@ -636,6 +657,10 @@ export const itemValidationReviewsTable = pgTable(
       foreignColumns: [itemValidationsTable.id],
       name: 'FK_59fd000835c70c728e525d82950',
     }).onDelete('cascade'),
+    index('IDX_item_validation_review_item_validation_id').using(
+      'btree',
+      table.itemValidationId.nullsLast().op('uuid_ops'),
+    ),
     foreignKey({
       columns: [table.reviewerId],
       foreignColumns: [accountsTable.id],
