@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.11.0](https://github.com/graasp/graasp/compare/v2.10.4...v2.11.0) (2025-12-18)
+
+
+### Features
+
+* add indexes to optimize item deletion ([#2046](https://github.com/graasp/graasp/issues/2046)) ([fd43e37](https://github.com/graasp/graasp/commit/fd43e37ffe4a6e8d63411a6d75dcb4cf0f06d211))
+* add migration for index on item's deleted at ([#2045](https://github.com/graasp/graasp/issues/2045)) ([eefb250](https://github.com/graasp/graasp/commit/eefb25060ed180305912e1dbc85beff7a393e0af))
+
+
+### Bug Fixes
+
+* **deps:** update dependency nodemailer to v7.0.11 [security] ([#2041](https://github.com/graasp/graasp/issues/2041)) ([3e1edc7](https://github.com/graasp/graasp/commit/3e1edc7da82ca993b1fe566b2dbac600032b49eb))
+* replace nginx proxy with caddy ([#2042](https://github.com/graasp/graasp/issues/2042)) ([8e5813a](https://github.com/graasp/graasp/commit/8e5813a9c65ad27c285204b9f004ef3a28b2ad50))
+
 ## [2.10.4](https://github.com/graasp/graasp/compare/v2.10.3...v2.10.4) (2025-11-28)
 
 
