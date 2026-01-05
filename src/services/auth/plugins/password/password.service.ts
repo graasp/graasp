@@ -17,6 +17,7 @@ import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import type { AuthenticatedUser, MemberInfo } from '../../../../types';
 import {
+  BadCredentials,
   EmptyCurrentPassword,
   InvalidPassword,
   MemberNotSignedUp,
@@ -267,7 +268,8 @@ export class MemberPasswordService {
     if (await comparePasswords(password, memberPassword.password)) {
       return member;
     }
-    return undefined;
+
+    throw new BadCredentials();
   }
 
   async hasPassword(dbConnection: DBConnection, memberId: string): Promise<boolean> {

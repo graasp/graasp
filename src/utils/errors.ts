@@ -341,8 +341,17 @@ export class NothingToUpdateItem extends CoreError {
     super({
       code: 'GERR036',
       statusCode: StatusCodes.BAD_REQUEST,
-      // TODO
-      message: 'Nothing was provided to update the item',
+      message: FAILURE_MESSAGES.NOTHING_TO_UPDATE_ITEM,
+    });
+  }
+}
+
+export class BadCredentials extends CoreError {
+  constructor() {
+    super({
+      code: 'GERR037',
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: FAILURE_MESSAGES.BAD_CREDENTIALS,
     });
   }
 }
