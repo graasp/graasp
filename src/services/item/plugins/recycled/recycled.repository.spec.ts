@@ -1,9 +1,12 @@
+import { subMonths } from 'date-fns';
+import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
 import { PermissionLevel } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
+import { recycledItemDatasTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAdminItem } from '../../../../utils/errors';
 import { assertIsMemberForTest } from '../../../authentication';
@@ -197,6 +200,40 @@ describe('RecycledItemDataRepository', () => {
         await recycledRepository.getOwnRecycledItems(db, actor, { page: 1, pageSize: 100 })
       ).data.map(({ id }) => id);
       expect(result).not.toContain(nonRecycledItem.id);
+    });
+
+    it('do not return items deleted before 3 months ago', async () => {
+      const {
+        items: [oldDeletedItem, validItem],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            isDeleted: true,
+          },
+          {
+            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            isDeleted: true,
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      // set recycled createdAt to older than 3 months
+      const oldDate = subMonths(new Date(), 4);
+      await db
+        .update(recycledItemDatasTable)
+        .set({ createdAt: oldDate.toISOString() })
+        .where(eq(recycledItemDatasTable.itemPath, oldDeletedItem.path));
+
+      const result = (
+        await recycledRepository.getOwnRecycledItems(db, actor, { page: 1, pageSize: 100 })
+      ).data.map(({ id }) => id);
+
+      expect(result).not.toContain(oldDeletedItem.id);
+      expect(result).toContain(validItem.id);
     });
   });
 });
