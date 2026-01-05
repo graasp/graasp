@@ -1,6 +1,7 @@
+import { subMonths } from 'date-fns';
 import { eq, getTableColumns, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
-import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
+import { and, asc, desc, gte, isNotNull, ne } from 'drizzle-orm/sql';
 
 import { type Paginated, type Pagination, PermissionLevel } from '@graasp/sdk';
 
@@ -65,6 +66,8 @@ export class RecycledItemDataRepository {
       )
       .as('ownMemberships');
 
+    // get recycled items not older than 3 months
+    const threeMonths = subMonths(new Date(), 3);
     const query = dbConnection
       .select(getTableColumns(itemsRawTable))
       .from(ownMemberships)
@@ -78,6 +81,7 @@ export class RecycledItemDataRepository {
       .innerJoin(itemsRawTable, and(eq(itemsRawTable.path, recycledItemDatasTable.itemPath)))
       // return item's creator
       .leftJoin(membersView, eq(itemsRawTable.creatorId, membersView.id))
+      .where(gte(recycledItemDatasTable.createdAt, threeMonths.toISOString()))
       .as('subquery');
 
     const data = await dbConnection
