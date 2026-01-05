@@ -2,7 +2,7 @@
   "name": "graasp",
   "version": "2.11.0",
   "engines": {
-    "node": ">=22.14.0"
+    "node": ">=24.12.0"
   },
   "description": "Graasp next level",
   "repository": {
@@ -143,7 +143,7 @@
     "@types/lodash.partition": "^4",
     "@types/lodash.uniqby": "4.7.9",
     "@types/mime": "3.0.4",
-    "@types/node": "22.18.7",
+    "@types/node": "24.12.0",
     "@types/node-fetch": "2",
     "@types/nodemailer": "6.4.15",
     "@types/papaparse": "5.3.15",
