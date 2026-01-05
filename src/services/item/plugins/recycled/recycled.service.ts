@@ -60,14 +60,6 @@ export class RecycledBinService {
     return items;
   }
 
-  async getManyById(
-    dbConnection: DBConnection,
-    member: MinimalMember,
-    pagination: Pagination,
-  ): Promise<Paginated<ItemRaw>> {
-    return await this.recycledItemRepository.getOwnRecycledItems(dbConnection, member, pagination);
-  }
-
   async recycleMany(dbConnection: DBConnection, member: MinimalMember, itemIds: string[]) {
     const items = await this.itemRepository.getMany(dbConnection, itemIds);
 
