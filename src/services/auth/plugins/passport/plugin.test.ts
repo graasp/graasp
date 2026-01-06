@@ -19,6 +19,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { ItemRaw, MemberRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
+import { BadCredentials } from '../../../../utils/errors';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../../item/test/fixtures/items';
 import { MemberPasswordService } from '../password/password.service';
@@ -290,6 +291,7 @@ describe('Passport Plugin', () => {
       });
       expect(handler).toHaveBeenCalledTimes(0);
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.json().name).toEqual(new BadCredentials().name);
     });
     it('Unknown email', async () => {
       handler.mockImplementation(shouldNotBeCalled);
