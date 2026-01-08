@@ -20,8 +20,8 @@ Head over to: [Client](https://github.com/graasp/client), [Library](https://gith
 
 In order to run the Graasp backend, it requires:
 
-- Node version 22
-- NPM version 10
+- Node version 24
+- NPM version 11
 - Yarn (can be installed through [`nvm`](https://github.com/nvm-sh/nvm))
 - [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/): Docker is not necessary, it is possible to install everything locally. However it is strongly recommended to use the Docker installation guide.
 

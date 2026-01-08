@@ -1,4 +1,4 @@
-FROM node:22.15-bookworm AS base
+FROM node:24.12-bookworm AS base
 
 
 ##############################
@@ -37,7 +37,7 @@ RUN yarn set version berry && yarn workspaces focus --all --production
 ### Run Application Step ###
 ############################
 # Final step that will run the application
-FROM node:22.15-bookworm-slim AS runner
+FROM node:24.12-bookworm-slim AS runner
 
 # Variable passed as a build arg. Represents the tag or git sha used for the build
 ARG APP_VERSION

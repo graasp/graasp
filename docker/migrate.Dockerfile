@@ -1,5 +1,5 @@
 # -----> Build image
-FROM node:22.14.0-bookworm AS build
+FROM node:24.12.0-bookworm AS build
 # update packages and install the minimal init system "dumb-init"
 RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
 
@@ -12,7 +12,7 @@ RUN npm install drizzle-kit@latest drizzle-orm@latest pg dotenv --omit=dev
 # -----> Production image
 # Select a node image with a specific LTS version
 # Use the debian based image with the slim variant
-FROM node:22.14.0-bookworm-slim
+FROM node:24.12.0-bookworm-slim
 
 # Set the NODE_ENV to "production" to get the expected behaviour of tools
 ENV NODE_ENV=production
