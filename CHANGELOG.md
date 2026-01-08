@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.12.0](https://github.com/graasp/graasp/compare/v2.11.0...v2.12.0) (2026-01-08)
+
+
+### Features
+
+* return bad credentials error ([#2049](https://github.com/graasp/graasp/issues/2049)) ([ad77bbf](https://github.com/graasp/graasp/commit/ad77bbfd695e9d4696986998d3edadbd521df169))
+
+
+### Bug Fixes
+
+* **deps:** upgrade node to v24.12 ([#2050](https://github.com/graasp/graasp/issues/2050)) ([1b36d09](https://github.com/graasp/graasp/commit/1b36d09be9e941e57ba70910a401576cf4262bfc))
+
 ## [2.11.0](https://github.com/graasp/graasp/compare/v2.10.4...v2.11.0) (2025-12-18)
 
 
