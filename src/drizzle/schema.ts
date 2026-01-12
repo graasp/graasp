@@ -228,6 +228,7 @@ export const recycledItemDatasTable = pgTable(
       'gist',
       table.itemPath.asc().nullsLast().op('gist_ltree_ops'),
     ),
+    index('IDX_recycled_item_data_created_at').using('btree', table.createdAt.desc()),
   ],
 );
 

@@ -2,7 +2,7 @@
 
 Items can be put in the trash, so it's possible to restore them if needed.
 
-A user can retrieve its items in the trash up to 3 months. After this date the items are skipped and will be automatically deleted by a job in the background.
+The items in a user's trash are visible up-to 3 months after deletion. During this time, the user can still restore them. After this date the items are skipped and will be automatically deleted by a job in the background.
 
 ## Use Cases
 

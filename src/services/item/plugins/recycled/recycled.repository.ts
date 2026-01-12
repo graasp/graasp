@@ -67,21 +67,24 @@ export class RecycledItemDataRepository {
       .as('ownMemberships');
 
     // get recycled items not older than 3 months
-    const threeMonths = subMonths(new Date(), 3);
+    const autoDeletionDeadline = subMonths(new Date(), 3);
     const query = dbConnection
       .select(getTableColumns(itemsRawTable))
       .from(ownMemberships)
       // get top most recycled item
       // should have admin access on recycled item root
+      // newer than the auto deletion deadline
       .innerJoin(
         recycledItemDatasTable,
-        isDescendantOrSelf(recycledItemDatasTable.itemPath, ownMemberships.itemPath),
+        and(
+          isDescendantOrSelf(recycledItemDatasTable.itemPath, ownMemberships.itemPath),
+          gte(recycledItemDatasTable.createdAt, autoDeletionDeadline.toISOString()),
+        ),
       )
       // join with item
       .innerJoin(itemsRawTable, and(eq(itemsRawTable.path, recycledItemDatasTable.itemPath)))
       // return item's creator
       .leftJoin(membersView, eq(itemsRawTable.creatorId, membersView.id))
-      .where(gte(recycledItemDatasTable.createdAt, threeMonths.toISOString()))
       .as('subquery');
 
     const data = await dbConnection
