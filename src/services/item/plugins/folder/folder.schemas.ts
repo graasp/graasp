@@ -14,7 +14,7 @@ export const folderSchema = Type.Composite([
     {
       extra: customType.StrictObject({
         folder: customType.StrictObject({
-          isRoot: Type.Optional(Type.Boolean()),
+          isCapsule: Type.Optional(Type.Boolean()),
         }),
       }),
     },
@@ -63,8 +63,11 @@ export const updateFolder = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: Type.Partial(Type.Pick(folderSchema, ['name', 'description', 'lang', 'settings']), {
-    minProperties: 1,
-  }),
+  body: Type.Partial(
+    Type.Pick(folderSchema, ['name', 'description', 'lang', 'settings', 'extra']),
+    {
+      minProperties: 1,
+    },
+  ),
   response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
