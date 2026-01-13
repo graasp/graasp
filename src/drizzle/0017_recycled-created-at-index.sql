@@ -1,0 +1,1 @@
+CREATE INDEX "IDX_recycled_item_data_created_at" ON "recycled_item_data" USING btree ("created_at" DESC NULLS LAST);

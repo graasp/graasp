@@ -1,6 +1,7 @@
+import { subMonths } from 'date-fns';
 import { eq, getTableColumns, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
-import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
+import { and, asc, desc, gte, isNotNull, ne } from 'drizzle-orm/sql';
 
 import { type Paginated, type Pagination, PermissionLevel } from '@graasp/sdk';
 
@@ -65,14 +66,20 @@ export class RecycledItemDataRepository {
       )
       .as('ownMemberships');
 
+    // get recycled items not older than 3 months
+    const autoDeletionDeadline = subMonths(new Date(), 3);
     const query = dbConnection
       .select(getTableColumns(itemsRawTable))
       .from(ownMemberships)
       // get top most recycled item
       // should have admin access on recycled item root
+      // newer than the auto deletion deadline
       .innerJoin(
         recycledItemDatasTable,
-        isDescendantOrSelf(recycledItemDatasTable.itemPath, ownMemberships.itemPath),
+        and(
+          isDescendantOrSelf(recycledItemDatasTable.itemPath, ownMemberships.itemPath),
+          gte(recycledItemDatasTable.createdAt, autoDeletionDeadline.toISOString()),
+        ),
       )
       // join with item
       .innerJoin(itemsRawTable, and(eq(itemsRawTable.path, recycledItemDatasTable.itemPath)))
