@@ -74,6 +74,10 @@ export class ItemValidationModerator {
     } catch (error) {
       // if some error happend during the execution of a process, it is counted as failure
       status = ItemValidationStatus.Failure;
+      // in the case of a missing s3 file, we count it as OK
+      if (error.message == 'S3_FILE_NOT_FOUND') {
+        status = ItemValidationStatus.Success;
+      }
       if (error instanceof Error) {
         result = error.message;
       }

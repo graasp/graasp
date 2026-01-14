@@ -10,7 +10,7 @@ type ClassPrediction = {
   box: [number, number, number, number];
 };
 type ClassificationResponse = {
-  prediction?: ClassPrediction[][];
+  prediction?: (ClassPrediction[] | { success: false; reason: string })[];
   success: boolean;
 };
 
@@ -83,6 +83,10 @@ export const classifyImage = async (
   const prediction = response?.prediction?.at(0);
   if (!prediction) {
     throw new FailedImageClassificationRequestError('Invalid Response');
+  }
+  if (!Array.isArray(prediction)) {
+    // there was nothing to predict on, so there are no nudity labels
+    return [];
   }
 
   const nudityLabels = prediction.filter(
