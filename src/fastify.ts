@@ -3,6 +3,7 @@ import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from './app';
+import { bustFileCache } from './bustCache';
 import { DEV, NODE_ENV, PROD } from './config/env';
 import { client } from './drizzle/db';
 import ajvFormats from './schemas/ajvFormats';
@@ -66,6 +67,7 @@ const start = async () => {
       // greet the world
       // eslint-disable-next-line no-console
       console.log(`${GREETING}`);
+      await bustFileCache();
     }
   } catch (err) {
     instance.log.error(err);
