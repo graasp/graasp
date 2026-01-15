@@ -1,17 +1,14 @@
 import { faker } from '@faker-js/faker';
 import { and, eq } from 'drizzle-orm';
-import FormData from 'form-data';
-import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import path from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
 import {
+  CapsuleItemFactory,
   DescriptionPlacement,
-  FolderItemFactory,
   HttpMethod,
   ItemType,
   MAX_NUMBER_OF_CHILDREN,
@@ -41,43 +38,9 @@ import {
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../test/fixtures/items';
 import { ItemActionService } from '../action/itemAction.service';
-import { FolderItemService } from './folder.service';
+import { FolderItemService } from '../folder/folder.service';
 
-// Mock S3 libraries
-const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
-const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
-const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
-const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
-const MOCK_SIGNED_URL = 'signed-url';
-jest.mock('@aws-sdk/client-s3', () => {
-  return {
-    GetObjectCommand: jest.fn(),
-    S3: function () {
-      return {
-        copyObject: copyObjectMock,
-        deleteObject: deleteObjectMock,
-        headObject: headObjectMock,
-      };
-    },
-  };
-});
-jest.mock('@aws-sdk/s3-request-presigner', () => {
-  const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
-  return {
-    getSignedUrl,
-  };
-});
-jest.mock('@aws-sdk/lib-storage', () => {
-  return {
-    Upload: jest.fn().mockImplementation(() => {
-      return {
-        done: uploadDoneMock,
-      };
-    }),
-  };
-});
-
-describe('Folder routes tests', () => {
+describe('Capsule routes tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
@@ -94,12 +57,12 @@ describe('Folder routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe('POST /api/items/folders', () => {
+  describe('POST /api/items/capsules', () => {
     it('Throws if signed out', async () => {
-      const payload = FolderItemFactory();
+      const payload = CapsuleItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/api/items/folders',
+        url: '/api/items/capsules',
         payload,
       });
 
@@ -131,11 +94,11 @@ describe('Folder routes tests', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -174,10 +137,10 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parent.id}`,
+          url: `/api/items/capsules?parentId=${parent.id}`,
           payload,
         });
         const newItem = response.json();
@@ -210,10 +173,10 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parent.id}`,
+          url: `/api/items/capsules?parentId=${parent.id}`,
           payload,
         });
 
@@ -243,10 +206,10 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
         });
 
@@ -268,10 +231,10 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory({ lang: 'fr' });
+        const payload = CapsuleItemFactory({ lang: 'fr' });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload,
         });
 
@@ -295,7 +258,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
           query: { parentId: parentItem.id },
         });
@@ -312,12 +275,12 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory({
+        const payload = CapsuleItemFactory({
           settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
         });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload,
         });
 
@@ -338,7 +301,7 @@ describe('Folder routes tests', () => {
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
 
-        const payload = FolderItemFactory({
+        const payload = CapsuleItemFactory({
           settings: {
             ...BAD_SETTING,
             ...VALID_SETTING,
@@ -346,7 +309,7 @@ describe('Folder routes tests', () => {
         });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload,
         });
 
@@ -369,10 +332,10 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           query: { parentId: parentItem.id, previousItemId: previousItem.id },
           payload,
         });
@@ -401,10 +364,10 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           query: { parentId: parentItem.id, previousItemId: previousItem.id },
           payload,
         });
@@ -436,10 +399,10 @@ describe('Folder routes tests', () => {
         assertIsMember(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           query: { parentId: parentItem.id, previousItemId: anotherChild.id },
           payload,
         });
@@ -461,10 +424,10 @@ describe('Folder routes tests', () => {
       });
 
       it('Throw if geolocation is partial', async () => {
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload: { ...payload, geolocation: { lat: 1 } },
         });
 
@@ -478,7 +441,7 @@ describe('Folder routes tests', () => {
 
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload: { ...payload, geolocation: { lng: 1 } },
         });
 
@@ -493,20 +456,20 @@ describe('Folder routes tests', () => {
 
       it('Bad request if name is invalid', async () => {
         // by default the item creator use an invalid item type
-        const newItem = FolderItemFactory({ name: '' });
+        const newItem = CapsuleItemFactory({ name: '' });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload: newItem,
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
 
         // by default the item creator use an invalid item type
-        const newItem1 = FolderItemFactory({ name: ' ' });
+        const newItem1 = CapsuleItemFactory({ name: ' ' });
         const response1 = await app.inject({
           method: HttpMethod.Post,
-          url: '/api/items/folders',
+          url: '/api/items/capsules',
           payload: newItem1,
         });
         expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -514,11 +477,11 @@ describe('Folder routes tests', () => {
       });
 
       it('Bad request if parentId id is invalid', async () => {
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const parentId = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parentId}`,
+          url: `/api/items/capsules?parentId=${parentId}`,
           payload,
         });
 
@@ -530,11 +493,11 @@ describe('Folder routes tests', () => {
         assertIsDefined(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const parentId = uuidv4();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parentId}`,
+          url: `/api/items/capsules?parentId=${parentId}`,
           payload,
         });
 
@@ -552,10 +515,10 @@ describe('Folder routes tests', () => {
         assertIsDefined(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parent.id}`,
+          url: `/api/items/capsules?parentId=${parent.id}`,
           payload,
         });
 
@@ -573,10 +536,10 @@ describe('Folder routes tests', () => {
         assertIsDefined(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parent.id}`,
+          url: `/api/items/capsules?parentId=${parent.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -600,10 +563,10 @@ describe('Folder routes tests', () => {
         assertIsDefined(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parent.id}`,
+          url: `/api/items/capsules?parentId=${parent.id}`,
           payload,
         });
 
@@ -626,329 +589,15 @@ describe('Folder routes tests', () => {
         assertIsDefined(actor);
         mockAuthenticate(actor);
 
-        const payload = FolderItemFactory();
+        const payload = CapsuleItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/api/items/folders?parentId=${parent.id}`,
+          url: `/api/items/capsules?parentId=${parent.id}`,
           payload,
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
         expect(response.json()).toMatchObject(new ItemNotFolder(parent));
-      });
-    });
-  });
-
-  describe('POST /api/items/folders-with-thumbnail', () => {
-    it('Post item with thumbnail', async () => {
-      const { actor } = await seedFromJson({ actor: { extra: { lang: 'en' } } });
-      assertIsDefined(actor);
-      assertIsMemberForTest(actor);
-      mockAuthenticate(actor);
-      const imageStream = fs.createReadStream(
-        path.resolve(__dirname, '../../test/fixtures/image.png'),
-      );
-      const itemName = 'Test Item';
-      const payload = new FormData();
-      payload.append('name', itemName);
-      payload.append('type', ItemType.FOLDER);
-      payload.append('description', '');
-      payload.append('file', imageStream);
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: `/api/items/folders-with-thumbnail`,
-        payload,
-        headers: payload.getHeaders(),
-      });
-
-      const newItem = response.json();
-      expectItem(
-        newItem,
-        FolderItemFactory({
-          name: itemName,
-          type: ItemType.FOLDER,
-          description: '',
-          settings: { hasThumbnail: true },
-          lang: 'en',
-        }),
-        actor,
-      );
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(uploadDoneMock).toHaveBeenCalled();
-    });
-  });
-
-  describe('PATCH /api/items/folders/:id', () => {
-    it('Throws if signed out', async () => {
-      const {
-        items: [item],
-      } = await seedFromJson({
-        actor: null,
-        items: [{}],
-      });
-
-      const response = await app.inject({
-        method: HttpMethod.Patch,
-        url: `/api/items/folders/${item.id}`,
-        payload: { name: 'new name' },
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-
-    describe('Signed In', () => {
-      it('Update successfully', async () => {
-        const {
-          items: [item],
-          actor,
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor' }],
-              extra: {
-                [ItemType.FOLDER]: {},
-              },
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-
-        const payload = {
-          name: 'new name',
-          extra: {
-            [ItemType.FOLDER]: {},
-          },
-          settings: {
-            hasThumbnail: true,
-          },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        // this test a bit how we deal with extra: it replaces existing keys
-        expectItem(response.json(), {
-          ...item,
-          ...payload,
-          extra: {
-            folder: {},
-          },
-        });
-      });
-
-      it('Update successfully new language', async () => {
-        const {
-          items: [item],
-          actor,
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor' }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-
-        const payload = {
-          lang: 'fr',
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        // this test a bit how we deal with extra: it replaces existing keys
-        expectItem(response.json(), {
-          ...item,
-          ...payload,
-        });
-      });
-
-      it('Update successfully to capsule', async () => {
-        const {
-          items: [item],
-          actor,
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor' }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-
-        const payload = {
-          extra: { folder: { isCapsule: true } },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        // this test a bit how we deal with extra: it replaces existing keys
-        expectItem(response.json(), {
-          ...item,
-          ...payload,
-        });
-      });
-
-      it('Update successfully description placement above', async () => {
-        const {
-          items: [item],
-          actor,
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor' }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-
-        const payload = {
-          settings: {
-            ...item.settings,
-            descriptionPlacement: DescriptionPlacement.ABOVE,
-          },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const newItem = response.json();
-
-        // this test a bit how we deal with extra: it replaces existing keys
-        expectItem(newItem, {
-          ...item,
-          ...payload,
-        });
-        expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
-        expect(newItem.settings.hasThumbnail).toBeFalsy();
-      });
-
-      it('Filter out bad setting when updating', async () => {
-        const {
-          items: [item],
-          actor,
-        } = await seedFromJson({
-          items: [
-            {
-              memberships: [{ account: 'actor' }],
-            },
-          ],
-        });
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-
-        const BAD_SETTING = { INVALID: 'Not a valid setting' };
-        const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
-        const payload = {
-          settings: {
-            ...item.settings,
-            ...VALID_SETTING,
-            ...BAD_SETTING,
-          },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const newItem = response.json();
-
-        // this test a bit how we deal with extra: it replaces existing keys
-        expectItem(newItem, {
-          ...item,
-          ...payload,
-          settings: VALID_SETTING,
-        });
-        expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
-        expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
-      });
-
-      it('Bad request if id is invalid', async () => {
-        const payload = {
-          name: 'new name',
-        };
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: '/api/items/folders/invalid-id',
-          payload,
-        });
-
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Cannot update item if does not have membership', async () => {
-        const {
-          items: [item],
-          actor,
-        } = await seedFromJson({
-          items: [{}],
-        });
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-
-        const payload = {
-          name: 'new name',
-        };
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.json()).toEqual(new MemberCannotAccess(item.id));
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-      });
-      it('Cannot update item if has only read membership', async () => {
-        const {
-          items: [item],
-          actor,
-        } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
-        });
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-
-        const payload = {
-          name: 'new name',
-        };
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
     });
   });
