@@ -8,7 +8,7 @@ import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemActionService } from '../action/itemAction.service';
 import { FolderItemService } from '../folder/folder.service';
-import { createCapsule, switchCapsuleToFolder } from './capsule.schemas';
+import { convertCapsuleToFolder, createCapsule } from './capsule.schemas';
 import { CapsuleItemService } from './capsule.service';
 
 export const capsulePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -55,7 +55,7 @@ export const capsulePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.patch(
     '/capsules/:id/to-folder',
     {
-      schema: switchCapsuleToFolder,
+      schema: convertCapsuleToFolder,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request) => {
@@ -66,7 +66,7 @@ export const capsulePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (tx) => {
-        const item = await capsuleItemService.switchToFolder(tx, member, id);
+        const item = await capsuleItemService.convertToFolder(tx, member, id);
         return item;
       });
     },

@@ -110,7 +110,7 @@ export class FolderItemService extends ItemService {
     return (await super.patch(dbConnection, member, item.id, body)) as FolderItem;
   }
 
-  async switchToCapsule(
+  async convertToCapsule(
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,

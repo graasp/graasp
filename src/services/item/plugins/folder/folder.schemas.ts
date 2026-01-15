@@ -69,8 +69,8 @@ export const updateFolder = {
   response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
-export const switchFolderToCapsule = {
-  operationId: 'switchFolderToCapsule',
+export const convertFolderToCapsule = {
+  operationId: 'convertFolderToCapsule',
   tags: ['item'],
   summary: 'Switch folder item to capsule',
 

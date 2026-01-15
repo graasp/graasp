@@ -26,8 +26,8 @@ export const createCapsule = {
   response: { [StatusCodes.OK]: capsuleSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
-export const switchCapsuleToFolder = {
-  operationId: 'switchCapsuleToFolder',
+export const convertCapsuleToFolder = {
+  operationId: 'convertCapsuleToFolder',
   tags: ['item', 'capsule'],
   summary: 'Switch capsule item to folder',
 
