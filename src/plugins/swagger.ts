@@ -19,6 +19,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
         { name: 'app-action', description: 'Endpoints related to actions created in apps' },
         { name: 'app-data', description: 'Endpoints related to data created in apps' },
         { name: 'app-setting', description: 'Endpoints related to settings created in apps' },
+        { name: 'capsule', description: 'Endpoints related to capsules' },
         { name: 'chat', description: 'Endpoints related to chats' },
         { name: 'app-chatbot', description: 'Endpoints related to chatbots in apps' },
         { name: 'current', description: 'Endpoints related to current user' },

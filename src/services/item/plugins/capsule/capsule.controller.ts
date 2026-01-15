@@ -32,13 +32,12 @@ export const capsulePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
 
       const item = await db.transaction(async (tx) => {
-        const item = await capsuleItemService.postWithOptions(tx, member, {
+        const item = await capsuleItemService.create(tx, member, {
           // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
           // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           item: data,
           previousItemId,
           parentId,
-          geolocation: data.geolocation,
         });
         return item;
       });
