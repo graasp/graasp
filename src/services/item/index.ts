@@ -11,6 +11,7 @@ import itemController from './item.controller';
 import actionItemPlugin from './plugins/action/itemAction.controller';
 import graaspApps from './plugins/app/app.controller';
 import { plugin as graaspAppItem } from './plugins/app/appItem.controller';
+import { capsulePlugin } from './plugins/capsule/capsule.controller';
 import graaspDocumentItem from './plugins/document/document.controller';
 import { PREFIX_DOCUMENT } from './plugins/document/document.service';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink/link.controller';
@@ -73,6 +74,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemVisibility);
 
       fastify.register(graaspFolderItem);
+
+      fastify.register(capsulePlugin);
 
       fastify.register(graaspAppItem);
 
