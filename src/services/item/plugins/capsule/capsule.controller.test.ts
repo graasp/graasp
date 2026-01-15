@@ -601,4 +601,124 @@ describe('Capsule routes tests', () => {
       });
     });
   });
+
+  describe('PATCH /api/items/capsules/:id/to-folder', () => {
+    it('Throws if signed out', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [{}],
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `/api/items/capsules/${item.id}/to-folder`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      it('Switch successfully', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor' }],
+              extra: {
+                [ItemType.FOLDER]: { isCapsule: true },
+              },
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/api/items/capsules/${item.id}/to-folder`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(response.json(), {
+          ...item,
+          extra: {
+            folder: { isCapsule: false },
+          },
+        });
+      });
+
+      it('Bad request if id is invalid', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: '/api/items/capsules/invalid-id/to-folder',
+        });
+
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Cannot update item if does not have membership', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [{}],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/api/items/capsules/${item.id}/to-folder`,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotAccess(item.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+
+      it('Cannot update if item is not a folder', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [{ type: ItemType.DOCUMENT }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/api/items/capsules/${item.id}/to-folder`,
+        });
+
+        expect(response.json()).toEqual(new ItemNotFolder({ id: item.id }));
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Cannot update item if has only read membership', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/api/items/capsules/${item.id}/to-folder`,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+    });
+  });
 });

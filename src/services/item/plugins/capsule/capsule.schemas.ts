@@ -8,6 +8,8 @@ import { errorSchemaRef } from '../../../../schemas/global';
 import { folderSchema } from '../folder/folder.schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
+const capsuleSchema = folderSchema;
+
 export const createCapsule = {
   operationId: 'createFolder',
   tags: ['item', 'capsule'],
@@ -24,5 +26,16 @@ export const createCapsule = {
       geolocation: Type.Optional(geoCoordinateSchemaRef),
     }),
   ]),
-  response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: capsuleSchema, '4xx': errorSchemaRef },
+} as const satisfies FastifySchema;
+
+export const switchCapsuleToFolder = {
+  operationId: 'switchCapsuleToFolder',
+  tags: ['item'],
+  summary: 'Switch capsule item to folder',
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+  response: { [StatusCodes.OK]: capsuleSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

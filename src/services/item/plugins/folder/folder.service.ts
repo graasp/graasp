@@ -12,6 +12,7 @@ import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { MaybeUser, MinimalMember } from '../../../../types';
+import { ItemNotFolder } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
@@ -107,5 +108,22 @@ export class FolderItemService extends ItemService {
     }
 
     return (await super.patch(dbConnection, member, item.id, body)) as FolderItem;
+  }
+
+  async switchToCapsule(
+    dbConnection: DBConnection,
+    member: MinimalMember,
+    itemId: UUID,
+  ): Promise<FolderItem> {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+
+    // check item is folder
+    if (item.type !== ItemType.FOLDER) {
+      throw new ItemNotFolder({ id: itemId });
+    }
+
+    return (await super.patch(dbConnection, member, item.id, {
+      extra: { folder: { isCapsule: true } },
+    })) as FolderItem;
   }
 }

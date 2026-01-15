@@ -63,11 +63,19 @@ export const updateFolder = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: Type.Partial(
-    Type.Pick(folderSchema, ['name', 'description', 'lang', 'settings', 'extra']),
-    {
-      minProperties: 1,
-    },
-  ),
+  body: Type.Partial(Type.Pick(folderSchema, ['name', 'description', 'lang', 'settings']), {
+    minProperties: 1,
+  }),
+  response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
+} as const satisfies FastifySchema;
+
+export const switchFolderToCapsule = {
+  operationId: 'switchFolderToCapsule',
+  tags: ['item'],
+  summary: 'Switch folder item to capsule',
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
