@@ -68,7 +68,7 @@ export class CapsuleItemService extends ItemService {
     })) as CapsuleItem;
   }
 
-  async switchToFolder(
+  async convertToFolder(
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
