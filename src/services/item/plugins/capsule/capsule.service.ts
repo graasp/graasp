@@ -1,12 +1,13 @@
 import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import { type ItemGeolocation, ItemType } from '@graasp/sdk';
+import { type ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
+import { ItemNotFolder } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
@@ -67,6 +68,23 @@ export class CapsuleItemService extends ItemService {
     return (await super.post(dbConnection, member, {
       ...args,
       item: { ...args.item, type: ItemType.FOLDER, extra: { folder: { isCapsule: true } } },
+    })) as FolderItem;
+  }
+
+  async switchToFolder(
+    dbConnection: DBConnection,
+    member: MinimalMember,
+    itemId: UUID,
+  ): Promise<FolderItem> {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+
+    // check item is folder
+    if (item.type !== ItemType.FOLDER) {
+      throw new ItemNotFolder({ id: itemId });
+    }
+
+    return (await super.patch(dbConnection, member, item.id, {
+      extra: { folder: { isCapsule: false } },
     })) as FolderItem;
   }
 }
