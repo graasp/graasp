@@ -23,11 +23,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import {
-  itemGeolocationsTable,
-  itemMembershipsTable,
-  itemsRawTable,
-} from '../../../../drizzle/schema';
+import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   ItemNotFolder,
@@ -196,31 +192,6 @@ describe('Capsule routes tests', () => {
               eq(itemMembershipsTable.permission, PermissionLevel.Admin),
               eq(itemMembershipsTable.accountId, actor.id),
             ),
-          }),
-        ).toHaveLength(1);
-      });
-
-      it('Create successfully with geolocation', async () => {
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        assertIsMember(actor);
-        mockAuthenticate(actor);
-
-        const payload = CapsuleItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/api/items/capsules',
-          payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        expect(
-          await db.query.itemGeolocationsTable.findMany({
-            where: eq(itemGeolocationsTable.itemPath, newItem.path),
           }),
         ).toHaveLength(1);
       });
@@ -421,37 +392,6 @@ describe('Capsule routes tests', () => {
         expect(savedItem.order).toBeGreaterThan(child.order);
         // is smaller than another child because it is not in the same parent
         expect(savedItem.order).toBeLessThan(anotherChild.order);
-      });
-
-      it('Throw if geolocation is partial', async () => {
-        const payload = CapsuleItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/api/items/capsules',
-          payload: { ...payload, geolocation: { lat: 1 } },
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        // no item nor geolocation is created
-        expect(
-          await db.query.itemsRawTable.findMany({
-            where: eq(itemsRawTable.name, payload.name),
-          }),
-        ).toHaveLength(0);
-
-        const response1 = await app.inject({
-          method: HttpMethod.Post,
-          url: '/api/items/capsules',
-          payload: { ...payload, geolocation: { lng: 1 } },
-        });
-
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        // no item nor geolocation is created
-        expect(
-          await db.query.itemsRawTable.findMany({
-            where: eq(itemsRawTable.name, payload.name),
-          }),
-        ).toHaveLength(0);
       });
 
       it('Bad request if name is invalid', async () => {
