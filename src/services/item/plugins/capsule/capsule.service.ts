@@ -1,7 +1,6 @@
-import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import { type ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
+import { ItemType, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -12,7 +11,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { type FolderItem } from '../../discrimination';
+import { CapsuleItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
@@ -54,28 +53,26 @@ export class CapsuleItemService extends ItemService {
     );
   }
 
-  async postWithOptions(
+  async create(
     dbConnection: DBConnection,
     member: MinimalMember,
     args: {
       item: Partial<Pick<ItemRaw, 'description' | 'settings' | 'lang'>> & Pick<ItemRaw, 'name'>;
       parentId?: string;
-      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
-      thumbnail?: Readable;
       previousItemId?: ItemRaw['id'];
     },
-  ): Promise<FolderItem> {
+  ): Promise<CapsuleItem> {
     return (await super.post(dbConnection, member, {
       ...args,
       item: { ...args.item, type: ItemType.FOLDER, extra: { folder: { isCapsule: true } } },
-    })) as FolderItem;
+    })) as CapsuleItem;
   }
 
   async switchToFolder(
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-  ): Promise<FolderItem> {
+  ): Promise<CapsuleItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
@@ -85,6 +82,6 @@ export class CapsuleItemService extends ItemService {
 
     return (await super.patch(dbConnection, member, item.id, {
       extra: { folder: { isCapsule: false } },
-    })) as FolderItem;
+    })) as CapsuleItem;
   }
 }
