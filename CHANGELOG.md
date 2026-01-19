@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.12.0](https://github.com/graasp/graasp/compare/v2.11.0...v2.12.0) (2026-01-19)
+
+
+### Features
+
+* return bad credentials error ([#2049](https://github.com/graasp/graasp/issues/2049)) ([ad77bbf](https://github.com/graasp/graasp/commit/ad77bbfd695e9d4696986998d3edadbd521df169))
+* return only deleted items up to 3 months ([#2048](https://github.com/graasp/graasp/issues/2048)) ([83bd4c4](https://github.com/graasp/graasp/commit/83bd4c4283a01d67f1ea96883e662cc043494e2f))
+
+
+### Bug Fixes
+
+* add bust-cache on dev startup ([#2055](https://github.com/graasp/graasp/issues/2055)) ([290710a](https://github.com/graasp/graasp/commit/290710af04928559d778847eab21fcb6d3e784d9))
+* **deps:** upgrade node to v24.12 ([#2050](https://github.com/graasp/graasp/issues/2050)) ([1b36d09](https://github.com/graasp/graasp/commit/1b36d09be9e941e57ba70910a401576cf4262bfc))
+* udpate to allow s3 errors as OK validations ([608b5d5](https://github.com/graasp/graasp/commit/608b5d513a0f03540af0c0f9a19e6ef3c45354e3))
+* validation for thumbnails ([#2054](https://github.com/graasp/graasp/issues/2054)) ([608b5d5](https://github.com/graasp/graasp/commit/608b5d513a0f03540af0c0f9a19e6ef3c45354e3))
+
 ## [2.11.0](https://github.com/graasp/graasp/compare/v2.10.4...v2.11.0) (2025-12-18)
 
 
