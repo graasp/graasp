@@ -17,7 +17,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { type FolderItem, isItemType } from '../../discrimination';
+import { CapsuleItem, type FolderItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -114,7 +114,7 @@ export class FolderItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-  ): Promise<FolderItem> {
+  ): Promise<CapsuleItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
@@ -124,6 +124,6 @@ export class FolderItemService extends ItemService {
 
     return (await super.patch(dbConnection, member, item.id, {
       extra: { folder: { isCapsule: true } },
-    })) as FolderItem;
+    })) as CapsuleItem;
   }
 }

@@ -34,5 +34,5 @@ export const convertCapsuleToFolder = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  response: { [StatusCodes.OK]: capsuleSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

@@ -11,7 +11,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { CapsuleItem } from '../../discrimination';
+import { CapsuleItem, FolderItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
@@ -72,7 +72,7 @@ export class CapsuleItemService extends ItemService {
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-  ): Promise<CapsuleItem> {
+  ): Promise<FolderItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
@@ -82,6 +82,6 @@ export class CapsuleItemService extends ItemService {
 
     return (await super.patch(dbConnection, member, item.id, {
       extra: { folder: { isCapsule: false } },
-    })) as CapsuleItem;
+    })) as FolderItem;
   }
 }

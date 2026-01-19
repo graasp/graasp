@@ -33,8 +33,6 @@ export const capsulePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const item = await db.transaction(async (tx) => {
         const item = await capsuleItemService.create(tx, member, {
-          // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
-          // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           item: data,
           previousItemId,
           parentId,
@@ -52,8 +50,8 @@ export const capsulePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  fastify.patch(
-    '/capsules/:id/to-folder',
+  fastify.post(
+    '/capsules/:id/convert',
     {
       schema: convertCapsuleToFolder,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],

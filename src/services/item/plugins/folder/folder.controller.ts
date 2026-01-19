@@ -125,8 +125,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  fastify.patch(
-    '/folders/:id/to-capsule',
+  fastify.post(
+    '/folders/:id/convert',
     {
       schema: convertFolderToCapsule,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -138,6 +138,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
+
       return await db.transaction(async (tx) => {
         const item = await folderItemService.convertToCapsule(tx, member, id);
         return item;
