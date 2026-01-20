@@ -61,3 +61,4 @@ secret-key
 openapi.json
 vacuum-report.html
 schema.sql
+db-documentation
