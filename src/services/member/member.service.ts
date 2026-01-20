@@ -156,4 +156,8 @@ export class MemberService {
     // don't wait for mailer's response; log error and link if it fails.
     this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
   }
+
+  emailSubscribe(dbConnection: DBConnection, memberId: string, shouldSubscribe: boolean) {
+    return this.memberRepository.updateEmailSubscribedAt(dbConnection, memberId, shouldSubscribe);
+  }
 }

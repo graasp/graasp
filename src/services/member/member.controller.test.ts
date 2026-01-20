@@ -466,4 +466,64 @@ describe('Member routes tests', () => {
       });
     });
   });
+
+  describe('POST /members/current/emails/subscribe', () => {
+    it('Throws if signed out', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/emails/subscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('Returns successfully and sets subscription to true', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/emails/subscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(m?.emailSubscribedAt).toBeDefined();
+    });
+  });
+
+  describe('POST /members/current/emails/unsubscribe', () => {
+    it('Throws if signed out', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/emails/unsubscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('Returns successfully and sets subscription to false', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/emails/unsubscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(m?.emailSubscribedAt).toBeNull();
+    });
+  });
 });

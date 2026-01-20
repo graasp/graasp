@@ -7,6 +7,7 @@ import { db } from '../../drizzle/db';
 import { AccountType } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { AccountRepository } from '../account/account.repository';
+import { ActionService } from '../action/action.service';
 import {
   authenticateEmailChange,
   isAuthenticated,
@@ -22,6 +23,8 @@ import {
 import { EmailAlreadyTaken } from './error';
 import {
   deleteCurrent,
+  emailSubscribe,
+  emailUnsubscribe,
   getCurrent,
   getOne,
   getStorage,
@@ -38,6 +41,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const memberService = resolveDependency(MemberService);
   const accountRepository = resolveDependency(AccountRepository);
   const storageService = resolveDependency(StorageService);
+  const actionService = resolveDependency(ActionService);
 
   // get current
   fastify.get(
@@ -221,6 +225,54 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       });
       // this needs to be outside the transaction
       reply.status(StatusCodes.NO_CONTENT);
+    },
+  );
+
+  fastify.post(
+    '/current/emails/subscribe',
+    {
+      schema: emailSubscribe,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
+    async (req, reply) => {
+      const { user } = req;
+      const account = asDefined(user?.account);
+      assertIsMember(account);
+
+      await db.transaction(async (tx) => {
+        memberService.emailSubscribe(tx, account.id, true);
+      });
+
+      reply.status(StatusCodes.NO_CONTENT);
+
+      // save action
+      await actionService.postMany(db, account, req, [
+        { type: 'email-subscribe', extra: { memberId: account.id } },
+      ]);
+    },
+  );
+
+  fastify.post(
+    '/current/emails/unsubscribe',
+    {
+      schema: emailUnsubscribe,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
+    async (req, reply) => {
+      const { user } = req;
+      const account = asDefined(user?.account);
+      assertIsMember(account);
+
+      await db.transaction(async (tx) => {
+        memberService.emailSubscribe(tx, account.id, false);
+      });
+
+      reply.status(StatusCodes.NO_CONTENT);
+
+      // save action
+      await actionService.postMany(db, account, req, [
+        { type: 'email-unsubscribe', extra: { memberId: account.id } },
+      ]);
     },
   );
 };

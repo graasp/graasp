@@ -1,11 +1,13 @@
+import { and, eq, gte } from 'drizzle-orm';
 import { v4 } from 'uuid';
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 
 import { EmailFrequency } from '@graasp/sdk';
 
 import { MemberFactory } from '../../../test/factories/member.factory';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
+import { accountsTable } from '../../drizzle/schema';
 import type { MemberRaw } from '../../drizzle/types';
 import { MemberNotFound } from '../../utils/errors';
 import { MemberRepository } from './member.repository';
@@ -223,6 +225,39 @@ describe('MemberRepository', () => {
           new Error(expect.stringContaining('duplicate key value violates unique constraint')),
         ),
       );
+    });
+  });
+
+  describe('update email subscribed at', () => {
+    it('set current timestamp to subscribed at', async () => {
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ emailSubscribedAt: null }] });
+      assert(member.emailSubscribedAt === null);
+
+      const nowDate = new Date().toISOString();
+      await memberRepository.updateEmailSubscribedAt(db, member.id, true);
+
+      const savedMember = await db.query.accountsTable.findFirst({
+        where: and(eq(accountsTable.id, member.id), gte(accountsTable.emailSubscribedAt, nowDate)),
+      });
+      expect(savedMember?.id).toEqual(member.id);
+      expect(savedMember?.emailSubscribedAt).toBeDefined();
+    });
+
+    it('set timestamp to null', async () => {
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ emailSubscribedAt: new Date().toISOString() }] });
+      assert(member.emailSubscribedAt !== null);
+
+      await memberRepository.updateEmailSubscribedAt(db, member.id, false);
+
+      const savedMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, member.id),
+      });
+      expect(savedMember?.id).toEqual(member.id);
+      expect(savedMember?.emailSubscribedAt).toBeNull();
     });
   });
 });

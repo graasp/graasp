@@ -284,3 +284,29 @@ export const patchChangeEmail = {
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
+
+export const emailSubscribe = {
+  operationId: 'emailSubscribe',
+  tags: ['member', 'email'],
+  summary: 'Subscribe to newsletter emails',
+  description: 'Subscribe to newsletter emails for current authenticated member.',
+
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const emailUnsubscribe = {
+  operationId: 'emailUnsubscribe',
+  tags: ['member', 'email'],
+  summary: 'Unsubscribe from newsletter emails',
+  description: 'Unsubscribe from newsletter emails for current authenticated member.',
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;

@@ -961,6 +961,10 @@ export const accountsTable = pgTable(
         onDelete: 'cascade',
       },
     ),
+    emailSubscribedAt: timestamp('email_subscribed_at', {
+      withTimezone: true,
+      mode: 'string',
+    }).defaultNow(),
   },
   (table) => [
     index('IDX_account_type').using('btree', table.type.asc().nullsLast().op('enum_ops')),
@@ -983,7 +987,7 @@ export const accountsTable = pgTable(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { itemLoginSchemaId, ...membersColumns } = getTableColumns(accountsTable);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { email, userAgreementsDate, enableSaveActions, ...guestColumns } =
+const { email, userAgreementsDate, enableSaveActions, emailSubscribedAt, ...guestColumns } =
   getTableColumns(accountsTable);
 export const membersView = pgView('members_view').as((qb) =>
   qb
