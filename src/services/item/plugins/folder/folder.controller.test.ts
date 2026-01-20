@@ -920,7 +920,7 @@ describe('Folder routes tests', () => {
     });
   });
 
-  describe('PATCH /api/items/folders/:id/to-capsule', () => {
+  describe('PATCH /api/items/folders/:id/convert', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -931,7 +931,7 @@ describe('Folder routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/api/items/folders/${item.id}/to-capsule`,
+        url: `/api/items/folders/${item.id}/convert`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -957,7 +957,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}/to-capsule`,
+          url: `/api/items/folders/${item.id}/convert`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -974,7 +974,7 @@ describe('Folder routes tests', () => {
       it('Bad request if id is invalid', async () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: '/api/items/folders/invalid-id/to-capsule',
+          url: '/api/items/folders/invalid-id/convert',
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -993,7 +993,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}/to-capsule`,
+          url: `/api/items/folders/${item.id}/convert`,
         });
 
         expect(response.json()).toEqual(new MemberCannotAccess(item.id));
@@ -1012,7 +1012,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}/to-capsule`,
+          url: `/api/items/folders/${item.id}/convert`,
         });
 
         expect(response.json()).toEqual(new ItemNotFolder({ id: item.id }));
@@ -1031,7 +1031,7 @@ describe('Folder routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/api/items/folders/${item.id}/to-capsule`,
+          url: `/api/items/folders/${item.id}/convert`,
         });
 
         expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
