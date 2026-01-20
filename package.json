@@ -45,7 +45,7 @@
     "migration:generate": "yarn drizzle-kit generate",
     "migration:run": "yarn drizzle-kit migrate",
     "migration:check": "yarn drizzle-kit generate --name=migrationtest --out=./src/drizzle --schema=./src/drizzle/schema.ts --dialect=postgresql && [ -f '$(find ./src/drizzle | grep migrationtest)' ] && exit 1 || exit 0",
-    "db-doc:generate": "npx drizzle-kit export > schema.sql && npx @liam-hq/cli erd build --input schema.sql --format postgres --output-dir pages"
+    "db-doc:generate": "npx drizzle-kit export > schema.sql && npx @liam-hq/cli erd build --input schema.sql --format postgres --output-dir db-documentation"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.787.0",
