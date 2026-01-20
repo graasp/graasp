@@ -1,24 +1,17 @@
-import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import {
-  type ItemGeolocation,
-  ItemType,
-  type PermissionLevelOptions,
-  type UUID,
-} from '@graasp/sdk';
+import { ItemType, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import type { MaybeUser, MinimalMember } from '../../../../types';
+import type { MinimalMember } from '../../../../types';
 import { ItemNotFolder } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { CapsuleItem, type FolderItem, isItemType } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
+import { CapsuleItem, FolderItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
@@ -29,7 +22,7 @@ import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 
 @singleton()
-export class FolderItemService extends ItemService {
+export class CapsuleItemService extends ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
@@ -60,61 +53,26 @@ export class FolderItemService extends ItemService {
     );
   }
 
-  async getFolder(
-    dbConnection: DBConnection,
-    maybeUser: MaybeUser,
-    itemId: ItemRaw['id'],
-    permission?: PermissionLevelOptions,
-  ): Promise<FolderItem> {
-    const item = await this.authorizedItemService.getItemById(dbConnection, {
-      accountId: maybeUser?.id,
-      itemId,
-      permission,
-    });
-    if (!isItemType(item, ItemType.FOLDER)) {
-      throw new WrongItemTypeError(item.type);
-    }
-    return item as FolderItem;
-  }
-
-  async postWithOptions(
+  async create(
     dbConnection: DBConnection,
     member: MinimalMember,
     args: {
       item: Partial<Pick<ItemRaw, 'description' | 'settings' | 'lang'>> & Pick<ItemRaw, 'name'>;
       parentId?: string;
-      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
-      thumbnail?: Readable;
       previousItemId?: ItemRaw['id'];
     },
-  ): Promise<FolderItem> {
+  ): Promise<CapsuleItem> {
     return (await super.post(dbConnection, member, {
       ...args,
-      item: { ...args.item, type: ItemType.FOLDER, extra: { folder: {} } },
-    })) as FolderItem;
+      item: { ...args.item, type: ItemType.FOLDER, extra: { folder: { isCapsule: true } } },
+    })) as CapsuleItem;
   }
 
-  async patch(
+  async convertToFolder(
     dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
-    body: Partial<Pick<ItemRaw, 'name' | 'description' | 'settings' | 'lang'>>,
   ): Promise<FolderItem> {
-    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-
-    // check item is folder
-    if (item.type !== ItemType.FOLDER) {
-      throw new WrongItemTypeError(item.type);
-    }
-
-    return (await super.patch(dbConnection, member, item.id, body)) as FolderItem;
-  }
-
-  async convertToCapsule(
-    dbConnection: DBConnection,
-    member: MinimalMember,
-    itemId: UUID,
-  ): Promise<CapsuleItem> {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
@@ -123,7 +81,7 @@ export class FolderItemService extends ItemService {
     }
 
     return (await super.patch(dbConnection, member, item.id, {
-      extra: { folder: { isCapsule: true } },
-    })) as CapsuleItem;
+      extra: { folder: { isCapsule: false } },
+    })) as FolderItem;
   }
 }

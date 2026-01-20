@@ -14,7 +14,7 @@ export const folderSchema = Type.Composite([
     {
       extra: customType.StrictObject({
         folder: customType.StrictObject({
-          isRoot: Type.Optional(Type.Boolean()),
+          isCapsule: Type.Optional(Type.Boolean()),
         }),
       }),
     },
@@ -65,6 +65,17 @@ export const updateFolder = {
   }),
   body: Type.Partial(Type.Pick(folderSchema, ['name', 'description', 'lang', 'settings']), {
     minProperties: 1,
+  }),
+  response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
+} as const satisfies FastifySchema;
+
+export const convertFolderToCapsule = {
+  operationId: 'convertFolderToCapsule',
+  tags: ['item'],
+  summary: 'Switch folder item to capsule',
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
   }),
   response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

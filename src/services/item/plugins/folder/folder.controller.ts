@@ -10,7 +10,12 @@ import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getPostItemPayloadFromFormData } from '../../utils';
 import { ItemActionService } from '../action/itemAction.service';
-import { createFolder, createFolderWithThumbnail, updateFolder } from './folder.schemas';
+import {
+  convertFolderToCapsule,
+  createFolder,
+  createFolderWithThumbnail,
+  updateFolder,
+} from './folder.schemas';
 import { FolderItemService } from './folder.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -115,6 +120,27 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return await db.transaction(async (tx) => {
         const item = await folderItemService.patch(tx, member, id, body);
         await itemActionService.postPatchAction(tx, request, item);
+        return item;
+      });
+    },
+  );
+
+  fastify.post(
+    '/folders/:id/convert',
+    {
+      schema: convertFolderToCapsule,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
+    async (request) => {
+      const {
+        user,
+        params: { id },
+      } = request;
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+
+      return await db.transaction(async (tx) => {
+        const item = await folderItemService.convertToCapsule(tx, member, id);
         return item;
       });
     },
