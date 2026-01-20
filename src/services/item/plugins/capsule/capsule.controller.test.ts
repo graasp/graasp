@@ -542,7 +542,7 @@ describe('Capsule routes tests', () => {
     });
   });
 
-  describe('PATCH /api/items/capsules/:id/convert', () => {
+  describe('POST /api/items/capsules/:id/convert', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -552,7 +552,7 @@ describe('Capsule routes tests', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.Patch,
+        method: HttpMethod.Post,
         url: `/api/items/capsules/${item.id}/convert`,
       });
 
@@ -578,7 +578,7 @@ describe('Capsule routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/capsules/${item.id}/convert`,
         });
 
@@ -595,7 +595,7 @@ describe('Capsule routes tests', () => {
 
       it('Bad request if id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: '/api/items/capsules/invalid-id/convert',
         });
 
@@ -614,7 +614,7 @@ describe('Capsule routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/capsules/${item.id}/convert`,
         });
 
@@ -633,7 +633,7 @@ describe('Capsule routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/capsules/${item.id}/convert`,
         });
 
@@ -652,7 +652,7 @@ describe('Capsule routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/capsules/${item.id}/convert`,
         });
 

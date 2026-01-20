@@ -920,7 +920,7 @@ describe('Folder routes tests', () => {
     });
   });
 
-  describe('PATCH /api/items/folders/:id/convert', () => {
+  describe('POST /api/items/folders/:id/convert', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
@@ -930,7 +930,7 @@ describe('Folder routes tests', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.Patch,
+        method: HttpMethod.Post,
         url: `/api/items/folders/${item.id}/convert`,
       });
 
@@ -956,7 +956,7 @@ describe('Folder routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/folders/${item.id}/convert`,
         });
 
@@ -973,7 +973,7 @@ describe('Folder routes tests', () => {
 
       it('Bad request if id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: '/api/items/folders/invalid-id/convert',
         });
 
@@ -992,7 +992,7 @@ describe('Folder routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/folders/${item.id}/convert`,
         });
 
@@ -1011,7 +1011,7 @@ describe('Folder routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/folders/${item.id}/convert`,
         });
 
@@ -1030,7 +1030,7 @@ describe('Folder routes tests', () => {
         mockAuthenticate(actor);
 
         const response = await app.inject({
-          method: HttpMethod.Patch,
+          method: HttpMethod.Post,
           url: `/api/items/folders/${item.id}/convert`,
         });
 
