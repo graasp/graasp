@@ -184,9 +184,10 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsDefined(member);
       const memberInfo = member.toMemberInfo();
       const token = memberService.createEmailChangeRequest(memberInfo, newEmail);
-      memberService.sendEmailChangeRequest(newEmail, token, memberInfo.lang);
 
       reply.status(StatusCodes.NO_CONTENT);
+
+      await memberService.sendEmailChangeRequest(newEmail, token, memberInfo.lang);
     },
   );
   fastify.patch(
