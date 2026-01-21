@@ -15,3 +15,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Checkout Nudenet
+        uses: actions/checkout@v5
+        with:
+          repository: 'graasp/NudeNet'
+          path: nudenet
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Auth to the ECR
+        run: bash ./docker/auth.sh ${{ vars.GRAASP_PUBLIC_ECR }} ${{ vars.AWS_REGION }}
+        shell: bash
+
+      - name: Build the Nudenet image
+        run: |
+          docker build -t ${TAG} -f nudenet/fastdeploy_recipe/fastDeploy.auto_dockerfile ./nudenet/fastdeploy_recipe/
+          docker push ${TAG}
+        shell: bash
+        env:
+          TAG: '${{ vars.GRAASP_PUBLIC_ECR }}/graasp:nudenet-latest'
