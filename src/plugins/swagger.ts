@@ -69,6 +69,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
           description: 'Endpoints related to user profile',
         },
         { name: 'recycled', description: 'Endpoints related to recycled items' },
+        { name: 'settings', description: 'Endpoints related to account settings' },
         { name: 'short-link', description: 'Endpoints related to short links to item' },
         { name: 'visibility', description: 'Endpoints related to item visibility' },
         { name: 'thumbnail', description: 'Endpoints related to item thumbnails' },

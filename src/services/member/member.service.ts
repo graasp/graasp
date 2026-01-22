@@ -174,7 +174,11 @@ export class MemberService {
     memberId: string,
     shouldSubscribe: boolean,
   ) {
-    return this.memberRepository.updateEmailSubscribedAt(dbConnection, memberId, shouldSubscribe);
+    return this.memberRepository.updateMarketingEmailsSubscribedAt(
+      dbConnection,
+      memberId,
+      shouldSubscribe,
+    );
   }
 
   async getSettings(dbConnection: DBConnection, memberId: string) {

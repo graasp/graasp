@@ -236,7 +236,7 @@ describe('MemberRepository', () => {
       assert(member.marketingEmailsSubscribedAt === null);
 
       const nowDate = new Date().toISOString();
-      await memberRepository.updateEmailSubscribedAt(db, member.id, true);
+      await memberRepository.updateMarketingEmailsSubscribedAt(db, member.id, true);
 
       const savedMember = await db.query.accountsTable.findFirst({
         where: and(
@@ -256,7 +256,7 @@ describe('MemberRepository', () => {
       });
       assert(member.marketingEmailsSubscribedAt !== null);
 
-      await memberRepository.updateEmailSubscribedAt(db, member.id, false);
+      await memberRepository.updateMarketingEmailsSubscribedAt(db, member.id, false);
 
       const savedMember = await db.query.accountsTable.findFirst({
         where: eq(accountsTable.id, member.id),

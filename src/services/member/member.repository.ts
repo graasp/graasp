@@ -170,7 +170,7 @@ export class MemberRepository {
     return new MemberDTO(member);
   }
 
-  async updateEmailSubscribedAt(
+  async updateMarketingEmailsSubscribedAt(
     dbConnection: DBConnection,
     memberId: string,
     shouldSubscribe: boolean,

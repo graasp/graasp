@@ -24,7 +24,7 @@ import { EmailAlreadyTaken } from './error';
 import {
   deleteCurrent,
   getCurrent,
-  getMemberSettings,
+  getCurrentSettings,
   getOne,
   getStorage,
   getStorageFiles,
@@ -142,11 +142,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.patch(
     '/current',
     { schema: updateCurrent, preHandler: isAuthenticated },
-    async ({ user, body }) => {
+    async ({ user, body }, reply) => {
       const member = asDefined(user?.account);
       return db.transaction(async (tx) => {
-        const patchedMember = await memberService.patch(tx, member.id, body);
-        return patchedMember.toCurrent();
+        await memberService.patch(tx, member.id, body);
+        reply.status(StatusCodes.NO_CONTENT);
       });
     },
   );
@@ -241,7 +241,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        memberService.updateMarketingEmailsSubscribtion(tx, account.id, true);
+        await memberService.updateMarketingEmailsSubscribtion(tx, account.id, true);
       });
 
       reply.status(StatusCodes.NO_CONTENT);
@@ -265,7 +265,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        memberService.updateMarketingEmailsSubscribtion(tx, account.id, false);
+        await memberService.updateMarketingEmailsSubscribtion(tx, account.id, false);
       });
 
       reply.status(StatusCodes.NO_CONTENT);
@@ -280,7 +280,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/current/settings',
     {
-      schema: getMemberSettings,
+      schema: getCurrentSettings,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async (req) => {

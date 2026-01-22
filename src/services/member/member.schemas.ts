@@ -243,7 +243,7 @@ export const updateCurrent = {
     { minProperties: 1 },
   ),
   response: {
-    [StatusCodes.OK]: currentAccountSchemaRef,
+    [StatusCodes.OK]: Type.Null({ description: 'Successful Response' }),
     [StatusCodes.FORBIDDEN]: errorSchemaRef,
     '4xx': errorSchemaRef,
   },
@@ -293,8 +293,8 @@ export const patchChangeEmail = {
 export const marketingEmailsSubscribe = {
   operationId: 'marketingEmailsSubscribe',
   tags: ['member', 'email'],
-  summary: 'Subscribe to newsletter emails',
-  description: 'Subscribe to newsletter emails for current authenticated member.',
+  summary: 'Subscribe to marketing emails',
+  description: 'Subscribe to marketing emails for current authenticated member.',
 
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
@@ -307,8 +307,8 @@ export const marketingEmailsSubscribe = {
 export const marketingEmailsUnsubscribe = {
   operationId: 'marketingEmailsUnsubscribe',
   tags: ['member', 'email'],
-  summary: 'Unsubscribe from newsletter emails',
-  description: 'Unsubscribe from newsletter emails for current authenticated member.',
+  summary: 'Unsubscribe from marketing emails',
+  description: 'Unsubscribe from marketing emails for current authenticated member.',
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
@@ -322,9 +322,9 @@ const notificationFrequencySchema = registerSchemaAsRef(
   customType.EnumString(['always', 'never']),
 );
 
-const memberSettingsRef = registerSchemaAsRef(
-  'memberSettings',
-  'Member Settings',
+const currentSettingsRef = registerSchemaAsRef(
+  'currentSettings',
+  'CurrentSettings',
   Type.Composite([
     customType.StrictObject({
       lang: Type.Optional(Type.String()),
@@ -335,13 +335,13 @@ const memberSettingsRef = registerSchemaAsRef(
   ]),
 );
 
-export const getMemberSettings = {
-  operationId: 'getMemberSettings',
+export const getCurrentSettings = {
+  operationId: 'getCurrentSettings',
   tags: ['settings', 'current'],
   summary: 'Get the settings of the authenticated member',
   description: 'Return the settings of the authenticated member.',
   response: {
-    [StatusCodes.OK]: memberSettingsRef,
+    [StatusCodes.OK]: currentSettingsRef,
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },
