@@ -335,7 +335,7 @@ This will ensure your tests run on the second database container. As they will c
 
 By default, the application will run migrations on start.
 
-A documentation about the database structure can be found [here](./DATABASE.md) and be browsed [here](https://graasp.github.io/graasp).
+For more information about the structure of the database, see [our database structure documentation](./DATABASE.md) as well as [the interactive database schema explorer](https://graasp.github.io/graasp).
 
 ### Create a migration
 
