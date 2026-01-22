@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
@@ -30,7 +30,7 @@ describe('Item controller', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             children: [{}, { isHidden: true }, { isPublic: true }],
           },
         ],
@@ -57,7 +57,7 @@ describe('Item controller', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             children: [
               { type: ItemType.FOLDER },
               { isHidden: true, type: ItemType.DOCUMENT },
@@ -86,7 +86,7 @@ describe('Item controller', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             children: [
               {},
               { isHidden: true, type: ItemType.APP },
@@ -116,7 +116,7 @@ describe('Item controller', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             children: [{}, { isHidden: true }, { isPublic: true }],
           },
         ],

@@ -1,12 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import {
-  ClientManager,
-  Context,
-  PermissionLevel,
-  type PermissionLevelOptions,
-  type UUID,
-} from '@graasp/sdk';
+import { ClientManager, Context, type UUID } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
 import type {
@@ -18,7 +12,13 @@ import type {
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
-import { AccountType, type AuthenticatedUser, type MaybeUser, type MemberInfo } from '../../types';
+import {
+  AccountType,
+  type AuthenticatedUser,
+  type MaybeUser,
+  type MemberInfo,
+  PermissionLevel,
+} from '../../types';
 import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { AuthorizedItemService } from '../authorizedItem.service';
@@ -103,7 +103,7 @@ export class ItemMembershipService {
     account: AuthenticatedUser,
     item: ItemRaw,
     memberId: string,
-    permission: PermissionLevelOptions,
+    permission: PermissionLevel,
   ) {
     const member = await this.memberRepository.get(dbConnection, memberId);
 
@@ -127,13 +127,13 @@ export class ItemMembershipService {
   async create(
     dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
-    membership: { permission: PermissionLevelOptions; itemId: UUID; memberId: UUID },
+    membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
     // check memberships
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: authenticatedUser.id,
       itemId: membership.itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     return this._create(
@@ -148,14 +148,14 @@ export class ItemMembershipService {
   async createMany(
     dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
-    memberships: { permission: PermissionLevelOptions; accountId: UUID }[],
+    memberships: { permission: PermissionLevel; accountId: UUID }[],
     itemId: UUID,
   ) {
     // check memberships
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: authenticatedUser.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     return Promise.all(
@@ -169,7 +169,7 @@ export class ItemMembershipService {
     dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     itemMembershipId: string,
-    data: { permission: PermissionLevelOptions },
+    data: { permission: PermissionLevel },
   ) {
     // check memberships
     const membership = await this.itemMembershipRepository.get(dbConnection, itemMembershipId);
@@ -177,7 +177,7 @@ export class ItemMembershipService {
       throw new CannotModifyGuestItemMembership();
     }
     await this.authorizedItemService.assertAccess(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: authenticatedUser.id,
       item: membership.item,
     });
@@ -205,7 +205,7 @@ export class ItemMembershipService {
     const membership = await this.itemMembershipRepository.get(dbConnection, itemMembershipId);
     const { item } = membership;
     await this.authorizedItemService.assertAccess(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: account.id,
       item,
     });
@@ -214,7 +214,7 @@ export class ItemMembershipService {
     const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
 
     const otherAdminMemberships = memberships.filter(
-      (m) => m.id !== itemMembershipId && m.permission === PermissionLevel.Admin,
+      (m) => m.id !== itemMembershipId && m.permission === 'admin',
     );
     if (otherAdminMemberships.length === 0) {
       throw new CannotDeleteOnlyAdmin({ id: item.id });

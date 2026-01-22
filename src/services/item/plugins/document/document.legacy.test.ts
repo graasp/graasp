@@ -3,13 +3,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import {
-  DocumentItemExtraFlavor,
-  DocumentItemFactory,
-  HttpMethod,
-  ItemType,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { DocumentItemExtraFlavor, DocumentItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -85,7 +79,7 @@ describe('Document Item tests', () => {
         const membership = await db.query.itemMembershipsTable.findFirst({
           where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
-        expect(membership?.permission).toEqual(PermissionLevel.Admin);
+        expect(membership?.permission).toEqual('admin');
       });
 
       it('Fail to create if type does not match extra', async () => {
@@ -163,7 +157,7 @@ describe('Document Item tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.DOCUMENT,
               extra: {
                 [ItemType.DOCUMENT]: {

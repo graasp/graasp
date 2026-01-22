@@ -4,12 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import {
-  HttpMethod,
-  ItemLoginSchemaStatus,
-  ItemLoginSchemaType,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { HttpMethod, ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
@@ -132,7 +127,7 @@ describe('Item Login Tests', () => {
           {
             isHidden: true,
             itemLoginSchema: {},
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -157,7 +152,7 @@ describe('Item Login Tests', () => {
           {
             isHidden: true,
             itemLoginSchema: {},
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -227,7 +222,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {},
             },
           ],
@@ -257,7 +252,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: { status: ItemLoginSchemaStatus.Freeze },
             },
           ],
@@ -286,7 +281,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: { status: ItemLoginSchemaStatus.Disabled },
             },
           ],
@@ -316,7 +311,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {},
               children: [{}],
             },
@@ -346,7 +341,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -369,7 +364,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               itemLoginSchema: {},
               children: [{}],
             },
@@ -570,7 +565,7 @@ describe('Item Login Tests', () => {
               items: [
                 {
                   itemLoginSchema: {},
-                  memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+                  memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
                 },
               ],
             });
@@ -799,7 +794,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {
                 type: ItemLoginSchemaType.UsernameAndPassword,
               },
@@ -831,7 +826,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {
                 type: ItemLoginSchemaType.UsernameAndPassword,
                 status: ItemLoginSchemaStatus.Freeze,
@@ -864,7 +859,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {
                 type: ItemLoginSchemaType.UsernameAndPassword,
                 status: ItemLoginSchemaStatus.Disabled,
@@ -898,7 +893,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {
                 status: ItemLoginSchemaStatus.Active,
                 type: ItemLoginSchemaType.Username,
@@ -932,7 +927,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {
                 type: ItemLoginSchemaType.Username,
                 status: ItemLoginSchemaStatus.Active,
@@ -968,7 +963,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               itemLoginSchema: {},
             },
           ],
@@ -993,7 +988,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: {},
               children: [{}],
             },
@@ -1062,7 +1057,7 @@ describe('Item Login Tests', () => {
         actor: null,
         items: [
           {
-            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             itemLoginSchema: {},
           },
         ],
@@ -1086,7 +1081,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemLoginSchema: { guests: [{}] },
             },
           ],
@@ -1118,7 +1113,7 @@ describe('Item Login Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               itemLoginSchema: { guests: [{}] },
             },
           ],

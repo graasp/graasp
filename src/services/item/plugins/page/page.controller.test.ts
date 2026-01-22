@@ -18,7 +18,7 @@ import { Doc, encodeStateAsUpdate } from 'yjs';
 
 import type { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { FolderItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -152,7 +152,7 @@ describe('Page routes tests', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'write' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -176,7 +176,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -202,7 +202,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -234,7 +234,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -283,7 +283,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -317,7 +317,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -361,7 +361,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -398,7 +398,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -480,7 +480,7 @@ describe('Page routes tests', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'write' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -504,7 +504,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -610,7 +610,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -646,8 +646,8 @@ describe('Page routes tests', () => {
           {
             type: ItemType.PAGE,
             memberships: [
-              { account: 'actor', permission: PermissionLevel.Write },
-              { account: { name: 'reader' }, permission: PermissionLevel.Read },
+              { account: 'actor', permission: 'write' },
+              { account: { name: 'reader' }, permission: 'read' },
             ],
           },
         ],
@@ -700,7 +700,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -750,7 +750,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -786,7 +786,7 @@ describe('Page routes tests', () => {
         items: [
           {
             type: ItemType.PAGE,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -855,7 +855,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
             children: [
               {
                 name,

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { PermissionLevel, PublicationStatus } from '@graasp/sdk';
+import { PublicationStatus } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const item = await authorizedItemService.getItemById(db, {
         accountId: member.id,
         itemId,
-        permission: PermissionLevel.Admin,
+        permission: 'admin',
       });
       return await validationService.getLastItemValidationGroupForItem(db, member, item);
     },
@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         .transaction(async (tx) => {
           // get item and check permission
           // only folder items are allowed as root for validation
-          const item = await folderItemService.getFolder(tx, member, itemId, PermissionLevel.Admin);
+          const item = await folderItemService.getFolder(tx, member, itemId, 'admin');
 
           const notifyOnValidationChanges = () => {
             websockets.publish(

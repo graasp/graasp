@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel, type TagCategoryType, type UUID } from '@graasp/sdk';
+import { type TagCategoryType, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import type { AuthenticatedUser, MaybeUser } from '../../../../types';
@@ -42,7 +42,7 @@ export class ItemTagService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: authenticatedUser.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     // create tag if does not exist
@@ -78,7 +78,7 @@ export class ItemTagService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: authenticatedUser.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     // update index if item is published

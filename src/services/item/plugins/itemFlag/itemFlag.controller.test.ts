@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { FlagType, HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { FlagType, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -85,7 +85,7 @@ describe('Item Flag Tests', () => {
           actor,
           items: [item],
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);

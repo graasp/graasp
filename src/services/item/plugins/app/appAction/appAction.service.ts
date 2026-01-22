@@ -1,8 +1,6 @@
 import { eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../../drizzle/db';
 import { appActionsTable } from '../../../../../drizzle/schema';
 import type { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
@@ -44,7 +42,7 @@ export class AppActionService {
   ): Promise<AppActionWithItemAndAccount> {
     // posting an app action is allowed to readers
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      permission: PermissionLevel.Read,
+      permission: 'read',
       accountId: account.id,
       itemId,
     });
@@ -72,13 +70,13 @@ export class AppActionService {
     // posting an app action is allowed to readers
     const { itemMembership } = await this.authorizedItemService.getPropertiesForItemById(
       dbConnection,
-      { permission: PermissionLevel.Read, accountId: account.id, itemId },
+      { permission: 'read', accountId: account.id, itemId },
     );
     const permission = itemMembership?.permission;
     let { accountId: fMemberId } = filters;
 
     // can read only own app action if not admin
-    if (permission !== PermissionLevel.Admin) {
+    if (permission !== 'admin') {
       if (!fMemberId) {
         fMemberId = account.id;
       } else if (fMemberId !== account.id) {

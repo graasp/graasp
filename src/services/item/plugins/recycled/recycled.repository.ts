@@ -3,7 +3,7 @@ import { eq, getTableColumns, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { and, asc, desc, gte, isNotNull, ne } from 'drizzle-orm/sql';
 
-import { type Paginated, type Pagination, PermissionLevel } from '@graasp/sdk';
+import { type Paginated, type Pagination } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
@@ -61,7 +61,7 @@ export class RecycledItemDataRepository {
       .where(
         and(
           eq(itemMembershipsTable.accountId, account.id),
-          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
+          eq(itemMembershipsTable.permission, 'admin'),
         ),
       )
       .as('ownMemberships');
@@ -177,7 +177,7 @@ export class RecycledItemDataRepository {
         itemMembershipsTable,
         and(
           eq(itemMembershipsTable.accountId, memberId),
-          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
+          eq(itemMembershipsTable.permission, 'admin'),
           inArray(itemsRawTable.id, ids),
           isAncestorOrSelf(itemMembershipsTable.itemPath, itemsRawTable.path),
         ),

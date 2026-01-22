@@ -28,7 +28,6 @@ import {
   MAX_TREE_LEVELS,
   type Paginated,
   type Pagination,
-  PermissionLevel,
   buildPathFromIds,
   getChildFromPath,
   getParentFromPath,
@@ -590,7 +589,7 @@ export class ItemRepository {
       .where(
         and(
           eq(items.creatorId, memberId),
-          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
+          eq(itemMembershipsTable.permission, 'admin'),
           eq(sql`nlevel(${items.path})`, 1),
         ),
       )
@@ -975,7 +974,7 @@ export class ItemRepository {
         itemMembershipsTable,
         and(
           isAncestorOrSelf(itemMembershipsTable.itemPath, items.path),
-          inArray(itemMembershipsTable.permission, [PermissionLevel.Admin, PermissionLevel.Write]),
+          inArray(itemMembershipsTable.permission, ['admin', 'write']),
         ),
       )
       .innerJoin(

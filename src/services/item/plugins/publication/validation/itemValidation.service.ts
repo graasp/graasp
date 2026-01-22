@@ -2,7 +2,7 @@ import { mkdirSync } from 'fs';
 import path from 'path';
 import { singleton } from 'tsyringe';
 
-import { ItemValidationStatus, PermissionLevel, type UUID } from '@graasp/sdk';
+import { ItemValidationStatus, type UUID } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
 import { type ItemRaw } from '../../../../../drizzle/types';
@@ -60,7 +60,7 @@ export class ItemValidationService {
 
     // check permissions
     await this.authorizedItemService.assertAccess(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: member.id,
       item,
     });

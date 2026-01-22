@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -266,7 +266,7 @@ describe('Tests Embedded Link Controller', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{}],
             },
           ],
@@ -379,7 +379,7 @@ describe('Tests Embedded Link Controller', () => {
           {
             extra: { [ItemType.LINK]: { url: faker.internet.url() } },
             type: ItemType.LINK,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -406,7 +406,7 @@ describe('Tests Embedded Link Controller', () => {
             {
               type: ItemType.LINK,
               extra: { [ItemType.LINK]: { url: faker.internet.url() } },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -431,7 +431,7 @@ describe('Tests Embedded Link Controller', () => {
               settings: { isCollapsible: false },
               type: ItemType.LINK,
               extra: { [ItemType.LINK]: { url: faker.internet.url() } },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });

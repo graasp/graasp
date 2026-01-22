@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import type { MultipartFile } from '@fastify/multipart';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import type {
@@ -119,7 +119,7 @@ export class InvitationService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: authenticatedUser.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
     return this.invitationRepository.getManyByItem(dbConnection, item.path);
   }
@@ -133,7 +133,7 @@ export class InvitationService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     await this.invitationRepository.addMany(dbConnection, invitations, item.path, member);
@@ -163,7 +163,7 @@ export class InvitationService {
       throw new InvitationNotFound({ invitationId });
     }
     await this.authorizedItemService.assertAccess(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: authenticatedUser.id,
       item: invitation.item,
     });
@@ -181,7 +181,7 @@ export class InvitationService {
       throw new Error('missing invitation');
     }
     await this.authorizedItemService.assertAccess(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: authenticatedUser.id,
       item: invitation.item,
     });
@@ -197,7 +197,7 @@ export class InvitationService {
     }
 
     await this.authorizedItemService.assertAccess(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: member.id,
       item: invitation.item,
     });
@@ -246,7 +246,7 @@ export class InvitationService {
     const membershipsToCreate = existingAccounts.map((account) => {
       const permission =
         // get the permission from the data, if it is not found or if it is an empty string, default to read
-        rows.find((r) => r.email === account.email)?.permission ?? PermissionLevel.Read;
+        rows.find((r) => r.email === account.email)?.permission ?? 'read';
       return { permission, accountId: account.id };
     });
     this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
@@ -265,7 +265,7 @@ export class InvitationService {
     // generate invitations to create
     const invitationsToCreate = newAccounts.map((email) => {
       // get the permission from the data, if it is not found or if it is an empty string, default to read
-      const permission = rows.find((r) => r.email === email)?.permission ?? PermissionLevel.Read;
+      const permission = rows.find((r) => r.email === email)?.permission ?? 'read';
       return { email, permission };
     });
     this.log.debug(`${JSON.stringify(invitationsToCreate)} invitations to create`);
@@ -297,7 +297,7 @@ export class InvitationService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: authenticatedUser.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     return this._createMembershipsAndInvitationsForUserList(
@@ -321,7 +321,7 @@ export class InvitationService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     // parse CSV file
@@ -365,7 +365,7 @@ export class InvitationService {
     const parentItem = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId: parentId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     // check that the template exists

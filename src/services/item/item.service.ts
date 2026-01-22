@@ -12,9 +12,7 @@ import {
   MAX_NUMBER_OF_CHILDREN,
   type Paginated,
   type Pagination,
-  PermissionLevel,
   PermissionLevelCompare,
-  type PermissionLevelOptions,
   type UUID,
   buildPathFromIds,
   getIdsFromPath,
@@ -31,7 +29,7 @@ import type {
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember, PermissionLevel } from '../../types';
 import { H5P_INTEGRATION_URL } from '../../utils/config';
 import {
   CannotReorderRootItem,
@@ -282,7 +280,7 @@ export class ItemService {
     const parentItem = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId: parentId,
-      permission: PermissionLevel.Write,
+      permission: 'write',
     });
     const inheritedMembership = await this.itemMembershipRepository.getInherited(
       dbConnection,
@@ -357,7 +355,7 @@ export class ItemService {
     // create membership if inherited is less than admin
     if (
       !inheritedMembership ||
-      PermissionLevelCompare.lt(inheritedMembership?.permission, PermissionLevel.Admin)
+      PermissionLevelCompare.lt(inheritedMembership?.permission, 'admin')
     ) {
       this.log.debug(`create membership for ${createdItems.map((item) => item.id)}`);
       const memberships = createdItems.map((item) => {
@@ -365,7 +363,7 @@ export class ItemService {
           itemPath: item.path,
           accountId: member.id,
           creatorId: member.id,
-          permission: PermissionLevel.Admin,
+          permission: 'admin' as const,
         };
       });
       await this.itemMembershipRepository.addMany(dbConnection, memberships);
@@ -453,7 +451,7 @@ export class ItemService {
     dbConnection: DBConnection,
     maybeUser: MaybeUser,
     id: string,
-    permission: PermissionLevelOptions = PermissionLevel.Read,
+    permission: PermissionLevel = 'read',
   ) {
     const item = await this.itemRepository.getOneWithCreatorOrThrow(dbConnection, id);
     const { itemMembership, visibilities } = await this.authorizedItemService.getPropertiesForItem(
@@ -613,7 +611,7 @@ export class ItemService {
     body: Partial<ItemRaw>,
   ): Promise<ItemRaw> {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      permission: PermissionLevel.Write,
+      permission: 'write',
       accountId: member.id,
       itemId,
     });
@@ -643,7 +641,7 @@ export class ItemService {
   // QUESTION? DELETE BY PATH???
   async delete(dbConnection: DBConnection, account: MinimalMember, itemId: UUID) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: account.id,
       itemId,
     });
@@ -721,7 +719,7 @@ export class ItemService {
     parentItem?: FolderItem,
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: member.id,
       itemId,
     });
@@ -793,7 +791,7 @@ export class ItemService {
       parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
         accountId: member.id,
         itemId: toItemId,
-        permission: PermissionLevel.Write,
+        permission: 'write',
       })) as FolderItem;
     }
 
@@ -929,7 +927,7 @@ export class ItemService {
         itemPath: copyRoot.path,
         accountId: member.id,
         creatorId: member.id,
-        permission: PermissionLevel.Admin,
+        permission: 'admin',
       })
       .catch((e) => {
         // admin permission already exists and does not need to be added
@@ -993,7 +991,7 @@ export class ItemService {
       parentItem = (await this.authorizedItemService.getItemById(dbConnection, {
         accountId: member.id,
         itemId: args.parentId,
-        permission: PermissionLevel.Write,
+        permission: 'write',
       })) as FolderItem;
     }
 

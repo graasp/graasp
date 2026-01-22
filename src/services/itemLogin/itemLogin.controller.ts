@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
+import { ItemLoginSchemaStatus } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
@@ -71,7 +71,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const item = await authorizedItemService.getItemById(db, {
         accountId: user?.account?.id,
         itemId,
-        permission: PermissionLevel.Admin,
+        permission: 'admin',
       });
       const itemLoginSchema = await itemLoginService.getByItemPath(db, item.path);
       if (!itemLoginSchema) {
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const item = await authorizedItemService.getItemById(tx, {
           accountId: member.id,
           itemId,
-          permission: PermissionLevel.Admin,
+          permission: 'admin',
         });
 
         await itemLoginService.updateOrCreate(tx, item.path, type, status);
@@ -143,7 +143,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         await authorizedItemService.getItemById(tx, {
           accountId: member.id,
           itemId,
-          permission: PermissionLevel.Admin,
+          permission: 'admin',
         });
         try {
           await itemLoginService.delete(tx, itemId);

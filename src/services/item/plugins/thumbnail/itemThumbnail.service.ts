@@ -3,7 +3,7 @@ import { fromPath as convertPDFtoImageFromPath } from 'pdf2pic';
 import { Readable } from 'stream';
 import { delay, inject, injectable } from 'tsyringe';
 
-import { MimeTypes, PermissionLevel, ThumbnailSize } from '@graasp/sdk';
+import { MimeTypes, ThumbnailSize } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -40,7 +40,7 @@ export class ItemThumbnailService {
 
   async upload(dbConnection: DBConnection, member: MinimalMember, itemId: string, file: Readable) {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      permission: PermissionLevel.Write,
+      permission: 'write',
       accountId: member.id,
       itemId,
     });
@@ -162,7 +162,7 @@ export class ItemThumbnailService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Write,
+      permission: 'write',
     });
     await Promise.all(
       Object.values(ThumbnailSize).map(async (size) => {

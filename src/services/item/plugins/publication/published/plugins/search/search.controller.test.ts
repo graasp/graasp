@@ -6,7 +6,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel, TagCategory } from '@graasp/sdk';
+import { HttpMethod, ItemType, TagCategory } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -235,7 +235,7 @@ describe('Collection Search endpoints', () => {
             {
               isPublic: true,
               isPublished: true,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.DOCUMENT,
               extra: {
                 [ItemType.DOCUMENT]: {
@@ -278,10 +278,10 @@ describe('Collection Search endpoints', () => {
               {
                 isPublic: true,
                 isPublished: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -318,12 +318,12 @@ describe('Collection Search endpoints', () => {
               {
                 isPublic: true,
                 isPublished: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isPublic: true,
                 isPublished: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -354,12 +354,12 @@ describe('Collection Search endpoints', () => {
           } = await seedFromJson({
             items: [
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isPublic: true,
                 isPublished: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -389,13 +389,13 @@ describe('Collection Search endpoints', () => {
           } = await seedFromJson({
             items: [
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
                 isPublic: true,
                 isPublished: true,
                 children: [{}],
               },
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });

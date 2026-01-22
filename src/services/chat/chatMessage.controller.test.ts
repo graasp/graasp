@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
@@ -685,7 +685,7 @@ describe('Chat Message tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               chatMessages: [
                 { creator: { name: 'bob' } },
                 { creator: { name: 'cedric' } },

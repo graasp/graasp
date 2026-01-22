@@ -3,7 +3,6 @@ import { singleton } from 'tsyringe';
 import {
   ItemLoginSchemaStatus,
   ItemVisibilityType,
-  PermissionLevel,
   PermissionLevelCompare,
   type UUID,
 } from '@graasp/sdk';
@@ -166,7 +165,7 @@ export class ItemLoginService {
         itemPath: itemLoginSchema.item.path,
         accountId: guestAccount.id,
         creatorId: guestAccount.id,
-        permission: PermissionLevel.Read,
+        permission: 'read',
       });
     }
 
@@ -223,7 +222,7 @@ export class ItemLoginService {
         actor?.id,
         itemPath,
       );
-      if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
+      if (!membership || PermissionLevelCompare.lt(membership.permission, 'write')) {
         return false;
       }
     }

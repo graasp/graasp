@@ -1,4 +1,8 @@
+import { Static, Type } from '@sinclair/typebox';
+
 import type { UnionOfConst } from '@graasp/sdk';
+
+import { registerSchemaAsRef } from './plugins/typebox';
 
 export const AccountType = {
   Individual: 'individual',
@@ -75,3 +79,16 @@ export type KeysWithValsOfType<T, V> = keyof {
   [P in keyof T as T[P] extends V ? P : never]: P;
 };
 export type KeysOfString<T> = KeysWithValsOfType<T, string>;
+
+const permissionLevelSchema = Type.Union([
+  Type.Literal('read'),
+  Type.Literal('write'),
+  Type.Literal('admin'),
+]);
+export type PermissionLevel = Static<typeof permissionLevelSchema>;
+
+export const permissionLevelSchemaRef = registerSchemaAsRef(
+  'permissionLevel',
+  'PermissionLevel',
+  permissionLevelSchema,
+);

@@ -6,7 +6,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { ClientManager, Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { ClientManager, Context, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -114,7 +114,7 @@ describe('Action Plugin Tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -140,7 +140,7 @@ describe('Action Plugin Tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -167,7 +167,7 @@ describe('Action Plugin Tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -191,7 +191,7 @@ describe('Action Plugin Tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -246,7 +246,7 @@ describe('Action Plugin Tests', () => {
         items: [item],
         actor,
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -280,7 +280,7 @@ describe('Action Plugin Tests', () => {
             ],
             appSettings: [{ creator: 'actor' }, { creator: 'actor' }],
             appActions: [{ account: 'actor' }, { account: 'actor' }],
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -317,7 +317,7 @@ describe('Action Plugin Tests', () => {
             ],
             appSettings: [{ creator: 'actor' }, { creator: 'actor' }],
             appActions: [{ account: 'actor' }, { account: 'actor' }],
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             actionRequestExports: [
               {
                 member: 'actor',
@@ -352,7 +352,7 @@ describe('Action Plugin Tests', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             actionRequestExports: [
               {
                 member: 'actor',

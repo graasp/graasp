@@ -1,6 +1,7 @@
-import { ItemType, type PermissionLevelOptions, type UnionOfConst } from '@graasp/sdk';
+import { ItemType, type UnionOfConst } from '@graasp/sdk';
 
 import type { MinimalAccount } from '../../drizzle/types';
+import { PermissionLevel } from '../../types';
 
 export enum SortBy {
   ItemType = 'item.type',
@@ -33,7 +34,7 @@ export type ItemSearchParams = {
   keywords?: string[];
   sortBy?: SortBy;
   ordering?: Ordering;
-  permissions?: PermissionLevelOptions[];
+  permissions?: PermissionLevel[];
   types?: UnionOfConst<typeof ItemType>[];
 };
 

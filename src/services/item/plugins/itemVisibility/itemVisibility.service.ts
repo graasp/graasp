@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { type ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
+import { type ItemVisibilityOptionsType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -30,7 +30,7 @@ export class ItemVisibilityService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
     await this.itemVisibilityRepository.post(dbConnection, member.id, item.path, visibilityType);
   }
@@ -44,7 +44,7 @@ export class ItemVisibilityService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     await this.itemVisibilityRepository.deleteOne(dbConnection, item, visibilityType);

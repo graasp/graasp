@@ -1,17 +1,12 @@
 import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import {
-  type ItemGeolocation,
-  ItemType,
-  type PermissionLevelOptions,
-  type UUID,
-} from '@graasp/sdk';
+import { type ItemGeolocation, ItemType, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import type { MaybeUser, MinimalMember } from '../../../../types';
+import type { MaybeUser, MinimalMember, PermissionLevel } from '../../../../types';
 import { ItemNotFolder } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
@@ -64,7 +59,7 @@ export class FolderItemService extends ItemService {
     dbConnection: DBConnection,
     maybeUser: MaybeUser,
     itemId: ItemRaw['id'],
-    permission?: PermissionLevelOptions,
+    permission?: PermissionLevel,
   ): Promise<FolderItem> {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: maybeUser?.id,

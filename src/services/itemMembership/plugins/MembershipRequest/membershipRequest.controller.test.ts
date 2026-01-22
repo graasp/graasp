@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, MembershipRequestStatus } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -65,7 +65,7 @@ describe('MembershipRequest', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -87,7 +87,7 @@ describe('MembershipRequest', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             membershipRequests: [{ member: { name: 'bob' } }],
           },
         ],
@@ -113,7 +113,7 @@ describe('MembershipRequest', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             membershipRequests: [
               { member: { name: 'bob' } },
               { member: { name: 'alice' } },
@@ -122,7 +122,7 @@ describe('MembershipRequest', () => {
           },
           // noise
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             membershipRequests: [{ member: { name: 'bob' } }],
           },
         ],
@@ -176,7 +176,7 @@ describe('MembershipRequest', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'write' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -228,7 +228,7 @@ describe('MembershipRequest', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             children: [{}],
           },
         ],
@@ -275,7 +275,7 @@ describe('MembershipRequest', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -300,7 +300,7 @@ describe('MembershipRequest', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             membershipRequests: [{ member: 'actor' }],
           },
         ],
@@ -352,7 +352,7 @@ describe('MembershipRequest', () => {
         items: [item],
         members: [admin],
       } = await seedFromJson({
-        items: [{ memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: { name: 'bob' }, permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -385,16 +385,16 @@ describe('MembershipRequest', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             children: [
               {
-                memberships: [{ account: { name: 'alice' }, permission: PermissionLevel.Admin }],
+                memberships: [{ account: { name: 'alice' }, permission: 'admin' }],
                 children: [
                   {
                     memberships: [
-                      { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
+                      { account: { name: 'cedric' }, permission: 'admin' },
                       // noise
-                      { account: { name: 'noise' }, permission: PermissionLevel.Read },
+                      { account: { name: 'noise' }, permission: 'read' },
                     ],
                   },
                 ],
@@ -670,7 +670,7 @@ describe('MembershipRequest', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
         members: [{}],

@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel, ShortcutItemFactory } from '@graasp/sdk';
+import { HttpMethod, ItemType, ShortcutItemFactory } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -103,7 +103,7 @@ describe('Shortcut routes tests', () => {
         const membership = await db.query.itemMembershipsTable.findFirst({
           where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
-        expect(membership?.permission).toEqual(PermissionLevel.Admin);
+        expect(membership?.permission).toEqual('admin');
       });
 
       it('Create without name', async () => {
@@ -331,7 +331,7 @@ describe('Shortcut routes tests', () => {
                 [ItemType.SHORTCUT]: { target: v4() },
               },
               settings: { isCollapsible: false },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });

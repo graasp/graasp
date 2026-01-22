@@ -5,13 +5,7 @@ import { eq, inArray } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  ItemType,
-  MAX_ITEM_NAME_LENGTH,
-  MAX_TREE_LEVELS,
-  PermissionLevel,
-  buildPathFromIds,
-} from '@graasp/sdk';
+import { ItemType, MAX_ITEM_NAME_LENGTH, MAX_TREE_LEVELS, buildPathFromIds } from '@graasp/sdk';
 
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
@@ -46,17 +40,17 @@ const saveCollections = async () => {
       {
         isPublic: true,
         creator: { name: 'bob' },
-        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+        memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
       },
       {
         isPublic: true,
         creator: { name: 'bob' },
-        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+        memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
       },
       {
         isPublic: true,
         creator: { name: 'bob' },
-        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+        memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
       },
     ],
   });
@@ -1622,7 +1616,7 @@ describe('Item Repository', () => {
           {
             children: [
               {
-                memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+                memberships: [{ permission: 'admin', account: 'actor' }],
                 children: [{}],
               },
             ],
@@ -1644,7 +1638,7 @@ describe('Item Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ permission: PermissionLevel.Read, account: 'actor' }],
+            memberships: [{ permission: 'read', account: 'actor' }],
             children: [{ children: [{}] }],
           },
         ],
@@ -1665,10 +1659,10 @@ describe('Item Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ permission: PermissionLevel.Read, account: 'actor' }],
+            memberships: [{ permission: 'read', account: 'actor' }],
             children: [
               {
-                memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+                memberships: [{ permission: 'admin', account: 'actor' }],
                 children: [{}],
               },
             ],

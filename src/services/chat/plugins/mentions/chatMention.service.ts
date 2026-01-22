@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/sdk';
+import { ClientManager, Context, MentionStatus } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ChatMessageRaw, type ItemRaw } from '../../../../drizzle/types';
@@ -74,7 +74,7 @@ export class MentionService {
     mentionedMembers: string[],
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      permission: PermissionLevel.Read,
+      permission: 'read',
       accountId: account.id,
       itemId: message.itemId,
     });

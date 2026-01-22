@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
+import { ItemVisibilityType } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
 import type { AuthenticatedUser } from '../../../../../types';
@@ -47,7 +47,7 @@ export class PublicationService {
     await this.authorizedItemService.assertAccess(dbConnection, {
       accountId: member.id,
       item,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
     const publicVisibility = await this.itemVisibilityRepository.getType(
       dbConnection,

@@ -5,7 +5,7 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { fastifyStatic } from '@fastify/static';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
@@ -108,7 +108,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
         // validate write permission in parent if it exists
         if (parentId) {
           await authorizedItemService.assertAccessForItemId(tx, {
-            permission: PermissionLevel.Write,
+            permission: 'write',
             accountId: member.id,
             itemId: parentId,
           });

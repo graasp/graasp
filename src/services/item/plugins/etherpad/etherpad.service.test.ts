@@ -1,12 +1,7 @@
 import { v4 } from 'uuid';
 
 import Etherpad from '@graasp/etherpad-api';
-import {
-  EtherpadItemFactory,
-  EtherpadPermission,
-  FolderItemFactory,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { EtherpadItemFactory, EtherpadPermission, FolderItemFactory } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
@@ -149,7 +144,7 @@ describe('Etherpad Service', () => {
 
     //   expect(MOCK_ITEM.extra.etherpad.readerPermission).toBeUndefined();
 
-    //   const readerPermission = PermissionLevel.Write;
+    //   const readerPermission = "write";
     //   await etherpadService.patchWithOptions(db, MOCK_MEMBER, MOCK_ITEM.id, {
     //     readerPermission,
     //   });
@@ -158,7 +153,7 @@ describe('Etherpad Service', () => {
     //   expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
     //     extra: {
     //       [ItemType.ETHERPAD]: {
-    //         readerPermission: PermissionLevel.Write,
+    //         readerPermission: "write",
     //         padID: MOCK_ITEM.extra.etherpad.padID,
     //         groupID: MOCK_ITEM.extra.etherpad.groupID,
     //       },
@@ -191,7 +186,7 @@ describe('Etherpad Service', () => {
 
       await expect(() =>
         etherpadService.patchWithOptions(db, MOCK_MEMBER, v4(), {
-          readerPermission: PermissionLevel.Write,
+          readerPermission: 'write',
         }),
       ).rejects.toThrow();
     });
@@ -210,7 +205,7 @@ describe('Etherpad Service', () => {
     //   jest.spyOn(itemService, 'get').mockResolvedValue({
     //     ...EtherpadItemFactory({
     //       extra: {
-    //         etherpad: { padID: v4(), groupID: v4(), readerPermission: PermissionLevel.Write },
+    //         etherpad: { padID: v4(), groupID: v4(), readerPermission: "write" },
     //       },
     //     }),
     //     creatorId: 'some',
@@ -219,7 +214,7 @@ describe('Etherpad Service', () => {
     //   });
     //   // actor has read permission
     //   jest.spyOn(repositories.itemMembershipRepository, 'getInherited').mockResolvedValue({
-    //     permission: PermissionLevel.Read,
+    //     permission: "read",
     //     item: {} as ItemRaw,
     //   } as ItemMembershipWithItemAndAccount);
     //   const getReadOnlyIDMock = jest.spyOn(etherpad, 'getReadOnlyID');
@@ -233,7 +228,7 @@ describe('Etherpad Service', () => {
     //   jest.spyOn(itemService, 'get').mockResolvedValue({
     //     ...EtherpadItemFactory({
     //       extra: {
-    //         etherpad: { padID: v4(), groupID: v4(), readerPermission: PermissionLevel.Read },
+    //         etherpad: { padID: v4(), groupID: v4(), readerPermission: "read" },
     //       },
     //     }),
     //     creatorId: 'some',
@@ -242,7 +237,7 @@ describe('Etherpad Service', () => {
     //   });
     //   // permission is read
     //   jest.spyOn(repositories.itemMembershipRepository, 'getInherited').mockResolvedValue({
-    //     permission: PermissionLevel.Read,
+    //     permission: "read",
     //   } as ItemMembershipWithItemAndAccount);
     //   const getReadOnlyIDMock = jest
     //     .spyOn(etherpad, 'getReadOnlyID')

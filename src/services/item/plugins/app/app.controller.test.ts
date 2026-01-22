@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -147,7 +147,7 @@ describe('Apps Plugin Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               extra: { app: { url: chosenApp.url } },
             },
@@ -174,7 +174,7 @@ describe('Apps Plugin Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               extra: { app: { url: chosenApp.url } },
             },
@@ -300,8 +300,8 @@ describe('Apps Plugin Tests', () => {
           items: [
             {
               memberships: [
-                { account: 'actor', permission: PermissionLevel.Read },
-                { account: { name: 'bob' }, permission: PermissionLevel.Read },
+                { account: 'actor', permission: 'read' },
+                { account: { name: 'bob' }, permission: 'read' },
               ],
               type: ItemType.APP,
               extra: { app: { url: chosenApp.url } },
@@ -340,7 +340,7 @@ describe('Apps Plugin Tests', () => {
           actor: null,
           items: [
             {
-              memberships: [{ account: { name: 'anna' }, permission: PermissionLevel.Read }],
+              memberships: [{ account: { name: 'anna' }, permission: 'read' }],
               type: ItemType.APP,
               extra: { app: { url: chosenApp.url } },
               itemLoginSchema: { guests: [{}] },
@@ -376,8 +376,8 @@ describe('Apps Plugin Tests', () => {
           items: [
             {
               memberships: [
-                { account: 'actor', permission: PermissionLevel.Read },
-                { account: { name: 'bob' }, permission: PermissionLevel.Read },
+                { account: 'actor', permission: 'read' },
+                { account: { name: 'bob' }, permission: 'read' },
               ],
               children: [
                 {

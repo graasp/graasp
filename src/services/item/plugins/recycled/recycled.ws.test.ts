@@ -4,7 +4,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
@@ -47,7 +47,7 @@ describe('Recycle websocket hooks', () => {
         items: [item],
         actor,
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -87,7 +87,7 @@ describe('Recycle websocket hooks', () => {
         items: [item],
         actor,
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -124,7 +124,7 @@ describe('Recycle websocket hooks', () => {
         items: [
           {
             isDeleted: true,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });

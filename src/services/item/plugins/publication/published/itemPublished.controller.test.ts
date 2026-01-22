@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, ItemValidationStatus, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, ItemValidationStatus } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -158,19 +158,19 @@ describe('Item Published', () => {
               isPublic: true,
               isPublished: true,
               creator: { name: 'bob' },
-              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             },
             {
               isPublic: true,
               isPublished: true,
               creator: { name: 'bob' },
-              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             },
             {
               isPublic: true,
               isPublished: true,
               creator: { name: 'bob' },
-              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             },
           ],
         });
@@ -183,10 +183,7 @@ describe('Item Published', () => {
         expectManyPackedItems(
           res.json(),
           items.map((i) =>
-            new ItemWrapper(
-              { ...i, creator: member },
-              { permission: PermissionLevel.Admin },
-            ).packed(),
+            new ItemWrapper({ ...i, creator: member }, { permission: 'admin' }).packed(),
           ),
           undefined,
           undefined,
@@ -208,19 +205,19 @@ describe('Item Published', () => {
               isPublished: true,
               isPublic: true,
               creator: { name: 'bob' },
-              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             },
             {
               isPublished: true,
               isPublic: true,
               creator: { name: 'bob' },
-              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             },
             {
               isPublished: true,
               isPublic: true,
               creator: { name: 'bob' },
-              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+              memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
             },
           ],
         });
@@ -235,10 +232,7 @@ describe('Item Published', () => {
         expectManyPackedItems(
           res.json(),
           items.map((i) =>
-            new ItemWrapper(
-              { ...i, creator: member },
-              { permission: PermissionLevel.Admin },
-            ).packed(),
+            new ItemWrapper({ ...i, creator: member }, { permission: 'admin' }).packed(),
           ),
           member,
           undefined,
@@ -276,7 +270,7 @@ describe('Item Published', () => {
             {
               isPublic: true,
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -316,9 +310,9 @@ describe('Item Published', () => {
               isPublic: true,
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
               memberships: [
-                { account: 'actor', permission: PermissionLevel.Admin },
-                { account: { name: 'anna' }, permission: PermissionLevel.Admin },
-                { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
+                { account: 'actor', permission: 'admin' },
+                { account: { name: 'anna' }, permission: 'admin' },
+                { account: { name: 'cedric' }, permission: 'admin' },
               ],
             },
           ],
@@ -361,7 +355,7 @@ describe('Item Published', () => {
           items: [
             {
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -384,7 +378,7 @@ describe('Item Published', () => {
           items: [
             {
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
           ],
         });
@@ -406,7 +400,7 @@ describe('Item Published', () => {
           items: [
             {
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -429,7 +423,7 @@ describe('Item Published', () => {
             {
               type: ItemType.DOCUMENT,
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -450,7 +444,7 @@ describe('Item Published', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -515,7 +509,7 @@ describe('Item Published', () => {
               isPublic: true,
               isPublished: true,
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -546,7 +540,7 @@ describe('Item Published', () => {
             {
               isPublic: true,
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -569,7 +563,7 @@ describe('Item Published', () => {
               isPublic: true,
               isPublished: true,
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
           ],
         });
@@ -592,7 +586,7 @@ describe('Item Published', () => {
               isPublic: true,
               isPublished: true,
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });

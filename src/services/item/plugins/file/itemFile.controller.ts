@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { type FileItemProperties, ItemType, PermissionLevel, getFileExtension } from '@graasp/sdk';
+import { type FileItemProperties, ItemType, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -107,7 +107,7 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // check rights
       if (parentId) {
         await authorizedItemService.assertAccessForItemId(db, {
-          permission: PermissionLevel.Write,
+          permission: 'write',
           accountId: member.id,
           itemId: parentId,
         });

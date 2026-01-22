@@ -12,14 +12,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import { and, desc, eq, ilike, sql } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import {
-  PermissionLevel,
-  PermissionLevelCompare,
-  type PermissionLevelOptions,
-  type ResultOf,
-  type UUID,
-  getChildFromPath,
-} from '@graasp/sdk';
+import { PermissionLevelCompare, type ResultOf, type UUID, getChildFromPath } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
@@ -38,7 +31,7 @@ import type {
   ItemRaw,
   MemberRaw,
 } from '../../drizzle/types';
-import type { AuthenticatedUser, MinimalMember } from '../../types';
+import type { AuthenticatedUser, MinimalMember, PermissionLevel } from '../../types';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -58,9 +51,9 @@ type CreateItemMembershipBody = {
   itemPath: ItemPath;
   accountId: AccountId;
   creatorId?: CreatorId;
-  permission: PermissionLevelOptions;
+  permission: PermissionLevel;
 };
-type UpdateItemMembershipBody = { permission: PermissionLevelOptions };
+type UpdateItemMembershipBody = { permission: PermissionLevel };
 type KeyCompositionItemMembership = {
   itemPath: ItemPath;
   accountId: AccountId;
@@ -72,11 +65,11 @@ type ResultMoveHousekeeping = {
 type DetachedMoveHousekeepingType = {
   accountId: string;
   itemPath: string;
-  permission: PermissionLevelOptions;
+  permission: PermissionLevel;
 };
 type MoveHousekeepingType = DetachedMoveHousekeepingType & {
   action: number;
-  inherited: PermissionLevelOptions;
+  inherited: PermissionLevel;
   action2IgnoreInherited: boolean;
 };
 
@@ -484,7 +477,7 @@ export class ItemMembershipRepository {
     // order by https://stackoverflow.com/questions/17603907/order-by-enum-field-in-mysql
     const result = mappedMemberships.reduce(
       (highest: ItemMembershipWithItemAndAccount | null, m: ItemMembershipWithItemAndAccount) => {
-        if (PermissionLevelCompare.gte(m.permission, highest?.permission ?? PermissionLevel.Read)) {
+        if (PermissionLevelCompare.gte(m.permission, highest?.permission ?? 'read')) {
           return m;
         }
         return highest;
@@ -508,7 +501,7 @@ export class ItemMembershipRepository {
       .where(
         and(
           isAncestorOrSelf(itemMembershipsTable.itemPath, itemPath),
-          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
+          eq(itemMembershipsTable.permission, 'admin'),
         ),
       )) as MemberRaw[];
   }
@@ -667,7 +660,7 @@ export class ItemMembershipRepository {
       .select({
         accountId: itemMembershipsTable.accountId,
         itemPath: sql<ItemRaw['path']>`'max(item_path::text)::ltree'`,
-        permission: sql<PermissionLevelOptions>`max(permission)`,
+        permission: sql<PermissionLevel>`max(permission)`,
       })
       .from(itemMembershipsTable)
       .where(isAncestorOrSelf(itemMembershipsTable.itemPath, item.path))

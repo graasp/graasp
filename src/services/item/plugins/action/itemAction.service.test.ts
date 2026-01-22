@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
-import { Context, PermissionLevel } from '@graasp/sdk';
+import { Context } from '@graasp/sdk';
 
 import build, {
   MOCK_LOGGER,
@@ -136,7 +136,7 @@ describe('ItemActionService', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               actions: [
                 {
                   account: 'actor',
@@ -180,7 +180,7 @@ describe('ItemActionService', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               actions: [
                 {
                   account: { name: 'bob' },
@@ -217,7 +217,7 @@ describe('ItemActionService', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               actions: [
                 {
                   account: { name: 'bob' },
@@ -249,7 +249,7 @@ describe('ItemActionService', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               actions: [
                 { account: 'actor', view: Context.Player },
                 { account: 'actor', view: Context.Library },
@@ -322,8 +322,8 @@ describe('ItemActionService', () => {
         actor,
       } = await seedFromJson({
         items: [
-          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+          { memberships: [{ account: 'actor', permission: 'admin' }] },
+          { memberships: [{ account: 'actor', permission: 'admin' }] },
         ],
       });
       assertIsDefined(actor);
@@ -353,7 +353,7 @@ describe('ItemActionService', () => {
         items: [item],
         actor,
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       const actionPostMany = jest.spyOn(actionService, 'postMany').mockResolvedValue();
       assertIsDefined(actor);

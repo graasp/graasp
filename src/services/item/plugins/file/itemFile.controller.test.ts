@@ -14,7 +14,6 @@ import {
   HttpMethod,
   ItemType,
   MaxWidth,
-  PermissionLevel,
 } from '@graasp/sdk';
 
 import build, {
@@ -165,7 +164,7 @@ describe('File Item routes tests', () => {
 
           // a membership is created for this item
           const membership = await getItemMembershipByPath(item.path);
-          expect(membership?.permission).toEqual(PermissionLevel.Admin);
+          expect(membership?.permission).toEqual('admin');
         });
 
         it('Upload successfully one pdf file with thumbnail', async () => {
@@ -234,7 +233,7 @@ describe('File Item routes tests', () => {
             ),
           });
           for (const m of memberships) {
-            expect(m?.permission).toEqual(PermissionLevel.Admin);
+            expect(m?.permission).toEqual('admin');
           }
         });
 
@@ -243,7 +242,7 @@ describe('File Item routes tests', () => {
             actor,
             items: [parentItem],
           } = await seedFromJson({
-            items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+            items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
           });
           assertIsDefined(actor);
           mockAuthenticate(actor);
@@ -317,7 +316,7 @@ describe('File Item routes tests', () => {
             actor,
             items: [parentItem],
           } = await seedFromJson({
-            items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+            items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
           });
           assertIsDefined(actor);
           mockAuthenticate(actor);
@@ -530,7 +529,7 @@ describe('File Item routes tests', () => {
           } = await seedFromJson({
             items: [
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+                memberships: [{ account: 'actor', permission: 'read' }],
               },
             ],
           });
@@ -606,7 +605,7 @@ describe('File Item routes tests', () => {
         items: [
           {
             ...buildFile('actor'),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -629,7 +628,7 @@ describe('File Item routes tests', () => {
         items: [
           {
             ...buildFile('actor'),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -652,7 +651,7 @@ describe('File Item routes tests', () => {
         items: [
           {
             ...buildFile('actor'),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -675,7 +674,7 @@ describe('File Item routes tests', () => {
         items: [
           {
             ...buildFile('actor'),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -700,7 +699,7 @@ describe('File Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -728,7 +727,7 @@ describe('File Item routes tests', () => {
           items: [
             {
               ...buildFile({ name: 'bob' }),
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -758,7 +757,7 @@ describe('File Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{}],
             },
           ],
@@ -789,7 +788,7 @@ describe('File Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [buildFile('actor'), {}],
             },
           ],
@@ -842,7 +841,7 @@ describe('File Item routes tests', () => {
                       content: 'content',
                     },
                   },
-                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  memberships: [{ account: 'actor', permission: 'admin' }],
                 },
               ],
             },
@@ -1082,7 +1081,7 @@ describe('File Item routes tests', () => {
           items: [
             {
               ...buildFile({ name: 'bob' }),
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });

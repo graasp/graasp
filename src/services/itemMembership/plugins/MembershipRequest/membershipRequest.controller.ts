@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
+import { MembershipRequestStatus } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -46,7 +46,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         await authorizedItemService.assertAccessForItemId(tx, {
           accountId: member.id,
           itemId,
-          permission: PermissionLevel.Admin,
+          permission: 'admin',
         });
 
         const requests = await membershipRequestService.getAllByItem(tx, itemId);
@@ -118,7 +118,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         // Check if the member already has an access to the item (from membership), if so, throw an error
         if (
           await authorizedItemService.hasPermission(tx, {
-            permission: PermissionLevel.Read,
+            permission: 'read',
             accountId: member.id,
             item,
           })
@@ -148,7 +148,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         await authorizedItemService.assertAccessForItemId(tx, {
           accountId: member.id,
           itemId,
-          permission: PermissionLevel.Admin,
+          permission: 'admin',
         });
 
         const result = await membershipRequestService.deleteOne(tx, memberId, itemId);

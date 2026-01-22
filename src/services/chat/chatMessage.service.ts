@@ -1,7 +1,5 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { type DBConnection } from '../../drizzle/db';
 import type { AuthenticatedUser, MaybeUser } from '../../types';
 import { AuthorizedItemService } from '../authorizedItem.service';
@@ -134,7 +132,7 @@ export class ChatMessageService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: authenticatedUser.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     await this.chatMessageRepository.deleteByItem(dbConnection, itemId);

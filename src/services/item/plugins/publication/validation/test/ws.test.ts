@@ -3,11 +3,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import {
-  HttpMethod,
-  type ItemOpFeedbackEvent as ItemOpFeedbackEventType,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { HttpMethod, type ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../../../test/app';
 import { seedFromJson } from '../../../../../../../test/mocks/seed';
@@ -50,7 +46,7 @@ describe('asynchronous feedback', () => {
       items: [item],
       actor,
     } = await seedFromJson({
-      items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
     });
     assertIsDefined(actor);
     mockAuthenticate(actor);
@@ -82,7 +78,7 @@ describe('asynchronous feedback', () => {
       items: [item],
       actor,
     } = await seedFromJson({
-      items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
     });
     assertIsDefined(actor);
     mockAuthenticate(actor);

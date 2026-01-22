@@ -1,8 +1,6 @@
 import { v4 } from 'uuid';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -50,7 +48,7 @@ describe('ItemGeolocationService', () => {
         items: [
           {
             geolocation: { lat: 1, lng: 2, country: 'de' },
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -171,7 +169,7 @@ describe('ItemGeolocationService', () => {
       const { actor, items, geolocations, itemMemberships } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
             geolocation: {
               lat: 1,
               lng: 2,
@@ -179,7 +177,7 @@ describe('ItemGeolocationService', () => {
             },
           },
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
             geolocation: {
               lat: 1,
               lng: 2,
@@ -220,11 +218,11 @@ describe('ItemGeolocationService', () => {
       expectPackedItemGeolocations(res, [
         {
           ...geolocations[0],
-          item: { ...items[0], creator: actor, permission: PermissionLevel.Read },
+          item: { ...items[0], creator: actor, permission: 'read' },
         },
         {
           ...geolocations[1],
-          item: { ...items[1], creator: actor, permission: PermissionLevel.Read },
+          item: { ...items[1], creator: actor, permission: 'read' },
         },
       ]);
     });
@@ -240,7 +238,7 @@ describe('ItemGeolocationService', () => {
             },
           },
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
             geolocation: {
               lat: 1,
               lng: 2,
@@ -280,7 +278,7 @@ describe('ItemGeolocationService', () => {
       expectPackedItemGeolocations(res, [
         {
           ...geolocations[1],
-          item: { ...items[1], creator: actor, permission: PermissionLevel.Read },
+          item: { ...items[1], creator: actor, permission: 'read' },
         },
       ]);
     });
@@ -459,7 +457,7 @@ describe('ItemGeolocationService', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -480,7 +478,7 @@ describe('ItemGeolocationService', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
       });
@@ -501,7 +499,7 @@ describe('ItemGeolocationService', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });

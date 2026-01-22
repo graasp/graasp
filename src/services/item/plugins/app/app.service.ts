@@ -2,7 +2,7 @@ import { sign } from 'jsonwebtoken';
 import uniqBy from 'lodash.uniqby';
 import { singleton } from 'tsyringe';
 
-import { type AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
+import { type AuthTokenSubject, ItemType } from '@graasp/sdk';
 
 import { APPS_JWT_SECRET } from '../../../../config/secrets';
 import { type DBConnection } from '../../../../drizzle/db';
@@ -61,7 +61,7 @@ export class AppService {
   ) {
     // check actor has access to item
     const item = await this.authorizedItemService.getItemById(dbConnection, {
-      permission: PermissionLevel.Read,
+      permission: 'read',
       accountId: maybeUser?.id,
       itemId,
     });

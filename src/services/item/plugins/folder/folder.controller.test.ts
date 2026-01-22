@@ -15,7 +15,6 @@ import {
   HttpMethod,
   ItemType,
   MAX_NUMBER_OF_CHILDREN,
-  PermissionLevel,
 } from '@graasp/sdk';
 
 import build, {
@@ -155,7 +154,7 @@ describe('Folder routes tests', () => {
         const membership = await db.query.itemMembershipsTable.findFirst({
           where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
-        expect(membership?.permission).toEqual(PermissionLevel.Admin);
+        expect(membership?.permission).toEqual('admin');
 
         // order is null for root
         const savedItem = await db.query.itemsRawTable.findFirst({
@@ -204,7 +203,7 @@ describe('Folder routes tests', () => {
           items: [parent],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'write' }] }],
         });
         assertIsDefined(actor);
         assertIsMember(actor);
@@ -230,7 +229,7 @@ describe('Folder routes tests', () => {
           await db.query.itemMembershipsTable.findMany({
             where: and(
               eq(itemMembershipsTable.itemPath, newItem.path),
-              eq(itemMembershipsTable.permission, PermissionLevel.Admin),
+              eq(itemMembershipsTable.permission, 'admin'),
               eq(itemMembershipsTable.accountId, actor.id),
             ),
           }),
@@ -568,7 +567,7 @@ describe('Folder routes tests', () => {
           items: [parent],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -900,7 +899,7 @@ describe('Folder routes tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -1024,7 +1023,7 @@ describe('Folder routes tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);

@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { Context, PermissionLevel, ShortLinkPlatform } from '@graasp/sdk';
+import { Context, ShortLinkPlatform } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -142,7 +142,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 creator: { name: 'bob' },
-                memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+                memberships: [{ account: 'actor', permission: 'write' }],
               },
             ],
           });
@@ -246,7 +246,7 @@ describe('Short links routes tests', () => {
           } = await seedFromJson({
             items: [
               { shortLinks: [{}] },
-              { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+              { memberships: [{ account: 'actor', permission: 'admin' }] },
             ],
           });
           assertIsDefined(actor);
@@ -269,7 +269,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -292,7 +292,7 @@ describe('Short links routes tests', () => {
             items: [item],
             actor,
           } = await seedFromJson({
-            items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+            items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
           });
           assertIsDefined(actor);
           mockAuthenticate(actor);
@@ -312,7 +312,7 @@ describe('Short links routes tests', () => {
           } = await seedFromJson({
             items: [
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
                 isPublic: true,
                 isPublished: true,
               },
@@ -357,7 +357,7 @@ describe('Short links routes tests', () => {
           } = await seedFromJson({
             items: [
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -410,7 +410,7 @@ describe('Short links routes tests', () => {
           items: [
             {
               shortLinks: [{}],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -442,7 +442,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+                memberships: [{ account: 'actor', permission: 'write' }],
               },
             ],
           });
@@ -462,7 +462,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -485,7 +485,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 shortLinks: [{}],
@@ -508,7 +508,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -526,7 +526,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -544,7 +544,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -564,7 +564,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -582,7 +582,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -602,7 +602,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -622,7 +622,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -656,7 +656,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+                memberships: [{ account: 'actor', permission: 'read' }],
               },
             ],
           });
@@ -676,7 +676,7 @@ describe('Short links routes tests', () => {
             items: [
               {
                 shortLinks: [{}],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -707,7 +707,7 @@ describe('Short links routes tests', () => {
           items: [
             {
               shortLinks: [{}],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -756,7 +756,7 @@ describe('Short links routes tests', () => {
           } = await seedFromJson({
             items: [
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
                 shortLinks: [{}],
               },
             ],
@@ -785,7 +785,7 @@ describe('Short links routes tests', () => {
                   { platform: ShortLinkPlatform.Builder },
                   { platform: ShortLinkPlatform.Player },
                 ],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+                memberships: [{ account: 'actor', permission: 'read' }],
               },
             ],
           });
@@ -808,7 +808,7 @@ describe('Short links routes tests', () => {
                   { platform: ShortLinkPlatform.Builder },
                   { platform: ShortLinkPlatform.Player },
                 ],
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });

@@ -5,12 +5,7 @@ import { pipeline } from 'stream/promises';
 import { singleton } from 'tsyringe';
 import { ZipFile } from 'yazl';
 
-import {
-  Context,
-  DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
-  PermissionLevel,
-  type UUID,
-} from '@graasp/sdk';
+import { Context, DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import type {
@@ -75,7 +70,7 @@ export class ActionRequestExportService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: minimalMember.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     // get last export entry within interval

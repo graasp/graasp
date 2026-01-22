@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ItemLoginSchemaStatus, PermissionLevel, type UUID } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import type { MinimalMember } from '../../../../types';
@@ -46,7 +46,7 @@ export class EnrollService {
     // Check if the member already has an permission over the item, if so, throw an error
     if (
       await this.authorizedItemService.hasPermission(dbConnection, {
-        permission: PermissionLevel.Read,
+        permission: 'read',
         accountId: member.id,
         item,
       })
@@ -56,7 +56,7 @@ export class EnrollService {
 
     await this.itemMembershipRepository.addOne(dbConnection, {
       itemPath: item.path,
-      permission: PermissionLevel.Read,
+      permission: 'read',
       accountId: member.id,
       creatorId: member.id,
     });

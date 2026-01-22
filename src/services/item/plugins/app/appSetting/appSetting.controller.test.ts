@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -142,7 +142,7 @@ describe('Apps Settings Tests', () => {
           items: [
             {
               type: ItemType.APP,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               appSettings: [{ creator: { name: 'bob' } }, { creator: { name: 'alice' } }],
             },
           ],
@@ -174,7 +174,7 @@ describe('Apps Settings Tests', () => {
           items: [
             {
               type: ItemType.APP,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               appSettings: [
                 { creator: { name: 'bob' }, name: 'new-setting' },
                 { creator: { name: 'bob' }, name: 'new-setting' },
@@ -209,7 +209,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appSettings: [
                 { creator: { name: 'bob' } },
@@ -248,7 +248,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
             },
           ],
@@ -300,7 +300,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
             },
           ],
@@ -338,7 +338,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
             },
           ],
@@ -368,7 +368,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               type: ItemType.APP,
             },
           ],
@@ -398,7 +398,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
             },
           ],
@@ -443,7 +443,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -476,7 +476,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -508,7 +508,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -538,7 +538,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -564,7 +564,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
             },
           ],
@@ -619,7 +619,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -653,7 +653,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -682,7 +682,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
             },
           ],
@@ -711,7 +711,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -741,7 +741,7 @@ describe('Apps Settings Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               type: ItemType.APP,
               appSettings: [{ creator: 'actor' }],
             },
@@ -772,7 +772,7 @@ describe('Apps Settings Tests', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
             type: ItemType.APP,
             appSettings: [{ creator: 'actor' }],
           },
@@ -820,7 +820,7 @@ describe('Apps Settings Tests', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
             children: [
               {
                 type: ItemType.APP,

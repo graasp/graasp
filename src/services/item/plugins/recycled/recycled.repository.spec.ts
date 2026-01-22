@@ -2,8 +2,6 @@ import { subMonths } from 'date-fns';
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { recycledItemDatasTable } from '../../../../drizzle/schema';
@@ -18,7 +16,7 @@ describe('RecycledItemDataRepository', () => {
   describe('assertAdminAccessForItemIds', () => {
     it('resolve for item with admin permission', async () => {
       const { items, actor } = await seedFromJson({
-        items: [{ memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }] }],
+        items: [{ memberships: [{ permission: 'admin', account: 'actor' }] }],
       });
       assertIsDefined(actor);
 
@@ -39,7 +37,7 @@ describe('RecycledItemDataRepository', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            memberships: [{ permission: 'admin', account: 'actor' }],
             children: [{}],
           },
         ],
@@ -53,7 +51,7 @@ describe('RecycledItemDataRepository', () => {
 
     it('reject for item with write permission', async () => {
       const { items, actor } = await seedFromJson({
-        items: [{ memberships: [{ permission: PermissionLevel.Write, account: 'actor' }] }],
+        items: [{ memberships: [{ permission: 'write', account: 'actor' }] }],
       });
       assertIsDefined(actor);
 
@@ -70,8 +68,8 @@ describe('RecycledItemDataRepository', () => {
     it('reject for one item with write permission', async () => {
       const { items, actor } = await seedFromJson({
         items: [
-          { memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }] },
-          { memberships: [{ permission: PermissionLevel.Write, account: 'actor' }] },
+          { memberships: [{ permission: 'admin', account: 'actor' }] },
+          { memberships: [{ permission: 'write', account: 'actor' }] },
         ],
       });
       assertIsDefined(actor);
@@ -95,7 +93,7 @@ describe('RecycledItemDataRepository', () => {
         items: [
           // should return top parent, but not the child
           {
-            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            memberships: [{ permission: 'admin', account: 'actor' }],
             children: [{}],
             isDeleted: true,
           },
@@ -119,7 +117,7 @@ describe('RecycledItemDataRepository', () => {
           {
             children: [
               {
-                memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+                memberships: [{ permission: 'admin', account: 'actor' }],
               },
             ],
             isDeleted: true,
@@ -143,7 +141,7 @@ describe('RecycledItemDataRepository', () => {
         items: [
           // should return the deleted child, permission on the parent
           {
-            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            memberships: [{ permission: 'admin', account: 'actor' }],
             children: [
               {
                 isDeleted: true,
@@ -169,7 +167,7 @@ describe('RecycledItemDataRepository', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ permission: PermissionLevel.Read, account: 'actor' }],
+            memberships: [{ permission: 'read', account: 'actor' }],
             isDeleted: true,
           },
         ],
@@ -189,7 +187,7 @@ describe('RecycledItemDataRepository', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            memberships: [{ permission: 'admin', account: 'actor' }],
           },
         ],
       });
@@ -209,11 +207,11 @@ describe('RecycledItemDataRepository', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            memberships: [{ permission: 'admin', account: 'actor' }],
             isDeleted: true,
           },
           {
-            memberships: [{ permission: PermissionLevel.Admin, account: 'actor' }],
+            memberships: [{ permission: 'admin', account: 'actor' }],
             isDeleted: true,
           },
         ],

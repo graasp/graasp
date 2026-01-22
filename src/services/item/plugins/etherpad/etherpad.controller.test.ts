@@ -7,7 +7,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { EtherpadPermission, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { EtherpadPermission, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -406,7 +406,7 @@ describe('Etherpad service API', () => {
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
             }),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -449,7 +449,7 @@ describe('Etherpad service API', () => {
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
             }),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -527,7 +527,7 @@ describe('Etherpad service API', () => {
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
             }),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -599,7 +599,7 @@ describe('Etherpad service API', () => {
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
             }),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -694,7 +694,7 @@ describe('Etherpad service API', () => {
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
             }),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -777,7 +777,7 @@ describe('Etherpad service API', () => {
           {
             name: "bob's test etherpad item",
             type: ItemType.ETHERPAD,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -836,7 +836,7 @@ describe('Etherpad service API', () => {
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
             }),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -867,7 +867,7 @@ describe('Etherpad service API', () => {
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
             }),
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -900,7 +900,7 @@ describe('Etherpad service API', () => {
                 groupID: MOCK_GROUP_ID,
                 padName: MOCK_PAD_NAME,
               }),
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -950,7 +950,7 @@ describe('Etherpad service API', () => {
         actor,
         items: [parent],
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -995,8 +995,8 @@ describe('Etherpad service API', () => {
         items: [parent, bogusItem],
       } = await seedFromJson({
         items: [
-          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+          { memberships: [{ account: 'actor', permission: 'admin' }] },
+          { memberships: [{ account: 'actor', permission: 'admin' }] },
         ],
       });
       assertIsDefined(actor);
@@ -1038,7 +1038,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             type: ItemType.ETHERPAD,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });
@@ -1068,7 +1068,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             type: ItemType.ETHERPAD,
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
       });

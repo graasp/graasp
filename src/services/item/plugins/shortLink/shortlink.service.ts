@@ -3,7 +3,6 @@ import { singleton } from 'tsyringe';
 import {
   ClientManager,
   Context,
-  PermissionLevel,
   type ShortLink,
   ShortLinkPlatform,
   type ShortLinksOfItem,
@@ -75,7 +74,7 @@ export class ShortLinkService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId: shortLink.itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
     const createdShortLink = await this.shortLinkRepository.addOne(dbConnection, shortLink);
 
@@ -93,7 +92,7 @@ export class ShortLinkService {
     await this.authorizedItemService.getItemById(dbConnection, {
       accountId: account.id,
       itemId,
-      permission: PermissionLevel.Read,
+      permission: 'read',
     });
 
     const res = await this.shortLinkRepository.getByItem(dbConnection, itemId);
@@ -130,7 +129,7 @@ export class ShortLinkService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId: shortLink.item.id,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     await this.shortLinkRepository.deleteOne(dbConnection, alias);
@@ -152,7 +151,7 @@ export class ShortLinkService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId: shortLink.item.id,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     const res = await this.shortLinkRepository.updateOne(dbConnection, alias, updatedShortLink);

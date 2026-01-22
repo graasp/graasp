@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -199,11 +199,11 @@ describe('Item Like', () => {
           items: [
             {
               likes: ['actor'],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
             {
               likes: ['actor'],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -305,7 +305,7 @@ describe('Item Like', () => {
           items: [
             {
               likes: [{ name: 'bob' }],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -334,7 +334,7 @@ describe('Item Like', () => {
           items: [
             {
               likes: ['actor'],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -417,7 +417,7 @@ describe('Item Like', () => {
           items: [
             {
               likes: ['actor'],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -467,7 +467,7 @@ describe('Item Like', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });

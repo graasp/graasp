@@ -3,7 +3,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel, Websocket } from '@graasp/sdk';
+import { HttpMethod, Websocket } from '@graasp/sdk';
 
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { seedFromJson } from '../../../../test/mocks/seed';
@@ -96,7 +96,7 @@ describe('Item websocket hooks', () => {
         members: [bob],
       } = await seedFromJson({
         members: [{ name: 'bob' }],
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -107,7 +107,7 @@ describe('Item websocket hooks', () => {
         channel: item.id,
       });
 
-      const payload = { accountId: bob.id, permission: PermissionLevel.Read };
+      const payload = { accountId: bob.id, permission: 'read' };
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/api/items/${item.id}/memberships`,
@@ -134,8 +134,8 @@ describe('Item websocket hooks', () => {
         items: [
           {
             memberships: [
-              { account: { name: 'bob' }, permission: PermissionLevel.Read },
-              { account: 'actor', permission: PermissionLevel.Admin },
+              { account: { name: 'bob' }, permission: 'read' },
+              { account: 'actor', permission: 'admin' },
             ],
           },
         ],
@@ -152,7 +152,7 @@ describe('Item websocket hooks', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/api/items/${item.id}/memberships/${membership.id}`,
-        payload: { permission: PermissionLevel.Admin },
+        payload: { permission: 'admin' },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
@@ -162,7 +162,7 @@ describe('Item websocket hooks', () => {
         expect(membershipUpdate).toMatchObject(
           ItemMembershipEvent(
             'update',
-            expect.objectContaining({ id: membership.id, permission: PermissionLevel.Admin }),
+            expect.objectContaining({ id: membership.id, permission: 'admin' }),
           ),
         );
       });
@@ -179,8 +179,8 @@ describe('Item websocket hooks', () => {
         items: [
           {
             memberships: [
-              { account: { name: 'bob' }, permission: PermissionLevel.Read },
-              { account: 'actor', permission: PermissionLevel.Admin },
+              { account: { name: 'bob' }, permission: 'read' },
+              { account: 'actor', permission: 'admin' },
             ],
           },
         ],
