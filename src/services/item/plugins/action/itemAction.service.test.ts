@@ -20,14 +20,14 @@ import { ActionService } from '../../../action/action.service';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { MemberService } from '../../../member/member.service';
+import { MemberRepository } from '../../../member/member.repository';
 import { ItemActionRepository } from './itemAction.repository';
 import { ItemActionService } from './itemAction.service';
 import { ItemActionType } from './utils';
 
 const authorizedItemService = { getItemById: jest.fn() } as unknown as AuthorizedItemService;
 const actionRepository = new ActionRepository();
-const actionService = new ActionService(actionRepository, {} as MemberService, MOCK_LOGGER);
+const actionService = new ActionService(actionRepository, {} as MemberRepository, MOCK_LOGGER);
 
 const service = new ItemActionService(
   actionService,
