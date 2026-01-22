@@ -67,7 +67,12 @@ const compositeCurrentMemberSchema = Type.Composite([
       isValidated: Type.Boolean(),
       userAgreementsDate: Type.Union([Type.Null(), customType.DateTime()]),
       enableSaveActions: Type.Boolean(),
-      extra: Type.Object({}, { additionalProperties: true }),
+      extra: Type.Object({
+        hasAvatar: Type.Optional(Type.Boolean()),
+        lang: Type.Optional(Type.String()),
+        emailFreq: Type.Optional(Type.String()),
+        hasCompletedTour: Type.Optional(Type.Boolean()),
+      }),
     },
     { description: 'Current member information' },
   ),
@@ -306,6 +311,37 @@ export const emailUnsubscribe = {
   description: 'Unsubscribe from newsletter emails for current authenticated member.',
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+const notificationFrequencySchema = registerSchemaAsRef(
+  'notificationFrequency',
+  'Notification Frequency',
+  customType.EnumString(['always', 'never']),
+);
+
+const memberSettingsRef = registerSchemaAsRef(
+  'memberSettings',
+  'Member Settings',
+  Type.Composite([
+    customType.StrictObject({
+      lang: Type.Optional(Type.String()),
+      communicationSubscribedAt: Type.Union([customType.DateTime(), Type.Null()]),
+      notificationFrequency: notificationFrequencySchema,
+      enableSaveActions: Type.Boolean(),
+    }),
+  ]),
+);
+
+export const getMemberSettings = {
+  operationId: 'getMemberSettings',
+  tags: ['settings', 'current'],
+  summary: 'Get the settings of the authenticated member',
+  description: 'Return the settings of the authenticated member.',
+  response: {
+    [StatusCodes.OK]: memberSettingsRef,
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },

@@ -6,7 +6,7 @@ import type { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 
-const inputPublicProfileMemberSchema = customType.StrictObject({
+export const inputPublicProfileMemberSchema = customType.StrictObject({
   bio: Type.String(),
   facebookId: Type.String(),
   linkedinId: Type.String(),
@@ -31,6 +31,12 @@ export const profileMemberSchemaRef = registerSchemaAsRef(
     additionalProperties: false,
   }),
 );
+
+export const nullll = Type.Intersect(profileMemberSchemaForIntersect, {
+  description: 'Profile of a member, null if it does not exist',
+  additionalProperties: false,
+  nullable: true,
+});
 
 export const nullableProfileMemberSchemaRef = registerSchemaAsRef(
   'nullableProfile',

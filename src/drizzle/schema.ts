@@ -22,13 +22,9 @@ import {
 import { eq, isNull } from 'drizzle-orm/sql';
 import geoip from 'geoip-lite';
 
-import {
-  AccountType,
-  type CompleteMember,
-  type ItemSettings,
-  type ItemTypeUnion,
-} from '@graasp/sdk';
+import { AccountType, type ItemSettings, type ItemTypeUnion } from '@graasp/sdk';
 
+import { MemberExtra } from '../services/member/types';
 import { binary, binaryHash, citext, customNumeric, ltree } from './customTypes';
 
 export const actionViewEnum = pgEnum('action_view_enum', [
@@ -942,7 +938,7 @@ export const accountsTable = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 100 }).notNull(),
     email: varchar({ length: 150 }),
-    extra: jsonb().$type<CompleteMember['extra']>().default({}).notNull(),
+    extra: jsonb().$type<MemberExtra>().default({}).notNull(),
     type: accountTypeEnum().default('individual').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
@@ -961,7 +957,7 @@ export const accountsTable = pgTable(
         onDelete: 'cascade',
       },
     ),
-    emailSubscribedAt: timestamp('email_subscribed_at', {
+    communicationSubscribedAt: timestamp('communication_subscribed_at', {
       withTimezone: true,
       mode: 'string',
     }).defaultNow(),
@@ -987,7 +983,7 @@ export const accountsTable = pgTable(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { itemLoginSchemaId, ...membersColumns } = getTableColumns(accountsTable);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { email, userAgreementsDate, enableSaveActions, emailSubscribedAt, ...guestColumns } =
+const { email, userAgreementsDate, enableSaveActions, communicationSubscribedAt, ...guestColumns } =
   getTableColumns(accountsTable);
 export const membersView = pgView('members_view').as((qb) =>
   qb

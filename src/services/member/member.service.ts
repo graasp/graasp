@@ -16,17 +16,29 @@ import { MailerService } from '../../plugins/mailer/mailer.service';
 import { type MemberInfo } from '../../types';
 import { MemberAlreadySignedUp } from '../../utils/errors';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
+import { MemberPasswordRepository } from '../auth/plugins/password/password.repository';
 import { MemberRepository } from './member.repository';
+import { MemberProfileRepository } from './plugins/profile/memberProfile.repository';
 
 @singleton()
 export class MemberService {
   private readonly mailerService: MailerService;
   private readonly log: BaseLogger;
   private readonly memberRepository: MemberRepository;
+  private readonly memberPasswordRepository: MemberPasswordRepository;
+  private readonly memberProfileRepository: MemberProfileRepository;
 
-  constructor(mailerService: MailerService, log: BaseLogger, memberRepository: MemberRepository) {
+  constructor(
+    mailerService: MailerService,
+    log: BaseLogger,
+    memberRepository: MemberRepository,
+    memberPasswordRepository: MemberPasswordRepository,
+    memberProfileRepository: MemberProfileRepository,
+  ) {
     this.mailerService = mailerService;
     this.memberRepository = memberRepository;
+    this.memberPasswordRepository = memberPasswordRepository;
+    this.memberProfileRepository = memberProfileRepository;
     this.log = log;
   }
 
@@ -159,5 +171,16 @@ export class MemberService {
 
   emailSubscribe(dbConnection: DBConnection, memberId: string, shouldSubscribe: boolean) {
     return this.memberRepository.updateEmailSubscribedAt(dbConnection, memberId, shouldSubscribe);
+  }
+
+  async getSettings(dbConnection: DBConnection, memberId: string) {
+    const member = (await this.memberRepository.get(dbConnection, memberId)).toCurrent();
+
+    return {
+      enableSaveActions: member.enableSaveActions,
+      notificationFrequency: member.extra.emailFreq ?? 'always',
+      communicationSubscribedAt: member.communicationSubscribedAt,
+      lang: member.extra.lang,
+    };
   }
 }

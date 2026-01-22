@@ -26,6 +26,7 @@ import {
   emailSubscribe,
   emailUnsubscribe,
   getCurrent,
+  getMemberSettings,
   getOne,
   getStorage,
   getStorageFiles,
@@ -273,6 +274,23 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       await actionService.postMany(db, account, req, [
         { type: 'email-unsubscribe', extra: { memberId: account.id } },
       ]);
+    },
+  );
+
+  fastify.get(
+    '/current/settings',
+    {
+      schema: getMemberSettings,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
+    async (req) => {
+      const { user } = req;
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+
+      const settings = await memberService.getSettings(db, member.id);
+
+      return settings;
     },
   );
 };
