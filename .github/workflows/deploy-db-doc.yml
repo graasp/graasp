@@ -38,10 +38,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      # - name: yarn install and generate docs
-      #   run: |
-      #     yarn
-      #     yarn db-doc:generate
+      - name: yarn install and generate docs
+        run: |
+          yarn
+          yarn db-doc:generate
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

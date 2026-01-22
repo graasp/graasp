@@ -31,7 +31,6 @@ In order to run the Graasp backend, it requires:
 - [Postman](https://www.postman.com) : Application to explore and test your APIs.
 - [Starship](https://starship.rs/): A shell prompt enhancer that shows you the current git branch nvm version and package version, very useful for quick look at your environment (works on all shells and is super fast), requires you to use a [NerdFont](https://www.nerdfonts.com/)
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
-
   - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environment.
 
   - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
@@ -66,7 +65,7 @@ This will create 11 containers :
 > To use garage with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 .s3.garage.localhost`. This is necessary because the backend creates signed urls pointing to this subdomain. Without changing the hosts, the development machine cannot resolve urls like `http://s3.garage.localhost:3900` .
 
 > **Troubleshoot**
-> If during setup of the devcontainer you get an error like `nudenet Error pull access denied for public.ecr.aws/g...` 
+> If during setup of the devcontainer you get an error like `nudenet Error pull access denied for public.ecr.aws/g...`
 > This can occure if you previously logged in to the public ECR. When you want to pull from the public ECR, you should be unauthenticated. Simply run the following on you host: `docker logout public.ecr.aws`. It will log you out of the public ECR and you should be able to rebuild the containers without issue. If it persissts please [open an issue](https://github.com/graasp/graasp/issues/new?title=NudeNet%20DevContainer%20Docker%20Install%20Issue)
 
 Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
@@ -235,6 +234,7 @@ You will need to configure the garage instance so you can use the s3 buckets wit
 To simplify the commands you can create an alias to the docker exec command:
 
 Run this on the host machine
+
 ```sh
 # get the container name for the garage service
 docker ps
@@ -243,17 +243,17 @@ docker ps
 alias garage="docker exec -it <container-name> /garage"
 ```
 
-You should now be able to run commands against the garage executable running inside the container. Check that it works by running: 
+You should now be able to run commands against the garage executable running inside the container. Check that it works by running:
 
 ```sh
 garage status
 ```
 
-You should see an output similar to: 
+You should see an output similar to:
 
 ```
-2025-09-11T05:42:45.393828Z  INFO garage_net::netapp: Connected to 127.0.0.1:3901, negotiating handshake...    
-2025-09-11T05:42:45.436392Z  INFO garage_net::netapp: Connection established to fca7df6b0fe8115c    
+2025-09-11T05:42:45.393828Z  INFO garage_net::netapp: Connected to 127.0.0.1:3901, negotiating handshake...
+2025-09-11T05:42:45.436392Z  INFO garage_net::netapp: Connection established to fca7df6b0fe8115c
 ==== HEALTHY NODES ====
 ID                Hostname    Address         Tags  Zone  Capacity   DataAvail         Version
 fca7df6b0fe8115c  garage  127.0.0.1:3901  []    dc1   1000.0 MB  365.8 GB (36.8%)  v2.0.0
@@ -264,12 +264,14 @@ fca7df6b0fe8115c  garage  127.0.0.1:3901  []    dc1   1000.0 MB  365.8 GB (36.8%
 Now for the real configuration part.
 
 We will:
+
 - setup the layout for the storage (this is required by garage to know how it allocates the capacity)
 - create the file-items bucket (h5p bucket can be configured too, guide does not do it currently)
 - create an access key for the bucket
 - make the correct configurations to be able to access the bucket
 
 Layout setup
+
 ```sh
 # get the node id
 garage status
@@ -282,6 +284,7 @@ garage layout apply --version 1
 ```
 
 Create a bucket
+
 ```sh
 garage bucket create file-items
 
@@ -291,15 +294,13 @@ garage bucket info file-items
 ```
 
 Create an access key. Make not of the secret key as it will not be shown again !
+
 ```sh
 garage key create core-s3-key
 
 # allow the key to access the bucket
 garage bucket allow --read --write --owner file-items --key core-s3-key
 ```
-
-
-
 
 ### Umami
 
@@ -317,7 +318,7 @@ You can also run `yarn seed` to feed the database with predefined mock data.
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080).
 
-The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [s3-compatible service](https://garagehq.deuxfleurs.fr/) for serving files. Ensure you have setup your /etc/hosts so that it works. 
+The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [s3-compatible service](https://garagehq.deuxfleurs.fr/) for serving files. Ensure you have setup your /etc/hosts so that it works.
 
 ## Testing
 
@@ -332,7 +333,9 @@ This will ensure your tests run on the second database container. As they will c
 
 ## Database and Migrations
 
-The application will run migrations on start.
+By default, the application will run migrations on start.
+
+For more information about the structure of the database, see [our database structure documentation](./DATABASE.md) as well as [the interactive database schema explorer](https://graasp.github.io/graasp).
 
 ### Create a migration
 
@@ -365,13 +368,14 @@ Up tests start from the previous migration state, insert mock data and apply the
 
 ### Nudenet Container can not be pulled
 
-It is possible that the nudenet container pull fails with a 403 status code. This is likely because you are authenticated to the public AWS ECR and trying to pull a public image. Log out of the public ECR with `docker logout public.ecr.aws` and try building the devContainer again. 
+It is possible that the nudenet container pull fails with a 403 status code. This is likely because you are authenticated to the public AWS ECR and trying to pull a public image. Log out of the public ECR with `docker logout public.ecr.aws` and try building the devContainer again.
 
 ### Uploading files results in "AuthorizationHeaderMalformed: Authorization header malformed, unexpected scope"
 
 This upload error occurs when we try to upload a file to s3 (mocked by garage on local dev setup).
 
 You need to check that you:
+
 - have access and secret keys in your env
 - have set the region to the same value as the ".devcontainer/garage/garage.toml" file (look under the `s3.api` section for the `s3_region` value.) By default it should be `garage` and not `us-east-1`. Update the value in your `.env.development` file.
 
