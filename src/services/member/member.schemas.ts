@@ -290,8 +290,8 @@ export const patchChangeEmail = {
   },
 } as const satisfies FastifySchema;
 
-export const emailSubscribe = {
-  operationId: 'emailSubscribe',
+export const marketingEmailsSubscribe = {
+  operationId: 'marketingEmailsSubscribe',
   tags: ['member', 'email'],
   summary: 'Subscribe to newsletter emails',
   description: 'Subscribe to newsletter emails for current authenticated member.',
@@ -304,8 +304,8 @@ export const emailSubscribe = {
   },
 } as const satisfies FastifySchema;
 
-export const emailUnsubscribe = {
-  operationId: 'emailUnsubscribe',
+export const marketingEmailsUnsubscribe = {
+  operationId: 'marketingEmailsUnsubscribe',
   tags: ['member', 'email'],
   summary: 'Unsubscribe from newsletter emails',
   description: 'Unsubscribe from newsletter emails for current authenticated member.',
@@ -328,7 +328,7 @@ const memberSettingsRef = registerSchemaAsRef(
   Type.Composite([
     customType.StrictObject({
       lang: Type.Optional(Type.String()),
-      communicationSubscribedAt: Type.Union([customType.DateTime(), Type.Null()]),
+      marketingEmailsSubscribedAt: Type.Union([customType.DateTime(), Type.Null()]),
       notificationFrequency: notificationFrequencySchema,
       enableSaveActions: Type.Boolean(),
     }),

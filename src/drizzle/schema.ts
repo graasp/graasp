@@ -24,7 +24,7 @@ import geoip from 'geoip-lite';
 
 import { AccountType, type ItemSettings, type ItemTypeUnion } from '@graasp/sdk';
 
-import { MemberExtra } from '../services/member/types';
+import type { MemberExtra } from '../services/member/types';
 import { binary, binaryHash, citext, customNumeric, ltree } from './customTypes';
 
 export const actionViewEnum = pgEnum('action_view_enum', [
@@ -957,7 +957,7 @@ export const accountsTable = pgTable(
         onDelete: 'cascade',
       },
     ),
-    communicationSubscribedAt: timestamp('communication_subscribed_at', {
+    marketingEmailsSubscribedAt: timestamp('marketing_emails_subscribed_at', {
       withTimezone: true,
       mode: 'string',
     }).defaultNow(),
@@ -983,8 +983,13 @@ export const accountsTable = pgTable(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { itemLoginSchemaId, ...membersColumns } = getTableColumns(accountsTable);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { email, userAgreementsDate, enableSaveActions, communicationSubscribedAt, ...guestColumns } =
-  getTableColumns(accountsTable);
+const {
+  email,
+  userAgreementsDate,
+  enableSaveActions,
+  marketingEmailsSubscribedAt,
+  ...guestColumns
+} = getTableColumns(accountsTable);
 export const membersView = pgView('members_view').as((qb) =>
   qb
     .select(membersColumns)

@@ -23,13 +23,13 @@ import {
 import { EmailAlreadyTaken } from './error';
 import {
   deleteCurrent,
-  emailSubscribe,
-  emailUnsubscribe,
   getCurrent,
   getMemberSettings,
   getOne,
   getStorage,
   getStorageFiles,
+  marketingEmailsSubscribe,
+  marketingEmailsUnsubscribe,
   patchChangeEmail,
   postChangeEmail,
   updateCurrent,
@@ -230,9 +230,9 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.post(
-    '/current/emails/subscribe',
+    '/current/marketing/subscribe',
     {
-      schema: emailSubscribe,
+      schema: marketingEmailsSubscribe,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async (req, reply) => {
@@ -241,22 +241,22 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        memberService.emailSubscribe(tx, account.id, true);
+        memberService.updateMarketingEmailsSubscribtion(tx, account.id, true);
       });
 
       reply.status(StatusCodes.NO_CONTENT);
 
       // save action
       await actionService.postMany(db, account, req, [
-        { type: 'email-subscribe', extra: { memberId: account.id } },
+        { type: 'marketing-emails-subscribe', extra: { memberId: account.id } },
       ]);
     },
   );
 
   fastify.post(
-    '/current/emails/unsubscribe',
+    '/current/marketing/unsubscribe',
     {
-      schema: emailUnsubscribe,
+      schema: marketingEmailsUnsubscribe,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async (req, reply) => {
@@ -265,14 +265,14 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        memberService.emailSubscribe(tx, account.id, false);
+        memberService.updateMarketingEmailsSubscribtion(tx, account.id, false);
       });
 
       reply.status(StatusCodes.NO_CONTENT);
 
       // save action
       await actionService.postMany(db, account, req, [
-        { type: 'email-unsubscribe', extra: { memberId: account.id } },
+        { type: 'marketing-emails-unsubscribe', extra: { memberId: account.id } },
       ]);
     },
   );

@@ -177,7 +177,7 @@ export class MemberRepository {
   ): Promise<void> {
     await dbConnection
       .update(accountsTable)
-      .set({ communicationSubscribedAt: shouldSubscribe ? new Date().toISOString() : null })
+      .set({ marketingEmailsSubscribedAt: shouldSubscribe ? new Date().toISOString() : null })
       .where(eq(accountsTable.id, memberId));
   }
 }

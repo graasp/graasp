@@ -232,24 +232,29 @@ describe('MemberRepository', () => {
     it('set current timestamp to subscribed at', async () => {
       const {
         members: [member],
-      } = await seedFromJson({ members: [{ emailSubscribedAt: null }] });
-      assert(member.emailSubscribedAt === null);
+      } = await seedFromJson({ members: [{ marketingEmailsSubscribedAt: null }] });
+      assert(member.marketingEmailsSubscribedAt === null);
 
       const nowDate = new Date().toISOString();
       await memberRepository.updateEmailSubscribedAt(db, member.id, true);
 
       const savedMember = await db.query.accountsTable.findFirst({
-        where: and(eq(accountsTable.id, member.id), gte(accountsTable.emailSubscribedAt, nowDate)),
+        where: and(
+          eq(accountsTable.id, member.id),
+          gte(accountsTable.marketingEmailsSubscribedAt, nowDate),
+        ),
       });
       expect(savedMember?.id).toEqual(member.id);
-      expect(savedMember?.emailSubscribedAt).toBeDefined();
+      expect(savedMember?.marketingEmailsSubscribedAt).toBeDefined();
     });
 
     it('set timestamp to null', async () => {
       const {
         members: [member],
-      } = await seedFromJson({ members: [{ emailSubscribedAt: new Date().toISOString() }] });
-      assert(member.emailSubscribedAt !== null);
+      } = await seedFromJson({
+        members: [{ marketingEmailsSubscribedAt: new Date().toISOString() }],
+      });
+      assert(member.marketingEmailsSubscribedAt !== null);
 
       await memberRepository.updateEmailSubscribedAt(db, member.id, false);
 
@@ -257,7 +262,7 @@ describe('MemberRepository', () => {
         where: eq(accountsTable.id, member.id),
       });
       expect(savedMember?.id).toEqual(member.id);
-      expect(savedMember?.emailSubscribedAt).toBeNull();
+      expect(savedMember?.marketingEmailsSubscribedAt).toBeNull();
     });
   });
 });

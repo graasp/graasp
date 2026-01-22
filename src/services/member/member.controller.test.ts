@@ -467,11 +467,11 @@ describe('Member routes tests', () => {
     });
   });
 
-  describe('POST /members/current/emails/subscribe', () => {
+  describe('POST /members/current/marketing/subscribe', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/api/members/current/emails/subscribe`,
+        url: `/api/members/current/marketing/subscribe`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -485,7 +485,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/api/members/current/emails/subscribe`,
+        url: `/api/members/current/marketing/subscribe`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -493,15 +493,15 @@ describe('Member routes tests', () => {
       const m = await db.query.accountsTable.findFirst({
         where: eq(accountsTable.id, actor.id),
       });
-      expect(m?.emailSubscribedAt).toBeDefined();
+      expect(m?.marketingEmailsSubscribedAt).toBeDefined();
     });
   });
 
-  describe('POST /members/current/emails/unsubscribe', () => {
+  describe('POST /members/current/marketing/unsubscribe', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/api/members/current/emails/unsubscribe`,
+        url: `/api/members/current/marketing/unsubscribe`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -515,7 +515,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/api/members/current/emails/unsubscribe`,
+        url: `/api/members/current/marketing/unsubscribe`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -523,7 +523,7 @@ describe('Member routes tests', () => {
       const m = await db.query.accountsTable.findFirst({
         where: eq(accountsTable.id, actor.id),
       });
-      expect(m?.emailSubscribedAt).toBeNull();
+      expect(m?.marketingEmailsSubscribedAt).toBeNull();
     });
   });
 });

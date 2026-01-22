@@ -169,7 +169,11 @@ export class MemberService {
     this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
   }
 
-  emailSubscribe(dbConnection: DBConnection, memberId: string, shouldSubscribe: boolean) {
+  updateMarketingEmailsSubscribtion(
+    dbConnection: DBConnection,
+    memberId: string,
+    shouldSubscribe: boolean,
+  ) {
     return this.memberRepository.updateEmailSubscribedAt(dbConnection, memberId, shouldSubscribe);
   }
 
@@ -179,7 +183,7 @@ export class MemberService {
     return {
       enableSaveActions: member.enableSaveActions,
       notificationFrequency: member.extra.emailFreq ?? 'always',
-      communicationSubscribedAt: member.communicationSubscribedAt,
+      marketingEmailsSubscribedAt: member.marketingEmailsSubscribedAt,
       lang: member.extra.lang,
     };
   }

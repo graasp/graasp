@@ -88,8 +88,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "communication_subscribed_at": {
-          "name": "communication_subscribed_at",
+        "marketing_emails_subscribed_at": {
+          "name": "marketing_emails_subscribed_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,

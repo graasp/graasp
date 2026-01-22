@@ -28,7 +28,7 @@ export type CurrentMember = {
   userAgreementsDate: string | null;
   extra: MemberExtra;
   enableSaveActions: boolean;
-  communicationSubscribedAt: string | null;
+  marketingEmailsSubscribedAt: string | null;
   // add any necessary properties here
 };
 
@@ -104,7 +104,7 @@ export class MemberDTO {
       extra: this.member.extra,
       // TODO: what should be the default for this ? Why could it be null ? can we enforce a value ??
       enableSaveActions: this.member.enableSaveActions ?? true,
-      communicationSubscribedAt: this.member.communicationSubscribedAt,
+      marketingEmailsSubscribedAt: this.member.marketingEmailsSubscribedAt,
     };
   }
 
