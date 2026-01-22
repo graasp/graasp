@@ -9,6 +9,7 @@ import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
 import type { MemberRaw } from '../../drizzle/types';
+import { assertIsDefined } from '../../utils/assertions';
 import { MemberNotFound } from '../../utils/errors';
 import { MemberRepository } from './member.repository';
 import { expectMember } from './test/fixtures/members';
@@ -244,8 +245,9 @@ describe('MemberRepository', () => {
           gte(accountsTable.marketingEmailsSubscribedAt, nowDate),
         ),
       });
-      expect(savedMember?.id).toEqual(member.id);
-      expect(savedMember?.marketingEmailsSubscribedAt).toBeDefined();
+      assertIsDefined(savedMember);
+      expect(savedMember.id).toEqual(member.id);
+      expect(savedMember.marketingEmailsSubscribedAt).toBeDefined();
     });
 
     it('set timestamp to null', async () => {
@@ -261,8 +263,9 @@ describe('MemberRepository', () => {
       const savedMember = await db.query.accountsTable.findFirst({
         where: eq(accountsTable.id, member.id),
       });
-      expect(savedMember?.id).toEqual(member.id);
-      expect(savedMember?.marketingEmailsSubscribedAt).toBeNull();
+      assertIsDefined(savedMember);
+      expect(savedMember.id).toEqual(member.id);
+      expect(savedMember.marketingEmailsSubscribedAt).toBeNull();
     });
   });
 });

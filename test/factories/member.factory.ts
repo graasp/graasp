@@ -38,7 +38,11 @@ export const MemberFactory = (m: Partial<AccountRaw> = {}): MemberRaw => {
     email: m.email?.toLowerCase() ?? baseAccount.email?.toLowerCase() ?? uniqueEmail(),
     type: AccountType.Individual,
     isValidated,
-    marketingEmailsSubscribedAt: new Date().toISOString(),
+    marketingEmailsSubscribedAt:
+      // value can be null
+      m.marketingEmailsSubscribedAt === undefined
+        ? new Date().toISOString()
+        : m.marketingEmailsSubscribedAt,
   };
 };
 
