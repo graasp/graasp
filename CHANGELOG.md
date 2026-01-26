@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.0](https://github.com/graasp/graasp/compare/v2.12.0...v2.13.0) (2026-01-26)
+
+
+### Features
+
+* allow switching from folder to capsule ([#2052](https://github.com/graasp/graasp/issues/2052)) ([d079383](https://github.com/graasp/graasp/commit/d079383e234db460506e41f89553462987d5f1a7))
+* allow users to subscribe and unsubscribe to email notifications ([#2060](https://github.com/graasp/graasp/issues/2060)) ([af96280](https://github.com/graasp/graasp/commit/af96280f99c5028d7840db9e105b46213e24a1f5))
+
 ## [2.12.0](https://github.com/graasp/graasp/compare/v2.11.0...v2.12.0) (2026-01-19)
 
 
