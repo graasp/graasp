@@ -169,4 +169,15 @@ export class MemberRepository {
     }
     return new MemberDTO(member);
   }
+
+  async updateMarketingEmailsSubscribedAt(
+    dbConnection: DBConnection,
+    memberId: string,
+    shouldSubscribe: boolean,
+  ): Promise<void> {
+    await dbConnection
+      .update(accountsTable)
+      .set({ marketingEmailsSubscribedAt: shouldSubscribe ? new Date().toISOString() : null })
+      .where(eq(accountsTable.id, memberId));
+  }
 }

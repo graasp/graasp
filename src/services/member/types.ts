@@ -8,8 +8,12 @@ export type Member = {
   name: string;
 };
 
+export type NotificationFrequency = 'always' | 'never';
+
 // TODO: move the member extra type here, so we have control over it
-type MemberExtra = CompleteMember['extra'];
+export type MemberExtra = CompleteMember['extra'] & {
+  emailFreq?: NotificationFrequency;
+};
 
 export type CurrentMember = {
   id: string;
@@ -24,6 +28,7 @@ export type CurrentMember = {
   userAgreementsDate: string | null;
   extra: MemberExtra;
   enableSaveActions: boolean;
+  marketingEmailsSubscribedAt: string | null;
   // add any necessary properties here
 };
 
@@ -99,6 +104,7 @@ export class MemberDTO {
       extra: this.member.extra,
       // TODO: what should be the default for this ? Why could it be null ? can we enforce a value ??
       enableSaveActions: this.member.enableSaveActions ?? true,
+      marketingEmailsSubscribedAt: this.member.marketingEmailsSubscribedAt,
     };
   }
 

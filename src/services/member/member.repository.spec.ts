@@ -1,12 +1,15 @@
+import { and, eq, gte } from 'drizzle-orm';
 import { v4 } from 'uuid';
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 
 import { EmailFrequency } from '@graasp/sdk';
 
 import { MemberFactory } from '../../../test/factories/member.factory';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
+import { accountsTable } from '../../drizzle/schema';
 import type { MemberRaw } from '../../drizzle/types';
+import { assertIsDefined } from '../../utils/assertions';
 import { MemberNotFound } from '../../utils/errors';
 import { MemberRepository } from './member.repository';
 import { expectMember } from './test/fixtures/members';
@@ -223,6 +226,46 @@ describe('MemberRepository', () => {
           new Error(expect.stringContaining('duplicate key value violates unique constraint')),
         ),
       );
+    });
+  });
+
+  describe('update email subscribed at', () => {
+    it('set current timestamp to subscribed at', async () => {
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ marketingEmailsSubscribedAt: null }] });
+      assert(member.marketingEmailsSubscribedAt === null);
+
+      const nowDate = new Date().toISOString();
+      await memberRepository.updateMarketingEmailsSubscribedAt(db, member.id, true);
+
+      const savedMember = await db.query.accountsTable.findFirst({
+        where: and(
+          eq(accountsTable.id, member.id),
+          gte(accountsTable.marketingEmailsSubscribedAt, nowDate),
+        ),
+      });
+      assertIsDefined(savedMember);
+      expect(savedMember.id).toEqual(member.id);
+      expect(savedMember.marketingEmailsSubscribedAt).toBeDefined();
+    });
+
+    it('set timestamp to null', async () => {
+      const {
+        members: [member],
+      } = await seedFromJson({
+        members: [{ marketingEmailsSubscribedAt: new Date().toISOString() }],
+      });
+      assert(member.marketingEmailsSubscribedAt !== null);
+
+      await memberRepository.updateMarketingEmailsSubscribedAt(db, member.id, false);
+
+      const savedMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, member.id),
+      });
+      assertIsDefined(savedMember);
+      expect(savedMember.id).toEqual(member.id);
+      expect(savedMember.marketingEmailsSubscribedAt).toBeNull();
     });
   });
 });

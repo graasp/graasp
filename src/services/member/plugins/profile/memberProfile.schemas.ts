@@ -6,7 +6,7 @@ import type { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 
-const inputPublicProfileMemberSchema = customType.StrictObject({
+export const inputPublicProfileMemberSchema = customType.StrictObject({
   bio: Type.String(),
   facebookId: Type.String(),
   linkedinId: Type.String(),

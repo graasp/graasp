@@ -67,7 +67,12 @@ const compositeCurrentMemberSchema = Type.Composite([
       isValidated: Type.Boolean(),
       userAgreementsDate: Type.Union([Type.Null(), customType.DateTime()]),
       enableSaveActions: Type.Boolean(),
-      extra: Type.Object({}, { additionalProperties: true }),
+      extra: Type.Object({
+        hasAvatar: Type.Optional(Type.Boolean()),
+        lang: Type.Optional(Type.String()),
+        emailFreq: Type.Optional(Type.String()),
+        hasCompletedTour: Type.Optional(Type.Boolean()),
+      }),
     },
     { description: 'Current member information' },
   ),
@@ -238,7 +243,7 @@ export const updateCurrent = {
     { minProperties: 1 },
   ),
   response: {
-    [StatusCodes.OK]: currentAccountSchemaRef,
+    [StatusCodes.OK]: Type.Null({ description: 'Successful Response' }),
     [StatusCodes.FORBIDDEN]: errorSchemaRef,
     '4xx': errorSchemaRef,
   },
@@ -282,5 +287,60 @@ export const patchChangeEmail = {
     [StatusCodes.CONFLICT]: errorSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
     '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const marketingEmailsSubscribe = {
+  operationId: 'marketingEmailsSubscribe',
+  tags: ['member', 'email'],
+  summary: 'Subscribe to marketing emails',
+  description: 'Subscribe to marketing emails for current authenticated member.',
+
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const marketingEmailsUnsubscribe = {
+  operationId: 'marketingEmailsUnsubscribe',
+  tags: ['member', 'email'],
+  summary: 'Unsubscribe from marketing emails',
+  description: 'Unsubscribe from marketing emails for current authenticated member.',
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+const notificationFrequencySchema = registerSchemaAsRef(
+  'notificationFrequency',
+  'Notification Frequency',
+  customType.EnumString(['always', 'never']),
+);
+
+const currentSettingsRef = registerSchemaAsRef(
+  'currentSettings',
+  'CurrentSettings',
+  customType.StrictObject({
+    lang: Type.Optional(Type.String()),
+    marketingEmailsSubscribedAt: Type.Union([customType.DateTime(), Type.Null()]),
+    notificationFrequency: notificationFrequencySchema,
+    enableSaveActions: Type.Boolean(),
+  }),
+);
+
+export const getCurrentSettings = {
+  operationId: 'getCurrentSettings',
+  tags: ['settings', 'current'],
+  summary: 'Get the settings of the authenticated member',
+  description: 'Return the settings of the authenticated member.',
+  response: {
+    [StatusCodes.OK]: currentSettingsRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

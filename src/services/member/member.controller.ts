@@ -7,6 +7,7 @@ import { db } from '../../drizzle/db';
 import { AccountType } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { AccountRepository } from '../account/account.repository';
+import { ActionService } from '../action/action.service';
 import {
   authenticateEmailChange,
   isAuthenticated,
@@ -23,9 +24,12 @@ import { EmailAlreadyTaken } from './error';
 import {
   deleteCurrent,
   getCurrent,
+  getCurrentSettings,
   getOne,
   getStorage,
   getStorageFiles,
+  marketingEmailsSubscribe,
+  marketingEmailsUnsubscribe,
   patchChangeEmail,
   postChangeEmail,
   updateCurrent,
@@ -38,6 +42,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const memberService = resolveDependency(MemberService);
   const accountRepository = resolveDependency(AccountRepository);
   const storageService = resolveDependency(StorageService);
+  const actionService = resolveDependency(ActionService);
 
   // get current
   fastify.get(
@@ -137,11 +142,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.patch(
     '/current',
     { schema: updateCurrent, preHandler: isAuthenticated },
-    async ({ user, body }) => {
+    async ({ user, body }, reply) => {
       const member = asDefined(user?.account);
       return db.transaction(async (tx) => {
-        const patchedMember = await memberService.patch(tx, member.id, body);
-        return patchedMember.toCurrent();
+        await memberService.patch(tx, member.id, body);
+        reply.status(StatusCodes.NO_CONTENT);
       });
     },
   );
@@ -221,6 +226,71 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       });
       // this needs to be outside the transaction
       reply.status(StatusCodes.NO_CONTENT);
+    },
+  );
+
+  fastify.post(
+    '/current/marketing/subscribe',
+    {
+      schema: marketingEmailsSubscribe,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
+    async (req, reply) => {
+      const { user } = req;
+      const account = asDefined(user?.account);
+      assertIsMember(account);
+
+      await db.transaction(async (tx) => {
+        await memberService.updateMarketingEmailsSubscription(tx, account.id, true);
+      });
+
+      reply.status(StatusCodes.NO_CONTENT);
+
+      // save action
+      await actionService.postMany(db, account, req, [
+        { type: 'marketing-emails-subscribe', extra: { memberId: account.id } },
+      ]);
+    },
+  );
+
+  fastify.post(
+    '/current/marketing/unsubscribe',
+    {
+      schema: marketingEmailsUnsubscribe,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
+    async (req, reply) => {
+      const { user } = req;
+      const account = asDefined(user?.account);
+      assertIsMember(account);
+
+      await db.transaction(async (tx) => {
+        await memberService.updateMarketingEmailsSubscription(tx, account.id, false);
+      });
+
+      reply.status(StatusCodes.NO_CONTENT);
+
+      // save action
+      await actionService.postMany(db, account, req, [
+        { type: 'marketing-emails-unsubscribe', extra: { memberId: account.id } },
+      ]);
+    },
+  );
+
+  fastify.get(
+    '/current/settings',
+    {
+      schema: getCurrentSettings,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
+    async (req) => {
+      const { user } = req;
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+
+      const settings = await memberService.getSettings(db, member.id);
+
+      return settings;
     },
   );
 };

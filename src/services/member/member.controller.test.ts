@@ -301,7 +301,7 @@ describe('Member routes tests', () => {
         payload: {
           name: newName,
           extra: {
-            some: 'property',
+            lang: 'en',
           },
         },
       });
@@ -332,12 +332,13 @@ describe('Member routes tests', () => {
         const m = await getMemberUtil(actor.id);
         expect(m?.name).toEqual(newName);
 
-        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        const result = await response.json();
-        expect(result.name).toEqual(newName);
-        // todo: test whether extra is correctly modified (extra is not returned)
-        expect(result.extra).toMatchObject(newExtra);
+        const savedMember = await db.query.accountsTable.findFirst({
+          where: eq(accountsTable.id, actor.id),
+        });
+        assertIsDefined(savedMember);
+        expect(savedMember.extra).toMatchObject(newExtra);
       });
 
       it('New name too short throws', async () => {
@@ -400,8 +401,12 @@ describe('Member routes tests', () => {
         const m = await getMemberUtil(actor.id);
         expect(m?.enableSaveActions).toEqual(enableSaveActions);
 
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json().enableSaveActions).toEqual(enableSaveActions);
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+        const savedMember = await db.query.accountsTable.findFirst({
+          where: eq(accountsTable.id, actor.id),
+        });
+        assertIsDefined(savedMember);
+        expect(savedMember.enableSaveActions).toEqual(enableSaveActions);
       });
 
       it('Disable save actions successfully', async () => {
@@ -431,8 +436,12 @@ describe('Member routes tests', () => {
         const m = await getMemberUtil(actor.id);
         expect(m?.enableSaveActions).toEqual(enableSaveActions);
 
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json().enableSaveActions).toEqual(enableSaveActions);
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+        const savedMember = await db.query.accountsTable.findFirst({
+          where: eq(accountsTable.id, actor.id),
+        });
+        assertIsDefined(savedMember);
+        expect(savedMember.enableSaveActions).toEqual(enableSaveActions);
       });
     });
   });
@@ -464,6 +473,66 @@ describe('Member routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       });
+    });
+  });
+
+  describe('POST /members/current/marketing/subscribe', () => {
+    it('Throws if signed out', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/marketing/subscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('Returns successfully and sets subscription to true', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/marketing/subscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(m?.marketingEmailsSubscribedAt).toBeDefined();
+    });
+  });
+
+  describe('POST /members/current/marketing/unsubscribe', () => {
+    it('Throws if signed out', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/marketing/unsubscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('Returns successfully and sets subscription to false', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/api/members/current/marketing/unsubscribe`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
+      expect(m?.marketingEmailsSubscribedAt).toBeNull();
     });
   });
 });
