@@ -32,12 +32,6 @@ export const profileMemberSchemaRef = registerSchemaAsRef(
   }),
 );
 
-export const nullll = Type.Intersect(profileMemberSchemaForIntersect, {
-  description: 'Profile of a member, null if it does not exist',
-  additionalProperties: false,
-  nullable: true,
-});
-
 export const nullableProfileMemberSchemaRef = registerSchemaAsRef(
   'nullableProfile',
   'Nullable Profile',

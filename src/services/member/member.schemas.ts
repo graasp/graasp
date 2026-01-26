@@ -325,14 +325,12 @@ const notificationFrequencySchema = registerSchemaAsRef(
 const currentSettingsRef = registerSchemaAsRef(
   'currentSettings',
   'CurrentSettings',
-  Type.Composite([
-    customType.StrictObject({
-      lang: Type.Optional(Type.String()),
-      marketingEmailsSubscribedAt: Type.Union([customType.DateTime(), Type.Null()]),
-      notificationFrequency: notificationFrequencySchema,
-      enableSaveActions: Type.Boolean(),
-    }),
-  ]),
+  customType.StrictObject({
+    lang: Type.Optional(Type.String()),
+    marketingEmailsSubscribedAt: Type.Union([customType.DateTime(), Type.Null()]),
+    notificationFrequency: notificationFrequencySchema,
+    enableSaveActions: Type.Boolean(),
+  }),
 );
 
 export const getCurrentSettings = {

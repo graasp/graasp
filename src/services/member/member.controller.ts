@@ -241,7 +241,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        await memberService.updateMarketingEmailsSubscribtion(tx, account.id, true);
+        await memberService.updateMarketingEmailsSubscription(tx, account.id, true);
       });
 
       reply.status(StatusCodes.NO_CONTENT);
@@ -265,7 +265,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        await memberService.updateMarketingEmailsSubscribtion(tx, account.id, false);
+        await memberService.updateMarketingEmailsSubscription(tx, account.id, false);
       });
 
       reply.status(StatusCodes.NO_CONTENT);
