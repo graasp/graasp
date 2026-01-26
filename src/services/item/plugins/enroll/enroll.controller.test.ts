@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemLoginSchemaStatus } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -66,7 +66,7 @@ describe('Enroll', () => {
       expectMembership(itemMembership as ItemMembershipWithItemAndAccountAndCreator, {
         creatorId: actor.id,
         itemPath: item.path,
-        permission: PermissionLevel.Read,
+        permission: 'read',
         accountId: actor.id,
       });
     });
@@ -181,7 +181,7 @@ describe('Enroll', () => {
       expectMembership(itemMembership as ItemMembershipWithItemAndAccountAndCreator, {
         creatorId: actor.id,
         itemPath: item.path,
-        permission: PermissionLevel.Read,
+        permission: 'read',
         accountId: actor.id,
       });
     });

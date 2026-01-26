@@ -3,10 +3,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
+import { permissionLevelSchemaRef } from '../../types';
 import { nullableMemberSchemaRef } from '../member/member.schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { itemVisibilitySchemaRef } from './plugins/itemVisibility/itemVisibility.schemas';
@@ -28,7 +29,7 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
-      permission: customType.Nullable(customType.EnumString(Object.values(PermissionLevel))),
+      permission: Type.Union([permissionLevelSchemaRef, Type.Null()]),
       hidden: Type.Optional(itemVisibilitySchemaRef),
       public: Type.Optional(itemVisibilitySchemaRef),
       thumbnails: Type.Optional(
@@ -71,7 +72,7 @@ export const getAccessible = {
       Type.Partial(
         customType.StrictObject({
           creatorId: Type.String(),
-          permissions: Type.Array(Type.Enum(PermissionLevel)),
+          permissions: Type.Array(permissionLevelSchemaRef),
           types: Type.Array(Type.Enum(ItemType)),
           keywords: Type.Array(Type.String()),
           sortBy: Type.Enum(SortBy),

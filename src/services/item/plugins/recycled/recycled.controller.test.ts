@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MAX_TARGETS_FOR_MODIFY_REQUEST, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, MAX_TARGETS_FOR_MODIFY_REQUEST } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -60,12 +60,12 @@ describe('Recycle Bin Tests', () => {
               {
                 isDeleted: true,
                 creator: 'actor',
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
                 creator: 'actor',
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               // noise
               { isDeleted: true },
@@ -101,27 +101,27 @@ describe('Recycle Bin Tests', () => {
             items: [
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               // noise
               { isDeleted: true },
@@ -154,10 +154,10 @@ describe('Recycle Bin Tests', () => {
             items: [
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
                 children: [
                   {
                     isDeleted: true,
@@ -194,10 +194,10 @@ describe('Recycle Bin Tests', () => {
             items: [
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+                memberships: [{ account: 'actor', permission: 'read' }],
                 children: [
                   {
-                    memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                    memberships: [{ account: 'actor', permission: 'admin' }],
                   },
                 ],
               },
@@ -251,13 +251,13 @@ describe('Recycle Bin Tests', () => {
           const { actor, items } = await seedFromJson({
             items: [
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -299,10 +299,10 @@ describe('Recycle Bin Tests', () => {
             items: [
               {},
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -343,7 +343,7 @@ describe('Recycle Bin Tests', () => {
         it('Bad request if recycle more than maxItemsInRequest items', async () => {
           const { actor, items } = await seedFromJson({
             items: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST + 1 }, () => ({
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             })),
           });
           assertIsDefined(actor);
@@ -389,11 +389,11 @@ describe('Recycle Bin Tests', () => {
             items: [
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -465,11 +465,11 @@ describe('Recycle Bin Tests', () => {
             items: [
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -502,7 +502,7 @@ describe('Recycle Bin Tests', () => {
               },
               {
                 isDeleted: true,
-                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                memberships: [{ account: 'actor', permission: 'admin' }],
               },
             ],
           });
@@ -541,7 +541,7 @@ describe('Recycle Bin Tests', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             children: [{}],
           },
         ],

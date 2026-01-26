@@ -78,7 +78,7 @@ describe('Folder Service', () => {
     // });
 
     // it('return folder for permission', async () => {
-    //   const permission = PermissionLevel.Write;
+    //   const permission = "write";
     //   const folderItem = FolderItemFactory() as ItemWithCreator;
     //   const itemServicePostMock = jest
     //     .spyOn(BasicItemService.prototype, 'get')

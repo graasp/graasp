@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
@@ -100,7 +100,7 @@ describe('Item routes tests', () => {
           items: [item],
           itemMemberships: [itemMembership],
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
         });
         assertIsDefined(actor);
         assertIsMemberForTest(actor);
@@ -130,7 +130,7 @@ describe('Item routes tests', () => {
           items: [
             {
               settings: { hasThumbnail: true },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -163,7 +163,7 @@ describe('Item routes tests', () => {
           items: [
             {
               settings: { hasThumbnail: true },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -248,7 +248,7 @@ describe('Item routes tests', () => {
           items: [
             {
               isPublic: true,
-              memberships: [{ permission: PermissionLevel.Write, account: 'actor' }],
+              memberships: [{ permission: 'write', account: 'actor' }],
             },
           ],
         });
@@ -262,13 +262,9 @@ describe('Item routes tests', () => {
         });
 
         const returnedItem = response.json();
-        expectPackedItem(
-          returnedItem,
-          { ...item, permission: PermissionLevel.Write },
-          actor,
-          undefined,
-          [publicVisibility],
-        );
+        expectPackedItem(returnedItem, { ...item, permission: 'write' }, actor, undefined, [
+          publicVisibility,
+        ]);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });
@@ -297,24 +293,24 @@ describe('Item routes tests', () => {
             {
               name: 'parentItem1',
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ name: 'should-not-return' }],
             },
             {
               name: 'item2',
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               name: 'item3',
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             // shared
             {
               name: 'parentItem4',
               creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ name: 'should-not-return' }],
             },
             {
@@ -322,7 +318,7 @@ describe('Item routes tests', () => {
               creator: { name: 'bob' },
               children: [
                 {
-                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  memberships: [{ account: 'actor', permission: 'admin' }],
                   name: 'item6',
                   creator: { name: 'bob' },
                 },
@@ -373,25 +369,25 @@ describe('Item routes tests', () => {
             // own items
             {
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: 'actor',
               settings: { hasThumbnail: true },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             // shared items
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
                 {
                   creator: { name: 'bob' },
                   settings: { hasThumbnail: true },
-                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  memberships: [{ account: 'actor', permission: 'admin' }],
                 },
               ],
             },
@@ -430,15 +426,15 @@ describe('Item routes tests', () => {
           items: [
             {
               creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             // noise
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -454,7 +450,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item1, item2].map((i) =>
-          new ItemWrapper({ ...i, creator: bob }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: bob }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -469,15 +465,15 @@ describe('Item routes tests', () => {
           items: [
             {
               name: '2',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               name: '3',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               name: '1',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -492,7 +488,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item3, item1, item2].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -509,15 +505,15 @@ describe('Item routes tests', () => {
           items: [
             {
               type: ItemType.DOCUMENT,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               type: ItemType.FOLDER,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               type: ItemType.APP,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -533,7 +529,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item2, item1, item3].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -550,15 +546,15 @@ describe('Item routes tests', () => {
           items: [
             {
               creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: { name: 'anna' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: { name: 'cedric' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -574,7 +570,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item2, item1, item3].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -592,17 +588,17 @@ describe('Item routes tests', () => {
             {
               name: 'dog',
               creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               name: 'dog',
               creator: { name: 'anna' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               name: 'cat',
               creator: { name: 'cedric' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               name: 'dog',
@@ -626,7 +622,7 @@ describe('Item routes tests', () => {
         expect(data).toHaveLength(2);
         expectManyPackedItems(
           data,
-          [item1, item2].map((i) => ({ ...i, permission: PermissionLevel.Admin })),
+          [item1, item2].map((i) => ({ ...i, permission: 'admin' })),
         );
       });
 
@@ -637,14 +633,14 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
             // noise
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
           ],
         });
@@ -658,7 +654,7 @@ describe('Item routes tests', () => {
           query: {
             sortBy: SortBy.ItemCreatorName,
             ordering: 'asc',
-            permissions: [PermissionLevel.Read],
+            permissions: ['read'],
           },
         });
 
@@ -677,13 +673,13 @@ describe('Item routes tests', () => {
           items: [
             {
               name: 'noise',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
           ],
         });
@@ -695,7 +691,7 @@ describe('Item routes tests', () => {
           method: HttpMethod.Get,
           url: '/api/items/accessible',
           query: {
-            permissions: [PermissionLevel.Write, PermissionLevel.Admin],
+            permissions: ['write', 'admin'],
           },
         });
 
@@ -714,16 +710,16 @@ describe('Item routes tests', () => {
           items: [
             {
               type: ItemType.FOLDER,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               type: ItemType.FOLDER,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             // noise
             {
               type: ItemType.APP,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -734,12 +730,7 @@ describe('Item routes tests', () => {
         const sortByName = (a, b) => a.name.localeCompare(b.name);
 
         const folders = [item1, item2]
-          .map((i) =>
-            new ItemWrapper(
-              { ...i, creator: actor },
-              { permission: PermissionLevel.Admin },
-            ).packed(),
-          )
+          .map((i) => new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed())
           .sort(sortByName);
 
         const response = await app.inject({
@@ -764,10 +755,10 @@ describe('Item routes tests', () => {
         const { actor } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -791,10 +782,10 @@ describe('Item routes tests', () => {
         const { actor } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -818,10 +809,10 @@ describe('Item routes tests', () => {
         const { actor } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -848,10 +839,10 @@ describe('Item routes tests', () => {
           items: [
             {
               name: '2',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
-            { name: '1', memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-            { name: '3', memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+            { name: '1', memberships: [{ account: 'actor', permission: 'admin' }] },
+            { name: '3', memberships: [{ account: 'actor', permission: 'admin' }] },
           ],
         });
         assertIsDefined(actor);
@@ -895,7 +886,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
                 {},
                 {
@@ -917,7 +908,7 @@ describe('Item routes tests', () => {
 
         const data = response.json<PackedItem[]>();
         const children = [child1, child2].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         expect(data).toHaveLength(children.length);
         expectManyPackedItems(data, children);
@@ -933,7 +924,7 @@ describe('Item routes tests', () => {
           items: [
             {
               settings: { hasThumbnail: true },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
                 { settings: { hasThumbnail: true } },
                 { settings: { hasThumbnail: true }, children: [{ name: 'noise' }] },
@@ -946,7 +937,7 @@ describe('Item routes tests', () => {
         mockAuthenticate(actor);
 
         const children = [child1, child2].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
 
         const response = await app.inject({
@@ -968,7 +959,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               children: [{ isHidden: true }, { children: [{ name: 'noise' }] }],
             },
           ],
@@ -990,7 +981,7 @@ describe('Item routes tests', () => {
           new ItemWrapper(
             { ...child2, creator: null },
             {
-              permission: PermissionLevel.Read,
+              permission: 'read',
             },
           ).packed(),
         );
@@ -1004,7 +995,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
                 { type: ItemType.DOCUMENT },
                 { type: ItemType.FOLDER },
@@ -1024,7 +1015,7 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
         const children = [child2, child3].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: null }, { permission: 'admin' }).packed(),
         );
         const data = response.json();
         expect(data).toHaveLength(children.length);
@@ -1039,7 +1030,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
                 {
                   name: 'dog',
@@ -1080,7 +1071,7 @@ describe('Item routes tests', () => {
         expect(data).toHaveLength(2);
         expectManyPackedItems(
           data,
-          [item1, item2].map((i) => ({ ...i, permission: PermissionLevel.Admin })),
+          [item1, item2].map((i) => ({ ...i, permission: 'admin' })),
         );
       });
 
@@ -1129,7 +1120,7 @@ describe('Item routes tests', () => {
             {
               creator: 'actor',
               isPublic: true,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
                 {
                   creator: 'actor',
@@ -1160,7 +1151,7 @@ describe('Item routes tests', () => {
         const children = [child1, child2, child3].map((i) =>
           new ItemWrapper(
             { ...i, creator: actor },
-            { permission: PermissionLevel.Admin },
+            { permission: 'admin' },
             itemVisibilities,
           ).packed(),
         );
@@ -1195,7 +1186,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ children: [{}] }, {}],
             },
           ],
@@ -1205,7 +1196,7 @@ describe('Item routes tests', () => {
         mockAuthenticate(actor);
 
         const descendants = [child1, child2, childOfChild].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: null }, { permission: 'admin' }).packed(),
         );
 
         const response = await app.inject({
@@ -1227,7 +1218,7 @@ describe('Item routes tests', () => {
           items: [
             {
               settings: { hasThumbnail: true },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
                 {
                   settings: { hasThumbnail: true },
@@ -1249,7 +1240,7 @@ describe('Item routes tests', () => {
 
         const data = response.json<PackedItem[]>();
         const descendants = [child1, child2, childOfChild].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: PermissionLevel.Admin }).packed(),
+          new ItemWrapper({ ...i, creator: null }, { permission: 'admin' }).packed(),
         );
         expect(data).toHaveLength(descendants.length);
         expectManyPackedItems(data, descendants);
@@ -1263,7 +1254,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               children: [{ isHidden: true, children: [{}] }, {}],
             },
           ],
@@ -1281,10 +1272,7 @@ describe('Item routes tests', () => {
         expect(result).toHaveLength(1);
         expectPackedItem(
           result[0],
-          new ItemWrapper(
-            { ...child2, creator: null },
-            { permission: PermissionLevel.Read },
-          ).packed(),
+          new ItemWrapper({ ...child2, creator: null }, { permission: 'read' }).packed(),
         );
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -1367,7 +1355,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ children: [{}] }],
             },
             {},
@@ -1435,7 +1423,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               children: [
                 {
                   isHidden: true,

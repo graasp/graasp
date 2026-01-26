@@ -1,4 +1,4 @@
-import { ItemVisibilityType, PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
+import { ItemVisibilityType, PermissionLevelCompare } from '@graasp/sdk';
 
 import type { DBConnection } from '../drizzle/db';
 import type { ItemRaw, ItemWithCreator } from '../drizzle/types';
@@ -50,9 +50,7 @@ const _filterOutItems = async (
     );
 
     // return item if has at least write permission or is not hidden
-    return (
-      (permission && PermissionLevelCompare.gte(permission, PermissionLevel.Write)) || !isHidden
-    );
+    return (permission && PermissionLevelCompare.gte(permission, 'write')) || !isHidden;
   });
   return { items: filteredItems, memberships, visibilities };
 };
@@ -180,10 +178,7 @@ export const filterOutPackedDescendants = async (
         }
 
         // return item if has at least write permission or is not hidden
-        return (
-          (i.permission && PermissionLevelCompare.gte(i.permission, PermissionLevel.Write)) ||
-          !i.hidden
-        );
+        return (i.permission && PermissionLevelCompare.gte(i.permission, 'write')) || !i.hidden;
       })
   );
 };

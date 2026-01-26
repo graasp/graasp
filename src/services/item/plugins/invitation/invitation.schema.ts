@@ -3,10 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
+import { permissionLevelSchemaRef } from '../../../../types';
 import { itemMembershipWithoutRelationsSchemaRef } from '../../../itemMembership/membership.schemas';
 import { itemSchemaRef } from '../../item.schemas';
 
@@ -18,7 +17,7 @@ export const invitationSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       email: Type.String({ format: 'email' }),
       name: Type.Optional(customType.Nullable(Type.String())),
-      permission: customType.EnumString(Object.values(PermissionLevel)),
+      permission: permissionLevelSchemaRef,
       item: itemSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
@@ -37,7 +36,7 @@ export const invitationWithoutRelationSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       email: Type.String({ format: 'email' }),
       name: Type.Optional(customType.Nullable(Type.String())),
-      permission: customType.EnumString(Object.values(PermissionLevel)),
+      permission: permissionLevelSchemaRef,
       itemPath: Type.String(),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
@@ -62,7 +61,7 @@ export const invite = {
     invitations: Type.Array(
       Type.Object({
         email: Type.String({ format: 'email' }),
-        permission: Type.Enum(PermissionLevel),
+        permission: permissionLevelSchemaRef,
       }),
     ),
   }),
@@ -154,7 +153,7 @@ export const updateOne = {
   body: customType.StrictObject(
     {
       name: Type.Optional(Type.String()),
-      permission: Type.Optional(Type.Enum(PermissionLevel)),
+      permission: Type.Optional(permissionLevelSchemaRef),
     },
     { minProperties: 1 },
   ),

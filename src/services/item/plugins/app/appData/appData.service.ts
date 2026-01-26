@@ -2,19 +2,12 @@ import { singleton } from 'tsyringe';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import {
-  AppDataVisibility,
-  ItemType,
-  PermissionLevel,
-  PermissionLevelCompare,
-  type PermissionLevelOptions,
-  type UUID,
-} from '@graasp/sdk';
+import { AppDataVisibility, ItemType, PermissionLevelCompare, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
-import type { AuthenticatedUser, MaybeUser } from '../../../../../types';
+import type { AuthenticatedUser, MaybeUser, PermissionLevel } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import FileService from '../../../../file/file.service';
 import { AppDataRepository } from './appData.repository';
@@ -36,12 +29,12 @@ const ownAppDataAbility = (appData: AppDataRaw, actor: MaybeUser) => {
 
 const itemVisibilityAppDataAbility = (
   appData: AppDataRaw,
-  permission: PermissionLevelOptions,
-  memberPermission?: PermissionLevelOptions,
+  permission: PermissionLevel,
+  memberPermission?: PermissionLevel,
 ) => {
   if (appData.visibility === AppDataVisibility.Item) {
     // can always read an app data with visibility item
-    if (permission === PermissionLevel.Read) {
+    if (permission === 'read') {
       return true;
     }
     // on write/admin
@@ -91,7 +84,7 @@ export class AppDataService {
   ) {
     // posting an app data is allowed to readers
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      permission: PermissionLevel.Read,
+      permission: 'read',
       accountId: account.id,
       itemId,
     });
@@ -134,7 +127,7 @@ export class AppDataService {
     // patching requires at least read
     const { itemMembership: inheritedMembership } =
       await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
-        permission: PermissionLevel.Read,
+        permission: 'read',
         accountId: account.id,
         itemId,
       });
@@ -154,7 +147,7 @@ export class AppDataService {
     const isValid = await this.validateAppDataPermission(
       account,
       currentAppData,
-      PermissionLevel.Write,
+      'write',
       inheritedMembership,
     );
     if (!isValid) {
@@ -181,7 +174,7 @@ export class AppDataService {
     // delete an app data is allowed to readers
     const { itemMembership: inheritedMembership } =
       await this.authorizedItemService.getPropertiesForItemById(dbConnection, {
-        permission: PermissionLevel.Read,
+        permission: 'read',
         accountId: account.id,
 
         itemId,
@@ -194,12 +187,7 @@ export class AppDataService {
     }
 
     // patch own or is admin
-    await this.validateAppDataPermission(
-      account,
-      appData,
-      PermissionLevel.Admin,
-      inheritedMembership,
-    );
+    await this.validateAppDataPermission(account, appData, 'admin', inheritedMembership);
 
     await this.appDataRepository.deleteOne(dbConnection, appDataId);
 
@@ -216,7 +204,7 @@ export class AppDataService {
     appDataId: UUID,
   ) {
     const { itemMembership } = await this.authorizedItemService.getPropertiesForItem(dbConnection, {
-      permission: PermissionLevel.Read,
+      permission: 'read',
       accountId: account.id,
       item,
     });
@@ -227,7 +215,7 @@ export class AppDataService {
       throw new AppDataNotFound(appDataId);
     }
 
-    if (!this.validateAppDataPermission(account, appData, PermissionLevel.Read, itemMembership)) {
+    if (!this.validateAppDataPermission(account, appData, 'read', itemMembership)) {
       throw new AppDataNotAccessible({ appDataId, accountId: account.id });
     }
 
@@ -243,7 +231,7 @@ export class AppDataService {
     // posting an app data is allowed to readers
     const { itemMembership } = await this.authorizedItemService.getPropertiesForItemById(
       dbConnection,
-      { permission: PermissionLevel.Read, accountId: maybeUser?.id, itemId },
+      { permission: 'read', accountId: maybeUser?.id, itemId },
     );
 
     return this.appDataRepository.getForItem(
@@ -257,7 +245,7 @@ export class AppDataService {
   private validateAppDataPermission(
     actor: MaybeUser,
     appData: AppDataRaw,
-    permission: PermissionLevelOptions,
+    permission: PermissionLevel,
     inheritedMembership?: ItemMembershipRaw | null,
   ) {
     const isValid =

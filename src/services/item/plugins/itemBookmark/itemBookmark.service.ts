@@ -1,7 +1,5 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../drizzle/db';
 import type { ItemBookmarkRaw } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
@@ -67,7 +65,7 @@ export class BookmarkService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Read,
+      permission: 'read',
     });
     await this.itemBookmarkRepository.post(dbConnection, item.id, member.id);
   }

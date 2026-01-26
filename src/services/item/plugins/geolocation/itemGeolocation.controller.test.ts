@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -469,9 +469,9 @@ describe('Item Geolocation', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(3);
         expectPackedItemGeolocations(res.json(), [
-          { ...geoloc1, item: { ...item1, creator: null, permission: PermissionLevel.Admin } },
-          { ...geoloc2, item: { ...item2, creator: null, permission: PermissionLevel.Admin } },
-          { ...geoloc3, item: { ...item3, creator: null, permission: PermissionLevel.Admin } },
+          { ...geoloc1, item: { ...item1, creator: null, permission: 'admin' } },
+          { ...geoloc2, item: { ...item2, creator: null, permission: 'admin' } },
+          { ...geoloc3, item: { ...item3, creator: null, permission: 'admin' } },
         ]);
       });
       it('Get item geolocations within parent item', async () => {
@@ -638,7 +638,7 @@ describe('Item Geolocation', () => {
           actor,
           items: [item],
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -686,7 +686,7 @@ describe('Item Geolocation', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               geolocation: { lat: 1, lng: 2 },
             },
           ],

@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { AppDataVisibility, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -158,7 +158,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appData: [
                 { account: 'actor', creator: 'actor' },
@@ -194,7 +194,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appData: [
                 { account: 'actor', type, creator: 'actor' },
@@ -233,7 +233,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
               appData: [{ account: 'actor', creator: 'actor' }],
             },
@@ -293,7 +293,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [
                 { account: 'actor', creator: 'actor' },
@@ -328,7 +328,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [
                 { account: 'actor', creator: 'actor' },
@@ -406,7 +406,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
             },
           ],
@@ -446,8 +446,8 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [
-                { account: 'actor', permission: PermissionLevel.Admin },
-                { account: { name: 'bob' }, permission: PermissionLevel.Read },
+                { account: 'actor', permission: 'admin' },
+                { account: { name: 'bob' }, permission: 'read' },
               ],
               type: ItemType.APP,
             },
@@ -486,7 +486,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.APP,
             },
           ],
@@ -519,8 +519,8 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [
-                { account: 'actor', permission: PermissionLevel.Read },
-                { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+                { account: 'actor', permission: 'read' },
+                { account: { name: 'bob' }, permission: 'admin' },
               ],
               type: ItemType.APP,
             },
@@ -573,7 +573,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [
                 { account: 'actor', creator: 'actor', type: 'type', data: { foo: 'value' } },
@@ -614,7 +614,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [
                 { account: 'actor', creator: 'actor', type: 'type', data: { foo: 'value' } },
@@ -648,7 +648,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
             },
           ],
@@ -679,7 +679,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [{ account: 'actor', creator: 'actor', ...buildAppDataFile() }],
             },
@@ -717,7 +717,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [{ account: 'actor', creator: 'actor', type: 'type', data: { foo: 'bar' } }],
             },
@@ -755,7 +755,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [
                 {
@@ -817,7 +817,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [
                 {
@@ -859,7 +859,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
               appData: [
                 {
@@ -895,7 +895,7 @@ describe('App Data Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
               type: ItemType.APP,
             },
           ],

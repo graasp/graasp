@@ -1,7 +1,7 @@
 import partition from 'lodash.partition';
 import { singleton } from 'tsyringe';
 
-import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
+import { ActionTriggers } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import type { ItemRaw } from '../../../../drizzle/types';
@@ -74,7 +74,7 @@ export class ActionMemberService {
     const { itemMemberships } = await this.authorizedItemService.getPropertiesForItems(
       dbConnection,
       {
-        permission: PermissionLevel.Read,
+        permission: 'read',
         accountId: authenticatedUser.id,
         items: setOfItemsToCheckPermission as ItemRaw[],
       },

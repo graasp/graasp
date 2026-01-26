@@ -1,18 +1,13 @@
 import { v4 } from 'uuid';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  ItemVisibilityType,
-  PackedFolderItemFactory,
-  PermissionLevel,
-  type PermissionLevelOptions,
-} from '@graasp/sdk';
+import { ItemVisibilityType, PackedFolderItemFactory } from '@graasp/sdk';
 
 import { ItemFactory } from '../../test/factories/item.factory';
 import { MemberFactory } from '../../test/factories/member.factory';
 import type { DBConnection } from '../drizzle/db';
 import type { ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../drizzle/types';
-import { AccountType, MinimalMember } from '../types';
+import { AccountType, MinimalMember, PermissionLevel } from '../types';
 import { filterOutPackedDescendants } from './authorization.utils';
 import type { PackedItem } from './item/ItemWrapper';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
@@ -46,7 +41,7 @@ const hiddenVisibility = {
  * types don't play nicely because factory does not use the same types as the backend
  */
 const buildPackedDescendants = (
-  permission: PermissionLevelOptions | null,
+  permission: PermissionLevel | null,
   hiddenVisibility: ItemVisibilityWithItem,
 ): PackedItem[] => {
   const arr = descendants.map((descendant) =>
@@ -95,7 +90,7 @@ describe('filterOutPackedDescendants', () => {
 
   it('Admin returns all', async () => {
     // one parent membership
-    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Admin }];
+    const memberships = [{ item, member: OWNER, permission: 'admin' as const }];
     // packed descendants for expect
     // one item is hidden but this item should be returned
     const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
@@ -125,7 +120,7 @@ describe('filterOutPackedDescendants', () => {
 
   it('Writer returns all', async () => {
     // one parent membership
-    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Write }];
+    const memberships = [{ item, member: OWNER, permission: 'write' as const }];
     // packed descendants for expect
     // one item is hidden but this item should be returned
     const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
@@ -155,7 +150,7 @@ describe('filterOutPackedDescendants', () => {
 
   it('Reader does not return hidden', async () => {
     // one parent membership
-    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Read }];
+    const memberships = [{ item, member: OWNER, permission: 'read' as const }];
     // packed descendants for expect
     // one item is hidden, this item should not be returned!
     const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);

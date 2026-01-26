@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -97,7 +97,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
           const account = asDefined(user?.account);
           // check write permission
           const item = await authorizedItemService.getItemById(db, {
-            permission: PermissionLevel.Write,
+            permission: 'write',
             itemId: params.id,
             accountId: account.id,
           });

@@ -15,7 +15,6 @@ import {
   HttpMethod,
   ItemType,
   MimeTypes,
-  PermissionLevel,
   ThumbnailSize,
 } from '@graasp/sdk';
 
@@ -548,7 +547,7 @@ describe('ZIP routes tests', () => {
             name: 'item-name',
             type: ItemType.DOCUMENT,
             extra: { document: { content: 'my text', isRaw: false } },
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
       });
@@ -657,7 +656,7 @@ describe('ZIP routes tests', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);

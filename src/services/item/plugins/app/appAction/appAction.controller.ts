@@ -2,8 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
 import type { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
@@ -30,7 +28,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const item = await authorizedItemService.getItemById(db, {
         accountId: member?.id,
         itemId: id,
-        permission: PermissionLevel.Admin,
+        permission: 'admin',
       });
       checkItemIsApp(item);
     });

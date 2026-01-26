@@ -8,7 +8,6 @@ import {
   EtherpadPermission,
   type EtherpadPermissionType,
   ItemType,
-  PermissionLevel,
 } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
@@ -194,7 +193,7 @@ export class EtherpadItemService {
     item: EtherpadItem,
   ): Promise<'read' | 'write'> {
     // no specific check if read mode was requested
-    if (requestedMode === PermissionLevel.Read) {
+    if (requestedMode === 'read') {
       return 'read';
     }
     // if mode was write,
@@ -209,10 +208,9 @@ export class EtherpadItemService {
     // allow write for admin, writers, and readers if setting is enabled
     if (
       membership &&
-      (membership.permission == PermissionLevel.Write ||
-        membership.permission == PermissionLevel.Admin ||
-        (membership.permission == PermissionLevel.Read &&
-          item.extra.etherpad.readerPermission == PermissionLevel.Write))
+      (membership.permission == 'write' ||
+        membership.permission == 'admin' ||
+        (membership.permission == 'read' && item.extra.etherpad.readerPermission == 'write'))
     ) {
       return 'write';
     }

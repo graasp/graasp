@@ -3,8 +3,6 @@ import { singleton } from 'tsyringe';
 
 import type { FastifyRequest } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
 import type { ActionWithItem, ItemRaw } from '../../../../drizzle/types';
@@ -62,7 +60,7 @@ export class ItemActionService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: account.id,
       itemId,
-      permission: PermissionLevel.Read,
+      permission: 'read',
     });
 
     // check permission
@@ -86,7 +84,7 @@ export class ItemActionService {
     return this.actionRepository.getForItem(dbConnection, item.path, {
       sampleSize: size,
       view,
-      accountId: permission === PermissionLevel.Admin ? undefined : account.id,
+      accountId: permission === 'admin' ? undefined : account.id,
     });
   }
 

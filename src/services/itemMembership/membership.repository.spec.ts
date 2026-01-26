@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { assertIsDefined } from '../../utils/assertions';
@@ -27,10 +25,10 @@ describe('ItemMembership Repository', () => {
         items: [
           {
             memberships: [
-              { account: { name: 'bob' }, permission: PermissionLevel.Admin },
-              { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
-              { account: { name: 'anna' }, permission: PermissionLevel.Write },
-              { account: { name: 'david' }, permission: PermissionLevel.Read },
+              { account: { name: 'bob' }, permission: 'admin' },
+              { account: { name: 'cedric' }, permission: 'admin' },
+              { account: { name: 'anna' }, permission: 'write' },
+              { account: { name: 'david' }, permission: 'read' },
             ],
           },
         ],
@@ -50,18 +48,18 @@ describe('ItemMembership Repository', () => {
         items: [
           {
             memberships: [
-              { account: { name: 'bob' }, permission: PermissionLevel.Admin },
-              { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
-              { account: { name: 'anna' }, permission: PermissionLevel.Write },
-              { account: { name: 'david' }, permission: PermissionLevel.Read },
+              { account: { name: 'bob' }, permission: 'admin' },
+              { account: { name: 'cedric' }, permission: 'admin' },
+              { account: { name: 'anna' }, permission: 'write' },
+              { account: { name: 'david' }, permission: 'read' },
             ],
             children: [
               {
                 memberships: [
-                  { account: { name: 'evian' }, permission: PermissionLevel.Admin },
-                  { account: { name: 'fabrice' }, permission: PermissionLevel.Admin },
-                  { account: { name: 'george' }, permission: PermissionLevel.Write },
-                  { account: { name: 'helene' }, permission: PermissionLevel.Read },
+                  { account: { name: 'evian' }, permission: 'admin' },
+                  { account: { name: 'fabrice' }, permission: 'admin' },
+                  { account: { name: 'george' }, permission: 'write' },
+                  { account: { name: 'helene' }, permission: 'read' },
                 ],
               },
             ],
@@ -89,20 +87,20 @@ describe('ItemMembership Repository', () => {
         items: [
           {
             name: 'commonStart 1',
-            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            memberships: [{ account: 'actor', permission: 'read' }],
           },
           {
             name: 'commonStart 2',
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
           },
           {
             name: 'commonStart 3',
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
           },
           // noise
           {
             name: 'commonStart 4',
-            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
           },
         ],
       });
@@ -129,12 +127,12 @@ describe('ItemMembership Repository', () => {
             children: [
               {
                 name: 'commonStart 2',
-                memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+                memberships: [{ account: 'actor', permission: 'write' }],
               },
               // noise
               {
                 name: 'commonStart 4',
-                memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+                memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
               },
             ],
           },
@@ -159,24 +157,24 @@ describe('ItemMembership Repository', () => {
         items: [
           {
             name: 'commonStart 1',
-            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            memberships: [{ account: 'actor', permission: 'write' }],
             children: [
               // noise
               {
                 name: 'commonStart 2',
-                memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+                memberships: [{ account: 'actor', permission: 'write' }],
               },
               // noise
               {
                 name: 'commonStart 3',
-                memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+                memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
               },
             ],
           },
           // noise
           {
             name: 'commonStart 4',
-            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
           },
         ],
       });
@@ -200,13 +198,13 @@ describe('ItemMembership Repository', () => {
         items: [
           {
             memberships: [
-              { account: 'actor', permission: PermissionLevel.Admin },
-              { account: { name: 'bob' }, permission: PermissionLevel.Read },
+              { account: 'actor', permission: 'admin' },
+              { account: { name: 'bob' }, permission: 'read' },
             ],
           },
           // noise
           {
-            memberships: [{ account: { name: 'cedric' }, permission: PermissionLevel.Admin }],
+            memberships: [{ account: { name: 'cedric' }, permission: 'admin' }],
           },
         ],
       });
@@ -217,12 +215,12 @@ describe('ItemMembership Repository', () => {
       const adminM = result.find((m) => m.id === adminMembership.id);
       assertIsDefined(adminM);
       expect(adminM.item.path).toEqual(item.path);
-      expect(adminM.permission).toEqual(PermissionLevel.Admin);
+      expect(adminM.permission).toEqual('admin');
 
       const readM = result.find((m) => m.id === readMembership.id);
       assertIsDefined(readM);
       expect(readM.item.path).toEqual(item.path);
-      expect(readM.permission).toEqual(PermissionLevel.Read);
+      expect(readM.permission).toEqual('read');
     });
     it('return inherited memberships', async () => {
       const {
@@ -232,21 +230,21 @@ describe('ItemMembership Repository', () => {
         items: [
           {
             memberships: [
-              { account: 'actor', permission: PermissionLevel.Admin },
-              { account: { name: 'bob' }, permission: PermissionLevel.Read },
+              { account: 'actor', permission: 'admin' },
+              { account: { name: 'bob' }, permission: 'read' },
             ],
             children: [
               {
                 memberships: [
-                  { account: { name: 'bob' }, permission: PermissionLevel.Admin },
-                  { account: { name: 'alice' }, permission: PermissionLevel.Write },
+                  { account: { name: 'bob' }, permission: 'admin' },
+                  { account: { name: 'alice' }, permission: 'write' },
                 ],
               },
             ],
           },
           // noise
           {
-            memberships: [{ account: { name: 'cedric' }, permission: PermissionLevel.Admin }],
+            memberships: [{ account: { name: 'cedric' }, permission: 'admin' }],
           },
         ],
       });
@@ -260,7 +258,7 @@ describe('ItemMembership Repository', () => {
       );
       assertIsDefined(adminM);
       expect(adminM.item.path).toEqual(item.path);
-      expect(adminM.permission).toEqual(PermissionLevel.Admin);
+      expect(adminM.permission).toEqual('admin');
 
       // bob admin membership on item
       const readM = result.find(
@@ -268,7 +266,7 @@ describe('ItemMembership Repository', () => {
       );
       assertIsDefined(readM);
       expect(readM.item.path).toEqual(child.path);
-      expect(readM.permission).toEqual(PermissionLevel.Admin);
+      expect(readM.permission).toEqual('admin');
 
       // alice write membership on item
       const writeM = result.find(
@@ -276,7 +274,7 @@ describe('ItemMembership Repository', () => {
       );
       assertIsDefined(writeM);
       expect(writeM.item.path).toEqual(child.path);
-      expect(writeM.permission).toEqual(PermissionLevel.Write);
+      expect(writeM.permission).toEqual('write');
     });
   });
 });

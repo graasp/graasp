@@ -4,7 +4,6 @@ import {
   ClientManager,
   Context,
   ItemVisibilityType,
-  PermissionLevel,
   PublicationStatus,
   type UUID,
 } from '@graasp/sdk';
@@ -90,10 +89,7 @@ export class ItemPublishedService {
     // send email to contributors except yourself
     const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
     const contributors = memberships
-      .filter(
-        ({ permission, account }) =>
-          permission === PermissionLevel.Admin && account.id !== actor.id,
-      )
+      .filter(({ permission, account }) => permission === 'admin' && account.id !== actor.id)
       .map(({ account }) => account);
 
     const link = ClientManager.getInstance().getItemLink(Context.Library, item.id);
@@ -163,7 +159,7 @@ export class ItemPublishedService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     const itemPublished = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
@@ -245,7 +241,7 @@ export class ItemPublishedService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     await this.hooks.runPreHooks('delete', member, dbConnection, { item });

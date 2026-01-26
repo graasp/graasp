@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
@@ -175,7 +175,7 @@ describe('Membership routes tests', () => {
       const payload = {
         accountId: member.id,
         itemId: item.id,
-        permission: PermissionLevel.Write,
+        permission: 'write',
       };
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -198,7 +198,7 @@ describe('Membership routes tests', () => {
         mockAuthenticate(actor);
         const payload = {
           accountId: member.id,
-          permission: PermissionLevel.Write,
+          permission: 'write',
         };
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -224,13 +224,13 @@ describe('Membership routes tests', () => {
               memberships: [{ account: 'actor' }],
               children: [
                 {
-                  memberships: [{ permission: PermissionLevel.Write, account: { name: 'bob' } }],
+                  memberships: [{ permission: 'write', account: { name: 'bob' } }],
                 },
               ],
             },
             // noise
             {
-              memberships: [{ permission: PermissionLevel.Write, account: { name: 'bob' } }],
+              memberships: [{ permission: 'write', account: { name: 'bob' } }],
               children: [{}],
             },
           ],
@@ -240,7 +240,7 @@ describe('Membership routes tests', () => {
         mockAuthenticate(actor);
 
         const newMembership = {
-          permission: PermissionLevel.Admin,
+          permission: 'admin',
           accountId: member.id,
         };
         const [_actorMembership, membership, anotherMembership] = itemMemberships;
@@ -286,7 +286,7 @@ describe('Membership routes tests', () => {
 
         const payload = {
           accountId: member.id,
-          permission: PermissionLevel.Write,
+          permission: 'write',
         };
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -330,7 +330,7 @@ describe('Membership routes tests', () => {
             {
               memberships: [
                 { account: 'actor' },
-                { account: { name: 'bob' }, permission: PermissionLevel.Write },
+                { account: { name: 'bob' }, permission: 'write' },
               ],
             },
           ],
@@ -343,7 +343,7 @@ describe('Membership routes tests', () => {
           method: HttpMethod.Post,
           url: `/api/items/${item.id}/memberships`,
           payload: {
-            permission: PermissionLevel.Read,
+            permission: 'read',
             itemId: item.id,
             accountId: member.id,
           },
@@ -364,7 +364,7 @@ describe('Membership routes tests', () => {
             {
               memberships: [
                 { account: 'actor' },
-                { account: { name: 'bob' }, permission: PermissionLevel.Write },
+                { account: { name: 'bob' }, permission: 'write' },
               ],
               children: [{}],
             },
@@ -375,7 +375,7 @@ describe('Membership routes tests', () => {
         expect(await getMembershipsByItemPath(parent.path)).toHaveLength(2);
 
         const newMembership = {
-          permission: PermissionLevel.Read,
+          permission: 'read',
           accountId: member.id,
           itemId: item.id,
         };
@@ -407,7 +407,7 @@ describe('Membership routes tests', () => {
           method: HttpMethod.Post,
           url: `/api/items/${id}/memberships`,
           payload: {
-            permission: PermissionLevel.Read,
+            permission: 'read',
             itemId: item.id,
             accountId: member.id,
           },
@@ -450,7 +450,7 @@ describe('Membership routes tests', () => {
         items: [item],
       } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
       const payload = {
-        permission: PermissionLevel.Write,
+        permission: 'write',
       };
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -469,13 +469,8 @@ describe('Membership routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [
-                { account: 'actor' },
-                { account: { name: 'bob' }, permission: PermissionLevel.Read },
-              ],
-              children: [
-                { memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Write }] },
-              ],
+              memberships: [{ account: 'actor' }, { account: { name: 'bob' }, permission: 'read' }],
+              children: [{ memberships: [{ account: { name: 'bob' }, permission: 'write' }] }],
             },
           ],
         });
@@ -485,7 +480,7 @@ describe('Membership routes tests', () => {
         expect(await getMembershipsByItemPath(child.path)).toHaveLength(1);
 
         const newMembership = {
-          permission: PermissionLevel.Read,
+          permission: 'read',
           accountId: member.id,
         };
         const response = await app.inject({
@@ -508,7 +503,7 @@ describe('Membership routes tests', () => {
             {
               memberships: [
                 { account: 'actor' },
-                { permission: PermissionLevel.Write, account: { name: 'bob' } },
+                { permission: 'write', account: { name: 'bob' } },
               ],
             },
           ],
@@ -519,7 +514,7 @@ describe('Membership routes tests', () => {
         expect(await getMembershipsByItemPath(item.path)).toHaveLength(2);
 
         const newMembership = {
-          permission: PermissionLevel.Admin,
+          permission: 'admin',
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -543,13 +538,10 @@ describe('Membership routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [
-                { account: 'actor' },
-                { account: { name: 'bob' }, permission: PermissionLevel.Read },
-              ],
+              memberships: [{ account: 'actor' }, { account: { name: 'bob' }, permission: 'read' }],
               children: [
                 {
-                  memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Write }],
+                  memberships: [{ account: { name: 'bob' }, permission: 'write' }],
                 },
               ],
             },
@@ -560,7 +552,7 @@ describe('Membership routes tests', () => {
         mockAuthenticate(actor);
         expect(await getMembershipsByItemPath(parent.path)).toHaveLength(2);
 
-        const newMembership = { permission: PermissionLevel.Write };
+        const newMembership = { permission: 'write' };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/api/items/${parent.id}/memberships/${readMembership.id}`,
@@ -593,7 +585,7 @@ describe('Membership routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/api/items/${id}/memberships/${id}`,
-          payload: { permission: PermissionLevel.Write },
+          payload: { permission: 'write' },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -609,11 +601,11 @@ describe('Membership routes tests', () => {
             {
               memberships: [
                 { account: 'actor' },
-                { account: { name: 'bob' }, permission: PermissionLevel.Write },
+                { account: { name: 'bob' }, permission: 'write' },
               ],
               children: [
                 {
-                  memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+                  memberships: [{ account: { name: 'bob' }, permission: 'admin' }],
                 },
               ],
             },
@@ -626,7 +618,7 @@ describe('Membership routes tests', () => {
           method: HttpMethod.Patch,
           url: `/api/items/${child.id}/memberships/${adminMembership.id}`,
           payload: {
-            permission: PermissionLevel.Read,
+            permission: 'read',
             accountId: member.id,
           },
         });
@@ -653,7 +645,7 @@ describe('Membership routes tests', () => {
         mockAuthenticate(actor);
 
         const newMembership = {
-          permission: PermissionLevel.Admin,
+          permission: 'admin',
           accountId: guest.id,
         };
         const response = await app.inject({
@@ -691,11 +683,9 @@ describe('Membership routes tests', () => {
             {
               memberships: [
                 { account: 'actor' },
-                { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+                { account: { name: 'bob' }, permission: 'admin' },
               ],
-              children: [
-                { memberships: [{ permission: PermissionLevel.Admin, account: { name: 'bob' } }] },
-              ],
+              children: [{ memberships: [{ permission: 'admin', account: { name: 'bob' } }] }],
             },
           ],
         });
@@ -723,11 +713,9 @@ describe('Membership routes tests', () => {
             {
               memberships: [
                 { account: 'actor' },
-                { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+                { account: { name: 'bob' }, permission: 'admin' },
               ],
-              children: [
-                { memberships: [{ permission: PermissionLevel.Admin, account: { name: 'bob' } }] },
-              ],
+              children: [{ memberships: [{ permission: 'admin', account: { name: 'bob' } }] }],
             },
           ],
         });
@@ -781,10 +769,7 @@ describe('Membership routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [
-                { account: 'actor', permission: PermissionLevel.Read },
-                { account: { name: 'bob' } },
-              ],
+              memberships: [{ account: 'actor', permission: 'read' }, { account: { name: 'bob' } }],
             },
           ],
         });
@@ -808,7 +793,7 @@ describe('Membership routes tests', () => {
           items: [
             {
               memberships: [
-                { account: 'actor', permission: PermissionLevel.Write },
+                { account: 'actor', permission: 'write' },
                 { account: { name: 'bob' } },
               ],
             },

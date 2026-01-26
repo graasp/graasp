@@ -1,12 +1,7 @@
 import { SQL } from 'drizzle-orm';
 import { and, eq, or } from 'drizzle-orm/sql';
 
-import {
-  AppDataVisibility,
-  ItemType,
-  PermissionLevel,
-  type PermissionLevelOptions,
-} from '@graasp/sdk';
+import { AppDataVisibility, ItemType } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
 import { appDataTable } from '../../../../../drizzle/schema';
@@ -15,6 +10,7 @@ import type {
   AppDataWithItemAndAccountAndCreator,
   MinimalAccount,
 } from '../../../../../drizzle/types';
+import { PermissionLevel } from '../../../../../types';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 
 export class AppDataRepository {
@@ -90,7 +86,7 @@ export class AppDataRepository {
       accountId?: MinimalAccount['id'];
       type?: string;
     } = {},
-    permission?: PermissionLevelOptions,
+    permission?: PermissionLevel,
   ): Promise<AppDataWithItemAndAccountAndCreator[]> {
     const { accountId, type } = filters;
 
@@ -102,7 +98,7 @@ export class AppDataRepository {
     }
 
     // restrict app data access if user is not an admin
-    if (permission !== PermissionLevel.Admin) {
+    if (permission !== 'admin') {
       const orConditions: (SQL | undefined)[] = [
         // - visibility: item
         eq(appDataTable.visibility, AppDataVisibility.Item),

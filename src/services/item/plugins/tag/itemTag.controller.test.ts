@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel, TagCategory } from '@graasp/sdk';
+import { HttpMethod, TagCategory } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -314,7 +314,7 @@ describe('Item Tag Endpoints', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
             },
           ],

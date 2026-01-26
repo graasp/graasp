@@ -1,7 +1,5 @@
 import { inject, singleton } from 'tsyringe';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
 import type { ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
@@ -40,7 +38,7 @@ export class ItemGeolocationService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Write,
+      permission: 'write',
     });
 
     return this.itemGeolocationRepository.delete(dbConnection, item);
@@ -93,7 +91,7 @@ export class ItemGeolocationService {
 
     const { itemMemberships, visibilities } =
       await this.authorizedItemService.getPropertiesForItems(dbConnection, {
-        permission: PermissionLevel.Read,
+        permission: 'read',
         accountId: maybeUser?.id,
         items: geoloc.map(({ item }) => item),
       });
@@ -141,7 +139,7 @@ export class ItemGeolocationService {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Write,
+      permission: 'write',
     });
 
     return this.itemGeolocationRepository.put(dbConnection, item.path, geolocation);

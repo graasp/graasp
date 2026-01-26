@@ -18,7 +18,6 @@ import {
   MAX_NUMBER_OF_CHILDREN,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TREE_LEVELS,
-  PermissionLevel,
 } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
@@ -247,7 +246,7 @@ describe('Item routes tests', () => {
           where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
         expect(membership).toBeDefined();
-        expect(membership!.permission).toEqual(PermissionLevel.Admin);
+        expect(membership!.permission).toEqual('admin');
       });
 
       it('Create successfully in parent item', async () => {
@@ -257,7 +256,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 3 }],
             },
           ],
@@ -298,7 +297,7 @@ describe('Item routes tests', () => {
           items: [
             {
               creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
           ],
         });
@@ -379,7 +378,7 @@ describe('Item routes tests', () => {
           actor,
           items: [parentItem],
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }], lang }],
+          items: [{ memberships: [{ account: 'actor', permission: 'admin' }], lang }],
         });
         assertIsDefined(actor);
         assertIsMemberForTest(actor);
@@ -457,7 +456,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 1 }, { order: 2 }],
             },
           ],
@@ -491,7 +490,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 1 }, { order: 2 }],
             },
           ],
@@ -524,7 +523,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 1 }, { order: 30 }],
             },
             { children: [{ order: 100 }] },
@@ -596,7 +595,7 @@ describe('Item routes tests', () => {
           actor,
           items: [parent],
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         assertIsMemberForTest(actor);
@@ -619,7 +618,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: Array.from({ length: MAX_NUMBER_OF_CHILDREN }, () => ({})),
             },
           ],
@@ -644,7 +643,7 @@ describe('Item routes tests', () => {
           items: [
             {
               ...getItemWithDepth(MAX_TREE_LEVELS + 1),
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -672,7 +671,7 @@ describe('Item routes tests', () => {
           items: [
             {
               type: ItemType.DOCUMENT,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -750,7 +749,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               type: ItemType.DOCUMENT,
               extra: {
                 [ItemType.DOCUMENT]: {
@@ -802,7 +801,7 @@ describe('Item routes tests', () => {
           items: [
             {
               lang: 'en',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -832,7 +831,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -868,7 +867,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -904,7 +903,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1014,7 +1013,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              memberships: [{ account: 'actor', permission: 'read' }],
             },
           ],
         });
@@ -1053,10 +1052,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1091,7 +1090,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1126,8 +1125,8 @@ describe('Item routes tests', () => {
           items: [
             {
               memberships: [
-                { account: 'actor', permission: PermissionLevel.Admin },
-                { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+                { account: 'actor', permission: 'admin' },
+                { account: { name: 'bob' }, permission: 'admin' },
               ],
               children: [{ children: [{ memberships: [{ account: { name: 'bob' } }] }] }],
             },
@@ -1177,11 +1176,11 @@ describe('Item routes tests', () => {
           items: [
             {
               isDeleted: true,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               isDeleted: true,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1216,11 +1215,11 @@ describe('Item routes tests', () => {
           items: [
             {
               isDeleted: true,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
             {
               isDeleted: true,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1253,7 +1252,7 @@ describe('Item routes tests', () => {
         const { actor, items } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {},
           ],
@@ -1274,7 +1273,7 @@ describe('Item routes tests', () => {
         const { actor, items } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {},
           ],
@@ -1324,7 +1323,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 10 }, { order: 5 }],
             },
           ],
@@ -1353,7 +1352,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 10 }, { order: 5 }],
             },
           ],
@@ -1383,7 +1382,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 10 }, { order: 5 }, { order: 15 }],
             },
           ],
@@ -1412,7 +1411,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ order: 20 }, { order: 5 }, { order: 15 }],
             },
           ],
@@ -1444,10 +1443,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1495,10 +1494,10 @@ describe('Item routes tests', () => {
           itemMemberships: [_parentIm, im1],
         } = await seedFromJson({
           items: [
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
-            { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+            { memberships: [{ account: 'actor', permission: 'admin' }] },
+            { memberships: [{ account: 'actor', permission: 'admin' }] },
+            { memberships: [{ account: 'actor', permission: 'admin' }] },
+            { memberships: [{ account: 'actor', permission: 'admin' }] },
           ],
         });
         assertIsDefined(actor);
@@ -1544,7 +1543,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{}, {}, {}],
             },
           ],
@@ -1583,7 +1582,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{}],
             },
           ],
@@ -1622,10 +1621,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1663,10 +1662,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{}, {}, {}],
             },
           ],
@@ -1705,10 +1704,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' as const }],
             },
             ...Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => ({
-              memberships: [{ account: 'actor' as SeedActor, permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor' as SeedActor, permission: 'admin' as const }],
             })),
           ],
         });
@@ -1760,7 +1759,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1814,19 +1813,19 @@ describe('Item routes tests', () => {
               creator: { name: 'bob' },
               lang: 'fr',
               settings,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: { name: 'bob' },
               lang: 'fr',
               settings,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: { name: 'bob' },
               lang: 'fr',
               settings,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1886,16 +1885,16 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -1948,16 +1947,16 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -2006,15 +2005,15 @@ describe('Item routes tests', () => {
           items: [
             {
               name: commonName,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               creator: { name: 'bob' },
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               children: [
                 {
                   name: commonName,
-                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  memberships: [{ account: 'actor', permission: 'admin' }],
                 },
               ],
             },
@@ -2057,13 +2056,13 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               children: [
                 {
-                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  memberships: [{ account: 'actor', permission: 'admin' }],
                 },
                 {
-                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  memberships: [{ account: 'actor', permission: 'admin' }],
                 },
               ],
             },
@@ -2110,10 +2109,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
             ...Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => ({
-              memberships: [{ account: 'actor' as SeedActor, permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor' as SeedActor, permission: 'admin' as const }],
             })),
           ],
         });
@@ -2149,10 +2148,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               geolocation: { lat: 1, lng: 22 },
             },
           ],
@@ -2193,10 +2192,10 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               children: [
                 { order: 20, createdAt: '2012-10-05T14:48:00.000Z' },
                 { order: 20, createdAt: '2011-10-05T14:48:00.000Z' },
@@ -2243,7 +2242,7 @@ describe('Item routes tests', () => {
         const { actor, items } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
           ],
         });
@@ -2266,7 +2265,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
               creator: 'actor',
             },
             {},
@@ -2308,11 +2307,11 @@ describe('Item routes tests', () => {
             {
               creator: 'actor',
               type: ItemType.DOCUMENT,
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
             {
               creator: 'actor',
-              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              memberships: [{ account: 'actor', permission: 'write' }],
             },
           ],
         });

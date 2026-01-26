@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel, type UUID } from '@graasp/sdk';
+import { type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { AppSettingInsertDTO, AppSettingRaw, ItemRaw } from '../../../../../drizzle/types';
@@ -56,7 +56,7 @@ export class AppSettingService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     const appSetting = await this.appSettingRepository.addOne(dbConnection, {
@@ -79,7 +79,7 @@ export class AppSettingService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     await this.hooks.runPreHooks('patch', member, dbConnection, {
@@ -105,7 +105,7 @@ export class AppSettingService {
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
       accountId: member.id,
       itemId,
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
     });
 
     const appSetting = await this.appSettingRepository.getOneOrThrow(dbConnection, appSettingId);

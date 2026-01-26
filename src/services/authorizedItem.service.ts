@@ -1,14 +1,10 @@
 import { singleton } from 'tsyringe';
 
-import {
-  ItemVisibilityType,
-  PermissionLevel,
-  type PermissionLevelOptions,
-  type ResultOf,
-} from '@graasp/sdk';
+import { ItemVisibilityType, type ResultOf } from '@graasp/sdk';
 
 import type { DBConnection } from '../drizzle/db';
 import type { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
+import type { PermissionLevel } from '../types';
 import {
   MemberCannotAccess,
   MemberCannotAdminItem,
@@ -19,10 +15,10 @@ import { ItemRepository } from './item/item.repository';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
-const permissionMapping: { [K in PermissionLevelOptions]: PermissionLevelOptions[] } = {
-  [PermissionLevel.Read]: [PermissionLevel.Read],
-  [PermissionLevel.Write]: [PermissionLevel.Read, PermissionLevel.Write],
-  [PermissionLevel.Admin]: [PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin],
+const permissionMapping: { [K in PermissionLevel]: PermissionLevel[] } = {
+  ['read']: ['read'],
+  ['write']: ['read', 'write'],
+  ['admin']: ['read', 'write', 'admin'],
 };
 
 @singleton()
@@ -52,10 +48,10 @@ export class AuthorizedItemService {
   public async getPropertiesForItems(
     dbConnection: DBConnection,
     {
-      permission = PermissionLevel.Read,
+      permission = 'read',
       accountId,
       items,
-    }: { permission: PermissionLevelOptions; accountId?: string; items: ItemRaw[] },
+    }: { permission: PermissionLevel; accountId?: string; items: ItemRaw[] },
   ): Promise<{
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
@@ -89,7 +85,7 @@ export class AuthorizedItemService {
 
       // HIDDEN CHECK - prevent read
       // cannot read if your have read access only
-      if (highest === PermissionLevel.Read || (isPublic && !highest)) {
+      if (highest === 'read' || (isPublic && !highest)) {
         const isHidden = visibilities.data[item.id].find(
           (t) => t.type === ItemVisibilityType.Hidden,
         );
@@ -106,7 +102,7 @@ export class AuthorizedItemService {
       }
 
       // PUBLIC CHECK
-      if (permission === PermissionLevel.Read && isPublic) {
+      if (permission === 'read' && isPublic) {
         // Old validate permission return null when public, this is a bit odd but this is current behavior
         // It is used so that the item is not removed from the list when it is public in ItemService.getMany
         resultOfMemberships.data[item.id] = null;
@@ -122,13 +118,13 @@ export class AuthorizedItemService {
       // add corresponding error
       delete inheritedMemberships?.data[item.id];
       switch (permission) {
-        case PermissionLevel.Read:
+        case 'read':
           resultOfMemberships.errors.push(new MemberCannotReadItem(item.id));
           break;
-        case PermissionLevel.Write:
+        case 'write':
           resultOfMemberships.errors.push(new MemberCannotWriteItem(item.id));
           break;
-        case PermissionLevel.Admin:
+        case 'admin':
           resultOfMemberships.errors.push(new MemberCannotAdminItem(item.id));
           break;
         default:
@@ -152,10 +148,10 @@ export class AuthorizedItemService {
   public async hasPermission(
     dbConnection: DBConnection,
     {
-      permission = PermissionLevel.Read,
+      permission = 'read',
       accountId,
       item,
-    }: { permission?: PermissionLevelOptions; accountId?: string; item: ItemRaw },
+    }: { permission?: PermissionLevel; accountId?: string; item: ItemRaw },
   ) {
     try {
       const { itemMembership, visibilities } = await this.getPropertiesForItem(dbConnection, {
@@ -187,10 +183,10 @@ export class AuthorizedItemService {
   public async assertAccess(
     dbConnection: DBConnection,
     {
-      permission = PermissionLevel.Read,
+      permission = 'read',
       accountId,
       item,
-    }: { permission?: PermissionLevelOptions; accountId?: string; item: ItemRaw },
+    }: { permission?: PermissionLevel; accountId?: string; item: ItemRaw },
   ) {
     await this.getPropertiesForItem(dbConnection, { permission, accountId, item });
   }
@@ -202,11 +198,11 @@ export class AuthorizedItemService {
   public async assertAccessForItemId(
     dbConnection: DBConnection,
     {
-      permission = PermissionLevel.Read,
+      permission = 'read',
       accountId,
       itemId,
     }: {
-      permission?: PermissionLevelOptions;
+      permission?: PermissionLevel;
       accountId?: string;
       itemId: ItemRaw['id'];
     },
@@ -226,7 +222,7 @@ export class AuthorizedItemService {
       accountId,
       itemId,
     }: {
-      permission?: PermissionLevelOptions;
+      permission?: PermissionLevel;
       accountId?: string;
       itemId: ItemRaw['id'];
     },
@@ -243,11 +239,11 @@ export class AuthorizedItemService {
   public async getPropertiesForItemById(
     dbConnection: DBConnection,
     {
-      permission = PermissionLevel.Read,
+      permission = 'read',
       accountId,
       itemId,
     }: {
-      permission?: PermissionLevelOptions;
+      permission?: PermissionLevel;
       accountId?: string;
       itemId: ItemRaw['id'];
     },
@@ -266,10 +262,10 @@ export class AuthorizedItemService {
   public async getPropertiesForItem(
     dbConnection: DBConnection,
     {
-      permission = PermissionLevel.Read,
+      permission = 'read',
       accountId,
       item,
-    }: { permission?: PermissionLevelOptions; accountId?: string; item: ItemRaw },
+    }: { permission?: PermissionLevel; accountId?: string; item: ItemRaw },
   ): Promise<{
     itemMembership: ItemMembershipRaw | null;
     visibilities: ItemVisibilityWithItem[];
@@ -284,14 +280,14 @@ export class AuthorizedItemService {
     const isValid = highest && permissionMapping[highest].includes(permission);
     let isPublic = false;
     const visibilities = await this.itemVisibilityRepository.getByItemPath(dbConnection, item.path);
-    if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
+    if (highest === 'read' || permission === 'read') {
       isPublic = Boolean(visibilities.find((t) => t.type === ItemVisibilityType.Public));
     }
 
     // HIDDEN CHECK - prevent read
     // cannot read if your have read access only
     // or if the item is public so you would have normally access without permission
-    if (highest === PermissionLevel.Read || (isPublic && !highest)) {
+    if (highest === 'read' || (isPublic && !highest)) {
       const isHidden = Boolean(visibilities.find((t) => t.type === ItemVisibilityType.Hidden));
       if (isHidden) {
         throw new MemberCannotAccess(item.id);
@@ -304,7 +300,7 @@ export class AuthorizedItemService {
     }
 
     // PUBLIC CHECK
-    if (permission === PermissionLevel.Read && isPublic) {
+    if (permission === 'read' && isPublic) {
       return { itemMembership: inheritedMembership, visibilities };
     }
 
@@ -314,11 +310,11 @@ export class AuthorizedItemService {
 
     // throw corresponding error
     switch (permission) {
-      case PermissionLevel.Read:
+      case 'read':
         throw new MemberCannotReadItem(item.id);
-      case PermissionLevel.Write:
+      case 'write':
         throw new MemberCannotWriteItem(item.id);
-      case PermissionLevel.Admin:
+      case 'admin':
         throw new MemberCannotAdminItem(item.id);
       default:
         throw new Error(`${permission} is not a valid permission`);

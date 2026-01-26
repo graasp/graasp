@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
@@ -68,7 +68,7 @@ describe('Item routes tests', () => {
     } = await seedFromJson({
       items: [
         {
-          memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          memberships: [{ account: 'actor', permission: 'admin' }],
           children: [{ settings: { hasThumbnail: true }, children: [{}] }],
         },
         {},

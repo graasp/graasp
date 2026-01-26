@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ItemType, type Paginated, type Pagination, PermissionLevel } from '@graasp/sdk';
+import { ItemType, type Paginated, type Pagination } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -66,7 +66,7 @@ export class RecycledBinService {
     // if item is already deleted, it will throw not found here
     for (const item of items) {
       await this.authorizedItemService.assertAccess(dbConnection, {
-        permission: PermissionLevel.Admin,
+        permission: 'admin',
         accountId: member.id,
         item,
       });
@@ -117,7 +117,7 @@ export class RecycledBinService {
 
     for (const item of items) {
       await this.authorizedItemService.assertAccess(dbConnection, {
-        permission: PermissionLevel.Admin,
+        permission: 'admin',
 
         accountId: member.id,
         item,

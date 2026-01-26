@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -47,7 +47,7 @@ describe('App Data Tests - Legacy', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             type: ItemType.APP,
             appData: [
               { account: 'actor', creator: 'actor' },
@@ -87,7 +87,7 @@ describe('App Data Tests - Legacy', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             type: ItemType.APP,
             appData: [{ account: { name: 'bob' }, creator: 'actor' }],
           },
@@ -125,7 +125,7 @@ describe('App Data Tests - Legacy', () => {
       } = await seedFromJson({
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: 'actor', permission: 'admin' }],
             type: ItemType.APP,
             appData: [{ account: 'actor', creator: 'actor' }],
           },

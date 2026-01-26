@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { type ChatBotMessage, type GPTVersionType, PermissionLevel } from '@graasp/sdk';
+import { type ChatBotMessage, type GPTVersionType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { AuthenticatedUser } from '../../../../../types';
@@ -25,7 +25,7 @@ export class ChatBotService {
   ) {
     // check that the member can read the item to be allowed to interact with the chat
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
-      permission: PermissionLevel.Read,
+      permission: 'read',
       accountId: account.id,
       itemId,
     });

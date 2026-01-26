@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { AppItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { AppItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -89,7 +89,7 @@ describe('App Item tests', () => {
         const membership = await db.query.itemMembershipsTable.findFirst({
           where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
-        expect(membership?.permission).toEqual(PermissionLevel.Admin);
+        expect(membership?.permission).toEqual('admin');
       });
 
       it('Fail to create if payload is invalid', async () => {
@@ -157,7 +157,7 @@ describe('App Item tests', () => {
           items: [
             {
               ...AppItemFactory(),
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });

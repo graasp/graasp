@@ -3,10 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
+import { permissionLevelSchemaRef } from '../../types';
 import {
   augmentedAccountSchemaRef,
   nullableAugmentedAccountSchemaRef,
@@ -21,7 +20,7 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       account: augmentedAccountSchemaRef,
       item: itemSchemaRef,
-      permission: customType.EnumString(Object.values(PermissionLevel)),
+      permission: permissionLevelSchemaRef,
       creator: Type.Optional(nullableAugmentedAccountSchemaRef),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
@@ -40,7 +39,7 @@ export const itemMembershipWithoutRelationsSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       accountId: customType.UUID(),
       itemPath: Type.String(),
-      permission: customType.EnumString(Object.values(PermissionLevel)),
+      permission: permissionLevelSchemaRef,
       creator: Type.Optional(customType.UUID()),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
@@ -53,7 +52,7 @@ export const itemMembershipWithoutRelationsSchemaRef = registerSchemaAsRef(
 
 export const createItemMembershipSchema = customType.StrictObject({
   accountId: customType.UUID(),
-  permission: customType.EnumString(Object.values(PermissionLevel)),
+  permission: permissionLevelSchemaRef,
 });
 
 // schema for creating an item membership
@@ -100,7 +99,7 @@ export const updateOne = {
     itemId: customType.UUID(),
   }),
   body: customType.StrictObject({
-    permission: customType.EnumString(Object.values(PermissionLevel)),
+    permission: permissionLevelSchemaRef,
   }),
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),

@@ -12,8 +12,6 @@ import {
   ItemValidationStatus,
   type ItemVisibilityOptionsType,
   ItemVisibilityType,
-  PermissionLevel,
-  type PermissionLevelOptions,
   ShortLinkPlatform,
   buildPathFromIds,
   getIdsFromPath,
@@ -82,6 +80,7 @@ import type {
   TagRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
+import { PermissionLevel } from '../../src/types';
 import { APPS_PUBLISHER_ID } from '../../src/utils/config';
 import { ActionFactory } from '../factories/action.factory';
 import { ItemFactory } from '../factories/item.factory';
@@ -98,7 +97,7 @@ type SeedMember = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> };
 type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' | 'account'>> & {
   account: M;
   creator?: M | null;
-  permission?: PermissionLevelOptions;
+  permission?: PermissionLevel;
 };
 type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
@@ -403,7 +402,7 @@ const processItemMemberships = (items: DataType['items'] = []) => {
   return items
     ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: i.path })) ?? [])
     ?.map((im) => ({
-      permission: PermissionLevel.Admin,
+      permission: 'admin',
       accountId: (im.account as any).id,
       creatorId: im.creator ? (im.creator as any).id : null,
       ...im,
@@ -763,14 +762,14 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
     const guestMemberships = guestsData.reduce<
       {
         accountId: string;
-        permission: PermissionLevelOptions;
+        permission: PermissionLevel;
         itemPath: string;
       }[]
     >((acc, { id, itemPath: path }) => {
       return acc.concat([
         {
           accountId: id,
-          permission: PermissionLevel.Read,
+          permission: 'read',
           itemPath: path,
         },
       ]);
@@ -1063,7 +1062,7 @@ export async function seedFromJson(data: DataType = {}) {
       return acc.concat(
         i.invitations.map(() => ({
           itemPath: i.path,
-          permission: PermissionLevel.Read,
+          permission: 'read',
           email: faker.internet.email().toLowerCase(),
         })),
       );

@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemValidationStatus, PermissionLevel, PublicationStatus } from '@graasp/sdk';
+import { HttpMethod, ItemValidationStatus, PublicationStatus } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -82,7 +82,7 @@ describe('Item Validation Tests', () => {
           items: [
             {
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Pending }],
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
         });
@@ -102,7 +102,7 @@ describe('Item Validation Tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'read' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -119,7 +119,7 @@ describe('Item Validation Tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
+          items: [{ memberships: [{ account: 'actor', permission: 'write' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -180,7 +180,7 @@ describe('Item Validation Tests', () => {
   //         items: [
   //           {
   //             itemValidations: [{ groupName: 'name', status: ItemValidationStatus.Failure }],
-  //             memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+  //             memberships: [{ account: 'actor', permission: "admin" }],
   //           },
   //         ],
   //       });
@@ -201,7 +201,7 @@ describe('Item Validation Tests', () => {
   //         actor,
   //         itemValidationGroups: [itemValidationGroup],
   //       } = await seedFromJson({
-  //         items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+  //         items: [{ memberships: [{ account: 'actor', permission: "read" }] }],
   //       });
   //       assertIsDefined(actor);
   //       mockAuthenticate(actor);
@@ -220,7 +220,7 @@ describe('Item Validation Tests', () => {
   //         actor,
   //         itemValidationGroups: [itemValidationGroup],
   //       } = await seedFromJson({
-  //         items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
+  //         items: [{ memberships: [{ account: 'actor', permission: "write" }] }],
   //       });
   //       assertIsDefined(actor);
   //       mockAuthenticate(actor);
@@ -304,7 +304,7 @@ describe('Item Validation Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               itemValidations: [{ groupName: 'name', status: ItemValidationStatus.Success }],
             },
           ],
@@ -344,7 +344,7 @@ describe('Item Validation Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{}],
             },
           ],
@@ -389,7 +389,7 @@ describe('Item Validation Tests', () => {
           actor,
           items: [item],
         } = await seedFromJson({
-          items: [{ memberships: [{ permission: PermissionLevel.Read, account: 'actor' }] }],
+          items: [{ memberships: [{ permission: 'read', account: 'actor' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -419,7 +419,7 @@ describe('Item Validation Tests', () => {
           actor,
           items: [item],
         } = await seedFromJson({
-          items: [{ memberships: [{ permission: PermissionLevel.Write, account: 'actor' }] }],
+          items: [{ memberships: [{ permission: 'write', account: 'actor' }] }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
