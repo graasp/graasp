@@ -60,7 +60,7 @@ export class ItemExportService {
         return {
           stream: Readable.from([item.extra.document?.content]),
           name: getFilenameFromItem(item),
-          mimetype: item.extra.document.isRaw ? 'text/html' : 'text/plain',
+          mimetype: 'text/html',
         };
       }
       case isItemType(item, ItemType.LINK): {

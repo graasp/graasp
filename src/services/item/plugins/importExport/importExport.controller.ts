@@ -98,7 +98,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   // export non-folder item as raw file
-  fastify.post(
+  fastify.get(
     '/:itemId/download-file',
     {
       schema: downloadFile,
@@ -132,7 +132,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       // return single file
       const { stream, mimetype, name } = await itemExportService.fetchItemData(db, maybeUser, item);
-
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
       reply.raw.setHeader('Content-Disposition', `attachment; filename="${encodeFilename(name)}"`);
