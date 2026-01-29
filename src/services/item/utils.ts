@@ -97,7 +97,7 @@ export const getPostItemPayloadFromFormData = (
   const maybeType = getFieldFromMultipartForm(formData.fields, 'type');
   // type should be present and should be one of the available types
 
-  if (!maybeType || !ITEM_TYPES.includes(maybeType)) {
+  if (!maybeType || !ITEM_TYPES.includes(maybeType as ItemType)) {
     throw new Error('missing type or invalid type provided');
   }
 
