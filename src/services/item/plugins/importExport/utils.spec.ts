@@ -166,7 +166,7 @@ describe('File name', () => {
     const item1 = DocumentItemFactory({
       name: 'mydoc.graasp',
     }) as unknown as ItemRaw;
-    expect(getFilenameFromItem(item1)).toEqual('mydoc.html');
+    expect(getFilenameFromItem(item1)).toEqual('mydoc.graasp.html');
   });
   it('get file name from raw document item', () => {
     const item = DocumentItemFactory({

@@ -432,6 +432,49 @@ describe('ZIP routes tests', () => {
         }
       }, 1000);
     });
+    it('Import and sanitize graasp documents', async () => {
+      const {
+        actor,
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const form = createFormData('documents.zip');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/api/items/zip-import',
+        payload: form,
+        headers: form.getHeaders(),
+        query: { parentId: parentItem.id },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        const documents = await db.query.itemsRawTable.findMany({
+          where: and(
+            isDescendantOrSelf(itemsRawTable.path, parentItem.path),
+            ne(itemsRawTable.id, parentItem.id),
+            eq(itemsRawTable.type, ItemType.DOCUMENT),
+          ),
+        });
+        expect(documents).toHaveLength(2);
+
+        for (const item of documents) {
+          const content = item.extra[ItemType.DOCUMENT].content;
+
+          // the script with a console should not appear in the text
+          expect(content).not.toContain('script');
+          expect(content).not.toContain('console');
+          expect(content).not.toContain('style');
+
+          // content
+          expect(content).toContain('<h1>My First Heading</h1>');
+          expect(content).toContain(`<p>My first paragraph.</p>`);
+        }
+      }, 1000);
+    });
     it('Throws if signed out', async () => {
       const form = createFormData('archive.zip');
 
