@@ -6,7 +6,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, TagCategory } from '@graasp/sdk';
+import { HttpMethod, TagCategory } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -236,9 +236,9 @@ describe('Collection Search endpoints', () => {
               isPublic: true,
               isPublished: true,
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.DOCUMENT,
+              type: 'document',
               extra: {
-                [ItemType.DOCUMENT]: {
+                ['document']: {
                   content: 'my text is here',
                 },
               },
@@ -251,7 +251,7 @@ describe('Collection Search endpoints', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.DOCUMENT]: {
+            ['document']: {
               content: 'updated text',
             },
           },

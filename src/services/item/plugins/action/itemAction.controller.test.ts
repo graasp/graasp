@@ -6,7 +6,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { ClientManager, Context, HttpMethod, ItemType } from '@graasp/sdk';
+import { ClientManager, Context, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -273,7 +273,7 @@ describe('Action Plugin Tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
             appData: [
               { account: 'actor', creator: 'actor' },
               { account: 'actor', creator: 'actor' },
@@ -310,7 +310,7 @@ describe('Action Plugin Tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
             appData: [
               { account: 'actor', creator: 'actor' },
               { account: 'actor', creator: 'actor' },

@@ -1,8 +1,6 @@
 import { v4 } from 'uuid';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ItemType } from '@graasp/sdk';
-
 import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
@@ -20,7 +18,7 @@ import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ShortcutItemService } from './shortcut.service';
 
-const MOCK_ITEM = ItemFactory({ type: ItemType.SHORTCUT });
+const MOCK_ITEM = ItemFactory({ type: 'shortcut' });
 const MOCK_MEMBER = MemberFactory({ extra: { lang: 'en' } });
 
 const itemRepository = {
@@ -72,8 +70,8 @@ describe('Shortcut Service', () => {
     //   //   item: {
     //   //     name: 'name',
     //   //     description: 'description',
-    //   //     extra: { [ItemType.SHORTCUT]: { target: targetItem.id } },
-    //   //     type: ItemType.SHORTCUT,
+    //   //     extra: { ['shortcut']: { target: targetItem.id } },
+    //   //     type: 'shortcut',
     //   //   },
     //   // });
     // });
@@ -102,8 +100,8 @@ describe('Shortcut Service', () => {
     //     //   lng: MOCK_MEMBER.lang,
     //     // }),
     //     // description: undefined,
-    //     // extra: { [ItemType.SHORTCUT]: { target: targetItem.id } },
-    //     // type: ItemType.SHORTCUT,
+    //     // extra: { ['shortcut']: { target: targetItem.id } },
+    //     // type: 'shortcut',
     //     // },
     //   });
     // });

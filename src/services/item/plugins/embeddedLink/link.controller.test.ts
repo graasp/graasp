@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -377,8 +377,8 @@ describe('Tests Embedded Link Controller', () => {
       } = await seedFromJson({
         items: [
           {
-            extra: { [ItemType.LINK]: { url: faker.internet.url() } },
-            type: ItemType.LINK,
+            extra: { ['embeddedLink']: { url: faker.internet.url() } },
+            type: 'embeddedLink',
             memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
@@ -404,8 +404,8 @@ describe('Tests Embedded Link Controller', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.LINK,
-              extra: { [ItemType.LINK]: { url: faker.internet.url() } },
+              type: 'embeddedLink',
+              extra: { ['embeddedLink']: { url: faker.internet.url() } },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
@@ -429,8 +429,8 @@ describe('Tests Embedded Link Controller', () => {
           items: [
             {
               settings: { isCollapsible: false },
-              type: ItemType.LINK,
-              extra: { [ItemType.LINK]: { url: faker.internet.url() } },
+              type: 'embeddedLink',
+              extra: { ['embeddedLink']: { url: faker.internet.url() } },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],

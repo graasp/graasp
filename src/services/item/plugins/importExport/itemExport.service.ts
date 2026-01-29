@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 
-import { ItemType, getMimetype } from '@graasp/sdk';
+import { getMimetype } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -35,7 +35,7 @@ export class ItemExportService {
     item: ItemRaw,
   ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
     switch (true) {
-      case isItemType(item, ItemType.FILE): {
+      case isItemType(item, 'file'): {
         const mimetype = getMimetype(item.extra) || 'application/octet-stream';
         const url = await this.fileItemService.getUrl(dbConnection, actor, {
           itemId: item.id,
@@ -49,35 +49,35 @@ export class ItemExportService {
           stream: res.body,
         };
       }
-      case isItemType(item, ItemType.H5P): {
+      case isItemType(item, 'h5p'): {
         const h5pUrl = await this.h5pService.getUrl(item);
         const res = await fetch(h5pUrl);
 
         const filename = getFilenameFromItem(item);
         return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
       }
-      case isItemType(item, ItemType.DOCUMENT): {
+      case isItemType(item, 'document'): {
         return {
           stream: Readable.from([item.extra.document?.content]),
           name: getFilenameFromItem(item),
           mimetype: 'text/html',
         };
       }
-      case isItemType(item, ItemType.LINK): {
+      case isItemType(item, 'embeddedLink'): {
         return {
-          stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
+          stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, 'embeddedLink')),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
       }
-      case isItemType(item, ItemType.APP): {
+      case isItemType(item, 'app'): {
         return {
-          stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
+          stream: Readable.from(buildTextContent(item.extra.app?.url, 'app')),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
       }
-      case isItemType(item, ItemType.ETHERPAD): {
+      case isItemType(item, 'etherpad'): {
         return {
           stream: Readable.from(
             await this.etherpadService.getEtherpadContentFromItem(dbConnection, actor, item.id),

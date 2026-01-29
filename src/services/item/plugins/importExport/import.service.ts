@@ -7,16 +7,12 @@ import sanitize from 'sanitize-html';
 import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 
-import {
-  type DocumentItemExtraProperties,
-  type ItemSettings,
-  ItemType,
-  type ItemTypeUnion,
-} from '@graasp/sdk';
+import { type DocumentItemExtraProperties, type ItemSettings } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import type { AppSettingInsertDTO, AppSettingRaw, ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
+import { ItemType } from '../../../../schemas/global';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
@@ -46,7 +42,7 @@ import { generateThumbnailFilename } from './utils';
 export type GraaspExportItem = {
   id: string;
   name: string;
-  type: ItemTypeUnion;
+  type: ItemType;
   description: string | null;
   settings: ItemSettings;
   extra: object;
@@ -141,8 +137,8 @@ export class ImportService {
         item: {
           description,
           name: filename,
-          type: ItemType.FOLDER,
-          extra: { [ItemType.FOLDER]: {} },
+          type: 'folder',
+          extra: { ['folder']: {} },
         },
         parentId,
       });
@@ -166,8 +162,8 @@ export class ImportService {
         const url = link.slice(URL_PREFIX.length);
 
         // get if app in content -> url is either a link or an app
-        const type = linkType.includes('1') ? ItemType.APP : ItemType.LINK;
-        if (type === ItemType.APP) {
+        const type = linkType.includes('1') ? ('app' as const) : ('embeddedLink' as const);
+        if (type === 'app') {
           const newItem = {
             name,
             description,
@@ -182,7 +178,7 @@ export class ImportService {
             item: newItem,
             parentId,
           });
-        } else if (type === ItemType.LINK) {
+        } else if (type === 'embeddedLink') {
           const newItem = {
             name,
             description,
@@ -207,9 +203,9 @@ export class ImportService {
         const newItem = {
           name,
           description,
-          type: ItemType.DOCUMENT,
+          type: 'document' as const,
           extra: {
-            [ItemType.DOCUMENT]: {
+            ['document']: {
               content: sanitize(content),
             },
           },
@@ -280,15 +276,15 @@ export class ImportService {
         let extra;
 
         // Sanitize the document content
-        if (item.type === ItemType.DOCUMENT) {
+        if (item.type === 'document') {
           if (!item.extra) {
             throw new GraaspExportInvalidFileError();
           }
 
-          const documentExtraProps = item.extra[ItemType.DOCUMENT] as DocumentItemExtraProperties;
+          const documentExtraProps = item.extra['document'] as DocumentItemExtraProperties;
           const content = documentExtraProps.content;
           const sanitizedContent = sanitize(content);
-          extra = { [ItemType.DOCUMENT]: { content: sanitizedContent } };
+          extra = { ['document']: { content: sanitizedContent } };
         }
 
         // Find and upload the thumbnail
@@ -299,7 +295,7 @@ export class ImportService {
         }
 
         // Handle the H5P file upload
-        if (item.type === ItemType.H5P) {
+        if (item.type === 'h5p') {
           const pathToGraaspFile = path.join(folderPath, item.id);
           const h5pFileStream = createReadStream(pathToGraaspFile);
           const h5pFileInfo = await this.h5pService.uploadH5PFile(
@@ -309,16 +305,16 @@ export class ImportService {
             h5pFileStream,
           );
 
-          extra = { [ItemType.H5P]: h5pFileInfo };
+          extra = { ['h5p']: h5pFileInfo };
         }
 
         // Handle the APP item extra
-        if (item.type === ItemType.APP) {
+        if (item.type === 'app') {
           extra = item.extra;
         }
 
         // Handle the file upload
-        if (item.type === ItemType.FILE) {
+        if (item.type === 'file') {
           if (!item.mimetype) {
             throw new GraaspExportInvalidFileError();
           }
@@ -331,7 +327,7 @@ export class ImportService {
           });
 
           extra = {
-            [ItemType.FILE]: fileItemProperties,
+            ['file']: fileItemProperties,
           };
         }
 
@@ -352,7 +348,7 @@ export class ImportService {
 
     // Recursively handle the children items
     for (let i = 0; i < items.length; i++) {
-      if (items[i].type === ItemType.FOLDER) {
+      if (items[i].type === 'folder') {
         const children = items[i].children;
         if (children && children.length) {
           const createdFolderItem = uploadedItems[i];
@@ -378,14 +374,14 @@ export class ImportService {
     const appSettings = uploadedItems.reduce<Omit<AppSettingInsertDTO[], 'id'>>(
       (arr, uploadedItem, idx) => {
         const settings = items[idx].appSettings;
-        if (uploadedItem.type !== ItemType.APP || !settings) {
+        if (uploadedItem.type !== 'app' || !settings) {
           return arr;
         }
 
         return arr.concat(
           settings.reduce<Omit<AppSettingInsertDTO[], 'id'>>((arr, appSetting) => {
             // ignore app setting file
-            if (appSetting.data[ItemType.FILE]) {
+            if (appSetting.data['file']) {
               return arr;
             }
 
@@ -467,7 +463,7 @@ export class ImportService {
     // recursively create children in folders
     for (const newItem of items) {
       const { type, name } = newItem;
-      if (type === ItemType.FOLDER) {
+      if (type === 'folder') {
         await this.importFiles(dbConnection, actor, {
           folderPath: path.join(folderPath, name),
           parentId: newItem.id,

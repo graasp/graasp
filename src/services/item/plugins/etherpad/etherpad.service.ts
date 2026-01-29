@@ -7,7 +7,6 @@ import {
   type EtherpadItemExtra,
   EtherpadPermission,
   type EtherpadPermissionType,
-  ItemType,
 } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
@@ -124,7 +123,7 @@ export class EtherpadItemService {
       return this.itemService.post(dbConnection, member, {
         item: {
           name: args.name,
-          type: ItemType.ETHERPAD,
+          type: 'etherpad',
           extra: this.buildEtherpadExtra({
             groupID,
             padName,
@@ -159,7 +158,7 @@ export class EtherpadItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is link
-    if (!isItemType(item, ItemType.ETHERPAD)) {
+    if (!isItemType(item, 'etherpad')) {
       throw new WrongItemTypeError(item.type);
     }
 
@@ -169,7 +168,7 @@ export class EtherpadItemService {
     // patch extra only if has changes
     if (newReaderPermissionValue) {
       newProps.extra = {
-        [ItemType.ETHERPAD]: {
+        ['etherpad']: {
           ...item.extra.etherpad,
           // use new value, previously set value, or default 'read'
           readerPermission:
@@ -240,7 +239,7 @@ export class EtherpadItemService {
       itemId,
     });
 
-    if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
+    if (!isItemType(item, 'etherpad') || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
 
@@ -393,7 +392,7 @@ export class EtherpadItemService {
       itemId,
     });
 
-    if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
+    if (!isItemType(item, 'etherpad') || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
 
@@ -406,7 +405,7 @@ export class EtherpadItemService {
    * Deletes an Etherpad associated to an item
    */
   public async deleteEtherpadForItem(item: ItemRaw) {
-    if (!isItemType(item, ItemType.ETHERPAD)) {
+    if (!isItemType(item, 'etherpad')) {
       return;
     }
 
@@ -425,7 +424,7 @@ export class EtherpadItemService {
    * Copies an Etherpad for an associated copied mutable item
    */
   public async copyEtherpadInMutableItem(item: ItemRaw) {
-    if (!isItemType(item, ItemType.ETHERPAD)) {
+    if (!isItemType(item, 'etherpad')) {
       return;
     }
 

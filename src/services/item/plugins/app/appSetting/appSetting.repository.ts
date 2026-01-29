@@ -1,7 +1,5 @@
 import { and, eq } from 'drizzle-orm';
 
-import { ItemType } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../../drizzle/db';
 import { appSettingsTable } from '../../../../../drizzle/schema';
 import type { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types';
@@ -41,7 +39,7 @@ export class AppSettingRepository {
     const appSettingData = originalData.data as { type: string };
     const dataType = appSettingData?.type;
 
-    if (ItemType.FILE === dataType) {
+    if ('file' === dataType) {
       throw new PreventUpdateAppSettingFile(originalData);
     }
 

@@ -1,12 +1,7 @@
 import { v4 } from 'uuid';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  DocumentItemExtraFlavor,
-  DocumentItemFactory,
-  FolderItemFactory,
-  ItemType,
-} from '@graasp/sdk';
+import { DocumentItemExtraFlavor, DocumentItemFactory, FolderItemFactory } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { db } from '../../../../drizzle/db';
@@ -75,11 +70,11 @@ describe('Document Service', () => {
           name: 'name',
           description: undefined,
           extra: {
-            [ItemType.DOCUMENT]: {
+            ['document']: {
               content: 'text',
             },
           },
-          type: ItemType.DOCUMENT,
+          type: 'document',
           lang: undefined,
         },
         // lang is defined by super service
@@ -103,11 +98,11 @@ describe('Document Service', () => {
           name: 'name',
           description: undefined,
           extra: {
-            [ItemType.DOCUMENT]: {
+            ['document']: {
               content: 'mycontent',
             },
           },
-          type: ItemType.DOCUMENT,
+          type: 'document',
           lang: undefined,
         },
         // lang is defined by super service
@@ -139,13 +134,13 @@ describe('Document Service', () => {
           name: args.name,
           description: args.description,
           extra: {
-            [ItemType.DOCUMENT]: {
+            ['document']: {
               content: args.content,
               isRaw: args.isRaw,
               flavor: args.flavor,
             },
           },
-          type: ItemType.DOCUMENT,
+          type: 'document',
           lang: args.lang,
         },
         parentId: args.parentId,
@@ -178,7 +173,7 @@ describe('Document Service', () => {
       // call to item service with initial item name
       expect(itemServicePatchMock).toHaveBeenCalledWith(db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: MOCK_ITEM.name,
-        type: ItemType.DOCUMENT,
+        type: 'document',
         extra: {
           document: {
             content: 'mycontent',
@@ -209,7 +204,7 @@ describe('Document Service', () => {
       // call to item service with initial item name
       expect(itemServicePatchMock).toHaveBeenCalledWith(db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: args.name,
-        type: ItemType.DOCUMENT,
+        type: 'document',
         description: args.description,
         lang: args.lang,
         extra: {

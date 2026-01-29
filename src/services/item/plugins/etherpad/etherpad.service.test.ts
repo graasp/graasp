@@ -88,9 +88,9 @@ describe('Etherpad Service', () => {
     //   expect(itemServiceCreateMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
     //     item: {
     //       name: 'newName',
-    //       type: ItemType.ETHERPAD,
+    //       type: 'etherpad',
     //       extra: {
-    //         [ItemType.ETHERPAD]: {
+    //         ['etherpad']: {
     //           groupID: expect.anything(),
     //           padID: expect.anything(),
     //           readerPermission,
@@ -112,9 +112,9 @@ describe('Etherpad Service', () => {
     //   expect(itemServiceCreateMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
     //     item: {
     //       name: 'newName',
-    //       type: ItemType.ETHERPAD,
+    //       type: 'etherpad',
     //       extra: {
-    //         [ItemType.ETHERPAD]: {
+    //         ['etherpad']: {
     //           groupID: expect.anything(),
     //           padID: expect.anything(),
     //           readerPermission: EtherpadPermission.Read,
@@ -152,7 +152,7 @@ describe('Etherpad Service', () => {
     // call to item service with initial item name
     //   expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
     //     extra: {
-    //       [ItemType.ETHERPAD]: {
+    //       ['etherpad']: {
     //         readerPermission: "write",
     //         padID: MOCK_ITEM.extra.etherpad.padID,
     //         groupID: MOCK_ITEM.extra.etherpad.groupID,

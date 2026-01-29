@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, ShortcutItemFactory } from '@graasp/sdk';
+import { HttpMethod, ShortcutItemFactory } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -87,7 +87,7 @@ describe('Shortcut routes tests', () => {
         // check response value
         const newItem = response.json();
         expect(newItem.name).toEqual('name');
-        expect(newItem.type).toEqual(ItemType.SHORTCUT);
+        expect(newItem.type).toEqual('shortcut');
         expect(newItem.extra.shortcut.target).toEqual(target.id);
         await waitForPostCreation();
 
@@ -120,7 +120,7 @@ describe('Shortcut routes tests', () => {
           payload: { target: target.id },
         });
         expect(response.statusMessage).toEqual(ReasonPhrases.OK);
-        expect(response.json().type).toEqual(ItemType.SHORTCUT);
+        expect(response.json().type).toEqual('shortcut');
       });
 
       it('Bad request if name is invalid', async () => {
@@ -206,9 +206,9 @@ describe('Shortcut routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.SHORTCUT,
+              type: 'shortcut',
               extra: {
-                [ItemType.SHORTCUT]: { target: v4() },
+                ['shortcut']: { target: v4() },
               },
               memberships: [{ account: 'actor' }],
             },
@@ -241,9 +241,9 @@ describe('Shortcut routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.SHORTCUT,
+              type: 'shortcut',
               extra: {
-                [ItemType.SHORTCUT]: { target: v4() },
+                ['shortcut']: { target: v4() },
               },
               settings: { isCollapsible: false },
               memberships: [{ account: 'actor' }],
@@ -297,9 +297,9 @@ describe('Shortcut routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.SHORTCUT,
+              type: 'shortcut',
               extra: {
-                [ItemType.SHORTCUT]: { target: v4() },
+                ['shortcut']: { target: v4() },
               },
             },
           ],
@@ -326,9 +326,9 @@ describe('Shortcut routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.SHORTCUT,
+              type: 'shortcut',
               extra: {
-                [ItemType.SHORTCUT]: { target: v4() },
+                ['shortcut']: { target: v4() },
               },
               settings: { isCollapsible: false },
               memberships: [{ account: 'actor', permission: 'read' }],

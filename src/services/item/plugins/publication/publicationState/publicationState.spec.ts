@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ItemType, ItemValidationStatus, PublicationStatus } from '@graasp/sdk';
+import { ItemValidationStatus, PublicationStatus } from '@graasp/sdk';
 
 import { PublicationState } from './publicationState';
 import { ItemMetadataFactory, ItemValidationGroupStatusFactory } from './test/fixtures';
@@ -44,7 +44,7 @@ describe('PublicationState', () => {
     });
 
     it('Item type cannot be published', () => {
-      const appItem = ItemMetadataFactory({ type: ItemType.APP });
+      const appItem = ItemMetadataFactory({ type: 'app' });
       const publicationState = new PublicationState(appItem);
       expect(publicationState.computeStatus()).toBe(PublicationStatus.ItemTypeNotAllowed);
     });

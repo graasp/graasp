@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { type FileItemProperties, ItemType, getFileExtension } from '@graasp/sdk';
+import { type FileItemProperties, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -49,10 +49,10 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     }
     try {
       // delete file only if type is the current file type
-      if (!id || type !== ItemType.FILE) {
+      if (!id || type !== 'file') {
         return;
       }
-      const filepath = (extra[ItemType.FILE] as FileItemProperties).path;
+      const filepath = (extra['file'] as FileItemProperties).path;
       await fileService.delete(filepath);
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not
@@ -71,8 +71,8 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     const { id, type } = item; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== ItemType.FILE) return;
-    const size = (item.extra[ItemType.FILE] as FileItemProperties & { size?: number })?.size;
+    if (!id || type !== 'file') return;
+    const size = (item.extra['file'] as FileItemProperties & { size?: number })?.size;
 
     await storageService.checkRemainingStorage(thisDb, actor, size);
   });
@@ -86,7 +86,7 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     const { id, type } = copy; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== ItemType.FILE) {
+    if (!id || type !== 'file') {
       return;
     }
     await fileItemService.copyFile(thisDb, actor, { original, copy });

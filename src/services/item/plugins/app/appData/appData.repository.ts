@@ -1,7 +1,7 @@
 import { SQL } from 'drizzle-orm';
 import { and, eq, or } from 'drizzle-orm/sql';
 
-import { AppDataVisibility, ItemType } from '@graasp/sdk';
+import { AppDataVisibility } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
 import { appDataTable } from '../../../../../drizzle/schema';
@@ -55,7 +55,7 @@ export class AppDataRepository {
     }
 
     const dataType = originalData?.type;
-    if (ItemType.FILE === dataType) {
+    if ('file' === dataType) {
       throw new PreventUpdateAppDataFile(originalData.id);
     }
 

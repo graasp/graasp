@@ -8,13 +8,7 @@ import path from 'path';
 
 import type { FastifyInstance } from 'fastify';
 
-import {
-  DescriptionPlacement,
-  type FileItemExtra,
-  HttpMethod,
-  ItemType,
-  MaxWidth,
-} from '@graasp/sdk';
+import { DescriptionPlacement, type FileItemExtra, HttpMethod, MaxWidth } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -160,7 +154,7 @@ describe('File Item routes tests', () => {
 
           // check file properties
           // TODO: more precise check
-          expect(item?.extra[ItemType.FILE]).toBeTruthy();
+          expect(item?.extra['file']).toBeTruthy();
 
           // a membership is created for this item
           const membership = await getItemMembershipByPath(item.path);
@@ -190,7 +184,7 @@ describe('File Item routes tests', () => {
           expect(uploadDoneMock).toHaveBeenCalledTimes(
             Object.entries(ThumbnailSizeFormat).length + 1,
           );
-          expect(item?.extra[ItemType.FILE]).toBeTruthy();
+          expect(item?.extra['file']).toBeTruthy();
         });
 
         it('Upload successfully many files', async () => {
@@ -223,7 +217,7 @@ describe('File Item routes tests', () => {
           // check file properties
           // TODO: more precise check
           for (const item of newItems) {
-            expect(item?.extra[ItemType.FILE]).toBeTruthy();
+            expect(item?.extra['file']).toBeTruthy();
           }
           // a membership is created for this item
           const memberships = await db.query.itemMembershipsTable.findMany({
@@ -268,7 +262,7 @@ describe('File Item routes tests', () => {
 
           // check file properties
           // TODO: more precise check
-          expect(newItem?.extra[ItemType.FILE]).toBeTruthy();
+          expect(newItem?.extra['file']).toBeTruthy();
           expect(newItem?.path).toContain(parentItem.path);
 
           // a membership is not created for new item because it inherits parent
@@ -304,11 +298,11 @@ describe('File Item routes tests', () => {
           // check that both items exist in db and that their types are correctly interpreted
           const imageItem = await getItemById(newItems[0].id);
           expectItem(imageItem, newItems[0]);
-          expect(imageItem?.type).toEqual(ItemType.FILE);
+          expect(imageItem?.type).toEqual('file');
 
           const h5pItem = await getItemById(newItems[1].id);
           expectItem(h5pItem, newItems[1]);
-          expect(h5pItem?.type).toBe(ItemType.H5P);
+          expect(h5pItem?.type).toBe('h5p');
         });
 
         it('Cannot upload in parent with read rights', async () => {
@@ -418,7 +412,7 @@ describe('File Item routes tests', () => {
           const uploadedItems = await getItemsForActorId(actor.id);
           expect(uploadedItems).toHaveLength(1);
 
-          expect(uploadedItems[0].type).toEqual(ItemType.FILE);
+          expect(uploadedItems[0].type).toEqual('file');
         });
         it('Throws if s3 upload throws', async () => {
           uploadDoneMock.mockImplementation(() => {
@@ -638,9 +632,9 @@ describe('File Item routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
-        payload: { extra: { [ItemType.FILE]: { altText: 'new name' } } },
+        payload: { extra: { ['file']: { altText: 'new name' } } },
       });
-      expect(response.json().extra[ItemType.FILE].altText).toEqual('new name');
+      expect(response.json().extra['file'].altText).toEqual('new name');
     });
 
     it('Edit file item maxWidth', async () => {
@@ -684,7 +678,7 @@ describe('File Item routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
-        payload: { extra: { [ItemType.FILE]: { size: 10 } } },
+        payload: { extra: { ['file']: { size: 10 } } },
       });
       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
@@ -831,9 +825,9 @@ describe('File Item routes tests', () => {
             {
               children: [
                 {
-                  type: ItemType.FILE,
+                  type: 'file',
                   extra: {
-                    [ItemType.FILE]: {
+                    ['file']: {
                       size: DEFAULT_MAX_STORAGE,
                       name: 'name',
                       mimetype: 'mimetype',
@@ -904,7 +898,7 @@ describe('File Item routes tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.FILE]: {},
+            ['file']: {},
           },
           settings: {
             hasThumbnail: true,

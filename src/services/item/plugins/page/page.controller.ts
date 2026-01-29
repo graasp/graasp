@@ -2,8 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
@@ -25,7 +23,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // register post copy handler to copy the updates for page
   itemService.hooks.setPostHook('copy', async (_actor, thisDb, { original: item, copy }) => {
-    if (isItemType(item, ItemType.PAGE)) {
+    if (isItemType(item, 'page')) {
       await pageItemService.copy(thisDb, item.id, copy.id);
     }
   });
@@ -73,7 +71,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
             accountId: user?.account?.id,
           });
           // item should be a page
-          if (item.type !== ItemType.PAGE) {
+          if (item.type !== 'page') {
             throw new WrongItemTypeError(item.type);
           }
         },
@@ -103,7 +101,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
           });
 
           // item should be a page
-          if (item.type !== ItemType.PAGE) {
+          if (item.type !== 'page') {
             throw new WrongItemTypeError(item.type);
           }
         },

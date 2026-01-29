@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -60,7 +60,7 @@ describe('Link Item tests', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [ItemFactory({ type: ItemType.LINK })] });
+      } = await seedFromJson({ items: [ItemFactory({ type: 'embeddedLink' })] });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -79,7 +79,7 @@ describe('Link Item tests', () => {
         } = await seedFromJson({
           items: [
             {
-              ...ItemFactory({ name: 'link item', type: ItemType.LINK }),
+              ...ItemFactory({ name: 'link item', type: 'embeddedLink' }),
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -90,7 +90,7 @@ describe('Link Item tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.LINK]: {
+            ['embeddedLink']: {
               url: 'https://newurl.com',
             },
           },
@@ -120,7 +120,7 @@ describe('Link Item tests', () => {
           actor,
           items: [item],
         } = await seedFromJson({
-          items: [ItemFactory({ name: 'link item', type: ItemType.LINK })],
+          items: [ItemFactory({ name: 'link item', type: 'embeddedLink' })],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);
@@ -128,7 +128,7 @@ describe('Link Item tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.LINK]: {
+            ['embeddedLink']: {
               html: '<script>alert("Hello !")</script>',
             },
           },

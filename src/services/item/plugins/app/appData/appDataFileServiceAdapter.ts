@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { FileItemProperties, ItemType, UUID } from '@graasp/sdk';
+import { FileItemProperties, UUID } from '@graasp/sdk';
 
 import { AppDataRaw, ItemRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
@@ -46,16 +46,16 @@ export class AppDataFileServiceAdapter implements AppDataFileService {
 
     return {
       id: appDataId,
-      type: ItemType.FILE,
+      type: 'file',
       data: {
-        [ItemType.FILE]: fileProperties,
+        ['file']: fileProperties,
       },
     };
   }
 
   async download(appData: AppDataRaw) {
     // check app data is a file
-    const fileProp = appData.data[ItemType.FILE] as FileItemProperties;
+    const fileProp = appData.data['file'] as FileItemProperties;
     if (!fileProp) {
       throw new NotAppDataFile(appData);
     }
@@ -73,7 +73,7 @@ export class AppDataFileServiceAdapter implements AppDataFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appData?.data?.[ItemType.FILE] as FileItemProperties;
+      const fileProp = appData?.data?.['file'] as FileItemProperties;
       if (!fileProp) {
         return;
       }

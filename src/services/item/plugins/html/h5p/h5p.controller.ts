@@ -5,8 +5,6 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { fastifyStatic } from '@fastify/static';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
 import type { ItemRaw } from '../../../../../drizzle/types';
@@ -142,7 +140,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
    * Delete H5P assets on item delete
    */
   itemService.hooks.setPostHook('delete', async (actor, _dbConnection, { item }) => {
-    if (!isItemType(item, ItemType.H5P)) {
+    if (!isItemType(item, 'h5p')) {
       return;
     }
     if (!actor) {
@@ -161,7 +159,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
     { original: item, copy }: { original: ItemRaw; copy: ItemRaw },
   ) {
     // only execute this handler for H5P item types
-    if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {
+    if (!isItemType(item, 'h5p') || !isItemType(copy, 'h5p')) {
       return;
     }
     if (!actor || !isMember(actor)) {

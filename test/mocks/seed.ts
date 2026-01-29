@@ -7,7 +7,6 @@ import {
   type FileItemProperties,
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
-  ItemType,
   ItemValidationProcess,
   ItemValidationStatus,
   type ItemVisibilityOptionsType,
@@ -1220,10 +1219,10 @@ export async function seedFromJson(data: DataType = {}) {
  */
 export function buildFile(member: ReferencedSeedActor, extra: Partial<FileItemProperties> = {}) {
   return {
-    type: ItemType.FILE,
+    type: 'file' as const,
     extra: {
-      [ItemType.FILE]: {
-        size: extra[ItemType.FILE]?.size ?? faker.number.int({ min: 1, max: 1000 }),
+      ['file']: {
+        size: extra['file']?.size ?? faker.number.int({ min: 1, max: 1000 }),
         content: 'content',
         mimetype: 'image/png',
         name: faker.system.fileName(),

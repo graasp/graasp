@@ -2,8 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { ItemType } from '@graasp/sdk';
-
 import build, { clearDatabase, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
@@ -59,9 +57,9 @@ describe('Item controller', () => {
           {
             memberships: [{ account: 'actor', permission: 'admin' }],
             children: [
-              { type: ItemType.FOLDER },
-              { isHidden: true, type: ItemType.DOCUMENT },
-              { isPublic: true, type: ItemType.DOCUMENT },
+              { type: 'folder' },
+              { isHidden: true, type: 'document' },
+              { isPublic: true, type: 'document' },
             ],
           },
         ],
@@ -71,7 +69,7 @@ describe('Item controller', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: 'GET',
-        url: `/api/items/${rootUUID}/descendants?types=${ItemType.FOLDER}`,
+        url: `/api/items/${rootUUID}/descendants?types=${'folder'}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();
@@ -87,11 +85,7 @@ describe('Item controller', () => {
         items: [
           {
             memberships: [{ account: 'actor', permission: 'admin' }],
-            children: [
-              {},
-              { isHidden: true, type: ItemType.APP },
-              { isPublic: true, type: ItemType.APP },
-            ],
+            children: [{}, { isHidden: true, type: 'app' }, { isPublic: true, type: 'app' }],
           },
         ],
       });
@@ -100,7 +94,7 @@ describe('Item controller', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: 'GET',
-        url: `/api/items/${rootUUID}/descendants?types=${ItemType.APP}`,
+        url: `/api/items/${rootUUID}/descendants?types=${'app'}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();

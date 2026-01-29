@@ -13,7 +13,6 @@ import {
   DescriptionPlacement,
   FolderItemFactory,
   HttpMethod,
-  ItemType,
   MAX_NUMBER_OF_CHILDREN,
 } from '@graasp/sdk';
 
@@ -295,7 +294,7 @@ describe('Folder routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/api/items/folders',
-          payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
+          payload: { name: faker.word.adverb(), type: 'folder' },
           query: { parentId: parentItem.id },
         });
 
@@ -617,7 +616,7 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.DOCUMENT,
+              type: 'document',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -650,7 +649,7 @@ describe('Folder routes tests', () => {
       const itemName = 'Test Item';
       const payload = new FormData();
       payload.append('name', itemName);
-      payload.append('type', ItemType.FOLDER);
+      payload.append('type', 'folder');
       payload.append('description', '');
       payload.append('file', imageStream);
       const response = await app.inject({
@@ -665,7 +664,7 @@ describe('Folder routes tests', () => {
         newItem,
         FolderItemFactory({
           name: itemName,
-          type: ItemType.FOLDER,
+          type: 'folder',
           description: '',
           settings: { hasThumbnail: true },
           lang: 'en',
@@ -705,7 +704,7 @@ describe('Folder routes tests', () => {
             {
               memberships: [{ account: 'actor' }],
               extra: {
-                [ItemType.FOLDER]: {},
+                ['folder']: {},
               },
             },
           ],
@@ -716,7 +715,7 @@ describe('Folder routes tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.FOLDER]: {},
+            ['folder']: {},
           },
           settings: {
             hasThumbnail: true,
@@ -946,7 +945,7 @@ describe('Folder routes tests', () => {
             {
               memberships: [{ account: 'actor' }],
               extra: {
-                [ItemType.FOLDER]: {},
+                ['folder']: {},
               },
             },
           ],
@@ -1004,7 +1003,7 @@ describe('Folder routes tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ type: ItemType.DOCUMENT }],
+          items: [{ type: 'document' }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);

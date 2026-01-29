@@ -1,7 +1,7 @@
 import path from 'path';
 import striptags from 'striptags';
 
-import { ItemType, MimeTypes, getMimetype } from '@graasp/sdk';
+import { MimeTypes, getMimetype } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../../../drizzle/types';
 import { TMP_FOLDER } from '../../../../../utils/config';
@@ -13,7 +13,7 @@ export const buildStoragePath = (itemId: string): string =>
   path.join(TMP_FOLDER, 'validations', itemId);
 
 export const isFileType = (item: ItemRaw) => {
-  return isItemType(item, ItemType.FILE);
+  return isItemType(item, 'file');
 };
 
 export const isImage = (item: ItemRaw): item is FileItem => {

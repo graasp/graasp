@@ -2,7 +2,7 @@ import { sign } from 'jsonwebtoken';
 import uniqBy from 'lodash.uniqby';
 import { singleton } from 'tsyringe';
 
-import { type AuthTokenSubject, ItemType } from '@graasp/sdk';
+import { type AuthTokenSubject } from '@graasp/sdk';
 
 import { APPS_JWT_SECRET } from '../../../../config/secrets';
 import { type DBConnection } from '../../../../drizzle/db';
@@ -67,8 +67,8 @@ export class AppService {
     });
 
     // check item is an app
-    if (item.type !== ItemType.APP) {
-      throw new WrongItemTypeError(ItemType.APP);
+    if (item.type !== 'app') {
+      throw new WrongItemTypeError('app');
     }
 
     await this.appRepository.isValidAppOrigin(dbConnection, appDetails);
@@ -92,7 +92,7 @@ export class AppService {
     requestDetails?: AuthTokenSubject,
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
-    if (item.type !== ItemType.APP) {
+    if (item.type !== 'app') {
       throw new Error('Item is not an app');
     }
     if (requestDetails) {

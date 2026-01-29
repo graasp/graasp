@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { AppItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
+import { AppItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -65,9 +65,9 @@ describe('App Item tests', () => {
 
         const expectedItem = {
           name: payload.name,
-          type: ItemType.APP,
+          type: 'app' as const,
           extra: {
-            [ItemType.APP]: {
+            ['app']: {
               url: payload.url,
             },
           },

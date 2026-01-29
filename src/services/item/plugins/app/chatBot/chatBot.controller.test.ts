@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
-import { GPTVersion, HttpMethod, ItemType } from '@graasp/sdk';
+import { GPTVersion, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -91,7 +91,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -123,7 +123,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -162,7 +162,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -192,7 +192,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -224,7 +224,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -255,7 +255,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -283,7 +283,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -312,7 +312,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -342,7 +342,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -371,7 +371,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -400,7 +400,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -435,7 +435,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -464,7 +464,7 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -496,11 +496,11 @@ describe('Chat Bot Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor' }],
             },
           ],

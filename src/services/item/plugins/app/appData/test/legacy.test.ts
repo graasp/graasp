@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -48,7 +48,7 @@ describe('App Data Tests - Legacy', () => {
         items: [
           {
             memberships: [{ account: 'actor', permission: 'admin' }],
-            type: ItemType.APP,
+            type: 'app',
             appData: [
               { account: 'actor', creator: 'actor' },
               { account: 'actor', creator: 'actor' },
@@ -88,7 +88,7 @@ describe('App Data Tests - Legacy', () => {
         items: [
           {
             memberships: [{ account: 'actor', permission: 'admin' }],
-            type: ItemType.APP,
+            type: 'app',
             appData: [{ account: { name: 'bob' }, creator: 'actor' }],
           },
         ],
@@ -126,7 +126,7 @@ describe('App Data Tests - Legacy', () => {
         items: [
           {
             memberships: [{ account: 'actor', permission: 'admin' }],
-            type: ItemType.APP,
+            type: 'app',
             appData: [{ account: 'actor', creator: 'actor' }],
           },
         ],

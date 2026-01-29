@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyBaseLogger } from 'fastify';
 
-import { type H5PItemExtra, ItemType } from '@graasp/sdk';
+import { type H5PItemExtra } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
 import type { ItemRaw, ItemWithType } from '../../../../../drizzle/types';
@@ -78,7 +78,7 @@ export class H5PService extends HtmlService {
   /**
    * Get the H5P file url referenced by a given Item
    */
-  getUrl(item: ItemWithType<typeof ItemType.H5P>) {
+  getUrl(item: ItemWithType<'h5p'>) {
     const h5pPath = item.extra.h5p.h5pFilePath;
     return super._getUrl(item.id, h5pPath);
   }
@@ -90,8 +90,8 @@ export class H5PService extends HtmlService {
       original: item,
       copy,
     }: {
-      original: ItemWithType<typeof ItemType.H5P>;
-      copy: ItemWithType<typeof ItemType.H5P>;
+      original: ItemWithType<'h5p'>;
+      copy: ItemWithType<'h5p'>;
     },
   ): Promise<void> {
     const { extra } = item;
@@ -157,7 +157,7 @@ export class H5PService extends HtmlService {
 
     const metadata = {
       name: this.buildH5PPath('', baseName),
-      type: ItemType.H5P,
+      type: 'h5p' as const,
       extra: this.buildH5PExtra(contentId, baseName),
     };
 
@@ -168,7 +168,7 @@ export class H5PService extends HtmlService {
         previousItemId,
       });
 
-      if (!isItemType(item, ItemType.H5P)) {
+      if (!isItemType(item, 'h5p')) {
         throw new Error('Expected item to be H5P but it was something else');
       }
       return item;

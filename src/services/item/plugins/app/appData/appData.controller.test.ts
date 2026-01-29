@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { AppDataVisibility, HttpMethod, ItemType } from '@graasp/sdk';
+import { AppDataVisibility, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -38,9 +38,9 @@ const expectAppDatas = (
 
 function buildAppDataFile() {
   return {
-    type: ItemType.FILE,
+    type: 'file',
     data: {
-      [ItemType.FILE]: {
+      ['file']: {
         size: faker.number.int({ min: 1, max: 1000 }),
         content: 'content',
         mimetype: 'image/png',
@@ -94,7 +94,7 @@ describe('App Data Tests', () => {
           items: [
             {
               isPublic: true,
-              type: ItemType.APP,
+              type: 'app',
               appActions: [{ account: { name: 'bob' } }, { account: { name: 'bob' } }],
             },
           ],
@@ -122,7 +122,7 @@ describe('App Data Tests', () => {
           items: [
             {
               isPublic: true,
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 { account: 'actor', visibility: AppDataVisibility.Item, creator: 'actor' },
                 { account: { name: 'bob' }, visibility: AppDataVisibility.Item, creator: 'actor' },
@@ -159,7 +159,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 { account: 'actor', creator: 'actor' },
                 { account: 'actor', creator: 'actor' },
@@ -195,7 +195,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 { account: 'actor', type, creator: 'actor' },
                 { account: 'actor', type, creator: 'actor' },
@@ -234,7 +234,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [{ account: 'actor', creator: 'actor' }],
             },
           ],
@@ -294,7 +294,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 { account: 'actor', creator: 'actor' },
                 { account: 'actor', creator: 'actor' },
@@ -329,7 +329,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 { account: 'actor', creator: 'actor' },
                 { account: 'actor', creator: 'actor' },
@@ -377,7 +377,7 @@ describe('App Data Tests', () => {
           actor: null,
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });
@@ -407,7 +407,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });
@@ -449,7 +449,7 @@ describe('App Data Tests', () => {
                 { account: 'actor', permission: 'admin' },
                 { account: { name: 'bob' }, permission: 'read' },
               ],
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });
@@ -487,7 +487,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });
@@ -522,7 +522,7 @@ describe('App Data Tests', () => {
                 { account: 'actor', permission: 'read' },
                 { account: { name: 'bob' }, permission: 'admin' },
               ],
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });
@@ -574,7 +574,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 { account: 'actor', creator: 'actor', type: 'type', data: { foo: 'value' } },
               ],
@@ -615,7 +615,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 { account: 'actor', creator: 'actor', type: 'type', data: { foo: 'value' } },
               ],
@@ -649,7 +649,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });
@@ -680,7 +680,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [{ account: 'actor', creator: 'actor', ...buildAppDataFile() }],
             },
           ],
@@ -718,7 +718,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [{ account: 'actor', creator: 'actor', type: 'type', data: { foo: 'bar' } }],
             },
           ],
@@ -756,7 +756,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 {
                   account: { name: 'bob' },
@@ -796,7 +796,7 @@ describe('App Data Tests', () => {
           actor: null,
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });
@@ -818,7 +818,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 {
                   account: { name: 'bob' },
@@ -860,7 +860,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               appData: [
                 {
                   account: { name: 'bob' },
@@ -896,7 +896,7 @@ describe('App Data Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
             },
           ],
         });

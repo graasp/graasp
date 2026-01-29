@@ -2,7 +2,6 @@ import groupBy from 'lodash.groupby';
 
 import { ItemValidationStatus, PublicationStatus, PublishableItemTypeChecker } from '@graasp/sdk';
 
-import type { ItemTypeUnion } from '../../../../../drizzle/types';
 import type { ItemMetadata, ItemValidationGroupStatus, MapByStatus } from './types';
 
 export class PublicationState {
@@ -67,9 +66,7 @@ export class PublicationState {
   }
 
   private isTypeNotAllowedToBePublished() {
-    return !PublishableItemTypeChecker.isItemTypeAllowedToBePublished(
-      this.item.type as ItemTypeUnion,
-    );
+    return !PublishableItemTypeChecker.isItemTypeAllowedToBePublished(this.item.type);
   }
 
   public computeStatus(): PublicationStatus {

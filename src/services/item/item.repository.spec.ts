@@ -5,7 +5,7 @@ import { eq, inArray } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ItemType, MAX_ITEM_NAME_LENGTH, MAX_TREE_LEVELS, buildPathFromIds } from '@graasp/sdk';
+import { MAX_ITEM_NAME_LENGTH, MAX_TREE_LEVELS, buildPathFromIds } from '@graasp/sdk';
 
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
@@ -161,7 +161,7 @@ describe('Item Repository', () => {
       expect(item.name).toEqual('name');
       expect(item.lang).toEqual('en');
       expect(item.description).toEqual(null);
-      expect(item.type).toEqual(ItemType.FOLDER);
+      expect(item.type).toEqual('folder');
       expect(item.creatorId).toEqual(creator.id);
       expect(item.extra).toEqual({ folder: {} });
     });
@@ -170,7 +170,7 @@ describe('Item Repository', () => {
         members: [creator],
       } = await seedFromJson({ actor: null, members: [{}] });
       const item = itemRepository.createOne({
-        type: ItemType.DOCUMENT,
+        type: 'document',
         name: 'name',
         description: 'description',
         creator: new MemberDTO(creator).toMinimal(),
@@ -180,7 +180,7 @@ describe('Item Repository', () => {
       expect(item.path).not.toContain('.');
       expect(item.name).toEqual('name');
       expect(item.description).toEqual('description');
-      expect(item.type).toEqual(ItemType.DOCUMENT);
+      expect(item.type).toEqual('document');
       expect(item.lang).toEqual('fr');
       expect(item.creatorId).toEqual(creator.id);
       expect(item.extra).toEqual({ document: { content: '' } });
@@ -199,7 +199,7 @@ describe('Item Repository', () => {
       expect(item.path).toContain(parentItem.path);
       expect(item.name).toEqual(name);
       expect(item.description).toEqual(null);
-      expect(item.type).toEqual(ItemType.FOLDER);
+      expect(item.type).toEqual('folder');
       expect(item.creatorId).toEqual(creator.id);
     });
   });
@@ -367,7 +367,7 @@ describe('Item Repository', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ type: ItemType.DOCUMENT }],
+        items: [{ type: 'document' }],
       });
 
       assertIsDefined(actor);
@@ -456,14 +456,14 @@ describe('Item Repository', () => {
         actor,
         items: [parent, notAFolder, child2],
       } = await seedFromJson({
-        items: [{ children: [{ type: ItemType.DOCUMENT }, { type: ItemType.FOLDER }] }],
+        items: [{ children: [{ type: 'document' }, { type: 'folder' }] }],
       });
 
       const children = [child2];
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
       const data = await itemRepository.getFilteredChildren(db, maybeUser, parent, {
-        types: [ItemType.FOLDER],
+        types: ['folder'],
       });
       expect(data).toHaveLength(children.length);
       children.forEach(({ id }, idx) => {
@@ -500,7 +500,7 @@ describe('Item Repository', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ type: ItemType.DOCUMENT }],
+        items: [{ type: 'document' }],
       });
 
       assertIsDefined(actor);
@@ -615,7 +615,7 @@ describe('Item Repository', () => {
     it('Fail to move items in non-folder parent', async () => {
       const {
         items: [item1, item2],
-      } = await seedFromJson({ actor: null, items: [{}, { type: ItemType.DOCUMENT }] });
+      } = await seedFromJson({ actor: null, items: [{}, { type: 'document' }] });
 
       await expect(itemRepository.move(db, item1, item2 as FolderItem)).rejects.toBeInstanceOf(
         ItemNotFolder,
@@ -675,9 +675,9 @@ describe('Item Repository', () => {
         actor: null,
         items: [
           {
-            type: ItemType.FILE,
+            type: 'file',
             extra: {
-              [ItemType.FILE]: {
+              ['file']: {
                 content: 'prop',
                 name: 'name',
                 path: 'path',
@@ -692,7 +692,7 @@ describe('Item Repository', () => {
 
       const newData = {
         // correct data
-        [ItemType.FILE]: {
+        ['file']: {
           content: 'hello',
         },
         // incorrect data
@@ -702,7 +702,7 @@ describe('Item Repository', () => {
       expectItem(newItem, {
         ...item,
         extra: {
-          [ItemType.FILE]: {
+          ['file']: {
             content: 'hello',
             name: 'name',
             path: 'path',
@@ -714,7 +714,7 @@ describe('Item Repository', () => {
       expectItem(await itemRawRepository.findOneBy({ id: item.id }), {
         ...item,
         extra: {
-          [ItemType.FILE]: {
+          ['file']: {
             content: 'hello',
             name: 'name',
             path: 'path',
@@ -750,7 +750,7 @@ describe('Item Repository', () => {
       const {
         members: [member],
       } = await seedFromJson({ actor: null, members: [{}] });
-      const data = { name: 'name', type: ItemType.FOLDER };
+      const data = { name: 'name', type: 'folder' as const };
 
       const newItem = await itemRepository.addOne(db, {
         item: data,
@@ -768,7 +768,7 @@ describe('Item Repository', () => {
         members: [member],
         items: [parentItem],
       } = await seedFromJson({ members: [{}], items: [{}] });
-      const data = { name: 'name-1', type: ItemType.FILE };
+      const data = { name: 'name-1', type: 'file' as const };
 
       const newItem = await itemRepository.addOne(db, {
         item: data,
@@ -792,7 +792,7 @@ describe('Item Repository', () => {
         members: [member],
       } = await seedFromJson({ actor: null, members: [{}] });
       const localItems = Array.from({ length: 15 }, () =>
-        ItemFactory({ type: ItemType.FOLDER, creator: member }),
+        ItemFactory({ type: 'folder', creator: member }),
       );
 
       const insertedItems = await itemRepository.addMany(
@@ -829,7 +829,7 @@ describe('Item Repository', () => {
       } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
 
       const localItems = Array.from({ length: 15 }, (_v) =>
-        ItemFactory({ type: ItemType.FOLDER, creator: member }),
+        ItemFactory({ type: 'folder', creator: member }),
       );
 
       const insertedItems = await itemRepository.addMany(
@@ -871,7 +871,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const localItems = Array.from({ length: 15 }, () =>
         ItemFactory({
-          type: ItemType.FOLDER,
+          type: 'folder',
           creator: new MemberDTO(actor).toCurrent(),
         }),
       );
@@ -911,7 +911,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const localItems = Array.from({ length: 15 }, (_v) =>
         ItemFactory({
-          type: ItemType.FOLDER,
+          type: 'folder',
           creator: new MemberDTO(actor).toCurrent(),
         }),
       );
@@ -1023,7 +1023,7 @@ describe('Item Repository', () => {
       } = await seedFromJson({
         actor: null,
         members: [{}],
-        items: [{}, { type: ItemType.DOCUMENT }],
+        items: [{}, { type: 'document' }],
       });
       await expect(
         itemRepository.copy(
@@ -1115,7 +1115,7 @@ describe('Item Repository', () => {
   });
 
   describe('getItemSumSize', () => {
-    const itemType = ItemType.FILE;
+    const itemType = 'file';
     it('get sum for no item', async () => {
       const {
         members: [member],
@@ -1528,7 +1528,7 @@ describe('Item Repository', () => {
         actor: null,
         items: [
           {
-            type: ItemType.DOCUMENT,
+            type: 'document',
             order: 12,
           },
         ],

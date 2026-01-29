@@ -18,7 +18,7 @@ import { Doc, encodeStateAsUpdate } from 'yjs';
 
 import type { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
+import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -175,7 +175,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
@@ -201,7 +201,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
@@ -233,7 +233,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
@@ -282,7 +282,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
@@ -316,7 +316,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
@@ -360,7 +360,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
@@ -397,7 +397,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'write' }],
           },
         ],
@@ -447,7 +447,7 @@ describe('Page routes tests', () => {
       const {
         items: [item],
       } = await seedFromJson({
-        items: [{ type: ItemType.PAGE }],
+        items: [{ type: 'page' }],
       });
 
       const response = await app.inject({
@@ -463,7 +463,7 @@ describe('Page routes tests', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ type: ItemType.PAGE }],
+        items: [{ type: 'page' }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -503,7 +503,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
@@ -539,7 +539,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             isPublic: true,
           },
         ],
@@ -575,7 +575,7 @@ describe('Page routes tests', () => {
         actor: null,
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             isPublic: true,
           },
         ],
@@ -609,7 +609,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
@@ -644,7 +644,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [
               { account: 'actor', permission: 'write' },
               { account: { name: 'reader' }, permission: 'read' },
@@ -699,7 +699,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
@@ -749,7 +749,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
@@ -785,7 +785,7 @@ describe('Page routes tests', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.PAGE,
+            type: 'page',
             memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
@@ -859,7 +859,7 @@ describe('Page routes tests', () => {
             children: [
               {
                 name,
-                type: ItemType.PAGE,
+                type: 'page',
               },
             ],
           },

@@ -7,7 +7,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { EtherpadPermission, HttpMethod, ItemType } from '@graasp/sdk';
+import { EtherpadPermission, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -401,7 +401,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -444,7 +444,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -522,7 +522,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -594,7 +594,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -689,7 +689,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -776,7 +776,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             memberships: [{ account: 'actor', permission: 'read' }],
           },
         ],
@@ -802,7 +802,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -831,7 +831,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -862,7 +862,7 @@ describe('Etherpad service API', () => {
         items: [
           {
             name: "bob's test etherpad item",
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             extra: EtherpadItemService.buildEtherpadExtra({
               groupID: MOCK_GROUP_ID,
               padName: MOCK_PAD_NAME,
@@ -895,7 +895,7 @@ describe('Etherpad service API', () => {
           items: [
             {
               name: "bob's test etherpad item",
-              type: ItemType.ETHERPAD,
+              type: 'etherpad',
               extra: EtherpadItemService.buildEtherpadExtra({
                 groupID: MOCK_GROUP_ID,
                 padName: MOCK_PAD_NAME,
@@ -1037,7 +1037,7 @@ describe('Etherpad service API', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],
@@ -1067,7 +1067,7 @@ describe('Etherpad service API', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.ETHERPAD,
+            type: 'etherpad',
             memberships: [{ account: 'actor', permission: 'admin' }],
           },
         ],

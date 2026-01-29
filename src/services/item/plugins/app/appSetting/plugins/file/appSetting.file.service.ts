@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import type { MultipartFile } from '@fastify/multipart';
 
-import { type FileItemProperties, ItemType, MAX_ITEM_NAME_LENGTH, type UUID } from '@graasp/sdk';
+import { type FileItemProperties, MAX_ITEM_NAME_LENGTH, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../../../drizzle/db';
 import type {
@@ -85,7 +85,7 @@ class AppSettingFileService {
       id: appSettingId,
       name,
       data: {
-        [ItemType.FILE]: fileProperties,
+        ['file']: fileProperties,
       },
     });
 
@@ -104,7 +104,7 @@ class AppSettingFileService {
       item.id,
       appSettingId,
     );
-    const fileProp = appSetting.data[ItemType.FILE] as AppSettingFileProperties;
+    const fileProp = appSetting.data['file'] as AppSettingFileProperties;
     if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
     }
@@ -127,9 +127,9 @@ class AppSettingFileService {
       // create file data object
       const itemId = appSetting.item.id;
       const newFilePath = this.buildFilePath(itemId, appSetting.id);
-      const originalFileExtra = appSetting.data[ItemType.FILE] as AppSettingFileProperties;
+      const originalFileExtra = appSetting.data['file'] as AppSettingFileProperties;
       const newFileData = {
-        [ItemType.FILE]: {
+        ['file']: {
           path: newFilePath,
           name: originalFileExtra.name,
           mimetype: originalFileExtra.mimetype,
@@ -155,7 +155,7 @@ class AppSettingFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appSetting?.data?.[ItemType.FILE] as FileItemProperties;
+      const fileProp = appSetting?.data?.['file'] as FileItemProperties;
       if (!fileProp) {
         return;
       }

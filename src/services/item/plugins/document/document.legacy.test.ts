@@ -3,7 +3,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { DocumentItemExtraFlavor, DocumentItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
+import { DocumentItemExtraFlavor, DocumentItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -17,7 +17,7 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { expectItem } from '../../test/fixtures/items';
 
 const extra = {
-  [ItemType.DOCUMENT]: {
+  ['document']: {
     content: 'my text is here',
   },
 };
@@ -40,7 +40,7 @@ describe('Document Item tests', () => {
 
   describe('POST /items', () => {
     it('Throws if signed out', async () => {
-      const payload = { name: 'name', type: ItemType.DOCUMENT, extra };
+      const payload = { name: 'name', type: 'document', extra };
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -85,8 +85,8 @@ describe('Document Item tests', () => {
       it('Fail to create if type does not match extra', async () => {
         const payload = {
           name: 'name',
-          type: ItemType.LINK,
-          extra: { [ItemType.DOCUMENT]: { content: 'content' } },
+          type: 'embeddedLink',
+          extra: { ['document']: { content: 'content' } },
         };
 
         const response = await app.inject({
@@ -101,9 +101,9 @@ describe('Document Item tests', () => {
       it('Fail to create if payload is invalid', async () => {
         const payload = {
           name: 'name',
-          type: ItemType.DOCUMENT,
+          type: 'document',
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          extra: { [ItemType.FOLDER]: { content: 'content' } } as any,
+          extra: { ['folder']: { content: 'content' } } as any,
         };
 
         const response = await app.inject({
@@ -118,9 +118,9 @@ describe('Document Item tests', () => {
       it('Fail to create if content of document is not defined', async () => {
         const payload1 = {
           name: 'name',
-          type: ItemType.DOCUMENT,
+          type: 'document',
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          extra: { [ItemType.DOCUMENT]: {} } as any,
+          extra: { ['document']: {} } as any,
         };
 
         const response1 = await app.inject({
@@ -158,9 +158,9 @@ describe('Document Item tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.DOCUMENT,
+              type: 'document',
               extra: {
-                [ItemType.DOCUMENT]: {
+                ['document']: {
                   content: 'value',
                 },
               },
@@ -173,7 +173,7 @@ describe('Document Item tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.DOCUMENT]: {
+            ['document']: {
               content: 'new value',
               // test that flavor can be updated
               flavor: DocumentItemExtraFlavor.Info,
@@ -210,9 +210,9 @@ describe('Document Item tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.DOCUMENT,
+              type: 'document',
               extra: {
-                [ItemType.DOCUMENT]: {
+                ['document']: {
                   content: 'value',
                 },
               },
@@ -225,7 +225,7 @@ describe('Document Item tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.LINK]: {
+            ['embeddedLink']: {
               content: 'new value',
             },
           },

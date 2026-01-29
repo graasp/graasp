@@ -9,9 +9,10 @@ import { v4 } from 'uuid';
 
 import type { FastifyBaseLogger } from 'fastify';
 
-import { ItemType, type UnionOfConst, getMimetype } from '@graasp/sdk';
+import { getMimetype } from '@graasp/sdk';
 
 import { type ItemRaw } from '../../../../drizzle/types';
+import { ItemType } from '../../../../schemas/global';
 import { isItemType } from '../../discrimination';
 import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants';
 
@@ -46,8 +47,8 @@ export const prepareZip = async (file: Readable, log?: FastifyBaseLogger) => {
 };
 
 // build the file content in case of Link/App
-export const buildTextContent = (url: string, type: UnionOfConst<typeof ItemType>): string => {
-  if (type === ItemType.LINK) {
+export const buildTextContent = (url: string, type: ItemType): string => {
+  if (type === 'embeddedLink') {
     return `[InternetShortcut]\n${URL_PREFIX}${url}\n`;
   }
   return `[InternetShortcut]\n${URL_PREFIX}${url}\n${APP_URL_PREFIX}1\n`;
@@ -70,26 +71,26 @@ const extractExtension = ({ name, mimetype }: { name: string; mimetype?: string 
 
 export const getFilenameFromItem = (item: ItemRaw): string => {
   switch (true) {
-    case isItemType(item, ItemType.APP): {
+    case isItemType(item, 'app'): {
       return extractFileName(item.name, 'app');
     }
-    case isItemType(item, ItemType.DOCUMENT): {
+    case isItemType(item, 'document'): {
       return extractFileName(item.name, 'html');
     }
-    case isItemType(item, ItemType.FILE): {
+    case isItemType(item, 'file'): {
       const mimetype = getMimetype(item.extra);
       return extractFileName(item.name, extractExtension({ name: item.name, mimetype }));
     }
-    case isItemType(item, ItemType.FOLDER): {
+    case isItemType(item, 'folder'): {
       return extractFileName(item.name, 'zip');
     }
-    case isItemType(item, ItemType.H5P): {
+    case isItemType(item, 'h5p'): {
       return extractFileName(item.name, 'h5p');
     }
-    case isItemType(item, ItemType.LINK): {
+    case isItemType(item, 'embeddedLink'): {
       return extractFileName(item.name, 'url');
     }
-    case isItemType(item, ItemType.ETHERPAD): {
+    case isItemType(item, 'etherpad'): {
       return extractFileName(item.name, 'html');
     }
     default:

@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ItemType, type Paginated, type Pagination } from '@graasp/sdk';
+import { type Paginated, type Pagination } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -75,7 +75,7 @@ export class RecycledBinService {
     let allDescendants: ItemRaw[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('recycle', member, dbConnection, { item, isRecycledRoot: true });
-      if (isItemType(item, ItemType.FOLDER)) {
+      if (isItemType(item, 'folder')) {
         allDescendants = allDescendants.concat(
           await this.itemRepository.getDescendants(dbConnection, item),
         );
@@ -127,7 +127,7 @@ export class RecycledBinService {
     let allDescendants: ItemRaw[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('restore', member, dbConnection, { item, isRestoredRoot: true });
-      if (isItemType(item, ItemType.FOLDER)) {
+      if (isItemType(item, 'folder')) {
         const descendants = await this.recycledItemRepository.getDeletedDescendants(
           dbConnection,
           item,

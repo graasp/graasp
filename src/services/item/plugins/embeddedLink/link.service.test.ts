@@ -216,7 +216,7 @@ describe('Link Service', () => {
   //     const member = MemberFactory();
   //     const item = ItemFactory({
   //       extra: {
-  //         [ItemType.LINK]: {
+  //         ['embeddedLink']: {
   //           url: faker.internet.url(),
   //           icons: [],
   //           thumbnails: [],
@@ -245,12 +245,12 @@ describe('Link Service', () => {
   //     expect(itemServicePostMock).toHaveBeenCalledWith(db, member, {
   //       item: {
   //         name: args.name,
-  //         type: ItemType.LINK,
+  //         type: 'embeddedLink',
   //         // not defined in args
   //         description: undefined,
   //         lang: undefined,
   //         extra: {
-  //           [ItemType.LINK]: {
+  //           ['embeddedLink']: {
   //             url: args.url,
   //             icons: [],
   //             thumbnails: [],
@@ -289,7 +289,7 @@ describe('Link Service', () => {
   //           name: 'name',
   //           description: undefined,
   //           extra: {
-  //             [ItemType.LINK]: {
+  //             ['embeddedLink']: {
   //               url: MOCK_URL,
   //               description: iframelyResult.meta.description,
   //               title: iframelyResult.meta.title,
@@ -298,7 +298,7 @@ describe('Link Service', () => {
   //               thumbnails: iframelyResult.thumbnails,
   //             },
   //           },
-  //           type: ItemType.LINK,
+  //           type: 'embeddedLink',
   //           settings: {
   //             showLinkIframe: false,
   //             showLinkButton: true,
@@ -339,7 +339,7 @@ describe('Link Service', () => {
   //           name: args.name,
   //           description: args.description,
   //           extra: {
-  //             [ItemType.LINK]: {
+  //             ['embeddedLink']: {
   //               url: MOCK_URL,
   //               description: iframelyResult.meta.description,
   //               title: iframelyResult.meta.title,
@@ -348,7 +348,7 @@ describe('Link Service', () => {
   //               thumbnails: iframelyResult.thumbnails,
   //             },
   //           },
-  //           type: ItemType.LINK,
+  //           type: 'embeddedLink',
   //           settings: {
   //             showLinkIframe: args.showLinkIframe,
   //             showLinkButton: args.showLinkButton,
@@ -366,7 +366,7 @@ describe('Link Service', () => {
   //   it('do not throw if iframely is unresponsive', async () => {
   //     const member = MemberFactory();
   //     const item = ItemFactory({
-  //       type: ItemType.LINK,
+  //       type: 'embeddedLink',
   //       extra: { embeddedLink: { url: faker.internet.url() } },
   //     }) as EmbeddedLinkItem;
   //     expect(item.extra.embeddedLink.url).toBeDefined();
@@ -390,12 +390,12 @@ describe('Link Service', () => {
   //     // call to item service with initial item name
   //     expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
   //       name: item.name,
-  //       type: ItemType.LINK,
+  //       type: 'embeddedLink',
   //       // not defined in args
   //       description: undefined,
   //       lang: undefined,
   //       extra: {
-  //         [ItemType.LINK]: {
+  //         ['embeddedLink']: {
   //           icons: [],
   //           thumbnails: [],
   //           description: '',
@@ -422,7 +422,7 @@ describe('Link Service', () => {
   //     it('patch url changes link extra', async () => {
   //       const member = MemberFactory();
   //       const item = ItemFactory({
-  //         type: ItemType.LINK,
+  //         type: 'embeddedLink',
   //         extra: { embeddedLink: { url: faker.internet.url() } },
   //       }) as EmbeddedLinkItem;
   //       expect(item.extra.embeddedLink.url).toBeDefined();
@@ -449,12 +449,12 @@ describe('Link Service', () => {
   //       // call to item service with initial item name
   //       expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
   //         name: item.name,
-  //         type: ItemType.LINK,
+  //         type: 'embeddedLink',
   //         // not defined in args
   //         description: undefined,
   //         lang: undefined,
   //         extra: {
-  //           [ItemType.LINK]: {
+  //           ['embeddedLink']: {
   //             url: args.url,
   //             description: iframelyResult.meta.description,
   //             title: iframelyResult.meta.title,
@@ -469,7 +469,7 @@ describe('Link Service', () => {
   //     it('patch item settings', async () => {
   //       const member = MemberFactory();
   //       const item = ItemFactory({
-  //         type: ItemType.LINK,
+  //         type: 'embeddedLink',
   //         extra: { embeddedLink: { url: faker.internet.url() } },
   //       }) as EmbeddedLinkItem;
   //       mockResponse(iframelyResult);
@@ -492,7 +492,7 @@ describe('Link Service', () => {
   //       // call to item service with initial item name
   //       expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
   //         name: item.name,
-  //         type: ItemType.LINK,
+  //         type: 'embeddedLink',
   //         // not defined in args
   //         description: undefined,
   //         lang: undefined,
@@ -503,7 +503,7 @@ describe('Link Service', () => {
   //     it('patch many properties without changing url', async () => {
   //       const member = MemberFactory();
   //       const item = ItemFactory({
-  //         type: ItemType.LINK,
+  //         type: 'embeddedLink',
   //         extra: { embeddedLink: { url: faker.internet.url() } },
   //       }) as EmbeddedLinkItem;
   //       expect(item.extra.embeddedLink.url).toBeDefined();
@@ -530,7 +530,7 @@ describe('Link Service', () => {
   //       // call to item service with initial item name
   //       expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
   //         name: args.name,
-  //         type: ItemType.LINK,
+  //         type: 'embeddedLink',
   //         description: args.description,
   //         lang: args.lang,
   //         extra: item.extra,

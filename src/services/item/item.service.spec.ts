@@ -50,17 +50,17 @@ it('temporary', () => {
 //       const actor = await saveMember();
 //       const repositories = buildRepositories();
 //       const parentItem = await itemService.post(actor, repositories, {
-//         item: { name: 'parentItem', type: ItemType.FOLDER },
+//         item: { name: 'parentItem', type: 'folder' },
 //       });
 
 //       const item1Name = 'item1';
 //       await itemService.post(actor, repositories, {
-//         item: { name: item1Name, type: ItemType.FOLDER },
+//         item: { name: item1Name, type: 'folder' },
 //         parentId: parentItem.id,
 //       });
 //       const item2Name = 'item2';
 //       await itemService.post(actor, repositories, {
-//         item: { name: item2Name, type: ItemType.FOLDER },
+//         item: { name: item2Name, type: 'folder' },
 //         parentId: parentItem.id,
 //       });
 
@@ -79,17 +79,17 @@ it('temporary', () => {
 //       const actor = await saveMember();
 //       const repositories = buildRepositories();
 //       const parentItem = await itemService.post(actor, repositories, {
-//         item: { name: 'parentItem', type: ItemType.FOLDER },
+//         item: { name: 'parentItem', type: 'folder' },
 //       });
 
 //       const item1Name = 'item1';
 //       const item1 = await itemService.post(actor, repositories, {
-//         item: { name: item1Name, type: ItemType.FOLDER },
+//         item: { name: item1Name, type: 'folder' },
 //         parentId: parentItem.id,
 //       });
 //       const item2Name = 'item2';
 //       await itemService.post(actor, repositories, {
-//         item: { name: item2Name, type: ItemType.FOLDER },
+//         item: { name: item2Name, type: 'folder' },
 //         parentId: parentItem.id,
 //         previousItemId: item1.id,
 //       });
@@ -119,13 +119,13 @@ it('temporary', () => {
 //       const {
 //         items: [parentItem],
 //       } = await seedFromJson({
-//         items: [{ name: 'parentItem', type: ItemType.FOLDER }],
+//         items: [{ name: 'parentItem', type: 'folder' }],
 //       });
 //       const items: { item: Item }[] = [];
 //       const itemNames: string[] = [];
 //       for (let i = 0; i < 15; i++) {
 //         const name = `item${i}`;
-//         items.push({ item: { name: `item${i}`, type: ItemType.FOLDER } as Item });
+//         items.push({ item: { name: `item${i}`, type: 'folder' } as Item });
 //         itemNames.push(name);
 //       }
 
@@ -150,14 +150,14 @@ it('temporary', () => {
 //       const {
 //         items: [parentItem],
 //       } = await seedFromJson({
-//         items: [{ name: 'parentItem', type: ItemType.FOLDER }],
+//         items: [{ name: 'parentItem', type: 'folder' }],
 //       });
 
 //       const items: { item: Item; thumbnail?: Readable }[] = [];
 
 //       for (let i = 0; i < 15; i++) {
 //         items.push({
-//           item: { name: `item${i}`, type: ItemType.FOLDER } as Item,
+//           item: { name: `item${i}`, type: 'folder' } as Item,
 //           thumbnail: {} as Readable,
 //         });
 //       }
@@ -180,14 +180,14 @@ it('temporary', () => {
 //       const {
 //         items: [parentItem],
 //       } = await seedFromJson({
-//         items: [{ name: 'parentItem', type: ItemType.FOLDER }],
+//         items: [{ name: 'parentItem', type: 'folder' }],
 //       });
 
 //       const items: { item: Item; geolocation?: ItemGeolocation }[] = [];
 
 //       for (let i = 0; i < 15; i++) {
 //         items.push({
-//           item: { name: `item${i}`, type: ItemType.FOLDER } as Item,
+//           item: { name: `item${i}`, type: 'folder' } as Item,
 //           geolocation: { lat: 35.652832, lng: 139.839478 } as ItemGeolocation,
 //         });
 //       }
@@ -299,7 +299,7 @@ it('temporary', () => {
 //       await expect(() =>
 //         itemService.post(actor, repositories, {
 //           parentId: item.id,
-//           item: { name: 'item', type: ItemType.FOLDER },
+//           item: { name: 'item', type: 'folder' },
 //         }),
 //       ).rejects.toThrow();
 //     });
