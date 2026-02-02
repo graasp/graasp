@@ -74,10 +74,7 @@ export const getFilenameFromItem = (item: ItemRaw): string => {
       return extractFileName(item.name, 'app');
     }
     case isItemType(item, ItemType.DOCUMENT): {
-      if (item.extra.document.isRaw) {
-        return extractFileName(item.name, 'html');
-      }
-      return extractFileName(item.name, 'graasp');
+      return extractFileName(item.name, 'html');
     }
     case isItemType(item, ItemType.FILE): {
       const mimetype = getMimetype(item.extra);

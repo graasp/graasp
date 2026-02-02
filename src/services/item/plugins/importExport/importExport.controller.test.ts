@@ -432,6 +432,49 @@ describe('ZIP routes tests', () => {
         }
       }, 1000);
     });
+    it('Import and sanitize graasp documents', async () => {
+      const {
+        actor,
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const form = createFormData('documents.zip');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/api/items/zip-import',
+        payload: form,
+        headers: form.getHeaders(),
+        query: { parentId: parentItem.id },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        const documents = await db.query.itemsRawTable.findMany({
+          where: and(
+            isDescendantOrSelf(itemsRawTable.path, parentItem.path),
+            ne(itemsRawTable.id, parentItem.id),
+            eq(itemsRawTable.type, ItemType.DOCUMENT),
+          ),
+        });
+        expect(documents).toHaveLength(2);
+
+        for (const item of documents) {
+          const content = item.extra[ItemType.DOCUMENT].content;
+
+          // the script with a console should not appear in the text
+          expect(content).not.toContain('script');
+          expect(content).not.toContain('console');
+          expect(content).not.toContain('style');
+
+          // content
+          expect(content).toContain('<h1>My First Heading</h1>');
+          expect(content).toContain(`<p>My first paragraph.</p>`);
+        }
+      }, 1000);
+    });
     it('Throws if signed out', async () => {
       const form = createFormData('archive.zip');
 
@@ -536,7 +579,7 @@ describe('ZIP routes tests', () => {
     });
   });
 
-  describe('POST /api/download-file', () => {
+  describe('GET /api/download-file', () => {
     it('Export successfully if has access', async () => {
       const {
         actor,
@@ -555,7 +598,7 @@ describe('ZIP routes tests', () => {
       mockAuthenticate(actor);
 
       const response = await app.inject({
-        method: HttpMethod.Post,
+        method: HttpMethod.Get,
         url: `/api/items/${item.id}/download-file`,
       });
 
@@ -580,7 +623,7 @@ describe('ZIP routes tests', () => {
       mockAuthenticate(guest);
 
       const response = await app.inject({
-        method: HttpMethod.Post,
+        method: HttpMethod.Get,
         url: `/api/items/${item.id}/download-file`,
       });
 
@@ -603,7 +646,7 @@ describe('ZIP routes tests', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.Post,
+        method: HttpMethod.Get,
         url: `/api/items/${item.id}/download-file`,
       });
 
@@ -641,7 +684,7 @@ describe('ZIP routes tests', () => {
       const { id: h5pId, name: h5pName } = h5pUploadResponse.json();
 
       const response = await app.inject({
-        method: HttpMethod.Post,
+        method: HttpMethod.Get,
         url: `/api/items/${h5pId}/download-file`,
       });
 
@@ -651,6 +694,65 @@ describe('ZIP routes tests', () => {
       expect(response.headers['content-disposition']).toContain('.h5p');
       expect(response.headers['content-disposition']).not.toContain('.zip');
     });
+
+    it('Export successfully document item', async () => {
+      const {
+        actor,
+        items: [doc],
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'doc',
+            type: ItemType.DOCUMENT,
+            extra: { document: { content: 'my content in the document', isRaw: true } },
+            memberships: [{ account: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/api/items/${doc.id}/download-file`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.payload.length).toBeGreaterThan(10);
+      expect(response.headers['content-disposition']).toContain(doc.name);
+      expect(response.headers['content-disposition']).toContain('.html');
+      expect(response.headers['content-type']).toContain('text/html');
+    });
+
+    it('Export successfully html document item', async () => {
+      const {
+        actor,
+        items: [doc],
+      } = await seedFromJson({
+        items: [
+          {
+            name: 'doc',
+            type: ItemType.DOCUMENT,
+            extra: { document: { content: 'my html in the document', isRaw: false } },
+            memberships: [{ account: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/api/items/${doc.id}/download-file`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.payload.length).toBeGreaterThan(10);
+      expect(response.headers['content-disposition']).toContain(doc.name);
+      expect(response.headers['content-disposition']).toContain('.html');
+      expect(response.headers['content-type']).toContain('text/html');
+    });
+
     it('Throw for folder', async () => {
       const {
         actor,
@@ -662,7 +764,7 @@ describe('ZIP routes tests', () => {
       mockAuthenticate(actor);
 
       const response = await app.inject({
-        method: HttpMethod.Post,
+        method: HttpMethod.Get,
         url: `/api/items/${item.id}/download-file`,
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
