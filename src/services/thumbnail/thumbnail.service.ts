@@ -1,7 +1,6 @@
 import path from 'path';
-import sharp from 'sharp';
+import sharp, { type Sharp } from 'sharp';
 import { Readable } from 'stream';
-import { pipeline as streamPipeline } from 'stream/promises';
 import { injectable } from 'tsyringe';
 
 import { BaseLogger } from '../../logger';
@@ -35,27 +34,82 @@ export class ThumbnailService {
     return path.join(this._prefix, itemId);
   }
 
-  async upload(authenticatedUser: AuthenticatedUser, id: string, file: Readable) {
-    // upload all thumbnails in parallel
-    const filesToUpload = await Promise.all(
-      Object.entries(ThumbnailSizeFormat).map(async ([sizeName, width]) => {
-        // create thumbnail from image stream
-        const pipeline = sharp().resize({ width }).toFormat(THUMBNAIL_FORMAT);
-        await streamPipeline(file, pipeline);
-
-        return {
-          file: pipeline,
-          filepath: this.buildFilePath(id, sizeName),
-          mimetype: THUMBNAIL_MIMETYPE,
-        };
-      }),
-    );
-
-    // upload the thumbnails
+  // cleanup helper for original input file and related sharp pipelines
+  private destroyAll(
+    file: Readable,
+    image: Sharp,
+    pipelines: { transform: Readable }[],
+    err?: Error,
+  ) {
     try {
+      try {
+        file.unpipe(image);
+      } catch (_) {}
+      image.destroy(err);
+    } catch (_) {}
+    for (const p of pipelines) {
+      try {
+        p.transform.destroy(err);
+      } catch (_) {}
+    }
+  }
+
+  // ensure errors on the source propagate
+  private attachListeners(image: Sharp, file: Readable) {
+    const onFileError = (err: Error) => {
+      try {
+        image.destroy(err);
+      } catch (_) {}
+    };
+    file.on('error', onFileError);
+
+    // catch errors from sharp processing or stream destruction
+    const onImageError = (err: Error) => {
+      this.logger.debug(`Image processing error during thumbnail upload: ${err.message}`);
+    };
+    image.on('error', onImageError);
+
+    return { onFileError, onImageError };
+  }
+
+  // remove listeners to avoid leaks
+  private removeListeners(file: Readable, image: Sharp, listeners: { onFileError; onImageError }) {
+    try {
+      file.removeListener('error', listeners.onFileError);
+    } catch (_) {}
+    try {
+      image.removeListener('error', listeners.onImageError);
+    } catch (_) {}
+  }
+
+  async upload(authenticatedUser: AuthenticatedUser, id: string, file: Readable) {
+    // pipe incoming file into a sharp instance for further clone
+    const image = sharp();
+    file.pipe(image);
+
+    // prepare pipelines per size
+    const pipelines = Object.entries(ThumbnailSizeFormat).map(([sizeName, width]) => {
+      const transform = image.clone().resize({ width }).toFormat(THUMBNAIL_FORMAT);
+      return { transform, filepath: this.buildFilePath(id, sizeName), sizeName };
+    });
+
+    const listeners = this.attachListeners(image, file);
+
+    try {
+      // prepare upload payloads (the fileService will consume the readable sides)
+      const filesToUpload = pipelines.map(({ transform, filepath }) => ({
+        file: transform,
+        filepath,
+        mimetype: THUMBNAIL_MIMETYPE,
+      }));
+
       await this.fileService.uploadMany(authenticatedUser, filesToUpload);
-    } catch (_err) {
+    } catch (err) {
+      this.destroyAll(file, image, pipelines, err as Error);
       this.logger.debug(`Could not upload the ${id} item thumbnails`);
+      throw err;
+    } finally {
+      this.removeListeners(file, image, listeners);
     }
   }
 
