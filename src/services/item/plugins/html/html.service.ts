@@ -87,7 +87,7 @@ export abstract class HtmlService {
    * // <contentId>/<filename>.<extension>
    */
   buildPackagePath = (rootPath: string, filename: string) =>
-    path.join(rootPath, `${filename}.${this.extension}`);
+    path.join(rootPath, `${encodeURIComponent(filename)}.${this.extension}`);
 
   /**
    * Helper to build the local or remote path of the html content root
