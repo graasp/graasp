@@ -450,13 +450,13 @@ describe('ZIP routes tests', () => {
           where: and(
             isDescendantOrSelf(itemsRawTable.path, parentItem.path),
             ne(itemsRawTable.id, parentItem.id),
-            eq(itemsRawTable.type, ItemType.DOCUMENT),
+            eq(itemsRawTable.type, 'document'),
           ),
         });
         expect(documents).toHaveLength(2);
 
         for (const item of documents) {
-          const content = item.extra[ItemType.DOCUMENT].content;
+          const content = item.extra['document'].content;
 
           // the script with a console should not appear in the text
           expect(content).not.toContain('script');
@@ -697,7 +697,7 @@ describe('ZIP routes tests', () => {
         items: [
           {
             name: 'doc',
-            type: ItemType.DOCUMENT,
+            type: 'document',
             extra: { document: { content: 'my content in the document', isRaw: true } },
             memberships: [{ account: 'actor' }],
           },
@@ -726,7 +726,7 @@ describe('ZIP routes tests', () => {
         items: [
           {
             name: 'doc',
-            type: ItemType.DOCUMENT,
+            type: 'document',
             extra: { document: { content: 'my html in the document', isRaw: false } },
             memberships: [{ account: 'actor' }],
           },
