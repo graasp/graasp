@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, ItemValidationStatus } from '@graasp/sdk';
+import { HttpMethod, ItemValidationStatus } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -421,7 +421,7 @@ describe('Item Published', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.DOCUMENT,
+              type: 'document',
               itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
               memberships: [{ account: 'actor', permission: 'admin' }],
             },

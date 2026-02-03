@@ -120,7 +120,7 @@ describe('Folder Service', () => {
   //     });
   //   await folderService.post(db, MOCK_MEMBER, { item: { name: 'name', type: 'folder' } });
   //   expect(itemServicePostMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
-  //     item: { name: 'name', extra: { [ItemType.FOLDER]: {} }, type: ItemType.FOLDER },
+  //     item: { name: 'name', extra: { ['folder']: {} }, type: 'folder' },
   //   });
   // });
   // });

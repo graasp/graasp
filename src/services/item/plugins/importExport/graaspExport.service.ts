@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 import { ZipFile } from 'yazl';
 
-import { ItemType, ThumbnailSize } from '@graasp/sdk';
+import { ThumbnailSize } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { AppSettingRaw, ItemRaw } from '../../../../drizzle/types';
@@ -134,7 +134,7 @@ export class GraaspExportService {
 
     // Get the app settings if an item is an APP
     let appSettings: Omit<AppSettingRaw, 'id'>[] | undefined = undefined;
-    if (isItemType(item, ItemType.APP)) {
+    if (isItemType(item, 'app')) {
       const itemAppSettings = await this.appSettingRepository.getForItem(dbConnection, item.id);
 
       appSettings = itemAppSettings.map((appSetting) => {
@@ -144,13 +144,13 @@ export class GraaspExportService {
 
     // TODO EXPORT treat the shortcut items correctly
     // ignore the shortcuts for now
-    if (isItemType(item, ItemType.SHORTCUT)) {
+    if (isItemType(item, 'shortcut')) {
       return itemManifest;
     }
 
     // treat folder items recursively
     const childrenManifest: GraaspExportItem[] = [];
-    if (isItemType(item, ItemType.FOLDER)) {
+    if (isItemType(item, 'folder')) {
       const childrenItems = await this.itemService.getChildren(dbConnection, actor, item.id);
       for (const child of childrenItems) {
         await this.addItemToGraaspExport(dbConnection, actor, {

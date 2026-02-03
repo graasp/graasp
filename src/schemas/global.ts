@@ -1,5 +1,5 @@
 // we need this file used in classic json schema
-import { Type } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../plugins/typebox';
@@ -31,3 +31,24 @@ export const errorSchemaRef = registerSchemaAsRef(
     },
   ),
 );
+
+/**
+ * List of possible item types
+ */
+export const ITEM_TYPES = [
+  'app' as const,
+  'document' as const,
+  'embeddedLink' as const,
+  'etherpad' as const,
+  'file' as const,
+  'folder' as const,
+  'h5p' as const,
+  'page' as const,
+  'shortcut' as const,
+];
+
+// we derive schema and type
+const itemTypeSchema = Type.Union(ITEM_TYPES.map((type) => Type.Literal(type)));
+export const itemTypeSchemaRef = registerSchemaAsRef('itemType', 'Item Type', itemTypeSchema);
+
+export type ItemType = Static<typeof itemTypeSchema>;

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { DocumentItemExtraFlavor, HttpMethod, ItemType } from '@graasp/sdk';
+import { DocumentItemExtraFlavor, HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -141,7 +141,7 @@ describe('Document Item tests', () => {
     it('Throws if signed out', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.DOCUMENT }] });
+      } = await seedFromJson({ items: [{ type: 'document' }] });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -156,7 +156,7 @@ describe('Document Item tests', () => {
         items: [item],
         guests: [guest],
       } = await seedFromJson({
-        items: [{ type: ItemType.DOCUMENT, itemLoginSchema: { guests: [{}] } }],
+        items: [{ type: 'document', itemLoginSchema: { guests: [{}] } }],
       });
       mockAuthenticate(guest);
 
@@ -174,7 +174,7 @@ describe('Document Item tests', () => {
         items: [item],
       } = await seedFromJson({
         actor: { isValidated: false },
-        items: [{ type: ItemType.DOCUMENT }],
+        items: [{ type: 'document' }],
       });
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
@@ -193,7 +193,7 @@ describe('Document Item tests', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ type: ItemType.DOCUMENT }],
+        items: [{ type: 'document' }],
       });
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
@@ -213,7 +213,7 @@ describe('Document Item tests', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ type: ItemType.DOCUMENT }],
+        items: [{ type: 'document' }],
       });
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
@@ -233,7 +233,7 @@ describe('Document Item tests', () => {
         actor,
         items: [item],
       } = await seedFromJson({
-        items: [{ type: ItemType.DOCUMENT }],
+        items: [{ type: 'document' }],
       });
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
@@ -258,9 +258,9 @@ describe('Document Item tests', () => {
           items: [
             {
               memberships: [{ account: 'actor' }],
-              type: ItemType.DOCUMENT,
+              type: 'document',
               extra: {
-                [ItemType.DOCUMENT]: {
+                ['document']: {
                   content: 'value',
                 },
               },

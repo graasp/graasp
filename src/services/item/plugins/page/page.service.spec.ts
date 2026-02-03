@@ -5,8 +5,6 @@ import waitForExpect from 'wait-for-expect';
 // @ts-expect-error
 import { Doc, encodeStateAsUpdate, encodeStateVector } from 'yjs';
 
-import { ItemType } from '@graasp/sdk';
-
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { pageUpdateTable } from '../../../../drizzle/schema';
@@ -23,7 +21,7 @@ describe('PageItemService', () => {
     it('get empty doc for page without updates', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       const doc = await pageItemService.getById(db, item.id);
       expect(doc).toBeDefined();
@@ -33,7 +31,7 @@ describe('PageItemService', () => {
     it('get doc with state for page', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // save an update for item through temporary doc
       const doc = new Doc();
@@ -62,7 +60,7 @@ describe('PageItemService', () => {
     it('merge updates if page has too many updates', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // save lots of updates
       const doc = new Doc();
@@ -98,7 +96,7 @@ describe('PageItemService', () => {
     it('save given update for item', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // generate an update through temporary doc
       const tmpDoc = new Doc();
@@ -120,7 +118,7 @@ describe('PageItemService', () => {
     it('copy empty page', async () => {
       const {
         items: [item, copy],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }, { type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }, { type: 'page' }] });
 
       await pageItemService.copy(db, item.id, copy.id);
       const savedUpdate = await db.query.pageUpdateTable.findMany({
@@ -136,7 +134,7 @@ describe('PageItemService', () => {
     it('copy page and save merged update', async () => {
       const {
         items: [item, copy],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }, { type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }, { type: 'page' }] });
 
       // generate updates through temporary doc
       const tmpDoc = new Doc();

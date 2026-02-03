@@ -1,7 +1,5 @@
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
 import type { ItemRaw } from '../../../../../drizzle/types';
@@ -40,7 +38,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     dbConnection: DBConnection,
     { original, copy }: { original: ItemRaw; copy: ItemRaw },
   ) => {
-    if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
+    if (original.type !== 'app' || copy.type !== 'app') return;
 
     await appSettingService.copyForItem(dbConnection, actor, original, copy.id);
   };

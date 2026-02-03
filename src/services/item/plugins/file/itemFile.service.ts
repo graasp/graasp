@@ -7,7 +7,6 @@ import { delay, inject, singleton } from 'tsyringe';
 
 import {
   type FileItemProperties,
-  ItemType,
   MAX_ITEM_NAME_LENGTH,
   MimeTypes,
   getFileExtension,
@@ -200,7 +199,7 @@ class FileItemService extends ItemService {
       accountId: maybeUser?.id,
       itemId,
     });
-    const extraData = item.extra[ItemType.FILE] as FileItemProperties;
+    const extraData = item.extra['file'] as FileItemProperties;
     const result = await this.fileService.getFile({
       id: itemId,
       ...extraData,
@@ -224,7 +223,7 @@ class FileItemService extends ItemService {
       accountId: maybeUser?.id,
       itemId,
     });
-    const extraData = item.extra[ItemType.FILE] as FileItemProperties | undefined;
+    const extraData = item.extra['file'] as FileItemProperties | undefined;
 
     const result = await this.fileService.getUrl({
       path: extraData?.path,
@@ -235,7 +234,7 @@ class FileItemService extends ItemService {
 
   async copyFile(dbConnection: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
-    const { path: originalPath, mimetype, name } = extra[ItemType.FILE];
+    const { path: originalPath, mimetype, name } = extra['file'];
     const newFilePath = this.buildFilePath(getFileExtension(name));
 
     const data = {
@@ -251,7 +250,7 @@ class FileItemService extends ItemService {
 
     // update item copy's 'extra'
     await this.itemRepository.updateOne(dbConnection, copy.id, {
-      extra: { file: { ...extra[ItemType.FILE], path: filepath } },
+      extra: { file: { ...extra['file'], path: filepath } },
     });
   }
 
@@ -264,7 +263,7 @@ class FileItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is file
-    if (ItemType.FILE !== item.type) {
+    if ('file' !== item.type) {
       throw new WrongItemTypeError(item.type);
     }
 
@@ -298,9 +297,9 @@ class FileItemService extends ItemService {
     const item = {
       name,
       description,
-      type: ItemType.FILE,
+      type: 'file' as const,
       extra: {
-        [ItemType.FILE]: fileProperties,
+        ['file']: fileProperties,
       },
       creator: actor,
     };

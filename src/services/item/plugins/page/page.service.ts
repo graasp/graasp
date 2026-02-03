@@ -7,7 +7,7 @@ import { singleton } from 'tsyringe';
 // @ts-expect-error
 import * as Y from 'yjs';
 
-import { ItemGeolocation, ItemType } from '@graasp/sdk';
+import { ItemGeolocation } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { ItemRaw } from '../../../../drizzle/types';
@@ -42,7 +42,7 @@ export class PageItemService {
     // create item
     const newItem = await this.itemService.post(dbConnection, member, {
       ...args,
-      item: { ...args.item, type: ItemType.PAGE, extra: {} },
+      item: { ...args.item, type: 'page', extra: {} },
     });
 
     return newItem as PageItem;

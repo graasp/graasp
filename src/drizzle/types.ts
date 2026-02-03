@@ -9,7 +9,6 @@ import type {
   LinkItemExtra,
   LinkItemSettings,
   ShortcutItemExtra,
-  UnionOfConst,
 } from '@graasp/sdk';
 
 import type { MinimalGuest, MinimalMember } from '../types';
@@ -95,44 +94,28 @@ export type GuestWithItemLoginSchema = GuestRaw & {
   itemLoginSchema: ItemLoginSchemaRaw | null;
 };
 
-/**
- * Item types
- */
-export const ItemType = {
-  APP: 'app',
-  DOCUMENT: 'document',
-  FOLDER: 'folder',
-  LINK: 'embeddedLink',
-  FILE: 'file',
-  SHORTCUT: 'shortcut',
-  H5P: 'h5p',
-  ETHERPAD: 'etherpad',
-  PAGE: 'page',
-} as const;
-export type ItemTypeUnion = UnionOfConst<typeof ItemType>;
-
 export type ItemExtraMap = {
-  [ItemType.APP]: AppItemExtra;
-  [ItemType.DOCUMENT]: DocumentItemExtra;
-  [ItemType.ETHERPAD]: EtherpadItemExtra;
-  [ItemType.FOLDER]: FolderItemExtra;
-  [ItemType.H5P]: H5PItemExtra;
-  [ItemType.LINK]: LinkItemExtra;
-  [ItemType.FILE]: FileItemExtra;
-  [ItemType.SHORTCUT]: ShortcutItemExtra;
-  [ItemType.PAGE]: never;
+  ['app']: AppItemExtra;
+  ['document']: DocumentItemExtra;
+  ['etherpad']: EtherpadItemExtra;
+  ['folder']: FolderItemExtra;
+  ['h5p']: H5PItemExtra;
+  ['embeddedLink']: LinkItemExtra;
+  ['file']: FileItemExtra;
+  ['shortcut']: ShortcutItemExtra;
+  ['page']: never;
 };
 
 export type ItemSettingsMap = {
-  [ItemType.APP]: ItemSettings;
-  [ItemType.DOCUMENT]: ItemSettings;
-  [ItemType.ETHERPAD]: ItemSettings;
-  [ItemType.FOLDER]: ItemSettings;
-  [ItemType.H5P]: ItemSettings;
-  [ItemType.LINK]: LinkItemSettings;
-  [ItemType.FILE]: ItemSettings;
-  [ItemType.SHORTCUT]: ItemSettings;
-  [ItemType.PAGE]: ItemSettings;
+  ['app']: ItemSettings;
+  ['document']: ItemSettings;
+  ['etherpad']: ItemSettings;
+  ['folder']: ItemSettings;
+  ['h5p']: ItemSettings;
+  ['embeddedLink']: LinkItemSettings;
+  ['file']: ItemSettings;
+  ['shortcut']: ItemSettings;
+  ['page']: ItemSettings;
 };
 
 // local type alias to simplify the notation

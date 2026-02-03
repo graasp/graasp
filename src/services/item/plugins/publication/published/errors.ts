@@ -2,7 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createError } from '@fastify/error';
 
-import { ErrorFactory, type ItemTypeUnion, PublishableItemTypeChecker } from '@graasp/sdk';
+import { ErrorFactory, PublishableItemTypeChecker } from '@graasp/sdk';
+
+import { ItemType } from '../../../../../schemas/global';
 
 export const GraaspPublishedError = ErrorFactory('graasp-plugin-published-item');
 
@@ -13,7 +15,7 @@ export const ItemPublishedNotFound = createError(
 );
 
 export class ItemTypeNotAllowedToPublish extends GraaspPublishedError {
-  constructor(itemId: string, itemType: ItemTypeUnion) {
+  constructor(itemId: string, itemType: ItemType) {
     const allowedTypes = PublishableItemTypeChecker.getAllowedTypes();
     super(
       {

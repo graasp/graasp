@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -47,7 +47,7 @@ describe('App Actions Tests', () => {
         items: [
           {
             memberships: [{ account: 'actor', permission: 'admin' }],
-            type: ItemType.APP,
+            type: 'app',
             appActions: [
               { account: 'actor' },
               { account: 'actor' },

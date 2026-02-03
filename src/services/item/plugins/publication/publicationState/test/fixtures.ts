@@ -1,7 +1,6 @@
 import { v4 } from 'uuid';
 
 import {
-  ItemType,
   ItemValidationProcess,
   ItemValidationStatus,
   ItemVisibilityType,
@@ -20,7 +19,7 @@ export const ItemMetadataFactory = (
   return {
     updatedAt: item?.updatedAt ?? new Date().toISOString(),
     path: item?.parentItem ? buildPathFromIds[(item.parentItem.path, path)] : path,
-    type: item?.type ?? ItemType.FOLDER,
+    type: item?.type ?? 'folder',
     public: isPublic ? ({ type: ItemVisibilityType.Public } as ItemVisibilityRaw) : undefined,
   };
 };

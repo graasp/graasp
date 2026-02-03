@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemLoginSchemaType, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
+import { HttpMethod, ItemLoginSchemaType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { MemberFactory } from '../../../test/factories/member.factory';
@@ -112,9 +112,9 @@ describe('Member routes tests', () => {
       const { actor, items } = await seedFromJson({
         items: [
           {
-            type: ItemType.FILE,
+            type: 'file',
             extra: {
-              [ItemType.FILE]: {
+              ['file']: {
                 size: 1234,
                 content: 'content',
                 mimetype: 'image/png',
@@ -126,9 +126,9 @@ describe('Member routes tests', () => {
             memberships: [{ account: 'actor' }],
           },
           {
-            type: ItemType.FILE,
+            type: 'file',
             extra: {
-              [ItemType.FILE]: {
+              ['file']: {
                 size: 534,
                 content: 'content',
                 mimetype: 'image/png',
@@ -140,9 +140,9 @@ describe('Member routes tests', () => {
             memberships: [{ account: 'actor' }],
           },
           {
-            type: ItemType.FILE,
+            type: 'file',
             extra: {
-              [ItemType.FILE]: {
+              ['file']: {
                 size: 8765,
                 content: 'content',
                 mimetype: 'image/png',
@@ -165,10 +165,10 @@ describe('Member routes tests', () => {
       mockAuthenticate(actor);
 
       const totalStorage = items.reduce((acc, i) => {
-        if (i.type !== ItemType.FILE) {
+        if (i.type !== 'file') {
           return acc;
         }
-        return acc + i.extra[ItemType.FILE]?.size;
+        return acc + i.extra['file']?.size;
       }, 0);
 
       const response = await app.inject({
@@ -185,9 +185,9 @@ describe('Member routes tests', () => {
         items: [
           // noise
           {
-            type: ItemType.FILE,
+            type: 'file',
             extra: {
-              [ItemType.FILE]: {
+              ['file']: {
                 size: 8765,
                 content: 'content',
                 mimetype: 'image/png',

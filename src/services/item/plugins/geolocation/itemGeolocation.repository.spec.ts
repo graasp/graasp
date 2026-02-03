@@ -2,8 +2,6 @@ import { faker } from '@faker-js/faker';
 import { eq } from 'drizzle-orm/sql';
 import { describe, expect, it } from 'vitest';
 
-import { ItemType } from '@graasp/sdk';
-
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemGeolocationsTable } from '../../../../drizzle/schema';
@@ -617,9 +615,9 @@ describe('ItemGeolocationRepository', () => {
             memberships: [{ account: 'actor' }],
             children: [
               {
-                type: ItemType.DOCUMENT,
+                type: 'document',
                 creator: 'actor',
-                extra: { [ItemType.DOCUMENT]: { content: 'public' } },
+                extra: { ['document']: { content: 'public' } },
                 geolocation: {
                   lat: 1,
                   lng: 2,
@@ -628,8 +626,8 @@ describe('ItemGeolocationRepository', () => {
                 },
               },
               {
-                type: ItemType.DOCUMENT,
-                extra: { [ItemType.DOCUMENT]: { content: 'private' } },
+                type: 'document',
+                extra: { ['document']: { content: 'private' } },
                 geolocation: {
                   lat: 1,
                   lng: 2,

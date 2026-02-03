@@ -3,8 +3,6 @@ import { singleton } from 'tsyringe';
 
 import type { MultipartFile } from '@fastify/multipart';
 
-import { ItemType } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../drizzle/db';
 import type {
   InvitationInsertDTO,
@@ -390,7 +388,7 @@ export class InvitationService {
     if (!hasGrpCol) {
       throw new MissingGroupColumnInCSVError();
     }
-    if (!isItemType(parentItem, ItemType.FOLDER)) {
+    if (!isItemType(parentItem, 'folder')) {
       throw new CantCreateStructureInNoFolderItem();
     }
 

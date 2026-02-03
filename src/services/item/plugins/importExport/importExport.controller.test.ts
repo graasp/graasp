@@ -10,13 +10,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import {
-  type FileItemProperties,
-  HttpMethod,
-  ItemType,
-  MimeTypes,
-  ThumbnailSize,
-} from '@graasp/sdk';
+import { type FileItemProperties, HttpMethod, MimeTypes, ThumbnailSize } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -82,7 +76,7 @@ const setupActorAndItems = async () => {
     };
   });
   const appItem = {
-    type: ItemType.APP,
+    type: 'app' as const,
     name: `secondLevelItemApp`,
     appSettings: [{ creator: { name: 'bob' }, name: 'app-setting' }],
   };
@@ -90,7 +84,7 @@ const setupActorAndItems = async () => {
     if (i === 0) {
       return {
         name: `folderItem1`,
-        type: ItemType.FOLDER,
+        type: 'folder' as const,
         order: i,
         children: [...secondLevelChildren, appItem],
       };
@@ -106,7 +100,7 @@ const setupActorAndItems = async () => {
     items: [
       {
         name: 'folderItem',
-        type: ItemType.FOLDER,
+        type: 'folder' as const,
         memberships: [{ account: `actor` }],
         children: firstLevelChildren,
       },
@@ -255,17 +249,17 @@ describe('ZIP routes tests', () => {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           expect(item.creator!.id).toEqual(actor.id);
 
-          if (item.type === ItemType.FILE) {
-            expect((item.extra[ItemType.FILE] as { name: string }).name).toEqual(
-              (file.extra[ItemType.FILE] as { name: string }).name,
+          if (item.type === 'file') {
+            expect((item.extra['file'] as { name: string }).name).toEqual(
+              (file.extra['file'] as { name: string }).name,
             );
-          } else if (item.type === ItemType.LINK) {
-            expect((item.extra[ItemType.LINK] as { url: string }).url).toEqual(
-              (file.extra[ItemType.LINK] as { url: string }).url,
+          } else if (item.type === 'embeddedLink') {
+            expect((item.extra['embeddedLink'] as { url: string }).url).toEqual(
+              (file.extra['embeddedLink'] as { url: string }).url,
             );
-          } else if (item.type === ItemType.FOLDER) {
+          } else if (item.type === 'folder') {
             // loosely check the
-            expect(item.extra).toEqual({ [ItemType.FOLDER]: {} });
+            expect(item.extra).toEqual({ ['folder']: {} });
           } else {
             expect(item.extra).toEqual(file.extra);
           }
@@ -317,17 +311,17 @@ describe('ZIP routes tests', () => {
           expect(item.description).toContain(file.description);
           expect(item.creatorId).toEqual(actor.id);
 
-          if (item.type === ItemType.FILE) {
-            expect((item.extra[ItemType.FILE] as { name: string }).name).toEqual(
-              (file.extra[ItemType.FILE] as { name: string }).name,
+          if (item.type === 'file') {
+            expect((item.extra['file'] as { name: string }).name).toEqual(
+              (file.extra['file'] as { name: string }).name,
             );
-          } else if (item.type === ItemType.LINK) {
-            expect((item.extra[ItemType.LINK] as { url: string }).url).toEqual(
-              (file.extra[ItemType.LINK] as { url: string }).url,
+          } else if (item.type === 'embeddedLink') {
+            expect((item.extra['embeddedLink'] as { url: string }).url).toEqual(
+              (file.extra['embeddedLink'] as { url: string }).url,
             );
-          } else if (item.type === ItemType.FOLDER) {
+          } else if (item.type === 'folder') {
             // loosely check the
-            expect(item.extra).toEqual({ [ItemType.FOLDER]: {} });
+            expect(item.extra).toEqual({ ['folder']: {} });
           } else {
             expect(item.extra).toEqual(file.extra);
           }
@@ -412,7 +406,7 @@ describe('ZIP routes tests', () => {
             expect(item.description).not.toContain(`console`);
 
             // content
-            expect(item.extra[ItemType.DOCUMENT].content).toEqual('This is a txt content');
+            expect(item.extra['document'].content).toEqual('This is a txt content');
           }
           // .html
           else if (item.name === 'myhtml') {
@@ -420,12 +414,12 @@ describe('ZIP routes tests', () => {
             expect(item.description).toEqual('');
 
             // allowed tags
-            expect(item.extra[ItemType.DOCUMENT].content).toContain(`<h1>My First Heading</h1>`);
-            expect(item.extra[ItemType.DOCUMENT].content).toContain(`<p>My first paragraph.</p>`);
+            expect(item.extra['document'].content).toContain(`<h1>My First Heading</h1>`);
+            expect(item.extra['document'].content).toContain(`<p>My first paragraph.</p>`);
 
             // the script with a console should not appear in the text
-            expect(item.extra[ItemType.DOCUMENT].content).not.toContain(`script`);
-            expect(item.extra[ItemType.DOCUMENT].content).not.toContain(`console`);
+            expect(item.extra['document'].content).not.toContain(`script`);
+            expect(item.extra['document'].content).not.toContain(`console`);
           } else {
             throw new Error('did not find the wanted files');
           }
@@ -456,13 +450,13 @@ describe('ZIP routes tests', () => {
           where: and(
             isDescendantOrSelf(itemsRawTable.path, parentItem.path),
             ne(itemsRawTable.id, parentItem.id),
-            eq(itemsRawTable.type, ItemType.DOCUMENT),
+            eq(itemsRawTable.type, 'document'),
           ),
         });
         expect(documents).toHaveLength(2);
 
         for (const item of documents) {
-          const content = item.extra[ItemType.DOCUMENT].content;
+          const content = item.extra['document'].content;
 
           // the script with a console should not appear in the text
           expect(content).not.toContain('script');
@@ -533,22 +527,22 @@ describe('ZIP routes tests', () => {
 
         // Check that all the items have been imported and that their order is correct
         expect(itemsInDB.length).toEqual(5);
-        expect(folderItem.type).toEqual(ItemType.FOLDER);
-        expect(documentItem.type).toEqual(ItemType.DOCUMENT);
-        expect(fileItem.type).toEqual(ItemType.FILE);
-        expect(h5pItem.type).toEqual(ItemType.H5P);
-        expect(appItem.type).toEqual(ItemType.APP);
+        expect(folderItem.type).toEqual('folder');
+        expect(documentItem.type).toEqual('document');
+        expect(fileItem.type).toEqual('file');
+        expect(h5pItem.type).toEqual('h5p');
+        expect(appItem.type).toEqual('app');
         expect(Number(itemsInDB[1].order)).toBeLessThan(Number(itemsInDB[2].order));
 
         // Check that all the item properties have been assigned for the document type
         expect(folderItem.description).toEqual(folderDescription);
 
         // Check that all the item properties have been assigned for the document type
-        expect(documentItem.extra[ItemType.DOCUMENT]).toBeDefined();
-        expect(documentItem.extra[ItemType.DOCUMENT].content).toEqual(documentContent);
+        expect(documentItem.extra['document']).toBeDefined();
+        expect(documentItem.extra['document'].content).toEqual(documentContent);
 
         // Check that all the item properties have been assigned for the file type
-        const fileItemProperties = fileItem.extra[ItemType.FILE] as FileItemProperties;
+        const fileItemProperties = fileItem.extra['file'] as FileItemProperties;
 
         expect(fileItemProperties).toBeDefined();
         expect(fileItemProperties.name).toEqual(pdfName);
@@ -568,8 +562,8 @@ describe('ZIP routes tests', () => {
         expect(h5pItem.name).toEqual(h5pFilename);
 
         // Check the APP item
-        expect(appItem.extra[ItemType.APP]).toBeDefined();
-        expect(appItem.extra[ItemType.APP].url).toEqual(appUrl);
+        expect(appItem.extra['app']).toBeDefined();
+        expect(appItem.extra['app'].url).toEqual(appUrl);
         const appSetting = await db.query.appSettingsTable.findFirst({
           where: eq(appSettingsTable.itemId, appItem.id),
         });
@@ -588,7 +582,7 @@ describe('ZIP routes tests', () => {
         items: [
           {
             name: 'item-name',
-            type: ItemType.DOCUMENT,
+            type: 'document',
             extra: { document: { content: 'my text', isRaw: false } },
             memberships: [{ account: 'actor', permission: 'read' }],
           },
@@ -614,7 +608,7 @@ describe('ZIP routes tests', () => {
         items: [
           {
             name: 'item-name',
-            type: ItemType.DOCUMENT,
+            type: 'document',
             extra: { document: { content: 'my text', isRaw: false } },
             itemLoginSchema: { guests: [{}] },
           },
@@ -638,7 +632,7 @@ describe('ZIP routes tests', () => {
         items: [
           {
             name: 'item-name',
-            type: ItemType.DOCUMENT,
+            type: 'document',
             extra: { document: { content: 'my text', isRaw: false } },
             isPublic: true,
           },
@@ -703,7 +697,7 @@ describe('ZIP routes tests', () => {
         items: [
           {
             name: 'doc',
-            type: ItemType.DOCUMENT,
+            type: 'document',
             extra: { document: { content: 'my content in the document', isRaw: true } },
             memberships: [{ account: 'actor' }],
           },
@@ -732,7 +726,7 @@ describe('ZIP routes tests', () => {
         items: [
           {
             name: 'doc',
-            type: ItemType.DOCUMENT,
+            type: 'document',
             extra: { document: { content: 'my html in the document', isRaw: false } },
             memberships: [{ account: 'actor' }],
           },
@@ -824,9 +818,7 @@ describe('ZIP routes tests', () => {
         actor,
         items: [{ id: documentId }],
       } = await seedFromJson({
-        items: [
-          { ...ItemFactory({ type: ItemType.DOCUMENT }), memberships: [{ account: 'actor' }] },
-        ],
+        items: [{ ...ItemFactory({ type: 'document' }), memberships: [{ account: 'actor' }] }],
       });
       assertIsDefined(actor);
       mockAuthenticate(actor);
@@ -892,7 +884,7 @@ describe('ZIP routes tests', () => {
         secondLevelItems.map((x) => x.name),
       );
 
-      const foundAppItem = foundSecondLevelChildren?.find((i) => i.type === ItemType.APP);
+      const foundAppItem = foundSecondLevelChildren?.find((i) => i.type === 'app');
       expect(foundAppItem).toBeDefined();
       expect(foundAppItem!.appSettings).toBeDefined();
       expect(foundAppItem!.appSettings![0].name).toEqual(appItem.appSettings[0].name);

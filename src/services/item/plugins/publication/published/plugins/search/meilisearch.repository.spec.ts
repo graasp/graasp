@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 
 import { seedFromJson } from '../../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../../drizzle/db';
-import { ItemType } from '../../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../../utils/assertions';
 import { TagCategory } from '../../../../../../tag/tag.schemas';
 import { MeilisearchRepository } from './meilisearch.repository';
@@ -26,14 +25,14 @@ describe('Meilisearch Repository', () => {
             children: [
               {
                 name: 'document',
-                type: ItemType.DOCUMENT,
+                type: 'document',
                 description: 'document description with some <div>html</div>',
                 extra: { document: { content: 'document content with some <div>html</div>' } },
               },
               {
                 name: 'file',
                 description: null,
-                type: ItemType.FILE,
+                type: 'file',
                 extra: { file: { content: 'pdf content' } },
               },
               { extra: { folder: {} }, type: 'folder', likes: [{ name: 'bob' }, { name: 'anna' }] },
@@ -59,7 +58,7 @@ describe('Meilisearch Repository', () => {
         id: items[0].id,
         name: 'parent',
         description: 'parent description',
-        type: ItemType.FOLDER,
+        type: 'folder',
         lang: items[0].lang,
         content: '',
         level: [tags[0].name],
@@ -80,7 +79,7 @@ describe('Meilisearch Repository', () => {
         id: items[1].id,
         name: 'document',
         description: 'document description with some html',
-        type: ItemType.DOCUMENT,
+        type: 'document',
         content: 'document content with some html',
         lang: items[1].lang,
         level: [],
@@ -101,7 +100,7 @@ describe('Meilisearch Repository', () => {
         id: items[2].id,
         name: 'file',
         description: '',
-        type: ItemType.FILE,
+        type: 'file',
         content: 'pdf content',
         lang: items[2].lang,
         level: [],

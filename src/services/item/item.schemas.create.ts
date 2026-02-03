@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { DocumentItemExtraFlavor, ItemType } from '@graasp/sdk';
+import { DocumentItemExtraFlavor } from '@graasp/sdk';
 
 import { customType } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
@@ -61,20 +61,17 @@ function itemCreateSchemaFactoryWithSettings<
 }
 
 // FOLDER
-const folderItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.FOLDER,
-  customType.StrictObject({}),
-);
+const folderItemCreateSchema = itemCreateSchemaFactory('folder', customType.StrictObject({}));
 
 // APP
 const appItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.APP,
+  'app',
   customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
 );
 
 // DOCUMENT
 const documentItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.DOCUMENT,
+  'document',
   customType.StrictObject({
     content: Type.String(),
     flavor: Type.Optional(Type.Enum(DocumentItemExtraFlavor)),
@@ -84,7 +81,7 @@ const documentItemCreateSchema = itemCreateSchemaFactory(
 
 // LINK
 const linkItemCreateSchema = itemCreateSchemaFactoryWithSettings(
-  ItemType.LINK,
+  'embeddedLink',
   customType.StrictObject({
     url: Type.String({ format: 'uri' }),
     thumbnails: Type.Optional(Type.Array(Type.String())),
@@ -110,15 +107,15 @@ const linkItemCreateSchema = itemCreateSchemaFactoryWithSettings(
 const fileItemExtra = customType.StrictObject({
   name: Type.String(),
 });
-const fileItemCreateSchema = itemCreateSchemaFactory(ItemType.FILE, fileItemExtra);
+const fileItemCreateSchema = itemCreateSchemaFactory('file', fileItemExtra);
 const etherpadItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.ETHERPAD,
+  'etherpad',
   customType.StrictObject({ groupID: Type.String(), padID: Type.String() }),
 );
 
 // H5P
 const h5pItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.H5P,
+  'h5p',
   customType.StrictObject({
     contentId: Type.String(),
     h5pFilePath: Type.String(),
@@ -128,7 +125,7 @@ const h5pItemCreateSchema = itemCreateSchemaFactory(
 
 // SHORTCUT
 const shortcutItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.SHORTCUT,
+  'shortcut',
   customType.StrictObject({ target: customType.UUID() }),
 );
 

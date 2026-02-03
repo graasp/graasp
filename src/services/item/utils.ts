@@ -4,9 +4,10 @@ import { readPdfText } from 'pdf-text-reader';
 
 import type { MultipartFields, MultipartFile } from '@fastify/multipart';
 
-import { type ItemGeolocation, ItemType, type ItemTypeUnion, isChildOf } from '@graasp/sdk';
+import { type ItemGeolocation, isChildOf } from '@graasp/sdk';
 
 import type { ItemRaw } from '../../drizzle/types';
+import { ITEM_TYPES, ItemType } from '../../schemas/global';
 import { NoFileProvided } from '../../utils/errors';
 import { type FolderItem, isItemType } from './discrimination';
 import { validateGeolocation, validateSettings } from './validation';
@@ -25,7 +26,7 @@ export const sortChildrenForTreeWith = <T extends ItemRaw>(
   directChildren.sort(itemOrderFn);
 
   const tree = directChildren.map((directChild) => {
-    if (!isItemType(directChild, ItemType.FOLDER)) {
+    if (!isItemType(directChild, 'folder')) {
       return [directChild];
     }
     return [directChild, ...sortChildrenForTreeWith(descendants, directChild)];
@@ -95,11 +96,13 @@ export const getPostItemPayloadFromFormData = (
   }
   const maybeType = getFieldFromMultipartForm(formData.fields, 'type');
   // type should be present and should be one of the available types
-  if (!maybeType || !(Object.values(ItemType) as string[]).includes(maybeType)) {
-    throw new Error('missing type or invlid type provided');
+
+  if (!maybeType || !ITEM_TYPES.includes(maybeType as ItemType)) {
+    throw new Error('missing type or invalid type provided');
   }
+
   // here we cast as we have checked previously that it was valid
-  const type = maybeType as ItemTypeUnion;
+  const type = maybeType as ItemType;
 
   // non-mandatory fields
   const description = getFieldFromMultipartForm(formData.fields, 'description');

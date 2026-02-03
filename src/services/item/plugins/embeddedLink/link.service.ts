@@ -6,7 +6,6 @@ import type { FastifyBaseLogger } from 'fastify';
 
 import {
   type ItemGeolocation,
-  ItemType,
   type LinkItemExtra,
   type LinkItemExtraProperties,
   type UUID,
@@ -180,7 +179,7 @@ export class EmbeddedLinkItemService extends ItemService {
   ) {
     return {
       ...item,
-      type: ItemType.LINK,
+      type: 'embeddedLink' as const,
       extra,
       settings: {
         ...item.settings,
@@ -258,7 +257,7 @@ export class EmbeddedLinkItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is link
-    if (!isItemType(item, ItemType.LINK)) {
+    if (!isItemType(item, 'embeddedLink')) {
       throw new WrongItemTypeError(item.type);
     }
 

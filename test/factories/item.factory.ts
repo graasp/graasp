@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { v4 } from 'uuid';
 
-import { CCLicenseAdaptions, ItemType, buildPathFromIds } from '@graasp/sdk';
+import { CCLicenseAdaptions, buildPathFromIds } from '@graasp/sdk';
 
 import type { ItemWithCreator } from '../../src/drizzle/types';
 
@@ -21,7 +21,7 @@ export const ItemFactory = (
   const path = `${parentPrefix}${buildPathFromIds(id)}`;
 
   return {
-    type: ItemType.FOLDER,
+    type: 'folder',
     order: null,
     name: faker.word.words(4),
     description: faker.lorem.text(),

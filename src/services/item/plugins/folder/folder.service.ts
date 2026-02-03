@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import { type ItemGeolocation, ItemType, type UUID } from '@graasp/sdk';
+import { type ItemGeolocation, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -66,7 +66,7 @@ export class FolderItemService extends ItemService {
       itemId,
       permission,
     });
-    if (!isItemType(item, ItemType.FOLDER)) {
+    if (!isItemType(item, 'folder')) {
       throw new WrongItemTypeError(item.type);
     }
     return item as FolderItem;
@@ -85,7 +85,7 @@ export class FolderItemService extends ItemService {
   ): Promise<FolderItem> {
     return (await super.post(dbConnection, member, {
       ...args,
-      item: { ...args.item, type: ItemType.FOLDER, extra: { folder: {} } },
+      item: { ...args.item, type: 'folder', extra: { folder: {} } },
     })) as FolderItem;
   }
 
@@ -98,7 +98,7 @@ export class FolderItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
-    if (item.type !== ItemType.FOLDER) {
+    if (item.type !== 'folder') {
       throw new WrongItemTypeError(item.type);
     }
 
@@ -113,7 +113,7 @@ export class FolderItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
-    if (item.type !== ItemType.FOLDER) {
+    if (item.type !== 'folder') {
       throw new ItemNotFolder({ id: itemId });
     }
 

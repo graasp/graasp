@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { AppDataVisibility, ItemType, PermissionLevelCompare, type UUID } from '@graasp/sdk';
+import { AppDataVisibility, PermissionLevelCompare, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
@@ -139,7 +139,7 @@ export class AppDataService {
     }
 
     // prevent patch on app data file
-    if (currentAppData?.data && currentAppData.data[ItemType.FILE]) {
+    if (currentAppData?.data && currentAppData.data['file']) {
       throw new PreventUpdateAppDataFile(currentAppData.id);
     }
 

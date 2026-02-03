@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
@@ -504,15 +504,15 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.DOCUMENT,
+              type: 'document',
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              type: ItemType.FOLDER,
+              type: 'folder',
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
@@ -709,16 +709,16 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.FOLDER,
+              type: 'folder',
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
-              type: ItemType.FOLDER,
+              type: 'folder',
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             // noise
             {
-              type: ItemType.APP,
+              type: 'app',
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
@@ -737,7 +737,7 @@ describe('Item routes tests', () => {
           method: HttpMethod.Get,
           url: '/api/items/accessible',
           query: {
-            types: [ItemType.FOLDER],
+            types: ['folder'],
           },
         });
 
@@ -997,9 +997,9 @@ describe('Item routes tests', () => {
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
               children: [
-                { type: ItemType.DOCUMENT },
-                { type: ItemType.FOLDER },
-                { type: ItemType.FOLDER, children: [{ name: 'noise' }] },
+                { type: 'document' },
+                { type: 'folder' },
+                { type: 'folder', children: [{ name: 'noise' }] },
               ],
             },
           ],
@@ -1124,15 +1124,15 @@ describe('Item routes tests', () => {
               children: [
                 {
                   creator: 'actor',
-                  type: ItemType.DOCUMENT,
+                  type: 'document',
                 },
                 {
                   creator: 'actor',
-                  type: ItemType.FOLDER,
+                  type: 'folder',
                 },
                 {
                   creator: 'actor',
-                  type: ItemType.FOLDER,
+                  type: 'folder',
                   children: [{ name: 'noise' }],
                 },
               ],

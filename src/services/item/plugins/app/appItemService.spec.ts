@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { AppItemFactory, FolderItemFactory, ItemType } from '@graasp/sdk';
+import { AppItemFactory, FolderItemFactory } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
@@ -73,11 +73,11 @@ describe('App Service', () => {
           name: 'name',
           description: undefined,
           extra: {
-            [ItemType.APP]: {
+            ['app']: {
               url: MOCK_URL,
             },
           },
-          type: ItemType.APP,
+          type: 'app',
           lang: undefined,
         },
         // lang is defined by super service
@@ -107,11 +107,11 @@ describe('App Service', () => {
           name: args.name,
           description: args.description,
           extra: {
-            [ItemType.APP]: {
+            ['app']: {
               url: MOCK_URL,
             },
           },
-          type: ItemType.APP,
+          type: 'app',
           lang: args.lang,
         },
         parentId: args.parentId,

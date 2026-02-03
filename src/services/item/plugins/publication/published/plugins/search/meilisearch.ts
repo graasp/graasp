@@ -3,7 +3,7 @@ import { SQL, count, eq } from 'drizzle-orm';
 import { EnqueuedTask, Index, MeiliSearch, type MultiSearchParams } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { type IndexItem, ItemType } from '@graasp/sdk';
+import { type IndexItem } from '@graasp/sdk';
 
 import { REDIS_CONNECTION } from '../../../../../../../config/redis';
 import { type DBConnection } from '../../../../../../../drizzle/db';
@@ -156,7 +156,7 @@ export class MeiliSearchWrapper {
   async deleteOne(dbConnection: DBConnection, item: ItemRaw) {
     try {
       let itemsToIndex = [item];
-      if (isItemType(item, ItemType.FOLDER)) {
+      if (isItemType(item, 'folder')) {
         itemsToIndex = itemsToIndex.concat(
           await this.itemRepository.getDescendants(dbConnection, item),
         );

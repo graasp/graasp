@@ -5,8 +5,6 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error
 import { Doc, encodeStateAsUpdate } from 'yjs';
 
-import { ItemType } from '@graasp/sdk';
-
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { pageUpdateTable } from '../../../../drizzle/schema';
@@ -19,7 +17,7 @@ describe('PageRepository', () => {
     it('create new update', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // save an update for item through temporary doc
       const doc = new Doc();
@@ -39,7 +37,7 @@ describe('PageRepository', () => {
     it('get current clock', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // save an update for item through temporary doc
       const doc = new Doc();
@@ -54,7 +52,7 @@ describe('PageRepository', () => {
     it('get -1 for no update', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       const clock = await pageRepository.getCurrentUpdateClock(db, item.id);
       expect(clock).toEqual(-1);
@@ -64,7 +62,7 @@ describe('PageRepository', () => {
     it('get updates clock', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // save an update for item through temporary doc
       const doc = new Doc();
@@ -81,7 +79,7 @@ describe('PageRepository', () => {
     it('return empty for no update', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       const clock = await pageRepository.getUpdates(db, item.id);
       expect(clock).toHaveLength(0);
@@ -91,7 +89,7 @@ describe('PageRepository', () => {
     it('delete updates in range', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // save an update for item through temporary doc
       const doc = new Doc();
@@ -114,7 +112,7 @@ describe('PageRepository', () => {
     it('delete nothing if range is invalid', async () => {
       const {
         items: [item],
-      } = await seedFromJson({ items: [{ type: ItemType.PAGE }] });
+      } = await seedFromJson({ items: [{ type: 'page' }] });
 
       // save an update for item through temporary doc
       const doc = new Doc();

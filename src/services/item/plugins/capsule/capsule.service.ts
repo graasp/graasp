@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ItemType, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -64,7 +64,7 @@ export class CapsuleItemService extends ItemService {
   ): Promise<CapsuleItem> {
     return (await super.post(dbConnection, member, {
       ...args,
-      item: { ...args.item, type: ItemType.FOLDER, extra: { folder: { isCapsule: true } } },
+      item: { ...args.item, type: 'folder', extra: { folder: { isCapsule: true } } },
     })) as CapsuleItem;
   }
 
@@ -76,7 +76,7 @@ export class CapsuleItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
-    if (item.type !== ItemType.FOLDER) {
+    if (item.type !== 'folder') {
       throw new ItemNotFolder({ id: itemId });
     }
 

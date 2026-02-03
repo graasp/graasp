@@ -3,10 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { ItemType } from '@graasp/sdk';
-
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
+import { errorSchemaRef, itemTypeSchemaRef } from '../../schemas/global';
 import { permissionLevelSchemaRef } from '../../types';
 import { nullableMemberSchemaRef } from '../member/member.schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
@@ -21,7 +19,7 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       name: Type.String(),
       description: Type.Optional(customType.Nullable(Type.String())),
-      type: customType.EnumString(Object.values(ItemType)),
+      type: itemTypeSchemaRef,
       path: Type.String(),
       lang: Type.String(),
       extra: Type.Object({}, { additionalProperties: true }),
@@ -73,7 +71,7 @@ export const getAccessible = {
         customType.StrictObject({
           creatorId: Type.String(),
           permissions: Type.Array(permissionLevelSchemaRef),
-          types: Type.Array(Type.Enum(ItemType)),
+          types: Type.Array(itemTypeSchemaRef),
           keywords: Type.Array(Type.String()),
           sortBy: Type.Enum(SortBy),
           ordering: Type.Enum(Ordering),
@@ -109,7 +107,7 @@ export const getChildren = {
   querystring: Type.Partial(
     customType.StrictObject({
       keywords: Type.Array(Type.String()),
-      types: Type.Array(Type.Enum(ItemType)),
+      types: Type.Array(itemTypeSchemaRef),
     }),
   ),
   response: {
@@ -131,7 +129,7 @@ export const getDescendantItems = {
     customType.StrictObject({
       // showHidden default value is true so it handles the legacy behavior.
       showHidden: Type.Boolean({ default: true }),
-      types: Type.Array(Type.Enum(ItemType)),
+      types: Type.Array(itemTypeSchemaRef),
     }),
   ),
   response: {

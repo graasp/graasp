@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { type ItemGeolocation, ItemType, type UUID } from '@graasp/sdk';
+import { type ItemGeolocation, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -67,7 +67,7 @@ export class AppItemService extends ItemService {
     const { name, description, lang, url, ...options } = args;
 
     const newItem = {
-      type: ItemType.APP,
+      type: 'app' as const,
       name,
       description,
       lang,
@@ -88,7 +88,7 @@ export class AppItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is app
-    if (!isItemType(item, ItemType.APP)) {
+    if (!isItemType(item, 'app')) {
       throw new WrongItemTypeError(item.type);
     }
 

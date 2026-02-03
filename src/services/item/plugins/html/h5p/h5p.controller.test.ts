@@ -8,8 +8,6 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { ItemType } from '@graasp/sdk';
-
 import build, { clearDatabase, mockAuthenticate } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
@@ -49,7 +47,7 @@ const buildExpectedItem = (item: H5PItem) => {
 
   return {
     name: H5P_ACCORDION_FILENAME,
-    type: ItemType.H5P,
+    type: 'h5p',
     extra: expectedExtra,
   };
 };

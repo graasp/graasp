@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -83,7 +83,7 @@ describe('Apps Plugin Tests', () => {
         const { apps } = await seedFromJson({ apps: [{}] });
         const {
           items: [item],
-        } = await seedFromJson({ items: [{ type: ItemType.APP }] });
+        } = await seedFromJson({ items: [{ type: 'app' }] });
         const chosenApp = apps[0];
 
         const response = await app.inject({
@@ -104,7 +104,7 @@ describe('Apps Plugin Tests', () => {
         const {
           items: [item],
         } = await seedFromJson({
-          items: [{ isPublic: true, type: ItemType.APP, extra: { app: { url: chosenApp.url } } }],
+          items: [{ isPublic: true, type: 'app', extra: { app: { url: chosenApp.url } } }],
         });
 
         const response = await app.inject({
@@ -124,7 +124,7 @@ describe('Apps Plugin Tests', () => {
         const {
           items: [item],
         } = await seedFromJson({
-          items: [{ isPublic: true, type: ItemType.APP, extra: { app: { url: chosenApp.url } } }],
+          items: [{ isPublic: true, type: 'app', extra: { app: { url: chosenApp.url } } }],
         });
 
         const response = await app.inject({
@@ -148,7 +148,7 @@ describe('Apps Plugin Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.APP,
+              type: 'app',
               extra: { app: { url: chosenApp.url } },
             },
           ],
@@ -175,7 +175,7 @@ describe('Apps Plugin Tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.APP,
+              type: 'app',
               extra: { app: { url: chosenApp.url } },
             },
           ],
@@ -215,7 +215,7 @@ describe('Apps Plugin Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               extra: { app: { url: chosenApp.url } },
             },
           ],
@@ -246,7 +246,7 @@ describe('Apps Plugin Tests', () => {
           items: [
             {
               isPublic: true,
-              type: ItemType.APP,
+              type: 'app',
               extra: { app: { url: chosenApp.url } },
             },
           ],
@@ -275,7 +275,7 @@ describe('Apps Plugin Tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.APP,
+              type: 'app',
               extra: { app: { url: chosenApp.url } },
             },
           ],
@@ -303,7 +303,7 @@ describe('Apps Plugin Tests', () => {
                 { account: 'actor', permission: 'read' },
                 { account: { name: 'bob' }, permission: 'read' },
               ],
-              type: ItemType.APP,
+              type: 'app',
               extra: { app: { url: chosenApp.url } },
             },
           ],
@@ -341,7 +341,7 @@ describe('Apps Plugin Tests', () => {
           items: [
             {
               memberships: [{ account: { name: 'anna' }, permission: 'read' }],
-              type: ItemType.APP,
+              type: 'app',
               extra: { app: { url: chosenApp.url } },
               itemLoginSchema: { guests: [{}] },
             },
@@ -381,7 +381,7 @@ describe('Apps Plugin Tests', () => {
               ],
               children: [
                 {
-                  type: ItemType.APP,
+                  type: 'app',
                   extra: { app: { url: chosenApp.url } },
                 },
               ],
@@ -421,7 +421,7 @@ describe('Apps Plugin Tests', () => {
               memberships: [{ account: { name: 'bob' } }, { account: { name: 'anna' } }],
               children: [
                 {
-                  type: ItemType.APP,
+                  type: 'app',
                   extra: { app: { url: chosenApp.url } },
                 },
               ],

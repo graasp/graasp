@@ -1,7 +1,5 @@
 import { singleton } from 'tsyringe';
 
-import { ItemType } from '@graasp/sdk';
-
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import i18next from '../../../../i18n';
@@ -82,7 +80,7 @@ export class ShortcutItemService extends ItemService {
       item: {
         name,
         description,
-        type: ItemType.SHORTCUT,
+        type: 'shortcut',
         extra: { shortcut: { target } },
       },
     })) as ShortcutItem;
@@ -97,7 +95,7 @@ export class ShortcutItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is shortcut
-    if (!isItemType(item, ItemType.SHORTCUT)) {
+    if (!isItemType(item, 'shortcut')) {
       throw new WrongItemTypeError(item.type);
     }
 

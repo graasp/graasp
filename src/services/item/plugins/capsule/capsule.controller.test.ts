@@ -10,7 +10,6 @@ import {
   CapsuleItemFactory,
   DescriptionPlacement,
   HttpMethod,
-  ItemType,
   MAX_NUMBER_OF_CHILDREN,
 } from '@graasp/sdk';
 
@@ -229,7 +228,7 @@ describe('Capsule routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/api/items/capsules',
-          payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
+          payload: { name: faker.word.adverb(), type: 'folder' },
           query: { parentId: parentItem.id },
         });
 
@@ -520,7 +519,7 @@ describe('Capsule routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.DOCUMENT,
+              type: 'document',
               memberships: [{ account: 'actor' }],
             },
           ],
@@ -568,7 +567,7 @@ describe('Capsule routes tests', () => {
             {
               memberships: [{ account: 'actor' }],
               extra: {
-                [ItemType.FOLDER]: { isCapsule: true },
+                ['folder']: { isCapsule: true },
               },
             },
           ],
@@ -626,7 +625,7 @@ describe('Capsule routes tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [{ type: ItemType.DOCUMENT }],
+          items: [{ type: 'document' }],
         });
         assertIsDefined(actor);
         mockAuthenticate(actor);

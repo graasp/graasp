@@ -7,7 +7,7 @@ import { ZipFile } from 'yazl';
 import { type UnionOfConst } from '@graasp/sdk';
 
 import { type DBConnection } from '../drizzle/db';
-import { type ItemRaw, ItemType, MinimalAccount } from '../drizzle/types';
+import { type ItemRaw, MinimalAccount } from '../drizzle/types';
 import { TRANSLATIONS } from '../langs/constants';
 import { BaseLogger } from '../logger';
 import { MailBuilder } from '../plugins/mailer/builder';
@@ -191,7 +191,7 @@ export class ItemExportRequestService {
       );
     }
 
-    if (isItemType(item, ItemType.FOLDER)) {
+    if (isItemType(item, 'folder')) {
       // append description
       const folderPath = path.join(archiveRootPath, item.name);
       const children = await this.itemService.getChildren(dbConnection, actor, item.id);

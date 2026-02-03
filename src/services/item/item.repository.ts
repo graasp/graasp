@@ -23,7 +23,6 @@ import { v4 } from 'uuid';
 import {
   DEFAULT_LANG,
   type ItemSettings,
-  ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
   type Paginated,
@@ -53,12 +52,12 @@ import {
 } from '../../drizzle/schema';
 import type {
   ItemRaw,
-  ItemTypeUnion,
   ItemWithCreator,
   MemberRaw,
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
+import { ItemType } from '../../schemas/global';
 import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import { getSearchLang } from '../../utils/config';
 import {
@@ -155,7 +154,7 @@ export class ItemRepository {
       name,
       description = null,
       parent,
-      type = ItemType.FOLDER,
+      type = 'folder',
       extra,
       settings = {},
       lang,
@@ -163,7 +162,7 @@ export class ItemRepository {
       order,
     } = args;
 
-    if (parent && parent.type !== ItemType.FOLDER) {
+    if (parent && parent.type !== 'folder') {
       throw new ItemNotFolder({ id: parent.id });
     }
 
@@ -171,7 +170,7 @@ export class ItemRepository {
     const id = v4();
 
     // if item is a folder and the extra is empty
-    if (type === ItemType.FOLDER && !(ItemType.FOLDER in parsedExtra)) {
+    if (type === 'folder' && !('folder' in parsedExtra)) {
       parsedExtra = { folder: {} };
     }
 
@@ -386,7 +385,7 @@ export class ItemRepository {
    * @returns
    */
   async getNonOrderedChildren(dbConnection: DBConnection, parent: FolderItem): Promise<ItemRaw[]> {
-    if (parent.type !== ItemType.FOLDER) {
+    if (parent.type !== 'folder') {
       throw new ItemNotFolder({ id: parent.id });
     }
 
@@ -400,7 +399,7 @@ export class ItemRepository {
    * @returns
    */
   async getChildren(dbConnection: DBConnection, parent: ItemRaw): Promise<ItemRaw[]> {
-    if (parent.type !== ItemType.FOLDER) {
+    if (parent.type !== 'folder') {
       throw new ItemNotFolder({ id: parent.id });
     }
 
@@ -427,7 +426,7 @@ export class ItemRepository {
     parent: ItemRaw,
     params?: ItemChildrenParams,
   ): Promise<ItemWithCreator[]> {
-    if (parent.type !== ItemType.FOLDER) {
+    if (parent.type !== 'folder') {
       throw new ItemNotFolder({ id: parent.id });
     }
 
@@ -502,7 +501,7 @@ export class ItemRepository {
   async getDescendants(
     dbConnection: DBConnection,
     item: FolderItem,
-    options?: { types?: ItemTypeUnion[] },
+    options?: { types?: ItemType[] },
   ): Promise<ItemWithCreator[]> {
     const { types } = options ?? {};
 
@@ -607,7 +606,7 @@ export class ItemRepository {
       const { id: parentItemId, path: parentItemPath } = parentItem;
 
       // cannot move inside non folder item
-      if (parentItem.type !== ItemType.FOLDER) {
+      if (parentItem.type !== 'folder') {
         throw new ItemNotFolder({ id: parentItemId });
       }
 
@@ -731,7 +730,7 @@ export class ItemRepository {
     treeCopyMap: Map<string, { original: ItemRaw; copy: MinimalItemForInsert }>;
   }> {
     // cannot copy inside non folder item
-    if (parentItem && parentItem.type !== ItemType.FOLDER) {
+    if (parentItem && parentItem.type !== 'folder') {
       throw new ItemNotFolder({ id: parentItem.id });
     }
 
@@ -782,7 +781,7 @@ export class ItemRepository {
     old2New.set(original.id, { copy: copiedItem, original: original });
 
     // handle descendants - change path
-    if (isItemType(original, ItemType.FOLDER)) {
+    if (isItemType(original, 'folder')) {
       await this.copyDescendants(dbConnection, original, creator, old2New);
     }
 
@@ -904,10 +903,10 @@ export class ItemRepository {
   async getItemSumSize(dbConnection: DBConnection, memberId: string): Promise<number> {
     const result = await dbConnection
       .select({
-        total: sql<string>`SUM(((${items.extra}->${ItemType.FILE})->'size')::bigint)`,
+        total: sql<string>`SUM(((${items.extra}->${'file'})->'size')::bigint)`,
       })
       .from(items)
-      .where(and(eq(items.creatorId, memberId), eq(items.type, ItemType.FILE)));
+      .where(and(eq(items.creatorId, memberId), eq(items.type, 'file')));
     const [{ total }] = result;
     return parseInt(total ?? 0);
   }
@@ -936,16 +935,16 @@ export class ItemRepository {
         parentTable,
         sql`${parentTable.path} = subpath(${items.path}, 0, (nlevel(${items.path}) - 1))`,
       )
-      .where(and(eq(items.creatorId, memberId), eq(items.type, ItemType.FILE)))
+      .where(and(eq(items.creatorId, memberId), eq(items.type, 'file')))
       .offset(skip)
       // order by size
-      .orderBy(desc(sql`(${items.extra}::json -> ${ItemType.FILE} ->> 'size')::decimal`))
+      .orderBy(desc(sql`(${items.extra}::json -> ${'file'} ->> 'size')::decimal`))
       .limit(limit);
 
     const entities = result.map(({ parentName, parentId, extra, ...item }) => ({
       ...item,
-      size: extra[ItemType.FILE].size,
-      path: extra[ItemType.FILE].path,
+      size: extra['file'].size,
+      path: extra['file'].path,
       parent: parentId
         ? {
             id: parentId,

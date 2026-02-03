@@ -5,7 +5,7 @@ import { default as sanitize } from 'sanitize-filename';
 import { fastifyMultipart } from '@fastify/multipart';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
+import { ActionTriggers, Context, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
 import { REDIS_CONNECTION } from '../../../../config/redis';
 import { resolveDependency } from '../../../../di/utils';
@@ -116,7 +116,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       });
 
       // do not allow folders
-      if (item.type === ItemType.FOLDER) {
+      if (item.type === 'folder') {
         throw new WrongItemTypeError(item.type);
       }
 
@@ -159,7 +159,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const item = await authorizedItemService.getItemById(db, { accountId: member.id, itemId });
 
       // only allow folders
-      if (item.type !== ItemType.FOLDER) {
+      if (item.type !== 'folder') {
         throw new WrongItemTypeError(item.type);
       }
 

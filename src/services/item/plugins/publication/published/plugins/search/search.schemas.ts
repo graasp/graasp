@@ -3,10 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { ItemType, TagCategory } from '@graasp/sdk';
+import { TagCategory } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../../../../schemas/global';
+import { errorSchemaRef, itemTypeSchemaRef } from '../../../../../../../schemas/global';
 import {
   GET_FEATURED_ITEMS_MAXIMUM,
   GET_MOST_LIKED_ITEMS_MAXIMUM,
@@ -29,7 +29,7 @@ const meilisearchHitRef = registerSchemaAsRef(
     discipline: Type.Array(Type.String()),
     'resource-type': Type.Array(Type.String()),
     id: customType.UUID(),
-    type: Type.Enum(ItemType),
+    type: itemTypeSchemaRef,
     isPublishedRoot: Type.Boolean(),
     isHidden: Type.Boolean(),
     createdAt: customType.DateTime(),

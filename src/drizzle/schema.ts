@@ -22,8 +22,9 @@ import {
 import { eq, isNull } from 'drizzle-orm/sql';
 import geoip from 'geoip-lite';
 
-import { AccountType, type ItemSettings, type ItemTypeUnion } from '@graasp/sdk';
+import { AccountType, type ItemSettings } from '@graasp/sdk';
 
+import { ItemType } from '../schemas/global';
 import type { MemberExtra } from '../services/member/types';
 import { binary, binaryHash, citext, customNumeric, ltree } from './customTypes';
 
@@ -863,7 +864,7 @@ export const itemsRawTable = pgTable(
   {
     id: uuid().primaryKey().notNull(),
     name: varchar({ length: 500 }).notNull(),
-    type: varchar().$type<ItemTypeUnion>().default('folder').notNull(),
+    type: varchar().$type<ItemType>().default('folder').notNull(),
     description: varchar({ length: 5000 }),
     path: ltree('path').notNull(),
     creatorId: uuid('creator_id'),

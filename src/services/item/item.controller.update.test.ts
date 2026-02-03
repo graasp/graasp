@@ -14,7 +14,6 @@ import {
   DescriptionPlacement,
   FolderItemFactory,
   HttpMethod,
-  ItemType,
   MAX_NUMBER_OF_CHILDREN,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TREE_LEVELS,
@@ -387,7 +386,7 @@ describe('Item routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `/api/items`,
-          payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
+          payload: { name: faker.word.adverb(), type: 'folder' },
           query: { parentId: parentItem.id },
         });
 
@@ -670,7 +669,7 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.DOCUMENT,
+              type: 'document',
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
@@ -702,7 +701,7 @@ describe('Item routes tests', () => {
       const itemName = 'Test Item';
       const payload = new FormData();
       payload.append('name', itemName);
-      payload.append('type', ItemType.FOLDER);
+      payload.append('type', 'folder');
       payload.append('description', '');
       payload.append('file', imageStream);
       const response = await app.inject({
@@ -717,7 +716,7 @@ describe('Item routes tests', () => {
         newItem,
         FolderItemFactory({
           name: itemName,
-          type: ItemType.FOLDER,
+          type: 'folder',
           description: '',
           settings: { hasThumbnail: true },
           lang: 'en',
@@ -750,9 +749,9 @@ describe('Item routes tests', () => {
           items: [
             {
               memberships: [{ account: 'actor', permission: 'admin' }],
-              type: ItemType.DOCUMENT,
+              type: 'document',
               extra: {
-                [ItemType.DOCUMENT]: {
+                ['document']: {
                   content: 'content',
                 },
               },
@@ -766,7 +765,7 @@ describe('Item routes tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.DOCUMENT]: {
+            ['document']: {
               content: 'new content',
             },
           },
@@ -2306,7 +2305,7 @@ describe('Item routes tests', () => {
           items: [
             {
               creator: 'actor',
-              type: ItemType.DOCUMENT,
+              type: 'document',
               memberships: [{ account: 'actor', permission: 'write' }],
             },
             {

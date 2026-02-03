@@ -1,12 +1,7 @@
 import sanitize from 'sanitize-html';
 import { singleton } from 'tsyringe';
 
-import {
-  type DocumentItemExtraProperties,
-  type ItemGeolocation,
-  ItemType,
-  type UUID,
-} from '@graasp/sdk';
+import { type DocumentItemExtraProperties, type ItemGeolocation, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
@@ -90,7 +85,7 @@ export class DocumentItemService extends ItemService {
   ) {
     return {
       ...item,
-      type: ItemType.DOCUMENT,
+      type: 'document' as const,
       extra: { document: documentExtraProps },
     };
   }
@@ -134,7 +129,7 @@ export class DocumentItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is document
-    if (!isItemType(item, ItemType.DOCUMENT)) {
+    if (!isItemType(item, 'document')) {
       throw new WrongItemTypeError(item.type);
     }
 

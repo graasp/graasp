@@ -6,7 +6,6 @@ import {
   FileItemFactory,
   FolderItemFactory,
   H5PItemFactory,
-  ItemType,
   LinkItemFactory,
 } from '@graasp/sdk';
 
@@ -19,7 +18,7 @@ describe('File name', () => {
       getFilenameFromItem(
         FileItemFactory({
           name: 'myfile',
-          type: ItemType.FILE,
+          type: 'file',
           extra: {
             file: {
               name: 'name',
@@ -37,7 +36,7 @@ describe('File name', () => {
       getFilenameFromItem(
         FileItemFactory({
           name: 'myfile.png',
-          type: ItemType.FILE,
+          type: 'file',
           extra: {
             file: {
               name: 'name',
@@ -55,7 +54,7 @@ describe('File name', () => {
       getFilenameFromItem(
         FileItemFactory({
           name: 'myfile',
-          type: ItemType.FILE,
+          type: 'file',
           extra: {
             file: {
               name: 'name',
@@ -73,7 +72,7 @@ describe('File name', () => {
     expect(
       getFilenameFromItem({
         name: 'myfile',
-        type: ItemType.FILE,
+        type: 'file',
         extra: {
           file: {
             name: 'name',
@@ -90,7 +89,7 @@ describe('File name', () => {
       getFilenameFromItem(
         FileItemFactory({
           name: 'myfile.png',
-          type: ItemType.FILE,
+          type: 'file',
           extra: {
             file: {
               name: 'name',
@@ -108,7 +107,7 @@ describe('File name', () => {
       getFilenameFromItem(
         FileItemFactory({
           name: 'myfile',
-          type: ItemType.FILE,
+          type: 'file',
           extra: {
             file: {
               name: 'name',

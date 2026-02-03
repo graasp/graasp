@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { ItemType } from '@graasp/sdk';
-
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { assertIsDefined } from '../../../../../utils/assertions';
@@ -110,11 +108,11 @@ describe('Action Request Export Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
           },
           // noise
           {
-            type: ItemType.APP,
+            type: 'app',
             appData: [
               { account: 'actor', creator: 'actor' },
               { account: { name: 'bob' }, creator: { name: 'bob' } },
@@ -132,7 +130,7 @@ describe('Action Request Export Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
             appData: [
               { account: 'actor', creator: 'actor' },
               { account: { name: 'bob' }, creator: { name: 'bob' } },
@@ -140,7 +138,7 @@ describe('Action Request Export Repository', () => {
           },
           // noise
           {
-            type: ItemType.APP,
+            type: 'app',
             appData: [
               { account: 'actor', creator: 'actor' },
               { account: { name: 'bob' }, creator: { name: 'bob' } },
@@ -162,11 +160,11 @@ describe('Action Request Export Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
           },
           // noise
           {
-            type: ItemType.APP,
+            type: 'app',
             appActions: [{ account: 'actor' }, { account: { name: 'bob' } }],
           },
         ],
@@ -183,12 +181,12 @@ describe('Action Request Export Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
             appActions: [{ account: 'actor' }, { account: { name: 'bob' } }],
           },
           // noise
           {
-            type: ItemType.APP,
+            type: 'app',
             appActions: [{ account: 'actor' }, { account: { name: 'bob' } }],
           },
         ],
@@ -207,11 +205,11 @@ describe('Action Request Export Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
           },
           // noise
           {
-            type: ItemType.APP,
+            type: 'app',
             appSettings: [{ creator: 'actor' }, { creator: { name: 'bob' } }],
           },
         ],
@@ -226,12 +224,12 @@ describe('Action Request Export Repository', () => {
       } = await seedFromJson({
         items: [
           {
-            type: ItemType.APP,
+            type: 'app',
             appSettings: [{ creator: 'actor' }, { creator: { name: 'bob' } }],
           },
           // noise
           {
-            type: ItemType.APP,
+            type: 'app',
             appSettings: [{ creator: 'actor' }, { creator: { name: 'bob' } }],
           },
         ],

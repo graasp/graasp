@@ -25,7 +25,6 @@ import {
   type ChatMessageRaw,
   type ItemMembershipRaw,
   type ItemRaw,
-  ItemType,
   type MinimalAccount,
 } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
@@ -183,9 +182,7 @@ export class ActionRequestExportRepository {
     const appItemsTable = dbConnection
       .select()
       .from(itemsRawTable)
-      .where(
-        and(eq(itemsRawTable.type, ItemType.APP), isDescendantOrSelf(itemsRawTable.path, itemPath)),
-      )
+      .where(and(eq(itemsRawTable.type, 'app'), isDescendantOrSelf(itemsRawTable.path, itemPath)))
       .as('app_items');
 
     return await dbConnection
@@ -208,9 +205,7 @@ export class ActionRequestExportRepository {
     const appItemsTable = dbConnection
       .select()
       .from(itemsRawTable)
-      .where(
-        and(eq(itemsRawTable.type, ItemType.APP), isDescendantOrSelf(itemsRawTable.path, itemPath)),
-      )
+      .where(and(eq(itemsRawTable.type, 'app'), isDescendantOrSelf(itemsRawTable.path, itemPath)))
       .as('app_items');
 
     return await dbConnection
@@ -233,9 +228,7 @@ export class ActionRequestExportRepository {
     const appItemsTable = dbConnection
       .select()
       .from(itemsRawTable)
-      .where(
-        and(eq(itemsRawTable.type, ItemType.APP), isDescendantOrSelf(itemsRawTable.path, itemPath)),
-      )
+      .where(and(eq(itemsRawTable.type, 'app'), isDescendantOrSelf(itemsRawTable.path, itemPath)))
       .as('app_items');
 
     return await dbConnection

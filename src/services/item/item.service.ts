@@ -3,7 +3,6 @@ import { delay, inject, singleton } from 'tsyringe';
 
 import {
   H5PItemExtra,
-  ItemType,
   ItemVisibilityType,
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
@@ -24,11 +23,11 @@ import type {
   ItemGeolocationRaw,
   ItemMembershipRaw,
   ItemRaw,
-  ItemTypeUnion,
   ItemWithCreator,
   MinimalItemForInsert,
 } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
+import { ItemType } from '../../schemas/global';
 import type { AuthenticatedUser, MaybeUser, MinimalMember, PermissionLevel } from '../../types';
 import { H5P_INTEGRATION_URL } from '../../utils/config';
 import {
@@ -290,7 +289,7 @@ export class ItemService {
     );
 
     // quick check, necessary for ts
-    if (!isItemType(parentItem, ItemType.FOLDER)) {
+    if (!isItemType(parentItem, 'folder')) {
       throw new ItemNotFolder(parentItem);
     }
 
@@ -550,14 +549,14 @@ export class ItemService {
     dbConnection: DBConnection,
     maybeUser: MaybeUser,
     itemId: UUID,
-    options?: { types?: ItemTypeUnion[] },
+    options?: { types?: ItemType[] },
   ) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: maybeUser?.id,
       itemId,
     });
 
-    if (!isItemType(item, ItemType.FOLDER)) {
+    if (!isItemType(item, 'folder')) {
       return { item, descendants: <ItemWithCreator[]>[] };
     }
 
@@ -571,7 +570,7 @@ export class ItemService {
     dbConnection: DBConnection,
     actor: MaybeUser,
     itemId: UUID,
-    options?: { showHidden?: boolean; types?: ItemTypeUnion[] },
+    options?: { showHidden?: boolean; types?: ItemType[] },
   ) {
     const { descendants, item } = await this.getDescendants(dbConnection, actor, itemId, options);
     if (!descendants.length) {
@@ -649,7 +648,7 @@ export class ItemService {
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
     let items = [item];
-    if (isItemType(item, ItemType.FOLDER)) {
+    if (isItemType(item, 'folder')) {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(descendants.length);
@@ -879,12 +878,12 @@ export class ItemService {
     );
 
     // make sure the order of the descendants are correct
-    if (item.type === ItemType.FOLDER) {
+    if (item.type === 'folder') {
       await this.itemRepository.fixOrderForTree(dbConnection, item.path);
     }
 
     let items = [item];
-    if (isItemType(item, ItemType.FOLDER)) {
+    if (isItemType(item, 'folder')) {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       items = [...descendants, item];
     }
@@ -1055,7 +1054,7 @@ export class ItemService {
 
   private transformItemByType(item: PackedItem) {
     switch (item.type) {
-      case ItemType.H5P: {
+      case 'h5p': {
         const { h5p: h5pExtraProperties } = item.extra as H5PItemExtra;
         const integrationUrl = new URL(H5P_INTEGRATION_URL);
         // add the contentId param to the integration
