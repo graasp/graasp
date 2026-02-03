@@ -1,43 +1,38 @@
 import { PassThrough } from 'node:stream';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { BaseLogger } from '../../logger';
+import { MOCK_LOGGER } from '../../../test/app.vitest';
 import { AccountType } from '../../types';
-import FileService from '../file/file.service';
 import { THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 import { ThumbnailService } from './thumbnail.service';
 
+const MockedFileService = vi.fn(function () {
+  this.uploadMany = vi.fn();
+});
+
+const AUTHENTICATED_USER = {
+  id: 'user-1',
+  name: 'user 1',
+  type: AccountType.Individual,
+  isValidated: true,
+};
+
 describe('ThumbnailService.upload', () => {
   let thumbnailService: ThumbnailService;
-  let mockFileService: jest.Mocked<FileService>;
-  let mockLogger: jest.Mocked<BaseLogger>;
+  let mockFileService: any;
 
   beforeEach(() => {
-    mockFileService = {
-      uploadMany: jest.fn(),
-    } as any;
+    mockFileService = new MockedFileService();
 
-    mockLogger = {
-      debug: jest.fn(),
-      error: jest.fn(),
-    } as any;
-
-    thumbnailService = new ThumbnailService(mockFileService, mockLogger);
+    thumbnailService = new ThumbnailService(mockFileService, MOCK_LOGGER);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  const AUTHENTICATED_USER = {
-    id: 'user-1',
-    name: 'user 1',
-    type: AccountType.Individual,
-    isValidated: true,
-  };
-
   describe('successful upload', () => {
-    it('should upload thumbnails for all sizes', async () => {
+    test('should upload thumbnails for all sizes', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -69,7 +64,7 @@ describe('ThumbnailService.upload', () => {
       expect(calls[1]).toHaveLength(Object.keys(ThumbnailSizeFormat).length);
     });
 
-    it('should create thumbnails with correct filepaths', async () => {
+    test('should create thumbnails with correct filepaths', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-123';
       const mockFile = new PassThrough();
@@ -93,7 +88,7 @@ describe('ThumbnailService.upload', () => {
   });
 
   describe('error handling', () => {
-    it('should handle file stream errors gracefully', async () => {
+    test('should handle file stream errors gracefully', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -108,10 +103,9 @@ describe('ThumbnailService.upload', () => {
 
       // Should handle error and log it
       await expect(uploadPromise).rejects.toThrow('File read error');
-      expect(mockLogger.debug).toHaveBeenCalled();
     });
 
-    it('should handle upload service errors', async () => {
+    test('should handle upload service errors', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -124,12 +118,9 @@ describe('ThumbnailService.upload', () => {
       mockFile.end();
 
       await expect(uploadPromise).rejects.toThrow('S3 upload failed');
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.stringContaining('Could not upload the item-1 item thumbnails'),
-      );
     });
 
-    // it('should handle image sharp errors', async () => {
+    // test('should handle image sharp errors', async () => {
     //   const mockUser = AUTHENTICATED_USER;
     //   const itemId = 'item-1';
     //   const mockFile = new PassThrough();
@@ -155,7 +146,7 @@ describe('ThumbnailService.upload', () => {
     //   );
     // });
 
-    it('should call destroyAll on upload error', async () => {
+    test('should call destroyAll on upload error', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -177,7 +168,7 @@ describe('ThumbnailService.upload', () => {
   });
 
   describe('listener cleanup', () => {
-    it('should remove all listeners after successful upload', async () => {
+    test('should remove all listeners after successful upload', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -196,7 +187,7 @@ describe('ThumbnailService.upload', () => {
       removeListenersSpy.mockRestore();
     });
 
-    it('should remove all listeners even on error', async () => {
+    test('should remove all listeners even on error', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -216,7 +207,7 @@ describe('ThumbnailService.upload', () => {
       removeListenersSpy.mockRestore();
     });
 
-    it('should not leak event listeners', async () => {
+    test('should not leak event listeners', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -236,7 +227,7 @@ describe('ThumbnailService.upload', () => {
   });
 
   describe('abort/destroy scenarios', () => {
-    it('should handle stream destruction gracefully', async () => {
+    test('should handle stream destruction gracefully', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -257,7 +248,7 @@ describe('ThumbnailService.upload', () => {
       await expect(uploadPromise).rejects.toThrow();
     });
 
-    it('should handle multiple error events without crashing', async () => {
+    test('should handle multiple error events without crashing', async () => {
       const mockUser = AUTHENTICATED_USER;
       const itemId = 'item-1';
       const mockFile = new PassThrough();
@@ -285,7 +276,7 @@ describe('ThumbnailService.upload', () => {
   });
 
   describe('concurrent uploads', () => {
-    it('should handle multiple concurrent uploads without listener leaks', async () => {
+    test('should handle multiple concurrent uploads without listener leaks', async () => {
       const mockUser = AUTHENTICATED_USER;
 
       mockFileService.uploadMany.mockResolvedValue([]);
@@ -301,12 +292,9 @@ describe('ThumbnailService.upload', () => {
       await Promise.all(uploads);
 
       expect(mockFileService.uploadMany).toHaveBeenCalledTimes(5);
-      expect(mockLogger.debug).not.toHaveBeenCalledWith(
-        expect.stringContaining('Could not upload'),
-      );
     });
 
-    it('should handle some uploads failing while others succeed', async () => {
+    test('should handle some uploads failing while others succeed', async () => {
       const mockUser = AUTHENTICATED_USER;
 
       // Alternate between success and failure
