@@ -1,4 +1,5 @@
 import { PassThrough } from 'stream';
+import { describe, expect, it } from 'vitest';
 
 import { BaseLogger } from '../../logger';
 import { AccountType } from '../../types';
