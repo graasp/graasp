@@ -44,13 +44,19 @@ export class ThumbnailService {
     try {
       try {
         file.unpipe(image);
-      } catch (_) {}
+      } catch (err) {
+        console.debug('Failed to unpipe file from image:', err);
+      }
       image.destroy(err);
-    } catch (_) {}
+    } catch (err) {
+      console.debug('Failed to to destroy image:', err);
+    }
     for (const p of pipelines) {
       try {
         p.transform.destroy(err);
-      } catch (_) {}
+      } catch (err) {
+        console.debug('Failed to destroy thumbnail pipeline:', err);
+      }
     }
   }
 
@@ -59,7 +65,9 @@ export class ThumbnailService {
     const onFileError = (err: Error) => {
       try {
         image.destroy(err);
-      } catch (_) {}
+      } catch (err) {
+        console.debug('Failed to destroy image:', err);
+      }
     };
     file.on('error', onFileError);
 
@@ -76,10 +84,14 @@ export class ThumbnailService {
   private removeListeners(file: Readable, image: Sharp, listeners: { onFileError; onImageError }) {
     try {
       file.removeListener('error', listeners.onFileError);
-    } catch (_) {}
+    } catch (err) {
+      console.debug('Failed to remove error listener from file:', err);
+    }
     try {
       image.removeListener('error', listeners.onImageError);
-    } catch (_) {}
+    } catch (err) {
+      console.debug('Failed to remove error listener from image:', err);
+    }
   }
 
   async upload(authenticatedUser: AuthenticatedUser, id: string, file: Readable) {

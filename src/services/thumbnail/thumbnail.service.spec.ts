@@ -1,5 +1,5 @@
-import { PassThrough } from 'stream';
-import { describe, expect, it } from 'vitest';
+import { PassThrough } from 'node:stream';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { BaseLogger } from '../../logger';
 import { AccountType } from '../../types';
@@ -263,14 +263,14 @@ describe('ThumbnailService.upload', () => {
       const mockFile = new PassThrough();
 
       mockFileService.uploadMany.mockImplementation(() => {
-        return new Promise((resolve) => {
+        return new Promise(() => {
           setTimeout(() => {
             mockFile.destroy(new Error('First error'));
             // Attempt to emit another error (should not crash)
             try {
               mockFile.emit('error', new Error('Second error'));
             } catch (_) {
-              // Expected, stream is already destroyed
+              console.debug('Expected, stream is already destroyed');
             }
           }, 10);
         });
