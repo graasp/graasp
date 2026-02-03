@@ -28,7 +28,7 @@ describe('ThumbnailService.upload', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    MockedFileService.mockClear();
   });
 
   describe('successful upload', () => {
@@ -154,7 +154,7 @@ describe('ThumbnailService.upload', () => {
       const uploadError = new Error('Upload failed');
       mockFileService.uploadMany.mockRejectedValue(uploadError);
 
-      const destroyAllSpy = jest.spyOn(thumbnailService as any, 'destroyAll');
+      const destroyAllSpy = vi.spyOn(thumbnailService as any, 'destroyAll');
 
       const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
       mockFile.write(Buffer.from('test'));
@@ -175,7 +175,7 @@ describe('ThumbnailService.upload', () => {
 
       mockFileService.uploadMany.mockResolvedValue([]);
 
-      const removeListenersSpy = jest.spyOn(thumbnailService as any, 'removeListeners');
+      const removeListenersSpy = vi.spyOn(thumbnailService as any, 'removeListeners');
 
       const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
       mockFile.write(Buffer.from('test'));
@@ -195,7 +195,7 @@ describe('ThumbnailService.upload', () => {
       const uploadError = new Error('Upload failed');
       mockFileService.uploadMany.mockRejectedValue(uploadError);
 
-      const removeListenersSpy = jest.spyOn(thumbnailService as any, 'removeListeners');
+      const removeListenersSpy = vi.spyOn(thumbnailService as any, 'removeListeners');
 
       const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
       mockFile.write(Buffer.from('test'));
