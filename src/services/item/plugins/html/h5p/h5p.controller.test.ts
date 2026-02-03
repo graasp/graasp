@@ -204,7 +204,6 @@ describe('Service plugin', () => {
 
       let copiedH5P: H5PItem;
       await waitForExpect(async () => {
-        // expect(false).toBeTruthy();
         copiedH5P = (await db.query.itemsRawTable.findFirst({
           where: isDirectChild(itemsRawTable.path, targetParent.path),
         })) as H5PItem;
@@ -251,6 +250,50 @@ describe('Service plugin', () => {
           compareFileAsync: customFileCompare,
         });
         expect(dirDiff.same).toBeTruthy();
+      }, 5000); // the above line ensures exists
+    });
+    it('copies H5P with special characters on item copy', async () => {
+      const {
+        actor,
+        items: [parent, targetParent],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: 'admin' }],
+          },
+          {
+            memberships: [{ account: 'actor', permission: 'admin' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      // save h5p so it saves the files correctly
+      const res = await injectH5PImport(app, {
+        filePath: path.resolve(__dirname, 'test/fixtures/un nom français ééé.h5p'),
+        parentId: parent.id,
+      });
+      expect(res.statusCode).toEqual(StatusCodes.OK);
+      const item = res.json();
+
+      // copy item
+      await app.inject({
+        method: 'POST',
+        url: '/api/items/copy',
+        query: {
+          id: [item.id],
+        },
+        payload: {
+          parentId: targetParent.id,
+        },
+      });
+
+      await waitForExpect(async () => {
+        const copiedH5P = await db.query.itemsRawTable.findFirst({
+          where: isDirectChild(itemsRawTable.path, targetParent.path),
+        });
+        expect(copiedH5P).toBeDefined();
       }, 5000); // the above line ensures exists
     });
   });

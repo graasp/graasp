@@ -86,8 +86,16 @@ export abstract class HtmlService {
    * Helper to build the local or remote path of the package file
    * // <contentId>/<filename>.<extension>
    */
-  buildPackagePath = (rootPath: string, filename: string) =>
-    path.join(rootPath, `${encodeURIComponent(filename)}.${this.extension}`);
+  buildPackagePath = (rootPath: string, filename: string) => {
+    // build a short filename without special characters
+    const safeName = filename
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 20);
+
+    return path.join(rootPath, `${safeName}.${this.extension}`);
+  };
 
   /**
    * Helper to build the local or remote path of the html content root
