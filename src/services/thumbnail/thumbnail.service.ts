@@ -35,28 +35,17 @@ export class ThumbnailService {
   }
 
   // cleanup helper for original input file and related sharp pipelines
-  private destroyAll(
-    file: Readable,
-    image: Sharp,
-    pipelines: { transform: Readable }[],
-    err?: Error,
-  ) {
+  private destroyAll(file: Readable, image: Sharp, err?: Error) {
     try {
       try {
         file.unpipe(image);
+        file.destroy();
       } catch (err) {
-        console.debug('Failed to unpipe file from image:', err);
+        this.logger.debug('Failed to unpipe file from image:', err);
       }
       image.destroy(err);
     } catch (err) {
-      console.debug('Failed to to destroy image:', err);
-    }
-    for (const p of pipelines) {
-      try {
-        p.transform.destroy(err);
-      } catch (err) {
-        console.debug('Failed to destroy thumbnail pipeline:', err);
-      }
+      this.logger.debug('Failed to to destroy image:', err);
     }
   }
 
@@ -65,32 +54,22 @@ export class ThumbnailService {
     const onFileError = (err: Error) => {
       try {
         image.destroy(err);
-      } catch (err) {
-        console.debug('Failed to destroy image:', err);
+      } catch (e) {
+        this.logger.debug('Failed to destroy image:', e);
       }
+      throw err;
     };
     file.on('error', onFileError);
 
-    // catch errors from sharp processing or stream destruction
-    const onImageError = (err: Error) => {
-      this.logger.debug(`Image processing error during thumbnail upload: ${err.message}`);
-    };
-    image.on('error', onImageError);
-
-    return { onFileError, onImageError };
+    return { onFileError };
   }
 
   // remove listeners to avoid leaks
-  private removeListeners(file: Readable, image: Sharp, listeners: { onFileError; onImageError }) {
+  private removeListeners(file: Readable, listeners: { onFileError }) {
     try {
       file.removeListener('error', listeners.onFileError);
     } catch (err) {
-      console.debug('Failed to remove error listener from file:', err);
-    }
-    try {
-      image.removeListener('error', listeners.onImageError);
-    } catch (err) {
-      console.debug('Failed to remove error listener from image:', err);
+      this.logger.debug('Failed to remove error listener from file:', err);
     }
   }
 
@@ -106,7 +85,6 @@ export class ThumbnailService {
     });
 
     const listeners = this.attachListeners(image, file);
-
     try {
       // prepare upload payloads (the fileService will consume the readable sides)
       const filesToUpload = pipelines.map(({ transform, filepath }) => ({
@@ -117,11 +95,11 @@ export class ThumbnailService {
 
       await this.fileService.uploadMany(authenticatedUser, filesToUpload);
     } catch (err) {
-      this.destroyAll(file, image, pipelines, err as Error);
+      this.destroyAll(file, image, err as Error);
       this.logger.debug(`Could not upload the ${id} item thumbnails`);
       throw err;
     } finally {
-      this.removeListeners(file, image, listeners);
+      this.removeListeners(file, listeners);
     }
   }
 

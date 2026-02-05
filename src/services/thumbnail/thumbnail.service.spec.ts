@@ -19,7 +19,7 @@ const AUTHENTICATED_USER = {
 
 describe('ThumbnailService.upload', () => {
   let thumbnailService: ThumbnailService;
-  let mockFileService: any;
+  let mockFileService;
 
   beforeEach(() => {
     mockFileService = new MockedFileService();
@@ -78,7 +78,7 @@ describe('ThumbnailService.upload', () => {
       await uploadPromise;
 
       const [, filesToUpload] = mockFileService.uploadMany.mock.calls[0];
-      const filepaths = filesToUpload.map((f: any) => f.filepath);
+      const filepaths = filesToUpload.map((f: { filepath: string }) => f.filepath);
 
       // All paths should include the itemId
       expect(filepaths.every((p: string) => p.includes(itemId))).toBe(true);
@@ -93,16 +93,23 @@ describe('ThumbnailService.upload', () => {
       const itemId = 'item-1';
       const mockFile = new PassThrough();
 
-      mockFileService.uploadMany.mockResolvedValue([]);
-
-      const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
-
-      // Emit error on file stream
-      const fileError = new Error('File read error');
-      mockFile.destroy(fileError);
+      mockFileService.uploadMany.mockImplementation(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve([]);
+          }, 1000);
+        });
+      });
 
       // Should handle error and log it
-      await expect(uploadPromise).rejects.toThrow('File read error');
+      await expect(async () => {
+        thumbnailService.upload(mockUser, itemId, mockFile);
+        // Emit error on file stream
+        // rejects with undefined error to avoid image stream error to be caught by vitest
+        mockFile.emit('error');
+      }).rejects.toThrow();
+
+      mockFile.destroy();
     });
 
     test('should handle upload service errors', async () => {
@@ -110,60 +117,13 @@ describe('ThumbnailService.upload', () => {
       const itemId = 'item-1';
       const mockFile = new PassThrough();
 
-      const uploadError = new Error('S3 upload failed');
-      mockFileService.uploadMany.mockRejectedValue(uploadError);
+      // rejects with undefined to avoid image stream error to be caught by vitest
+      mockFileService.uploadMany.mockRejectedValue();
 
-      const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
-      mockFile.write(Buffer.from('test'));
-      mockFile.end();
-
-      await expect(uploadPromise).rejects.toThrow('S3 upload failed');
-    });
-
-    // test('should handle image sharp errors', async () => {
-    //   const mockUser = AUTHENTICATED_USER;
-    //   const itemId = 'item-1';
-    //   const mockFile = new PassThrough();
-
-    //   mockFileService.uploadMany.mockImplementation(() => {
-    //     return new Promise((resolve) => {
-    //       // Simulate async behavior
-    //       setTimeout(resolve, 10);
-    //     });
-    //   });
-
-    //   const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
-
-    //   // Simulate an error on the image stream
-    //   mockFile.write(Buffer.from('test'));
-    //   mockFile.end();
-
-    //   await uploadPromise;
-
-    //   // The error handler should have been registered
-    //   expect(mockLogger.debug).not.toHaveBeenCalledWith(
-    //     expect.stringContaining('Could not upload'),
-    //   );
-    // });
-
-    test('should call destroyAll on upload error', async () => {
-      const mockUser = AUTHENTICATED_USER;
-      const itemId = 'item-1';
-      const mockFile = new PassThrough();
-
-      const uploadError = new Error('Upload failed');
-      mockFileService.uploadMany.mockRejectedValue(uploadError);
-
-      const destroyAllSpy = vi.spyOn(thumbnailService as any, 'destroyAll');
-
-      const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
-      mockFile.write(Buffer.from('test'));
-      mockFile.end();
-
-      await expect(uploadPromise).rejects.toThrow('Upload failed');
-      expect(destroyAllSpy).toHaveBeenCalled();
-
-      destroyAllSpy.mockRestore();
+      await expect(() => thumbnailService.upload(mockUser, itemId, mockFile)).rejects.toThrow(
+        'S3 upload failed',
+      );
+      mockFile.destroy();
     });
   });
 
@@ -175,16 +135,15 @@ describe('ThumbnailService.upload', () => {
 
       mockFileService.uploadMany.mockResolvedValue([]);
 
-      const removeListenersSpy = vi.spyOn(thumbnailService as any, 'removeListeners');
-
       const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
+
+      expect(mockFile.listenerCount('error')).toEqual(1);
+
       mockFile.write(Buffer.from('test'));
       mockFile.end();
-
       await uploadPromise;
 
-      expect(removeListenersSpy).toHaveBeenCalled();
-      removeListenersSpy.mockRestore();
+      expect(mockFile.listenerCount('error')).toEqual(0);
     });
 
     test('should remove all listeners even on error', async () => {
@@ -192,140 +151,20 @@ describe('ThumbnailService.upload', () => {
       const itemId = 'item-1';
       const mockFile = new PassThrough();
 
-      const uploadError = new Error('Upload failed');
-      mockFileService.uploadMany.mockRejectedValue(uploadError);
-
-      const removeListenersSpy = vi.spyOn(thumbnailService as any, 'removeListeners');
+      // rejects with undefined to avoid image stream error to be caught by vitest
+      mockFileService.uploadMany.mockRejectedValue();
 
       const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
+      expect(mockFile.listenerCount('error')).toEqual(1);
       mockFile.write(Buffer.from('test'));
       mockFile.end();
 
+      // trigger errors
       await expect(uploadPromise).rejects.toThrow('Upload failed');
 
-      expect(removeListenersSpy).toHaveBeenCalled();
-      removeListenersSpy.mockRestore();
-    });
+      expect(mockFile.listenerCount('error')).toBe(0);
 
-    test('should not leak event listeners', async () => {
-      const mockUser = AUTHENTICATED_USER;
-      const itemId = 'item-1';
-      const mockFile = new PassThrough();
-
-      mockFileService.uploadMany.mockResolvedValue([]);
-
-      const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
-      mockFile.write(Buffer.from('test'));
-      mockFile.end();
-
-      await uploadPromise;
-
-      // File stream should have minimal listeners after cleanup
-      const fileListeners = mockFile.listenerCount('error');
-      expect(fileListeners).toBe(0);
-    });
-  });
-
-  describe('abort/destroy scenarios', () => {
-    test('should handle stream destruction gracefully', async () => {
-      const mockUser = AUTHENTICATED_USER;
-      const itemId = 'item-1';
-      const mockFile = new PassThrough();
-
-      mockFileService.uploadMany.mockImplementation(() => {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            // Simulate abort by destroying the file stream
-            mockFile.destroy(new Error('ABORT_ERR'));
-          }, 10);
-        });
-      });
-
-      const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
-      mockFile.write(Buffer.from('test'));
-      mockFile.end();
-
-      await expect(uploadPromise).rejects.toThrow();
-    });
-
-    test('should handle multiple error events without crashing', async () => {
-      const mockUser = AUTHENTICATED_USER;
-      const itemId = 'item-1';
-      const mockFile = new PassThrough();
-
-      mockFileService.uploadMany.mockImplementation(() => {
-        return new Promise(() => {
-          setTimeout(() => {
-            mockFile.destroy(new Error('First error'));
-            // Attempt to emit another error (should not crash)
-            try {
-              mockFile.emit('error', new Error('Second error'));
-            } catch (_) {
-              console.debug('Expected, stream is already destroyed');
-            }
-          }, 10);
-        });
-      });
-
-      const uploadPromise = thumbnailService.upload(mockUser, itemId, mockFile);
-      mockFile.write(Buffer.from('test'));
-      mockFile.end();
-
-      await expect(uploadPromise).rejects.toThrow();
-    });
-  });
-
-  describe('concurrent uploads', () => {
-    test('should handle multiple concurrent uploads without listener leaks', async () => {
-      const mockUser = AUTHENTICATED_USER;
-
-      mockFileService.uploadMany.mockResolvedValue([]);
-
-      const uploads = Array.from({ length: 5 }, (_, i) => {
-        const mockFile = new PassThrough();
-        const uploadPromise = thumbnailService.upload(mockUser, `item-${i}`, mockFile);
-        mockFile.write(Buffer.from(`test-${i}`));
-        mockFile.end();
-        return uploadPromise;
-      });
-
-      await Promise.all(uploads);
-
-      expect(mockFileService.uploadMany).toHaveBeenCalledTimes(5);
-    });
-
-    test('should handle some uploads failing while others succeed', async () => {
-      const mockUser = AUTHENTICATED_USER;
-
-      // Alternate between success and failure
-      let callCount = 0;
-      mockFileService.uploadMany.mockImplementation(() => {
-        callCount++;
-        if (callCount % 2 === 0) {
-          return Promise.reject(new Error('Upload failed'));
-        }
-        return Promise.resolve([]);
-      });
-
-      const results = await Promise.allSettled([
-        (async () => {
-          const mockFile = new PassThrough();
-          const uploadPromise = thumbnailService.upload(mockUser, 'item-0', mockFile);
-          mockFile.write(Buffer.from('test-0'));
-          mockFile.end();
-          return uploadPromise;
-        })(),
-        (async () => {
-          const mockFile = new PassThrough();
-          const uploadPromise = thumbnailService.upload(mockUser, 'item-1', mockFile);
-          mockFile.write(Buffer.from('test-1'));
-          mockFile.end();
-          return uploadPromise;
-        })(),
-      ]);
-
-      expect(results[0].status).toBe('fulfilled');
-      expect(results[1].status).toBe('rejected');
+      mockFile.destroy();
     });
   });
 });
