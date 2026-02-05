@@ -67,9 +67,7 @@ export class WSDoc extends Y.Doc {
    * @param conn
    */
   addConnection(conn: WebSocket) {
-    this.logger.info(
-      `Page ${this.name}: add connection to reach ${this.conns.size + 1}`,
-    );
+    this.logger.info(`Page ${this.name}: add connection to reach ${this.conns.size + 1}`);
     this.conns.set(conn, new Set());
     // listen and reply to events
     conn.on('message', (message: ArrayBuffer) => {
@@ -125,10 +123,7 @@ export class WSDoc extends Y.Doc {
    * @param m message
    */
   send(conn: WebSocket, m: Uint8Array) {
-    if (
-      conn.readyState !== wsReadyStateConnecting &&
-      conn.readyState !== wsReadyStateOpen
-    ) {
+    if (conn.readyState !== wsReadyStateConnecting && conn.readyState !== wsReadyStateOpen) {
       this.closeConn(conn);
     }
     try {
@@ -153,11 +148,7 @@ export class WSDoc extends Y.Doc {
     if (this.conns.has(conn)) {
       const controlledIds: Set<number> = this.conns.get(conn)!;
       this.conns.delete(conn);
-      awarenessProtocol.removeAwarenessStates(
-        this.awareness,
-        Array.from(controlledIds),
-        null,
-      );
+      awarenessProtocol.removeAwarenessStates(this.awareness, Array.from(controlledIds), null);
       if (this.conns.size === 0) {
         this.destroy();
       }

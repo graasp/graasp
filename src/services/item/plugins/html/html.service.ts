@@ -15,9 +15,7 @@ import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { TMP_FOLDER } from '../../../../utils/config';
-import FileService, {
-  type FileServiceConfig,
-} from '../../../file/file.service';
+import FileService, { type FileServiceConfig } from '../../../file/file.service';
 import type { FileStorageType } from '../../../file/types';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
@@ -59,10 +57,7 @@ export abstract class HtmlService {
     }
     this.logger = log;
     this.extension = extension;
-    this.fileService = new FileService(
-      fileRepositoryFactory(fileStorageType, config),
-      this.logger,
-    );
+    this.fileService = new FileService(fileRepositoryFactory(fileStorageType, config), this.logger);
     this.storageService = storageService;
     this.mimetype = mimetype;
     this.pathPrefix = pathPrefix;
@@ -85,8 +80,7 @@ export abstract class HtmlService {
   /**
    * Helper to build the root remote path for a specific package
    */
-  buildRootPath = (pathPrefix: string, contentId: string) =>
-    path.join(pathPrefix, contentId);
+  buildRootPath = (pathPrefix: string, contentId: string) => path.join(pathPrefix, contentId);
 
   /**
    * Helper to build the local or remote path of the package file
@@ -134,12 +128,7 @@ export abstract class HtmlService {
 
       if (stats.isDirectory()) {
         // recursively upload child folder
-        return await this.uploadPackage(
-          member,
-          childPath,
-          childUploadPath,
-          log,
-        );
+        return await this.uploadPackage(member, childPath, childUploadPath, log);
       } else {
         // ignore this file if extension is not allowed
         const ext = path.extname(childPath);
@@ -214,9 +203,7 @@ export abstract class HtmlService {
       // end of try-catch block for remote storage cleanup
     } catch (error) {
       // log and rethrow to let fastify handle the error response
-      log?.error(
-        'graasp-plugin-html: unexpected error occured while importing Html:',
-      );
+      log?.error('graasp-plugin-html: unexpected error occured while importing Html:');
       log?.error(error);
       // wrap into plugin error type if not ours
       if (!(error instanceof GraaspHtmlError)) {

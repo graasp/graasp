@@ -15,12 +15,7 @@ import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import type {
-  AuthenticatedUser,
-  MaybeUser,
-  MinimalMember,
-  NonEmptyArray,
-} from '../../../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember, NonEmptyArray } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ItemMembershipService } from '../../../itemMembership/membership.service';
@@ -29,11 +24,7 @@ import { MemberDTO } from '../../../member/types';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { InvitationRepository } from './invitation.repository';
-import {
-  EMAIL_COLUMN_NAME,
-  GROUP_COL_NAME,
-  buildInvitationLink,
-} from './utils/constants';
+import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './utils/constants';
 import {
   CantCreateStructureInNoFolderItem,
   InvitationNotFound,
@@ -105,21 +96,12 @@ export class InvitationService {
       .build();
 
     this.mailerService.send(mail, invitation.email).catch((err) => {
-      this.log.warn(
-        `mailerService failed with: ${err.message}. invitation link: ${link}`,
-      );
+      this.log.warn(`mailerService failed with: ${err.message}. invitation link: ${link}`);
     });
   }
 
-  async get(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    invitationId: string,
-  ) {
-    const invitation = await this.invitationRepository.getOne(
-      dbConnection,
-      invitationId,
-    );
+  async get(dbConnection: DBConnection, actor: MaybeUser, invitationId: string) {
+    const invitation = await this.invitationRepository.getOne(dbConnection, invitationId);
 
     if (!invitation) {
       throw new InvitationNotFound({ invitationId });
@@ -152,12 +134,7 @@ export class InvitationService {
       permission: 'admin',
     });
 
-    await this.invitationRepository.addMany(
-      dbConnection,
-      invitations,
-      item.path,
-      member,
-    );
+    await this.invitationRepository.addMany(dbConnection, invitations, item.path, member);
 
     const completeInvitations = await this.invitationRepository.getManyByItem(
       dbConnection,
@@ -179,10 +156,7 @@ export class InvitationService {
     invitationId: string,
     body: Partial<InvitationInsertDTO>,
   ) {
-    const invitation = await this.invitationRepository.getOne(
-      dbConnection,
-      invitationId,
-    );
+    const invitation = await this.invitationRepository.getOne(dbConnection, invitationId);
     if (!invitation) {
       throw new InvitationNotFound({ invitationId });
     }
@@ -200,10 +174,7 @@ export class InvitationService {
     authenticatedUser: AuthenticatedUser,
     invitationId: string,
   ) {
-    const invitation = await this.invitationRepository.getOne(
-      dbConnection,
-      invitationId,
-    );
+    const invitation = await this.invitationRepository.getOne(dbConnection, invitationId);
     if (!invitation) {
       throw new Error('missing invitation');
     }
@@ -216,15 +187,8 @@ export class InvitationService {
     await this.invitationRepository.delete(dbConnection, invitationId);
   }
 
-  async resend(
-    dbConnection: DBConnection,
-    member: MinimalMember,
-    invitationId: string,
-  ) {
-    const invitation = await this.invitationRepository.getOne(
-      dbConnection,
-      invitationId,
-    );
+  async resend(dbConnection: DBConnection, member: MinimalMember, invitationId: string) {
+    const invitation = await this.invitationRepository.getOne(dbConnection, invitationId);
 
     if (!invitation) {
       throw new InvitationNotFound(invitationId);
@@ -241,10 +205,7 @@ export class InvitationService {
 
   async createToMemberships(dbConnection: DBConnection, member: MemberDTO) {
     // invitations to memberships is triggered on register: no actor available
-    const invitations = await this.invitationRepository.getManyByEmail(
-      dbConnection,
-      member.email,
-    );
+    const invitations = await this.invitationRepository.getManyByEmail(dbConnection, member.email);
     if (invitations.length) {
       const memberships = invitations.map(({ permission, item }) => ({
         itemPath: item.path,
@@ -252,10 +213,7 @@ export class InvitationService {
         permission,
       }));
       await this.itemMembershipRepository.addMany(dbConnection, memberships);
-      await this.invitationRepository.deleteManyByEmail(
-        dbConnection,
-        member.email,
-      );
+      await this.invitationRepository.deleteManyByEmail(dbConnection, member.email);
     }
   }
 
@@ -263,15 +221,10 @@ export class InvitationService {
     dbConnection: DBConnection,
     emailList: string[],
   ): Promise<{ existingAccounts: MemberDTO[]; newAccounts: string[] }> {
-    const { data: accounts } = await this.memberService.getManyByEmails(
-      dbConnection,
-      emailList,
-    );
+    const { data: accounts } = await this.memberService.getManyByEmails(dbConnection, emailList);
     const existingAccounts = Object.values(accounts);
     const existingAccountsEmails = Object.keys(accounts);
-    const newAccounts = emailList.filter(
-      (email) => !existingAccountsEmails.includes(email),
-    );
+    const newAccounts = emailList.filter((email) => !existingAccountsEmails.includes(email));
     return { existingAccounts, newAccounts };
   }
 
@@ -282,11 +235,10 @@ export class InvitationService {
     itemId: ItemRaw['id'],
   ) {
     // partition between emails that are already accounts and emails without accounts
-    const { existingAccounts, newAccounts } =
-      await this._partitionExistingUsersAndNewUsers(
-        dbConnection,
-        rows.map((r) => r.email),
-      );
+    const { existingAccounts, newAccounts } = await this._partitionExistingUsersAndNewUsers(
+      dbConnection,
+      rows.map((r) => r.email),
+    );
 
     // generate memberships to create
     const membershipsToCreate = existingAccounts.map((account) => {
@@ -295,9 +247,7 @@ export class InvitationService {
         rows.find((r) => r.email === account.email)?.permission ?? 'read';
       return { permission, accountId: account.id };
     });
-    this.log.debug(
-      `${JSON.stringify(membershipsToCreate)} memberships to create`,
-    );
+    this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
 
     // create memberships for accounts that already exist
     let memberships: ItemMembershipRaw[] = [];
@@ -313,23 +263,15 @@ export class InvitationService {
     // generate invitations to create
     const invitationsToCreate = newAccounts.map((email) => {
       // get the permission from the data, if it is not found or if it is an empty string, default to read
-      const permission =
-        rows.find((r) => r.email === email)?.permission ?? 'read';
+      const permission = rows.find((r) => r.email === email)?.permission ?? 'read';
       return { email, permission };
     });
-    this.log.debug(
-      `${JSON.stringify(invitationsToCreate)} invitations to create`,
-    );
+    this.log.debug(`${JSON.stringify(invitationsToCreate)} invitations to create`);
 
     // create invitations for accounts that do not exist yet
     let invitations: InvitationWithItem[] = [];
     if (invitationsToCreate.length) {
-      invitations = await this.postManyForItem(
-        dbConnection,
-        actor,
-        itemId,
-        invitationsToCreate,
-      );
+      invitations = await this.postManyForItem(dbConnection, actor, itemId, invitationsToCreate);
     }
     return { memberships, invitations };
   }
@@ -401,12 +343,7 @@ export class InvitationService {
       throw new MissingEmailInRowError();
     }
 
-    return this._createMembershipsAndInvitationsForUserList(
-      dbConnection,
-      member,
-      rows,
-      itemId,
-    );
+    return this._createMembershipsAndInvitationsForUserList(dbConnection, member, rows, itemId);
   }
 
   async createStructureForCSVAndTemplate(
@@ -426,23 +363,17 @@ export class InvitationService {
     verifyCSVFileFormat(file);
 
     // get parentItem
-    const parentItem = await this.authorizedItemService.getItemById(
-      dbConnection,
-      {
-        accountId: member.id,
-        itemId: parentId,
-        permission: 'admin',
-      },
-    );
+    const parentItem = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: member.id,
+      itemId: parentId,
+      permission: 'admin',
+    });
 
     // check that the template exists
-    const templateItem = await this.authorizedItemService.getItemById(
-      dbConnection,
-      {
-        accountId: member.id,
-        itemId: templateId,
-      },
-    );
+    const templateItem = await this.authorizedItemService.getItemById(dbConnection, {
+      accountId: member.id,
+      itemId: templateId,
+    });
     if (!templateItem.id) {
       throw new TemplateItemDoesNotExist();
     }
@@ -495,13 +426,12 @@ export class InvitationService {
       await this.itemService.patch(dbConnection, member, newItem.id, {
         name: groupName,
       });
-      const { memberships, invitations } =
-        await this._createMembershipsAndInvitationsForUserList(
-          dbConnection,
-          member,
-          users,
-          newItem.id,
-        );
+      const { memberships, invitations } = await this._createMembershipsAndInvitationsForUserList(
+        dbConnection,
+        member,
+        users,
+        newItem.id,
+      );
       res.push({ groupName, memberships, invitations });
     }
     return res;

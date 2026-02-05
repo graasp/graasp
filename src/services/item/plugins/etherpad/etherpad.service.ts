@@ -13,11 +13,7 @@ import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
 import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import type {
-  AuthenticatedUser,
-  MaybeUser,
-  MinimalMember,
-} from '../../../../types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
@@ -77,9 +73,7 @@ export class EtherpadItemService {
    * Creates a new standalone pad in Etherpad service
    */
   private async createPad(
-    options:
-      | { action: 'create'; initHtml?: string }
-      | { action: 'copy'; sourceID: string },
+    options: { action: 'create'; initHtml?: string } | { action: 'copy'; sourceID: string },
   ) {
     // new pad name
     const padName = this.padNameFactory.getName();
@@ -217,8 +211,7 @@ export class EtherpadItemService {
       membership &&
       (membership.permission == 'write' ||
         membership.permission == 'admin' ||
-        (membership.permission == 'read' &&
-          item.extra.etherpad.readerPermission == 'write'))
+        (membership.permission == 'read' && item.extra.etherpad.readerPermission == 'write'))
     ) {
       return 'write';
     }
@@ -261,9 +254,7 @@ export class EtherpadItemService {
       case 'read': {
         const readOnlyResult = await this.api.getReadOnlyID({ padID });
         if (!readOnlyResult) {
-          throw new EtherpadServerError(
-            `No readOnlyID returned for padID ${padID}`,
-          );
+          throw new EtherpadServerError(`No readOnlyID returned for padID ${padID}`);
         }
         const { readOnlyID } = readOnlyResult;
         padUrl = this.buildPadPath({ padID: readOnlyID }, this.publicUrl);
@@ -335,10 +326,8 @@ export class EtherpadItemService {
     if (valid.size > MAX_SESSIONS_IN_COOKIE) {
       const sortedRecent = Array.from(valid).sort((a, b) => {
         // we are guaranteed that a, b index valid sessions from above
-        const timeA =
-          new Date((sessions[a] as AuthorSession).validUntil).getTime() / 1000;
-        const timeB =
-          new Date((sessions[b] as AuthorSession).validUntil).getTime() / 1000;
+        const timeA = new Date((sessions[a] as AuthorSession).validUntil).getTime() / 1000;
+        const timeB = new Date((sessions[b] as AuthorSession).validUntil).getTime() / 1000;
         // return inversed for most recent
         if (timeA < timeB) {
           return 1;
@@ -459,13 +448,7 @@ export class EtherpadItemService {
    * Builds a group pad ID
    * https://etherpad.org/doc/v1.8.18/#index_pad
    */
-  static buildPadID({
-    groupID,
-    padName,
-  }: {
-    groupID: string;
-    padName: string;
-  }) {
+  static buildPadID({ groupID, padName }: { groupID: string; padName: string }) {
     return `${groupID}$${padName}`;
   }
   buildPadID = EtherpadItemService.buildPadID;

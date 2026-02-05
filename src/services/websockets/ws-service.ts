@@ -90,9 +90,7 @@ export class WebsocketService {
 
     const validate = this.validators.get(request.topic);
     if (validate === undefined) {
-      this.logger.info(
-        `graasp-plugin-websockets: Validator not found for topic ${request.topic}`,
-      );
+      this.logger.info(`graasp-plugin-websockets: Validator not found for topic ${request.topic}`);
       res = createServerErrorResponse(new GraaspWS.NotFoundError(), request);
     } else {
       try {
@@ -123,10 +121,7 @@ export class WebsocketService {
   /**
    * Helper to handle unsubscribe action
    */
-  private handleUnsubscribe(
-    request: GraaspWS.ClientUnsubscribe,
-    client: WebSocket,
-  ) {
+  private handleUnsubscribe(request: GraaspWS.ClientUnsubscribe, client: WebSocket) {
     // scope channel into topic
     const scopedChannel = this.scope(request.channel, request.topic);
     const res = this.wsChannels.clientUnsubscribe(client, scopedChannel)
@@ -145,9 +140,7 @@ export class WebsocketService {
    * @param socket client socket
    */
   handleRequest(data: Data, actor: MaybeUser, client: WebSocket): void {
-    const request = this.parse(
-      typeof data === 'string' ? data : data?.toString(),
-    );
+    const request = this.parse(typeof data === 'string' ? data : data?.toString());
     // validation error, send bad request
     if (request === undefined) {
       this.logger.info(
@@ -185,9 +178,7 @@ export class WebsocketService {
 
   register(topic: string, validateClient: ValidationFn): this {
     if (this.validators.has(topic)) {
-      this.logger.error(
-        `graasp-plugin-websockets: Topic ${topic} is already registered`,
-      );
+      this.logger.error(`graasp-plugin-websockets: Topic ${topic} is already registered`);
       throw new Error('WebSocketService.register: topic already exists!');
     }
     this.validators.set(topic, validateClient);
@@ -197,22 +188,12 @@ export class WebsocketService {
   publish<Message>(topic: string, channel: string, message: Message): void {
     // scope channel into topic
     const scopedChannel = this.scope(channel, topic);
-    this.wsMultiBroker.dispatch(
-      scopedChannel,
-      createServerUpdate(topic, channel, message),
-    );
+    this.wsMultiBroker.dispatch(scopedChannel, createServerUpdate(topic, channel, message));
   }
 
-  publishLocal<Message>(
-    topic: string,
-    channel: string,
-    message: Message,
-  ): void {
+  publishLocal<Message>(topic: string, channel: string, message: Message): void {
     // scope channel into topic
     const scopedChannel = this.scope(channel, topic);
-    this.wsChannels.channelSend(
-      scopedChannel,
-      createServerUpdate(topic, channel, message),
-    );
+    this.wsChannels.channelSend(scopedChannel, createServerUpdate(topic, channel, message));
   }
 }

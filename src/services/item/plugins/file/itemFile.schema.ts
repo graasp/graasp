@@ -55,12 +55,9 @@ export const updateFile = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: Type.Partial(
-    Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']),
-    {
-      minProperties: 1,
-    },
-  ),
+  body: Type.Partial(Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']), {
+    minProperties: 1,
+  }),
   response: {
     [StatusCodes.OK]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,

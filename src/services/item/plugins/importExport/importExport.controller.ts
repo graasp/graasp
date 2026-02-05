@@ -14,11 +14,7 @@ import { BaseLogger } from '../../../../logger';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { Queues } from '../../../../workers/config';
 import { ActionService } from '../../../action/action.service';
-import {
-  isAuthenticated,
-  matchOne,
-  optionalIsAuthenticated,
-} from '../../../auth/plugins/passport';
+import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
@@ -27,12 +23,7 @@ import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { GraaspExportService } from './graaspExport.service';
 import { ImportService } from './import.service';
-import {
-  downloadFile,
-  exportZip,
-  graaspZipExport,
-  zipImport,
-} from './importExport.schemas';
+import { downloadFile, exportZip, graaspZipExport, zipImport } from './importExport.schemas';
 import { ItemExportService } from './itemExport.service';
 import { prepareZip } from './utils';
 
@@ -140,17 +131,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await actionService.postMany(db, maybeUser, request, [action]);
 
       // return single file
-      const { stream, mimetype, name } = await itemExportService.fetchItemData(
-        db,
-        maybeUser,
-        item,
-      );
+      const { stream, mimetype, name } = await itemExportService.fetchItemData(db, maybeUser, item);
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
-      reply.raw.setHeader(
-        'Content-Disposition',
-        `attachment; filename="${encodeFilename(name)}"`,
-      );
+      reply.raw.setHeader('Content-Disposition', `attachment; filename="${encodeFilename(name)}"`);
       reply.type(mimetype);
 
       return stream;
@@ -218,17 +202,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
 
       // generate archive stream
-      const archiveStream = await graaspExportService.exportGraasp(
-        db,
-        maybeUser,
-        item,
-      );
+      const archiveStream = await graaspExportService.exportGraasp(db, maybeUser, item);
 
       try {
-        reply.raw.setHeader(
-          'Content-Disposition',
-          `filename="${encodeFilename(item.name)}.zip"`,
-        );
+        reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);
       } catch (e) {
         // TODO: send sentry error
         log?.error(e);

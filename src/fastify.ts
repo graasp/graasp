@@ -8,12 +8,7 @@ import { DEV, NODE_ENV, PROD } from './config/env';
 import { client } from './drizzle/db';
 import { modifyAjvInstance } from './schemas/ajvFormats';
 import { initSentry } from './sentry';
-import {
-  APP_VERSION,
-  CORS_ORIGIN_REGEX,
-  HOST_LISTEN_ADDRESS,
-  PORT,
-} from './utils/config';
+import { APP_VERSION, CORS_ORIGIN_REGEX, HOST_LISTEN_ADDRESS, PORT } from './utils/config';
 import { GREETING } from './utils/constants';
 import { queueDashboardPlugin } from './workers/dashboard.controller';
 
@@ -67,11 +62,7 @@ const start = async () => {
 
   try {
     await instance.listen({ port: PORT, host: HOST_LISTEN_ADDRESS });
-    instance.log.info(
-      'App is running version %s in %s mode',
-      APP_VERSION,
-      NODE_ENV,
-    );
+    instance.log.info('App is running version %s in %s mode', APP_VERSION, NODE_ENV);
     if (DEV) {
       // greet the world
       // eslint-disable-next-line no-console

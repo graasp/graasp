@@ -10,16 +10,11 @@ import { FASTIFY_LOGGER_DI_KEY } from './di/constants';
 export class BaseLogger implements FastifyBaseLogger {
   level: LevelWithSilentOrString;
 
-  constructor(
-    @inject(FASTIFY_LOGGER_DI_KEY) private logger: FastifyBaseLogger,
-  ) {
+  constructor(@inject(FASTIFY_LOGGER_DI_KEY) private logger: FastifyBaseLogger) {
     this.level = logger.level;
   }
 
-  child(
-    bindings: Bindings,
-    options?: ChildLoggerOptions | undefined,
-  ): FastifyBaseLogger {
+  child(bindings: Bindings, options?: ChildLoggerOptions | undefined): FastifyBaseLogger {
     return this.logger.child(bindings, options);
   }
 

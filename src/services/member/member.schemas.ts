@@ -5,14 +5,8 @@ import type { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import {
-  accountTypeGuestRef,
-  accountTypeIndividualRef,
-} from '../account/account.schemas';
-import {
-  FILE_METADATA_DEFAULT_PAGE_SIZE,
-  FILE_METADATA_MIN_PAGE,
-} from './constants';
+import { accountTypeGuestRef, accountTypeIndividualRef } from '../account/account.schemas';
+import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
 
 /**
  * This allows email adresses that are structured as follows:
@@ -45,11 +39,7 @@ const memberSchema = customType.StrictObject(
   },
 );
 
-export const memberSchemaRef = registerSchemaAsRef(
-  'member',
-  'Member',
-  memberSchema,
-);
+export const memberSchemaRef = registerSchemaAsRef('member', 'Member', memberSchema);
 
 export const nullableMemberSchemaRef = registerSchemaAsRef(
   'nullableMember',
@@ -116,8 +106,7 @@ export const currentAccountSchemaRef = registerSchemaAsRef(
     ],
     {
       discriminator: { propertyName: 'type' },
-      description:
-        'Current authenticated account, that can be a member or a guest',
+      description: 'Current authenticated account, that can be a member or a guest',
     },
   ),
 );
@@ -133,8 +122,7 @@ export const nullableCurrentAccountSchemaRef = registerSchemaAsRef(
     ],
     {
       discriminator: { propertyName: 'type' },
-      description:
-        'Current authenticated account, that can be a member or a guest, or null',
+      description: 'Current authenticated account, that can be a member or a guest, or null',
     },
   ),
 );
@@ -162,8 +150,7 @@ export const getCurrent = {
   operationId: 'getCurrentAccount',
   tags: ['current', 'member', 'guest'],
   summary: 'Get information of current authenticated account',
-  description:
-    'Get information of current authenticated account, that can be a member or a guest.',
+  description: 'Get information of current authenticated account, that can be a member or a guest.',
 
   response: {
     [StatusCodes.OK]: nullableCurrentAccountSchemaRef,
@@ -176,8 +163,7 @@ export const getStorage = {
   operationId: 'getStorage',
   tags: ['current', 'member', 'storage'],
   summary: 'Get storage values',
-  description:
-    'Get amount of storage used for current member, and its maximum storage value.',
+  description: 'Get amount of storage used for current member, and its maximum storage value.',
 
   response: {
     [StatusCodes.OK]: customType.StrictObject(
@@ -314,8 +300,7 @@ export const marketingEmailsSubscribe = {
   operationId: 'marketingEmailsSubscribe',
   tags: ['member', 'email'],
   summary: 'Subscribe to marketing emails',
-  description:
-    'Subscribe to marketing emails for current authenticated member.',
+  description: 'Subscribe to marketing emails for current authenticated member.',
 
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
@@ -329,8 +314,7 @@ export const marketingEmailsUnsubscribe = {
   operationId: 'marketingEmailsUnsubscribe',
   tags: ['member', 'email'],
   summary: 'Unsubscribe from marketing emails',
-  description:
-    'Unsubscribe from marketing emails for current authenticated member.',
+  description: 'Unsubscribe from marketing emails for current authenticated member.',
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
@@ -349,10 +333,7 @@ const currentSettingsRef = registerSchemaAsRef(
   'CurrentSettings',
   customType.StrictObject({
     lang: Type.Optional(Type.String()),
-    marketingEmailsSubscribedAt: Type.Union([
-      customType.DateTime(),
-      Type.Null(),
-    ]),
+    marketingEmailsSubscribedAt: Type.Union([customType.DateTime(), Type.Null()]),
     notificationFrequency: notificationFrequencySchema,
     enableSaveActions: Type.Boolean(),
   }),

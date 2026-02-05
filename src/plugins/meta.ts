@@ -1,10 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
-import {
-  type FastifyPluginAsyncTypebox,
-  Type,
-} from '@fastify/type-provider-typebox';
+import { type FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
 import type { FastifyBaseLogger, FastifySchema } from 'fastify';
 
 import type { UnionOfConst } from '@graasp/sdk';
@@ -120,9 +117,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 };
 
-const getDBStatusCheck = async (
-  _log: FastifyBaseLogger,
-): Promise<ServiceStatus> => {
+const getDBStatusCheck = async (_log: FastifyBaseLogger): Promise<ServiceStatus> => {
   try {
     // this just checks that we can execute queries on the database.
     // if tables are locked it will still execute fine as long as the connection is working
@@ -160,9 +155,7 @@ const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
 
 const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   try {
-    const iframelyEndpoint = new URL(
-      `${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`,
-    );
+    const iframelyEndpoint = new URL(`${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`);
     iframelyEndpoint.searchParams.set('url', 'https://graasp.org');
     const res = await fetch(iframelyEndpoint.toString(), { method: 'HEAD' });
     if (res.ok) {
@@ -178,9 +171,7 @@ const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   }
 };
 
-const getSearchStatusCheck = async (
-  search: SearchService,
-): Promise<ServiceStatus> => {
+const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatus> => {
   try {
     const res = await search.getHealth();
     if (res.status) {

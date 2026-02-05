@@ -63,8 +63,7 @@ export class MemberService {
 
   async post(
     dbConnection: DBConnection,
-    body: Partial<MemberCreationDTO> &
-      Pick<MemberCreationDTO, 'email' | 'name'>,
+    body: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
     lang = DEFAULT_LANG,
   ) {
     // The email is lowercased when the user registers
@@ -92,9 +91,7 @@ export class MemberService {
   async patch(
     dbConnection: DBConnection,
     id: UUID,
-    body: Partial<
-      Pick<MemberRaw, 'extra' | 'email' | 'name' | 'enableSaveActions'>
-    >,
+    body: Partial<Pick<MemberRaw, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
   ) {
     return this.memberRepository.patch(dbConnection, id, {
       name: body.name,
@@ -159,16 +156,10 @@ export class MemberService {
     // don't wait for mailer's response; log error and link if it fails.
     this.mailerService
       .send(mail, newEmail)
-      .catch((err) =>
-        this.log.warn(`mailer failed with ${err.message}: link: ${link}`),
-      );
+      .catch((err) => this.log.warn(`mailer failed with ${err.message}: link: ${link}`));
   }
 
-  mailConfirmEmailChangeRequest(
-    oldEmail: string,
-    newEmail: string,
-    lang: string,
-  ) {
+  mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
     const mail = new MailBuilder({
       subject: { text: TRANSLATIONS.CONFIRM_CHANGE_EMAIL_TITLE },
       lang: lang,
@@ -195,9 +186,7 @@ export class MemberService {
   }
 
   async getSettings(dbConnection: DBConnection, memberId: string) {
-    const member = (
-      await this.memberRepository.get(dbConnection, memberId)
-    ).toCurrent();
+    const member = (await this.memberRepository.get(dbConnection, memberId)).toCurrent();
 
     return {
       enableSaveActions: member.enableSaveActions,

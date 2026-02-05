@@ -87,21 +87,12 @@ export class ItemPublishedService {
     item: ItemRaw,
   ): Promise<void> {
     // send email to contributors except yourself
-    const memberships = await this.itemMembershipRepository.getForItem(
-      dbConnection,
-      item,
-    );
+    const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
     const contributors = memberships
-      .filter(
-        ({ permission, account }) =>
-          permission === 'admin' && account.id !== actor.id,
-      )
+      .filter(({ permission, account }) => permission === 'admin' && account.id !== actor.id)
       .map(({ account }) => account);
 
-    const link = ClientManager.getInstance().getItemLink(
-      Context.Library,
-      item.id,
-    );
+    const link = ClientManager.getInstance().getItemLink(Context.Library, item.id);
 
     for (const member of contributors) {
       if (isMember(member)) {
@@ -119,9 +110,7 @@ export class ItemPublishedService {
           .build();
 
         await this.mailerService.send(mail, member.email).catch((err) => {
-          this.log.warn(
-            `mailerService failed with: ${err.message}. published link: ${link}`,
-          );
+          this.log.warn(`mailerService failed with: ${err.message}. published link: ${link}`);
         });
       }
     }
@@ -144,10 +133,7 @@ export class ItemPublishedService {
     );
 
     // get item published entry
-    const publishedItem = await this.itemPublishedRepository.getForItem(
-      dbConnection,
-      item.path,
-    );
+    const publishedItem = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
 
     if (!publishedItem) {
       return null;
@@ -176,10 +162,7 @@ export class ItemPublishedService {
       permission: 'admin',
     });
 
-    const itemPublished = await this.itemPublishedRepository.getForItem(
-      dbConnection,
-      item.path,
-    );
+    const itemPublished = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
 
     if (itemPublished) {
       return itemPublished;
@@ -190,10 +173,7 @@ export class ItemPublishedService {
     });
   }
 
-  private checkPublicationStatus(
-    { id, type }: ItemRaw,
-    publicationStatus: PublicationStatus,
-  ) {
+  private checkPublicationStatus({ id, type }: ItemRaw, publicationStatus: PublicationStatus) {
     switch (publicationStatus) {
       case PublicationStatus.ReadyToPublish:
         return true;
@@ -246,10 +226,7 @@ export class ItemPublishedService {
     // TODO: check validation is alright
 
     await this.itemPublishedRepository.post(dbConnection, member, item);
-    const published = await this.itemPublishedRepository.getForItem(
-      dbConnection,
-      item.path,
-    );
+    const published = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
     if (published) {
       await this.meilisearchWrapper.indexOne(dbConnection, published);
     }
@@ -260,11 +237,7 @@ export class ItemPublishedService {
     return published;
   }
 
-  async delete(
-    dbConnection: DBConnection,
-    member: MinimalMember,
-    itemId: string,
-  ) {
+  async delete(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     const item = await this.authorizedItemService.getItemById(dbConnection, {
       accountId: member.id,
       itemId,
@@ -273,10 +246,7 @@ export class ItemPublishedService {
 
     await this.hooks.runPreHooks('delete', member, dbConnection, { item });
 
-    const result = await this.itemPublishedRepository.deleteForItem(
-      dbConnection,
-      item,
-    );
+    const result = await this.itemPublishedRepository.deleteForItem(dbConnection, item);
 
     await this.hooks.runPostHooks('delete', member, dbConnection, { item });
 
@@ -287,10 +257,7 @@ export class ItemPublishedService {
     dbConnection: DBConnection,
     item: { id: ItemRaw['id']; path: ItemRaw['path'] },
   ) {
-    const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(
-      dbConnection,
-      item.path,
-    );
+    const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(dbConnection, item.path);
 
     if (updatedAt) {
       // change value in meilisearch index
@@ -298,28 +265,14 @@ export class ItemPublishedService {
     }
   }
 
-  async getItemsForMember(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    memberId: UUID,
-  ) {
-    const items = await this.itemRepository.getPublishedItemsForMember(
-      dbConnection,
-      memberId,
-    );
+  async getItemsForMember(dbConnection: DBConnection, actor: MaybeUser, memberId: UUID) {
+    const items = await this.itemRepository.getPublishedItemsForMember(dbConnection, memberId);
 
     return this.itemWrapperService.createPackedItems(dbConnection, items);
   }
 
-  async getRecentItems(
-    dbConnection: DBConnection,
-    actor: MaybeUser,
-    limit?: number,
-  ) {
-    const items = await this.itemPublishedRepository.getRecentItems(
-      dbConnection,
-      limit,
-    );
+  async getRecentItems(dbConnection: DBConnection, actor: MaybeUser, limit?: number) {
+    const items = await this.itemPublishedRepository.getRecentItems(dbConnection, limit);
 
     return filterOutHiddenItems(
       dbConnection,
