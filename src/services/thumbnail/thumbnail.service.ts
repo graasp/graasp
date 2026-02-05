@@ -34,7 +34,7 @@ export class ThumbnailService {
     return path.join(this._prefix, itemId);
   }
 
-  // cleanup helper for original input file and related sharp pipelines
+  // cleanup helper for original input file and sharp image
   private destroyAll(file: Readable, image: Sharp, err?: Error) {
     try {
       try {
