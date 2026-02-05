@@ -9,7 +9,11 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { type ItemRaw } from '../../../../drizzle/types';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import FileService from '../../../file/file.service';
@@ -20,7 +24,10 @@ import { H5PService } from '../html/h5p/h5p.service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
 import { getUrl, updateFile, upload } from './itemFile.schema';
 import FileItemService from './itemFile.service';
-import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
+import {
+  DEFAULT_MAX_FILE_SIZE,
+  MAX_NUMBER_OF_FILES_UPLOAD,
+} from './utils/constants';
 
 const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const fileService = resolveDependency(FileService);
@@ -43,54 +50,65 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   // register post delete handler to remove the file object after item delete
-  itemService.hooks.setPostHook('delete', async (actor, db, { item: { id, type, extra } }) => {
-    if (!actor) {
-      return;
-    }
-    try {
-      // delete file only if type is the current file type
+  itemService.hooks.setPostHook(
+    'delete',
+    async (actor, db, { item: { id, type, extra } }) => {
+      if (!actor) {
+        return;
+      }
+      try {
+        // delete file only if type is the current file type
+        if (!id || type !== 'file') {
+          return;
+        }
+        const filepath = (extra['file'] as FileItemProperties).path;
+        await fileService.delete(filepath);
+      } catch (err) {
+        // we catch the error, it ensures the item is deleted even if the file is not
+        // this is especially useful for the files uploaded before the migration to the new plugin
+        console.error(err);
+      }
+    },
+  );
+
+  // register post copy handler to copy the file object after item copy
+  itemService.hooks.setPreHook(
+    'copy',
+    async (actor, thisDb, { original: item }) => {
+      if (!actor) {
+        return;
+      }
+      assertIsMember(actor);
+
+      const { id, type } = item; // full copy with new `id`
+
+      // copy file only if type is the current file type
+      if (!id || type !== 'file') return;
+      const size = (
+        item.extra['file'] as FileItemProperties & { size?: number }
+      )?.size;
+
+      await storageService.checkRemainingStorage(thisDb, actor, size);
+    },
+  );
+
+  // register post copy handler to copy the file object after item copy
+  itemService.hooks.setPostHook(
+    'copy',
+    async (actor, thisDb, { original, copy }) => {
+      if (!actor || !isMember(actor)) {
+        return;
+      }
+
+      const { id, type } = copy; // full copy with new `id`
+
+      // copy file only if type is the current file type
       if (!id || type !== 'file') {
         return;
       }
-      const filepath = (extra['file'] as FileItemProperties).path;
-      await fileService.delete(filepath);
-    } catch (err) {
-      // we catch the error, it ensures the item is deleted even if the file is not
-      // this is especially useful for the files uploaded before the migration to the new plugin
-      console.error(err);
-    }
-  });
-
-  // register post copy handler to copy the file object after item copy
-  itemService.hooks.setPreHook('copy', async (actor, thisDb, { original: item }) => {
-    if (!actor) {
-      return;
-    }
-    assertIsMember(actor);
-
-    const { id, type } = item; // full copy with new `id`
-
-    // copy file only if type is the current file type
-    if (!id || type !== 'file') return;
-    const size = (item.extra['file'] as FileItemProperties & { size?: number })?.size;
-
-    await storageService.checkRemainingStorage(thisDb, actor, size);
-  });
-
-  // register post copy handler to copy the file object after item copy
-  itemService.hooks.setPostHook('copy', async (actor, thisDb, { original, copy }) => {
-    if (!actor || !isMember(actor)) {
-      return;
-    }
-
-    const { id, type } = copy; // full copy with new `id`
-
-    // copy file only if type is the current file type
-    if (!id || type !== 'file') {
-      return;
-    }
-    await fileItemService.copyFile(thisDb, actor, { original, copy });
-  });
+      await fileItemService.copyFile(thisDb, actor, { original, copy });
+    },
+  );
 
   fastify.post('/upload', {
     schema: upload,
@@ -173,7 +191,9 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw errors[0];
       }
 
-      reply.status(StatusCodes.NO_CONTENT).send();
+      reply
+        .status(StatusCodes.NO_CONTENT)
+        .send({ message: 'Processing file upload' });
     },
   });
 

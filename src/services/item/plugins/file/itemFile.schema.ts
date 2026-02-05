@@ -18,11 +18,15 @@ export const upload = {
       }),
     ),
     previousItemId: Type.Optional(
-      customType.UUID({ description: 'The uploaded files should be created after this item.' }),
+      customType.UUID({
+        description: 'The uploaded files should be created after this item.',
+      }),
     ),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful response' }),
+    [StatusCodes.NO_CONTENT]: customType.StrictObject({
+      message: Type.String({ description: 'Successful response' }),
+    }),
     '4xx': errorSchemaRef,
   },
 };
@@ -51,9 +55,12 @@ export const updateFile = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: Type.Partial(Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']), {
-    minProperties: 1,
-  }),
+  body: Type.Partial(
+    Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']),
+    {
+      minProperties: 1,
+    },
+  ),
   response: {
     [StatusCodes.OK]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,

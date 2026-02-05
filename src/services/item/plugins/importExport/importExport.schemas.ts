@@ -15,7 +15,9 @@ export const zipImport = {
 
   querystring: customType.StrictObject({
     parentId: Type.Optional(
-      customType.UUID({ description: 'Folder which the import should be extracted in.' }),
+      customType.UUID({
+        description: 'Folder which the import should be extracted in.',
+      }),
     ),
   }),
   response: {
@@ -35,7 +37,9 @@ export const downloadFile = {
   }),
   response: {
     // return a stream
-    [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the export zip content' }),
+    [StatusCodes.OK]: Type.Any({
+      description: 'a stream of data for the export zip content',
+    }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -51,7 +55,11 @@ export const exportZip = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.ACCEPTED]: Type.Null({ description: 'email with download link has been sent' }),
+    [StatusCodes.ACCEPTED]: customType.StrictObject({
+      message: Type.String({
+        description: 'email with download link has been sent',
+      }),
+    }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -68,7 +76,9 @@ export const graaspZipExport = {
   }),
   response: {
     // return a stream
-    [StatusCodes.OK]: Type.Any({ description: 'a stream of data for the graasp export content' }),
+    [StatusCodes.OK]: Type.Any({
+      description: 'a stream of data for the graasp export content',
+    }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

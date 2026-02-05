@@ -2,7 +2,7 @@ import type { Ajv } from 'ajv';
 
 import { MemberConstants } from '@graasp/sdk';
 
-export default function plugin(ajv: Ajv) {
+export function modifyAjvInstance(ajv: Ajv) {
   // JSON Web Token format
   ajv.addFormat('jwt', /^(?:[\w-]*\.){2}[\w-]*$/);
 

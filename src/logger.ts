@@ -1,4 +1,4 @@
-import type { pino } from 'pino';
+import { Bindings, LevelWithSilentOrString } from 'pino';
 import { inject, singleton } from 'tsyringe';
 
 import { type FastifyBaseLogger } from 'fastify';
@@ -8,67 +8,72 @@ import { FASTIFY_LOGGER_DI_KEY } from './di/constants';
 
 @singleton()
 export class BaseLogger implements FastifyBaseLogger {
-  level: pino.LevelWithSilentOrString;
+  level: LevelWithSilentOrString;
 
-  constructor(@inject(FASTIFY_LOGGER_DI_KEY) private logger: FastifyBaseLogger) {
+  constructor(
+    @inject(FASTIFY_LOGGER_DI_KEY) private logger: FastifyBaseLogger,
+  ) {
     this.level = logger.level;
   }
 
-  child(bindings: pino.Bindings, options?: ChildLoggerOptions | undefined): FastifyBaseLogger {
+  child(
+    bindings: Bindings,
+    options?: ChildLoggerOptions | undefined,
+  ): FastifyBaseLogger {
     return this.logger.child(bindings, options);
   }
 
-  fatal(message: unknown, ...args: unknown[]) {
+  fatal(message: unknown) {
     if (typeof message === 'string') {
-      this.logger.fatal(message, ...args);
+      this.logger.fatal(message);
     } else {
       console.error(message);
     }
   }
 
-  warn(message: unknown, ...args: unknown[]) {
+  warn(message: unknown) {
     if (typeof message === 'string') {
-      this.logger.warn(message, ...args);
+      this.logger.warn(message);
     } else {
       console.error(message);
     }
   }
 
-  debug(message: unknown, ...args: unknown[]) {
+  debug(message: unknown) {
     if (typeof message === 'string') {
-      this.logger.debug(message, ...args);
+      this.logger.debug(message);
     } else {
       console.error(message);
     }
   }
 
-  trace(message: unknown, ...args: unknown[]) {
+  trace(message: unknown) {
     if (typeof message === 'string') {
-      this.logger.trace(message, ...args);
+      this.logger.trace(message);
     } else {
       console.error(message);
     }
   }
 
-  silent(message: unknown, ...args: unknown[]) {
+  silent(message: unknown) {
     if (typeof message === 'string') {
-      this.logger.silent(message, ...args);
+      this.logger.silent(message);
     } else {
       console.error(message);
     }
   }
 
-  info(message: unknown, ...args: unknown[]) {
+  info(message: unknown) {
     if (typeof message === 'string') {
-      this.logger.info(message, ...args);
+      this.logger.info(message);
     } else {
       console.error(message);
     }
   }
 
-  error(message: unknown, ...args: unknown[]) {
+  error(message: unknown) {
     if (typeof message === 'string') {
-      this.logger.error(message, ...args);
+      this.logger.error(message);
     } else {
       console.error(message);
     }

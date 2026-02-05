@@ -57,10 +57,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
         const account = await accountRepository.get(db, user?.account?.id);
         const currentAccount = account.toCurrent();
         if (currentAccount && currentAccount.type === AccountType.Guest) {
-          const itemLoginSchema = await accountRepository.getItemLoginSchemaForGuest(
-            db,
-            currentAccount.itemLoginSchemaId,
-          );
+          const itemLoginSchema =
+            await accountRepository.getItemLoginSchemaForGuest(
+              db,
+              currentAccount.itemLoginSchemaId,
+            );
           if (!itemLoginSchema) {
             // logout user, so subsequent calls can not make use of the current user.
             request.logout();
@@ -113,14 +114,20 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
         pageSize < FILE_METADATA_MIN_PAGE_SIZE ||
         pageSize > FILE_METADATA_MAX_PAGE_SIZE
       ) {
-        return reply.status(StatusCodes.BAD_REQUEST).send();
+        return reply
+          .code(StatusCodes.BAD_REQUEST)
+          .send({ error: 'Bad parameters passed' });
       }
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const storageFilesMetadata = await storageService.getStorageFilesMetadata(db, member, {
-        page,
-        pageSize,
-      });
+      const storageFilesMetadata = await storageService.getStorageFilesMetadata(
+        db,
+        member,
+        {
+          page,
+          pageSize,
+        },
+      );
       return {
         data: storageFilesMetadata,
         pagination: { page, pageSize },
@@ -188,7 +195,10 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = await memberService.get(db, account.id);
       assertIsDefined(member);
       const memberInfo = member.toMemberInfo();
-      const token = memberService.createEmailChangeRequest(memberInfo, newEmail);
+      const token = memberService.createEmailChangeRequest(
+        memberInfo,
+        newEmail,
+      );
       memberService.sendEmailChangeRequest(newEmail, token, memberInfo.lang);
 
       reply.status(StatusCodes.NO_CONTENT);
@@ -210,7 +220,9 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
           throw new EmailAlreadyTaken();
         }
         // get old info for member
-        const memberInfo = (await memberService.get(db, account.id)).toCurrent();
+        const memberInfo = (
+          await memberService.get(db, account.id)
+        ).toCurrent();
 
         await memberService.patch(tx, account.id, {
           email: emailModification.newEmail,
@@ -241,7 +253,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        await memberService.updateMarketingEmailsSubscription(tx, account.id, true);
+        await memberService.updateMarketingEmailsSubscription(
+          tx,
+          account.id,
+          true,
+        );
       });
 
       reply.status(StatusCodes.NO_CONTENT);
@@ -265,14 +281,21 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(account);
 
       await db.transaction(async (tx) => {
-        await memberService.updateMarketingEmailsSubscription(tx, account.id, false);
+        await memberService.updateMarketingEmailsSubscription(
+          tx,
+          account.id,
+          false,
+        );
       });
 
       reply.status(StatusCodes.NO_CONTENT);
 
       // save action
       await actionService.postMany(db, account, req, [
-        { type: 'marketing-emails-unsubscribe', extra: { memberId: account.id } },
+        {
+          type: 'marketing-emails-unsubscribe',
+          extra: { memberId: account.id },
+        },
       ]);
     },
   );

@@ -28,7 +28,11 @@ import { MemberDTO } from '../../../member/types';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
 import { MemberPasswordRepository } from './password.repository';
-import { comparePasswords, encryptPassword, verifyCurrentPassword } from './utils';
+import {
+  comparePasswords,
+  encryptPassword,
+  verifyCurrentPassword,
+} from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
 
@@ -69,7 +73,10 @@ export class MemberPasswordService {
    * @param expiration The expiration time of the token.
    * @returns A promise to be resolved with the generated token.
    */
-  generateToken(data: { sub: string; challenge?: string }, expiration: SignOptions['expiresIn']) {
+  generateToken(
+    data: { sub: string; challenge?: string },
+    expiration: SignOptions['expiresIn'],
+  ) {
     return sign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
@@ -113,7 +120,10 @@ export class MemberPasswordService {
     // Check if password can be updated
     // member has a password, we must check if passwords match before updating
     if (memberPassword) {
-      const verified = await verifyCurrentPassword(memberPassword.password, currentPassword);
+      const verified = await verifyCurrentPassword(
+        memberPassword.password,
+        currentPassword,
+      );
       // throw error if password verification fails
       if (!verified) {
         // this should be validated by the schema, but we do it again here.
@@ -124,7 +134,11 @@ export class MemberPasswordService {
       }
     }
     // apply password change
-    await this.memberPasswordRepository.put(dbConnection, authenticatedUser.id, newPassword);
+    await this.memberPasswordRepository.put(
+      dbConnection,
+      authenticatedUser.id,
+      newPassword,
+    );
   }
 
   /**
@@ -136,7 +150,11 @@ export class MemberPasswordService {
    * @param uuid The Password Reset Request UUID associated to the member that wants to reset the password.
    * @returns void
    */
-  async applyReset(dbConnection: DBConnection, password: string, uuid: string): Promise<void> {
+  async applyReset(
+    dbConnection: DBConnection,
+    password: string,
+    uuid: string,
+  ): Promise<void> {
     const id = await this.redis.get(this.buildRedisKey(uuid));
     if (!id) {
       return;
@@ -164,7 +182,10 @@ export class MemberPasswordService {
     if (!member) {
       return;
     }
-    const password = await this.memberPasswordRepository.getForMemberId(dbConnection, member.id);
+    const password = await this.memberPasswordRepository.getForMemberId(
+      dbConnection,
+      member.id,
+    );
     if (!password) {
       return;
     }
@@ -210,7 +231,11 @@ export class MemberPasswordService {
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, email)
-      .catch((err) => this.log.warn(err, `mailerService failed. link: ${destinationUrl}`));
+      .catch((err) =>
+        this.log.warn(
+          `mailerService failed with: ${err.message}. link: ${destinationUrl}`,
+        ),
+      );
   }
 
   /**
@@ -228,7 +253,10 @@ export class MemberPasswordService {
    * @param uuid The Password Reset Request UUID
    * @returns The member associated to the UUID. Otherwise, undefined if we couldn't find the member.
    */
-  async getMemberByPasswordResetUuid(dbConnection: DBConnection, uuid: string): Promise<MemberDTO> {
+  async getMemberByPasswordResetUuid(
+    dbConnection: DBConnection,
+    uuid: string,
+  ): Promise<MemberDTO> {
     const id = await this.redis.get(this.buildRedisKey(uuid));
     if (!id) {
       throw new Error('Id not found');
@@ -272,8 +300,14 @@ export class MemberPasswordService {
     throw new BadCredentials();
   }
 
-  async hasPassword(dbConnection: DBConnection, memberId: string): Promise<boolean> {
-    const password = await this.memberPasswordRepository.getForMemberId(dbConnection, memberId);
+  async hasPassword(
+    dbConnection: DBConnection,
+    memberId: string,
+  ): Promise<boolean> {
+    const password = await this.memberPasswordRepository.getForMemberId(
+      dbConnection,
+      memberId,
+    );
     return Boolean(password);
   }
 }
