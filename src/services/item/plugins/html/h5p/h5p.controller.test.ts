@@ -217,7 +217,7 @@ describe('Service plugin', () => {
         const H5P_ACCORDION_COPY_FILENAME = `${path.basename(
           H5P_PACKAGES.ACCORDION.path,
           H5P_FILE_DOT_EXTENSION,
-        )}-1`;
+        )}-1${H5P_FILE_DOT_EXTENSION}`;
         const originalPath = path.join(
           h5pBucket,
           contentId,
