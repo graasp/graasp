@@ -90,8 +90,8 @@ export abstract class HtmlService {
     // build a short filename without special characters
     const safeName = filename
       .toLowerCase()
-      .replace(/[^a-z0-9_-]+/g, '_')
-      .replace(/^_+|_+$/g, '')
+      .replaceAll(/[^a-z0-9_-]+/g, '_')
+      .replaceAll(/(?:^_+)|(?:_+$)/g, '')
       .slice(0, 20);
 
     return path.join(rootPath, `${safeName}.${this.extension}`);
