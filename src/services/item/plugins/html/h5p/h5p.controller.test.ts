@@ -24,8 +24,6 @@ import { H5PService } from './h5p.service';
 import { H5P_PACKAGES } from './test/fixtures';
 import { expectH5PFiles, injectH5PImport } from './test/helpers';
 
-const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
-
 const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX ?? '');
 
 async function cleanFiles() {
@@ -40,13 +38,13 @@ const buildExpectedItem = (item: H5PItem) => {
   const expectedExtra = {
     h5p: {
       contentId,
-      h5pFilePath: `${contentId}/${H5P_ACCORDION_FILENAME}`,
+      h5pFilePath: `${contentId}/${path.basename(H5P_PACKAGES.ACCORDION.path)}`,
       contentFilePath: `${contentId}/content`,
     },
   };
 
   return {
-    name: H5P_ACCORDION_FILENAME,
+    name: path.basename(H5P_PACKAGES.ACCORDION.path, H5P_FILE_DOT_EXTENSION),
     type: 'h5p',
     extra: expectedExtra,
   };
@@ -217,10 +215,14 @@ describe('Service plugin', () => {
         expect(h5pFolders).toContain(copiedContentId);
         // expected name of the copy
         const H5P_ACCORDION_COPY_FILENAME = `${path.basename(
-          H5P_ACCORDION_FILENAME,
+          H5P_PACKAGES.ACCORDION.path,
           H5P_FILE_DOT_EXTENSION,
-        )}-1${H5P_FILE_DOT_EXTENSION}`;
-        const originalPath = path.join(h5pBucket, contentId, H5P_ACCORDION_FILENAME);
+        )}-1`;
+        const originalPath = path.join(
+          h5pBucket,
+          contentId,
+          path.basename(H5P_PACKAGES.ACCORDION.path),
+        );
         const copyPath = path.join(h5pBucket, copiedContentId, H5P_ACCORDION_COPY_FILENAME);
         const originalStats = await fsp.stat(originalPath);
         const copyStats = await fsp.stat(copyPath);
