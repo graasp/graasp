@@ -1,3 +1,24 @@
+:4001 {
+    handle /api* {
+        reverse_proxy core:3000
+    }
+    handle /builder* {
+        reverse_proxy host.docker.internal:3114
+    }
+    handle /home {
+        reverse_proxy host.docker.internal:3114
+    }
+    handle /auth* {
+        reverse_proxy host.docker.internal:3114
+    }
+    handle_path /client* {
+        reverse_proxy host.docker.internal:3114
+    }
+    handle {
+        reverse_proxy host.docker.internal:4000
+    }
+}
+
 :3000 {
     rewrite * /api{uri}
     reverse_proxy core:3000
