@@ -1,7 +1,7 @@
 import { singleton } from 'tsyringe';
 
-import { type ItemRaw } from '../../../../../../drizzle/types';
 import FileService from '../../../../../file/file.service';
+import { type ItemRaw } from '../../../../item';
 import { isImage } from '../utils';
 import { ImageValidationStrategy } from './imageValidationStrategy';
 import { TextValidationStrategy } from './textValidationStrategy';

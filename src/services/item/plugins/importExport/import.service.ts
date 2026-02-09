@@ -10,12 +10,13 @@ import { singleton } from 'tsyringe';
 import { type DocumentItemExtraProperties, type ItemSettings } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import type { AppSettingInsertDTO, AppSettingRaw, ItemRaw } from '../../../../drizzle/types';
+import type { AppSettingInsertDTO, AppSettingRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { ItemType } from '../../../../schemas/global';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
+import { type ItemRaw, isFolderItem } from '../../item';
 import { ItemService } from '../../item.service';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import FileItemService from '../file/itemFile.service';
@@ -462,8 +463,8 @@ export class ImportService {
 
     // recursively create children in folders
     for (const newItem of items) {
-      const { type, name } = newItem;
-      if (type === 'folder') {
+      const { name } = newItem;
+      if (isFolderItem(newItem)) {
         await this.importFiles(dbConnection, actor, {
           folderPath: path.join(folderPath, name),
           parentId: newItem.id,

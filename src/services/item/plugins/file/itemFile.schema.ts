@@ -1,9 +1,44 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema } from '../../item.schemas';
+import { itemCommonSchema } from '../../common.schemas';
+
+const fileItemSchema = Type.Composite(
+  [
+    itemCommonSchema,
+    customType.StrictObject({
+      type: Type.Literal('file'),
+      extra: customType.StrictObject({
+        file: customType.StrictObject({
+          name: Type.String(),
+          path: Type.String(),
+          mimetype: Type.String(),
+          size: Type.Integer({ minimum: 0 }),
+          altText: Type.Optional(
+            Type.String({
+              description: 'alternative text of the file if it is an image',
+            }),
+          ),
+          content: Type.Optional(
+            Type.String({
+              description: 'content of the file if it is readable',
+            }),
+          ),
+          key: Type.Optional(Type.String({ deprecated: true })),
+          contenttype: Type.Optional(Type.String({ deprecated: true })),
+        }),
+      }),
+    }),
+  ],
+  {
+    title: 'File',
+    description: 'Item of type file, represents a file.',
+  },
+);
+
+export const fileItemSchemaRef = registerSchemaAsRef('fileItem', 'File Item', fileItemSchema);
 
 export const upload = {
   operationId: 'uploadFile',
@@ -53,7 +88,7 @@ export const updateFile = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: Type.Partial(Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']), {
+  body: Type.Partial(Type.Pick(fileItemSchema, ['name', 'description', 'lang', 'settings']), {
     minProperties: 1,
   }),
   response: {

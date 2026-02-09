@@ -7,9 +7,10 @@ import { type ItemVisibilityOptionsType, type ResultOf, getChildFromPath } from 
 import { type DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import { itemVisibilitiesTable, items, itemsRawTable } from '../../../../drizzle/schema';
-import type { ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
+import type { ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import { mapById } from '../../../utils';
+import type { ItemRaw } from '../../item';
 import {
   CannotModifyParentVisibility,
   ConflictingVisibilitiesInTheHierarchy,

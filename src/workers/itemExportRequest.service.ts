@@ -7,14 +7,14 @@ import { ZipFile } from 'yazl';
 import { type UnionOfConst } from '@graasp/sdk';
 
 import { type DBConnection } from '../drizzle/db';
-import { type ItemRaw, MinimalAccount } from '../drizzle/types';
+import type { MinimalAccount } from '../drizzle/types';
 import { TRANSLATIONS } from '../langs/constants';
 import { BaseLogger } from '../logger';
 import { MailBuilder } from '../plugins/mailer/builder';
 import { MailerService } from '../plugins/mailer/mailer.service';
 import { AuthorizedItemService } from '../services/authorizedItem.service';
 import FileService from '../services/file/file.service';
-import { isItemType } from '../services/item/discrimination';
+import { ItemRaw, isFolderItem } from '../services/item/item';
 import { ItemService } from '../services/item/item.service';
 import { DESCRIPTION_EXTENSION } from '../services/item/plugins/importExport/constants';
 import { UnexpectedExportError } from '../services/item/plugins/importExport/errors';
@@ -191,7 +191,7 @@ export class ItemExportRequestService {
       );
     }
 
-    if (isItemType(item, 'folder')) {
+    if (isFolderItem(item)) {
       // append description
       const folderPath = path.join(archiveRootPath, item.name);
       const children = await this.itemService.getChildren(dbConnection, actor, item.id);

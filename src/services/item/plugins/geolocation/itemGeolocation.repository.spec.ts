@@ -5,11 +5,11 @@ import { describe, expect, it } from 'vitest';
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { itemGeolocationsTable } from '../../../../drizzle/schema';
-import type { ItemRaw } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
 import { TagCategory } from '../../../tag/tag.schemas';
+import { type ItemRaw, resolveItemType } from '../../item';
 import { MissingGeolocationSearchParams } from './errors';
 import { ItemGeolocationRepository } from './itemGeolocation.repository';
 import { expectItemGeolocations } from './test/utils';
@@ -345,7 +345,10 @@ describe('ItemGeolocationRepository', () => {
       expect(res.map((i) => i.item.id)).not.toContain(noise.id);
       const wantedItem = res.find(({ id }) => id === geoloc.id);
       assertIsDefined(wantedItem);
-      expectItemGeolocations([wantedItem], [{ ...geoloc, item: { ...parent, creator: actor } }]);
+      expectItemGeolocations(
+        [wantedItem],
+        [{ ...geoloc, item: { ...resolveItemType(parent), creator: actor } }],
+      );
     });
     it('return with keywords in english and spanish', async () => {
       const {
@@ -396,7 +399,10 @@ describe('ItemGeolocationRepository', () => {
       expect(res.map((i) => i.item.id)).not.toContain(noise.id);
       const wantedItem = res.find(({ id }) => id === geoloc.id);
       assertIsDefined(wantedItem);
-      expectItemGeolocations([wantedItem], [{ ...geoloc, item: { ...parent, creator: actor } }]);
+      expectItemGeolocations(
+        [wantedItem],
+        [{ ...geoloc, item: { ...resolveItemType(parent), creator: actor } }],
+      );
     });
     it('return only item within keywords in name', async () => {
       const {
@@ -452,8 +458,8 @@ describe('ItemGeolocationRepository', () => {
       expectItemGeolocations(
         [p, c],
         [
-          { ...parentGeoloc, item: { ...parent, creator: actor } },
-          { ...childGeoloc, item: { ...child, creator: actor } },
+          { ...parentGeoloc, item: { ...resolveItemType(parent), creator: actor } },
+          { ...childGeoloc, item: { ...resolveItemType(child), creator: actor } },
         ],
       );
     });
@@ -502,7 +508,7 @@ describe('ItemGeolocationRepository', () => {
       assertIsDefined(wantedItem);
       expectItemGeolocations(
         [wantedItem],
-        [{ ...parentGeoloc, item: { ...parent, creator: actor } }],
+        [{ ...parentGeoloc, item: { ...resolveItemType(parent), creator: actor } }],
       );
     });
     it('return only item within keywords in tags', async () => {
@@ -553,7 +559,9 @@ describe('ItemGeolocationRepository', () => {
         keywords: [tagName],
       });
       expect(res.length).toBeGreaterThanOrEqual(1);
-      expectItemGeolocations(res, [{ ...geolocParent, item: { ...parent, creator: actor } }]);
+      expectItemGeolocations(res, [
+        { ...geolocParent, item: { ...resolveItemType(parent), creator: actor } },
+      ]);
       expect(res.map((r) => r.id)).not.toContain(childGeoloc);
     });
     it('return only item with keywords in file content', async () => {
@@ -602,7 +610,9 @@ describe('ItemGeolocationRepository', () => {
       });
       expect(res.map((i) => i.id)).not.toContain(noise.id);
       expect(res.length).toBeGreaterThanOrEqual(1);
-      expectItemGeolocations(res, [{ ...childGeoloc, item: { ...child, creator: actor } }]);
+      expectItemGeolocations(res, [
+        { ...childGeoloc, item: { ...resolveItemType(child), creator: actor } },
+      ]);
     });
     it('return only item with keywords in document content', async () => {
       const {
@@ -656,7 +666,7 @@ describe('ItemGeolocationRepository', () => {
       assertIsDefined(wantedItem);
       expectItemGeolocations(
         [wantedItem],
-        [{ ...childGeoloc, item: { ...child, creator: actor } }],
+        [{ ...childGeoloc, item: { ...resolveItemType(child), creator: actor } }],
       );
     });
     it('return only non-recycled items in parent', async () => {
@@ -707,7 +717,9 @@ describe('ItemGeolocationRepository', () => {
         parent,
       );
       expect(res.length).toEqual(1);
-      expectItemGeolocations(res, [{ ...geoloc, item: { ...item, creator: actor } }]);
+      expectItemGeolocations(res, [
+        { ...geoloc, item: { ...resolveItemType(item), creator: actor } },
+      ]);
     });
     it('return only children for given parent item with bounds', async () => {
       const {

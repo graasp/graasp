@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ItemFactory } from '../../../test/factories/item.factory';
-import type { FolderItem } from './discrimination';
+import { FolderItem } from './item';
 import { sortChildrenForTreeWith } from './utils';
 
 const buildFolderItem = (args: { parentItem?: FolderItem; order: number }) => {

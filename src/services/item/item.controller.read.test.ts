@@ -11,7 +11,7 @@ import { db } from '../../drizzle/db';
 import { assertIsDefined } from '../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
-import { ItemWrapper, type PackedItem } from './ItemWrapper';
+import { type PackedItem, PackedItemDTO } from './packedItem.dto';
 import { expectManyPackedItems, expectPackedItem, expectThumbnails } from './test/fixtures/items';
 import { Ordering, SortBy } from './types';
 
@@ -114,7 +114,7 @@ describe('Item routes tests', () => {
         const returnedItem = response.json();
         expectPackedItem(
           returnedItem,
-          new ItemWrapper({ ...item, creator: actor }, itemMembership).packed(),
+          new PackedItemDTO({ ...item, creator: actor }, itemMembership).packed(),
           actor,
         );
         expectThumbnails(returnedItem, MOCK_SIGNED_URL, false);
@@ -146,7 +146,7 @@ describe('Item routes tests', () => {
         const returnedItem = response.json();
         expectPackedItem(
           returnedItem,
-          new ItemWrapper({ ...item, creator: actor }, im).packed(),
+          new PackedItemDTO({ ...item, creator: actor }, im).packed(),
           actor,
         );
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -179,7 +179,7 @@ describe('Item routes tests', () => {
         const returnedItem = response.json();
         expectPackedItem(
           returnedItem,
-          new ItemWrapper({ ...item, creator: actor }, im).packed(),
+          new PackedItemDTO({ ...item, creator: actor }, im).packed(),
           actor,
         );
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -285,8 +285,18 @@ describe('Item routes tests', () => {
         const {
           actor,
           members: [member],
-          items: [parentItem1, _child1, item2, item3, parentItem4, _child4, _parentItem5, item6],
-          itemMemberships: [im1, im2, im3, im4, im6],
+          items: [
+            parentItem1,
+            _child1,
+            item2,
+            item3,
+            parentItem4,
+            _child4,
+            _parentItem5,
+            item6,
+            appWithSettings,
+          ],
+          itemMemberships: [im1, im2, im3, im4, appWidthSettingsIm, im6],
         } = await seedFromJson({
           items: [
             // owned items
@@ -295,6 +305,8 @@ describe('Item routes tests', () => {
               creator: 'actor',
               memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ name: 'should-not-return' }],
+              // empty extra for folder
+              extra: {},
             },
             {
               name: 'item2',
@@ -315,7 +327,8 @@ describe('Item routes tests', () => {
             },
             {
               name: 'parentItem5',
-              creator: { name: 'bob' },
+              // null creator
+              creator: null,
               children: [
                 {
                   memberships: [{ account: 'actor', permission: 'admin' }],
@@ -323,6 +336,21 @@ describe('Item routes tests', () => {
                   creator: { name: 'bob' },
                 },
               ],
+            },
+            // schema check
+
+            {
+              name: 'app with settings',
+              type: 'app',
+              extra: {
+                app: {
+                  url: 'https://graasp.org',
+                  settings: {
+                    some: 'content',
+                  },
+                },
+              },
+              memberships: [{ account: 'actor', permission: 'admin' }],
             },
 
             // should not return these items
@@ -343,15 +371,17 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         const { data } = response.json<{ data: PackedItem[] }>();
 
-        const ims = [im1, im2, im3, im4, im6];
-        const packedItems = [parentItem1, item2, item3, parentItem4, item6].map((i) => {
-          const creator = i.creatorId === actor.id ? actor : member;
+        const ims = [im1, im2, im3, im4, appWidthSettingsIm, im6];
+        const packedItems = [parentItem1, item2, item3, parentItem4, item6, appWithSettings].map(
+          (i) => {
+            const creator = i.creatorId === actor.id ? actor : member;
 
-          return new ItemWrapper(
-            { ...i, creator },
-            ims.find((im) => i.path.includes(im.itemPath)),
-          ).packed();
-        });
+            return new PackedItemDTO(
+              { ...i, creator },
+              ims.find((im) => i.path.includes(im.itemPath)),
+            ).packed();
+          },
+        );
 
         expect(data).toHaveLength(packedItems.length);
 
@@ -450,7 +480,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item1, item2].map((i) =>
-          new ItemWrapper({ ...i, creator: bob }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: bob }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -488,7 +518,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item3, item1, item2].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -505,14 +535,17 @@ describe('Item routes tests', () => {
           items: [
             {
               type: 'document',
+              extra: { document: { content: 'content' } },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               type: 'folder',
+              extra: { folder: {} },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               type: 'app',
+              extra: { app: { url: 'https://graasp.org' } },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
@@ -529,7 +562,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item2, item1, item3].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -570,7 +603,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const packedItems = [item2, item1, item3].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
@@ -730,7 +763,7 @@ describe('Item routes tests', () => {
         const sortByName = (a, b) => a.name.localeCompare(b.name);
 
         const folders = [item1, item2]
-          .map((i) => new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed())
+          .map((i) => new PackedItemDTO({ ...i, creator: actor }, { permission: 'admin' }).packed())
           .sort(sortByName);
 
         const response = await app.inject({
@@ -908,7 +941,7 @@ describe('Item routes tests', () => {
 
         const data = response.json<PackedItem[]>();
         const children = [child1, child2].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
         expect(data).toHaveLength(children.length);
         expectManyPackedItems(data, children);
@@ -937,7 +970,7 @@ describe('Item routes tests', () => {
         mockAuthenticate(actor);
 
         const children = [child1, child2].map((i) =>
-          new ItemWrapper({ ...i, creator: actor }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: actor }, { permission: 'admin' }).packed(),
         );
 
         const response = await app.inject({
@@ -978,7 +1011,7 @@ describe('Item routes tests', () => {
         expect(data).toHaveLength(1);
         expectPackedItem(
           data[0],
-          new ItemWrapper(
+          new PackedItemDTO(
             { ...child2, creator: null },
             {
               permission: 'read',
@@ -1015,7 +1048,7 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
         const children = [child2, child3].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: null }, { permission: 'admin' }).packed(),
         );
         const data = response.json();
         expect(data).toHaveLength(children.length);
@@ -1125,15 +1158,18 @@ describe('Item routes tests', () => {
                 {
                   creator: 'actor',
                   type: 'document',
+                  extra: { document: { content: 'content' } },
                 },
                 {
                   creator: 'actor',
                   type: 'folder',
+                  extra: { folder: {} },
                 },
                 {
                   creator: 'actor',
                   type: 'folder',
                   children: [{ name: 'noise' }],
+                  extra: { folder: {} },
                 },
               ],
             },
@@ -1149,7 +1185,7 @@ describe('Item routes tests', () => {
         });
 
         const children = [child1, child2, child3].map((i) =>
-          new ItemWrapper(
+          new PackedItemDTO(
             { ...i, creator: actor },
             { permission: 'admin' },
             itemVisibilities,
@@ -1196,7 +1232,7 @@ describe('Item routes tests', () => {
         mockAuthenticate(actor);
 
         const descendants = [child1, child2, childOfChild].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: null }, { permission: 'admin' }).packed(),
         );
 
         const response = await app.inject({
@@ -1240,7 +1276,7 @@ describe('Item routes tests', () => {
 
         const data = response.json<PackedItem[]>();
         const descendants = [child1, child2, childOfChild].map((i) =>
-          new ItemWrapper({ ...i, creator: null }, { permission: 'admin' }).packed(),
+          new PackedItemDTO({ ...i, creator: null }, { permission: 'admin' }).packed(),
         );
         expect(data).toHaveLength(descendants.length);
         expectManyPackedItems(data, descendants);
@@ -1272,7 +1308,7 @@ describe('Item routes tests', () => {
         expect(result).toHaveLength(1);
         expectPackedItem(
           result[0],
-          new ItemWrapper({ ...child2, creator: null }, { permission: 'read' }).packed(),
+          new PackedItemDTO({ ...child2, creator: null }, { permission: 'read' }).packed(),
         );
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -1324,7 +1360,7 @@ describe('Item routes tests', () => {
 
         const data = response.json();
         const descendants = [child1, childOfChild, childOfChild2].map((i) =>
-          new ItemWrapper({ ...i, creator: null }).packed(),
+          new PackedItemDTO({ ...i, creator: null }).packed(),
         );
         expect(data).toHaveLength(descendants.length);
         expectManyPackedItems(data, descendants);

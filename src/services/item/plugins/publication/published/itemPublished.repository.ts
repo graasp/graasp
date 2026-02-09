@@ -7,10 +7,10 @@ import { items, membersView, publishedItemsTable } from '../../../../../drizzle/
 import type {
   ItemPublishedRaw,
   ItemPublishedWithItemWithCreator,
-  ItemRaw,
   MemberRaw,
 } from '../../../../../drizzle/types';
 import type { MinimalMember } from '../../../../../types';
+import { type ItemRaw, resolveItemType } from '../../../item';
 import { ItemPublishedNotFound } from './errors';
 
 @singleton()
@@ -43,7 +43,7 @@ export class ItemPublishedRepository {
       const entry = res[0];
       const mappedEntry = {
         ...entry.published_items,
-        item: { ...entry.item_view, creator: entry.members_view as MemberRaw },
+        item: { ...resolveItemType(entry.item_view), creator: entry.members_view as MemberRaw },
         // creator: entry.members_view,
       };
       return mappedEntry;
@@ -62,7 +62,7 @@ export class ItemPublishedRepository {
       .leftJoin(membersView, eq(items.creatorId, membersView.id));
 
     return result.map(({ published_items, item_view, members_view }) => ({
-      item: { ...item_view, creator: members_view as MemberRaw },
+      item: { ...resolveItemType(item_view), creator: members_view as MemberRaw },
       ...published_items,
     }));
   }
@@ -84,7 +84,7 @@ export class ItemPublishedRepository {
       .limit(pageSize);
     const mappedResults = results.map(({ published_items, item_view, members_view }) => ({
       ...published_items,
-      item: { ...item_view, creator: members_view as MemberRaw },
+      item: { ...resolveItemType(item_view), creator: members_view as MemberRaw },
     }));
     const total = (await dbConnection.select({ count: count() }).from(publishedItemsTable))[0]
       .count;

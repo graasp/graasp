@@ -6,12 +6,15 @@ import type { FastifySchema } from 'fastify';
 import { MembershipRequestStatus } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { itemSchemaRef } from '../../../item/item.schemas';
-import { memberSchemaRef } from '../../../member/member.schemas';
+import { genericItemSchemaRef } from '../../../item/common.schemas';
 
 const completeMembershipRequestSchema = customType.StrictObject({
-  member: memberSchemaRef,
-  item: itemSchemaRef,
+  member: customType.StrictObject({
+    id: customType.UUID(),
+    name: customType.Username(),
+    email: Type.String({ format: 'email' }),
+  }),
+  item: genericItemSchemaRef,
   createdAt: customType.DateTime(),
 });
 

@@ -12,7 +12,7 @@ import { db } from '../../../../../drizzle/db';
 import { isDirectChild } from '../../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
-import type { H5PItem } from '../../../discrimination';
+import type { H5PItem } from '../../../item';
 import { HtmlImportError } from '../errors';
 import { H5P_FILE_DOT_EXTENSION } from './constants';
 import { H5PInvalidManifestError } from './errors';

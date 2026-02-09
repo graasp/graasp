@@ -6,8 +6,8 @@ import { singleton } from 'tsyringe';
 import { type DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import { actionsTable, itemsRawTable } from '../../../../drizzle/schema';
-import type { ItemRaw } from '../../../../drizzle/types';
 import type { MaybeUser } from '../../../../types';
+import type { ItemRaw } from '../../item';
 
 export type ActionDateFilters = { startDate?: string; endDate?: string };
 

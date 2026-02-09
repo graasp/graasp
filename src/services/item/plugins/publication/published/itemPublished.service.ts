@@ -9,7 +9,7 @@ import {
 } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
-import type { ItemPublishedRaw, ItemRaw } from '../../../../../drizzle/types';
+import type { ItemPublishedRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
@@ -21,8 +21,9 @@ import { filterOutHiddenItems } from '../../../../authorization.utils';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../../itemMembership/membership.repository';
 import { MemberRepository } from '../../../../member/member.repository';
-import { ItemWrapperService } from '../../../ItemWrapper';
+import type { ItemRaw } from '../../../item';
 import { ItemRepository } from '../../../item.repository';
+import { PackedItemService } from '../../../packedItem.dto';
 import { ItemActionService } from '../../action/itemAction.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import {
@@ -41,7 +42,7 @@ export class ItemPublishedService {
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
-  private readonly itemWrapperService: ItemWrapperService;
+  private readonly itemWrapperService: PackedItemService;
   private readonly itemPublishedRepository: ItemPublishedRepository;
   private readonly itemRepository: ItemRepository;
   private readonly memberRepository: MemberRepository;
@@ -62,7 +63,7 @@ export class ItemPublishedService {
     itemVisibilityRepository: ItemVisibilityRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemPublishedRepository: ItemPublishedRepository,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemRepository: ItemRepository,
     memberRepository: MemberRepository,
     itemActionService: ItemActionService,

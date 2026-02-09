@@ -14,8 +14,8 @@ import {
   publishedItemsTable,
   tagsTable,
 } from '../../../../../../../drizzle/schema';
-import { ItemRaw } from '../../../../../../../drizzle/types';
 import { TagCategory } from '../../../../../../tag/tag.schemas';
+import type { ItemRaw } from '../../../../../item';
 import { stripHtml } from '../../../validation/utils';
 
 @singleton()

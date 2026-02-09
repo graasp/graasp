@@ -7,7 +7,6 @@ import type {
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
-  ItemRaw,
 } from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
@@ -22,6 +21,7 @@ import {
 import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { AuthorizedItemService } from '../authorizedItem.service';
+import type { ItemRaw } from '../item/item';
 import { MemberRepository } from '../member/member.repository';
 import { ItemMembershipRepository } from './membership.repository';
 import { MembershipRequestRepository } from './plugins/MembershipRequest/membershipRequest.repository';

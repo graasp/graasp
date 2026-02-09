@@ -3,19 +3,23 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema } from '../../item.schemas';
+import { itemCommonSchema } from '../../common.schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
 export const folderSchema = Type.Composite([
-  itemSchema,
+  itemCommonSchema,
   customType.StrictObject(
     {
+      type: Type.Literal('folder'),
       extra: customType.StrictObject({
-        folder: customType.StrictObject({
-          isCapsule: Type.Optional(Type.Boolean()),
-        }),
+        folder: Type.Optional(
+          customType.StrictObject({
+            isCapsule: Type.Optional(Type.Boolean()),
+            childrenOrder: Type.Optional(Type.Array(customType.UUID(), { deprecated: true })),
+          }),
+        ),
       }),
     },
     {
@@ -24,6 +28,8 @@ export const folderSchema = Type.Composite([
     },
   ),
 ]);
+
+export const folderItemSchemaRef = registerSchemaAsRef('folderItem', 'Folder Item', folderSchema);
 
 export const createFolder = {
   operationId: 'createFolder',

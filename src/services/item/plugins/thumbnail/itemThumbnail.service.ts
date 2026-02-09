@@ -6,12 +6,12 @@ import { delay, inject, injectable } from 'tsyringe';
 import { MimeTypes, ThumbnailSize } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
+import { type ItemRaw } from '../../item';
 import { ItemService } from '../../item.service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
 import type { ItemsThumbnails } from './types';

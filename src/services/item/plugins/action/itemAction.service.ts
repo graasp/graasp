@@ -5,7 +5,7 @@ import type { FastifyRequest } from 'fastify';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
-import type { ActionWithItem, ItemRaw } from '../../../../drizzle/types';
+import type { ActionWithItem } from '../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
@@ -17,6 +17,7 @@ import {
 } from '../../../action/constants';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
+import type { ItemRaw } from '../../item';
 import { type ActionDateFilters, ItemActionRepository } from './itemAction.repository';
 import { View, type ViewOptions } from './itemAction.schemas';
 import { ItemActionType } from './utils';

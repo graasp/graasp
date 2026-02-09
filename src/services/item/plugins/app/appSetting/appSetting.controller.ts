@@ -2,7 +2,6 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
-import type { ItemRaw } from '../../../../../drizzle/types';
 import type { AuthenticatedUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import {
@@ -13,6 +12,7 @@ import {
 import { assertIsMember } from '../../../../authentication';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
+import type { ItemRaw } from '../../../item';
 import { ItemService } from '../../../item.service';
 import { AppSettingEvent, appSettingsTopic } from '../ws/events';
 import { checkItemIsApp } from '../ws/utils';

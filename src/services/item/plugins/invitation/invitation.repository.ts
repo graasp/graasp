@@ -8,10 +8,10 @@ import type {
   InvitationInsertDTO,
   InvitationRaw,
   InvitationWithItem,
-  ItemRaw,
 } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import type { AuthenticatedUser } from '../../../../types';
+import type { ItemRaw } from '../../item';
 
 type ItemPath = ItemRaw['path'];
 type Email = InvitationRaw['email'];

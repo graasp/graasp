@@ -7,7 +7,7 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { permissionLevelSchemaRef } from '../../../../types';
 import { itemMembershipWithoutRelationsSchemaRef } from '../../../itemMembership/membership.schemas';
-import { itemSchemaRef } from '../../item.schemas';
+import { genericItemSchemaRef } from '../../common.schemas';
 
 export const invitationSchemaRef = registerSchemaAsRef(
   'invitation',
@@ -18,7 +18,7 @@ export const invitationSchemaRef = registerSchemaAsRef(
       email: Type.String({ format: 'email' }),
       name: Type.Optional(customType.Nullable(Type.String())),
       permission: permissionLevelSchemaRef,
-      item: itemSchemaRef,
+      item: genericItemSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },

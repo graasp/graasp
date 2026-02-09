@@ -7,7 +7,6 @@ import { type FileItemProperties, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';
@@ -15,6 +14,7 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import FileService from '../../../file/file.service';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { type ItemRaw } from '../../item';
 import { ItemService } from '../../item.service';
 import { H5PService } from '../html/h5p/h5p.service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';

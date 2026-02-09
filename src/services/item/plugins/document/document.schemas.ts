@@ -5,15 +5,16 @@ import type { FastifySchema } from 'fastify';
 
 import { DocumentItemExtraFlavor } from '@graasp/sdk';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema } from '../../item.schemas';
+import { itemCommonSchema } from '../../common.schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
-export const documentSchema = Type.Composite(
+const documentItemSchema = Type.Composite(
   [
-    itemSchema,
+    itemCommonSchema,
     customType.StrictObject({
+      type: Type.Literal('document'),
       extra: customType.StrictObject({
         document: customType.StrictObject({
           content: Type.String({ minLength: 1 }),
@@ -34,6 +35,12 @@ export const documentSchema = Type.Composite(
   },
 );
 
+export const documentItemSchemaRef = registerSchemaAsRef(
+  'documentItem',
+  'Document Item',
+  documentItemSchema,
+);
+
 export const createDocument = {
   operationId: 'createDocument',
   tags: ['item', 'document'],
@@ -45,8 +52,8 @@ export const createDocument = {
   ),
   body: Type.Composite(
     [
-      Type.Pick(itemSchema, ['name']),
-      Type.Partial(Type.Pick(itemSchema, ['description', 'lang', 'settings'])),
+      Type.Pick(documentItemSchema, ['name']),
+      Type.Partial(Type.Pick(documentItemSchema, ['description', 'lang', 'settings'])),
       customType.StrictObject({
         content: Type.String({ minLength: 1 }),
         flavor: Type.Optional(Type.Union([Type.Enum(DocumentItemExtraFlavor)])),
@@ -59,7 +66,7 @@ export const createDocument = {
     ],
     { additionalProperties: false },
   ),
-  response: { [StatusCodes.OK]: documentSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: documentItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
 export const updateDocument = {
@@ -73,7 +80,7 @@ export const updateDocument = {
   }),
   body: Type.Partial(
     Type.Composite([
-      Type.Pick(documentSchema, ['name', 'description', 'lang', 'settings']),
+      Type.Pick(documentItemSchema, ['name', 'description', 'lang', 'settings']),
       customType.StrictObject({
         content: Type.String({ minLength: 1 }),
         flavor: Type.Optional(Type.Union([Type.Enum(DocumentItemExtraFlavor)])),
@@ -82,5 +89,5 @@ export const updateDocument = {
     ]),
     { minProperties: 1 },
   ),
-  response: { [StatusCodes.OK]: documentSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: documentItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

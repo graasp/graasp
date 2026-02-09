@@ -6,7 +6,7 @@ import type { MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import type { PackedItem } from '../../ItemWrapper';
+import type { PackedItem } from '../../packedItem.dto';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 

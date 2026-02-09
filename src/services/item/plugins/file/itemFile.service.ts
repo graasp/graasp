@@ -13,7 +13,6 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
@@ -23,10 +22,11 @@ import { ItemMembershipRepository } from '../../../itemMembership/membership.rep
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { randomHexOf4 } from '../../../utils';
-import { ItemWrapperService } from '../../ItemWrapper';
 import { WrongItemTypeError } from '../../errors';
+import { type ItemRaw } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { PackedItemService } from '../../packedItem.dto';
 import { readPdfContent } from '../../utils';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
@@ -52,7 +52,7 @@ class FileItemService extends ItemService {
     itemMembershipRepository: ItemMembershipRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
     log: BaseLogger,

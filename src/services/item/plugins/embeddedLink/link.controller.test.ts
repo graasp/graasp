@@ -18,7 +18,7 @@ import { db } from '../../../../drizzle/db';
 import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
-import type { EmbeddedLinkItem } from '../../discrimination';
+import { EmbeddedLinkItem } from '../../item';
 import { FETCH_RESULT } from './link.service.test';
 
 const MOCK_URL = 'https://url.com';

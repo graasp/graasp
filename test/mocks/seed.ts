@@ -67,7 +67,6 @@ import type {
   ItemLoginSchemaRaw,
   ItemMembershipRaw,
   ItemPublishedRaw,
-  ItemRaw,
   ItemTagRaw,
   ItemValidationGroupRaw,
   ItemValidationRaw,
@@ -79,6 +78,7 @@ import type {
   TagRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
+import type { ItemRaw } from '../../src/services/item/item';
 import { PermissionLevel } from '../../src/types';
 import { APPS_PUBLISHER_ID } from '../../src/utils/config';
 import { ActionFactory } from '../factories/action.factory';
@@ -98,7 +98,7 @@ type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' 
   creator?: M | null;
   permission?: PermissionLevel;
 };
-type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?: M | null }) & {
+type SeedItem<M = SeedMember> = (Partial<ItemRaw> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;

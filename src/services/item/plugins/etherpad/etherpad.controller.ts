@@ -27,7 +27,7 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: createEtherpad,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async (request) => {
+    async (request, reply) => {
       const {
         user,
         body,
@@ -36,9 +36,11 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      return await db.transaction(async (tx) => {
-        return await etherpadItemService.createEtherpadItem(tx, member, body, parentId);
+      await db.transaction(async (tx) => {
+        await etherpadItemService.createEtherpadItem(tx, member, body, parentId);
       });
+
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 

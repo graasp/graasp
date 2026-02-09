@@ -3,11 +3,33 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef } from '../../../account/account.schemas';
-import { itemSchema, itemSchemaRef } from '../../item.schemas';
+import { itemCommonSchema } from '../../common.schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
+
+const appItemSchema = Type.Composite(
+  [
+    itemCommonSchema,
+    customType.StrictObject({
+      type: Type.Literal('app'),
+      extra: customType.StrictObject({
+        app: customType.StrictObject({
+          url: Type.String({ format: 'uri' }),
+          settings: Type.Optional(Type.Object({}, { additionalProperties: true })),
+        }),
+      }),
+    }),
+  ],
+  {
+    title: 'App Item',
+    description:
+      'Item of type app, represents an interactive application that can access to the Graasp app API.',
+  },
+);
+
+export const appItemSchemaRef = registerSchemaAsRef('appItem', 'App Item', appItemSchema);
 
 export const generateToken = {
   operationId: 'generateAppToken',
@@ -40,7 +62,7 @@ export const getContext = {
   response: {
     [StatusCodes.OK]: customType.StrictObject(
       {
-        item: itemSchemaRef,
+        item: appItemSchemaRef,
         members: Type.Array(accountSchemaRef),
       },
       {
@@ -97,24 +119,6 @@ export const getOwnMostUsedApps = {
   },
 } as const satisfies FastifySchema;
 
-export const appItemSchema = Type.Composite(
-  [
-    itemSchema,
-    customType.StrictObject({
-      extra: customType.StrictObject({
-        app: customType.StrictObject({
-          url: Type.String({ format: 'uri' }),
-        }),
-      }),
-    }),
-  ],
-  {
-    title: 'App Item',
-    description:
-      'Item of type app, represents an interactive application that can access to the app API.',
-  },
-);
-
 export const createApp = {
   operationId: 'createApp',
   tags: ['item', 'app'],
@@ -125,8 +129,8 @@ export const createApp = {
     customType.StrictObject({ parentId: customType.UUID(), previousItemId: customType.UUID() }),
   ),
   body: Type.Composite([
-    Type.Pick(itemSchema, ['name']),
-    Type.Partial(Type.Pick(itemSchema, ['description', 'lang', 'settings'])),
+    Type.Pick(appItemSchema, ['name']),
+    Type.Partial(Type.Pick(appItemSchema, ['description', 'lang', 'settings'])),
     customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
 
     customType.StrictObject({

@@ -5,7 +5,7 @@ import type { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef } from '../../item.schemas';
+import { genericItemSchemaRef } from '../../common.schemas';
 import { packedItemSchemaRef } from '../../item.schemas.packed';
 
 export const geoCoordinateSchema = customType.StrictObject(
@@ -44,7 +44,7 @@ const geolocation = customType.Nullable(
         helperLabel: customType.Nullable(Type.String()),
         createdAt: customType.DateTime(),
         updatedAt: customType.DateTime(),
-        item: itemSchemaRef,
+        item: genericItemSchemaRef,
       }),
     ],
     { additionalProperties: false },

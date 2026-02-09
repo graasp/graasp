@@ -81,6 +81,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       return await db.transaction(async (tx) => {
         const item = await embeddedLinkService.patchWithOptions(tx, member, id, body);
+
         await itemActionService.postPatchAction(tx, request, item);
         return item;
       });
