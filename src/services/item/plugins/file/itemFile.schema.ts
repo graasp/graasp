@@ -24,9 +24,7 @@ export const upload = {
     ),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: customType.StrictObject({
-      message: Type.String({ description: 'Successful response' }),
-    }),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 };
