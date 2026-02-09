@@ -3,32 +3,20 @@ import { singleton } from 'tsyringe';
 import { ItemVisibilityType, type ResultOf, type ThumbnailsBySize } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
+import { ItemDTO } from '../../drizzle/item.dto';
 import type {
   ItemMembershipRaw,
-  ItemRaw,
   ItemVisibilityRaw,
   ItemWithCreator,
-  MemberRaw,
+  MinimalAccount,
 } from '../../drizzle/types';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import type { ItemsThumbnails } from './plugins/thumbnail/types';
 
-type GraaspItem = Pick<
-  ItemRaw,
-  | 'id'
-  | 'name'
-  | 'type'
-  | 'path'
-  | 'description'
-  | 'extra'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'settings'
-  | 'lang'
-> & {
-  creator: MemberRaw | null;
+type GraaspItem = ItemDTO & {
+  creator: MinimalAccount | null;
 };
 
 export type PackedItem = GraaspItem & {
@@ -91,42 +79,6 @@ export class ItemWrapperService {
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemMembershipRepository = itemMembershipRepository;
     this.itemThumbnailService = itemThumbnailService;
-  }
-
-  /**
-   * merge items and their permission in a result of structure
-   * @param items result of many items
-   * @param memberships result memberships for many items
-   * @returns PackedItem[]
-   */
-  merge(
-    items: ItemWithCreator[],
-    memberships: ResultOf<ItemMembershipRaw | null>,
-    visibilities?: ResultOf<ItemVisibilityRaw[] | null>,
-    itemsThumbnails?: ItemsThumbnails,
-  ): PackedItem[] {
-    const data: PackedItem[] = [];
-
-    for (const i of items) {
-      const { permission = null } = memberships.data[i.id] ?? {};
-      const thumbnails = itemsThumbnails?.[i.id];
-
-      // sort visibilities to retrieve the most restrictive (highest) visibility first
-      const itemVisibilities = visibilities?.data?.[i.id];
-      if (itemVisibilities) {
-        itemVisibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
-      }
-
-      data.push({
-        ...i,
-        permission,
-        hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
-        public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
-        ...(thumbnails ? { thumbnails } : {}),
-      });
-    }
-
-    return data;
   }
 
   /**

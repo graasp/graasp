@@ -6,6 +6,7 @@ import { and, asc, desc, gte, isNotNull, ne } from 'drizzle-orm/sql';
 import { type Paginated, type Pagination } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
+import { FolderItem, ItemRaw } from '../../../../drizzle/item.dto';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import {
   itemMembershipsTable,
@@ -13,12 +14,11 @@ import {
   membersView,
   recycledItemDatasTable,
 } from '../../../../drizzle/schema';
-import type { ItemRaw, MemberRaw } from '../../../../drizzle/types';
+import type { MemberRaw } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import type { MinimalMember } from '../../../../types';
 import { MemberCannotAdminItem } from '../../../../utils/errors';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
-import type { FolderItem } from '../../discrimination';
 
 type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
 

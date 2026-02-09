@@ -3,14 +3,13 @@ import { singleton } from 'tsyringe';
 import { type ItemGeolocation, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { AppItem, type ItemRaw, isAppItemDTO } from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { type AppItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -88,7 +87,7 @@ export class AppItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is app
-    if (!isItemType(item, 'app')) {
+    if (!isAppItemDTO(item)) {
       throw new WrongItemTypeError(item.type);
     }
 

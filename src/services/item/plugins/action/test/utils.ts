@@ -1,6 +1,6 @@
 import type { ItemOpFeedbackEvent } from '@graasp/sdk';
 
-import { type ItemRaw } from '../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../drizzle/item.dto';
 import type { MembershipEvent } from '../../../../itemMembership/ws/events';
 import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 

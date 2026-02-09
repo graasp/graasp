@@ -6,10 +6,10 @@ import { EtherpadItemFactory, EtherpadPermission, FolderItemFactory } from '@gra
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
+import { EtherpadItem } from '../../../../drizzle/item.dto';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import type { EtherpadItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from './etherpad.service';

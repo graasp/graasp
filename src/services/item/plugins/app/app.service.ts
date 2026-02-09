@@ -6,7 +6,8 @@ import { type AuthTokenSubject } from '@graasp/sdk';
 
 import { APPS_JWT_SECRET } from '../../../../config/secrets';
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
+import { ItemRaw } from '../../../../drizzle/item.dto';
+import type { MinimalAccount } from '../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';

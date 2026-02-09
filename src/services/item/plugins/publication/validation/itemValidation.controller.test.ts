@@ -14,9 +14,9 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
+import { ItemRaw } from '../../../../../drizzle/item.dto';
 import { itemValidationsTable } from '../../../../../drizzle/schema';
 import type {
-  ItemRaw,
   ItemValidationGroupRaw,
   ItemValidationGroupWithItemAndValidations,
   ItemValidationRaw,

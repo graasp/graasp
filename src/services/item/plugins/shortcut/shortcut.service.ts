@@ -1,7 +1,7 @@
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { type ItemRaw, ShortcutItem, isShortcutItemDTO } from '../../../../drizzle/item.dto';
 import i18next from '../../../../i18n';
 import { BaseLogger } from '../../../../logger';
 import { type MinimalMember } from '../../../../types';
@@ -9,7 +9,6 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { type ShortcutItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -95,7 +94,7 @@ export class ShortcutItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is shortcut
-    if (!isItemType(item, 'shortcut')) {
+    if (!isShortcutItemDTO(item)) {
       throw new WrongItemTypeError(item.type);
     }
 

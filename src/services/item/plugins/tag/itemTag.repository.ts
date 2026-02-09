@@ -5,8 +5,9 @@ import { singleton } from 'tsyringe';
 import type { UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
+import { ItemRaw } from '../../../../drizzle/item.dto';
 import { itemTagsTable, tagsTable } from '../../../../drizzle/schema';
-import { type ItemRaw, type TagRaw } from '../../../../drizzle/types';
+import { type TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import type { TagCategoryOptions, TagCount } from '../../../tag/tag.schemas';
 import { TAG_COUNT_MAX_RESULTS } from './constants';

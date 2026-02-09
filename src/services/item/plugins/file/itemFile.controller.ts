@@ -7,7 +7,7 @@ import { type FileItemProperties, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/item.dto';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';

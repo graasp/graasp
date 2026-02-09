@@ -8,7 +8,8 @@ import {
 } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
-import type { ItemRaw, MinimalAccount } from '../../drizzle/types';
+import type { ItemRaw } from '../../drizzle/item.dto';
+import type { MinimalAccount } from '../../drizzle/types';
 import type { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';

@@ -24,7 +24,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return await bookmarkService.getOwn(db, member);
+      const bookmarks = await bookmarkService.getOwn(db, member);
+      return bookmarks;
     },
   );
 

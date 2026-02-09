@@ -5,7 +5,8 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, UUID } from '@graasp/sdk';
 
-import { AppDataRaw, ItemRaw } from '../../../../../drizzle/types';
+import type { ItemRaw } from '../../../../../drizzle/item.dto';
+import type { AppDataRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import { AuthenticatedUser } from '../../../../../types';
 import FileService from '../../../../file/file.service';

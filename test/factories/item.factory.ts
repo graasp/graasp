@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import { CCLicenseAdaptions, buildPathFromIds } from '@graasp/sdk';
 
+import { toItemDTO } from '../../src/drizzle/item.dto';
 import type { ItemWithCreator } from '../../src/drizzle/types';
 
 /**
@@ -21,33 +22,35 @@ export const ItemFactory = (
   const path = `${parentPrefix}${buildPathFromIds(id)}`;
 
   return {
-    type: 'folder',
-    order: null,
-    name: faker.word.words(4),
-    description: faker.lorem.text(),
-    extra: { folder: {} },
-    settings:
-      item.settings ??
-      faker.helpers.arrayElement([
-        {},
-        {
-          isPinned: faker.datatype.boolean(),
-          showChatbox: faker.datatype.boolean(),
-          hasThumbnail: false,
-          isResizable: faker.datatype.boolean(),
-          isCollapsible: faker.datatype.boolean(),
-          enableSaveActions: faker.datatype.boolean(),
-          displayCoEditors: faker.datatype.boolean(),
-          ccLicenseAdaption: faker.helpers.enumValue(CCLicenseAdaptions),
-        },
-      ]),
-    lang: item.lang ?? faker.helpers.arrayElement(['fr', 'en', 'it', 'es', 'ar', 'de']),
-    creatorId: null,
+    ...toItemDTO({
+      type: 'folder',
+      order: null,
+      name: faker.word.words(4),
+      description: faker.lorem.text(),
+      extra: { folder: {} },
+      settings:
+        item.settings ??
+        faker.helpers.arrayElement([
+          {},
+          {
+            isPinned: faker.datatype.boolean(),
+            showChatbox: faker.datatype.boolean(),
+            hasThumbnail: false,
+            isResizable: faker.datatype.boolean(),
+            isCollapsible: faker.datatype.boolean(),
+            enableSaveActions: faker.datatype.boolean(),
+            displayCoEditors: faker.datatype.boolean(),
+            ccLicenseAdaption: faker.helpers.enumValue(CCLicenseAdaptions),
+          },
+        ]),
+      lang: item.lang ?? faker.helpers.arrayElement(['fr', 'en', 'it', 'es', 'ar', 'de']),
+      creatorId: null,
+      id,
+      path,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...item,
+    }),
     creator: null,
-    id,
-    path,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    ...item,
   };
 };

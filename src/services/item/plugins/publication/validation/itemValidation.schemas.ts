@@ -5,9 +5,9 @@ import type { FastifySchema } from 'fastify';
 
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { customType } from '../../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { itemSchemaRef } from '../../../item.schemas';
+import { itemSchemaRef } from '../../../schemas';
 
 const itemValidationGroupSchema = customType.StrictObject(
   {
@@ -29,6 +29,8 @@ const itemValidationGroupSchema = customType.StrictObject(
     description: 'Group of validations for an item, without nested item',
   },
 );
+
+registerSchemaAsRef('itemValidationGroup', 'Item Validation Group', itemValidationGroupSchema);
 
 export const getLatestItemValidationGroup = {
   operationId: 'getLatestItemValidationGroup',

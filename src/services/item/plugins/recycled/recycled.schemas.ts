@@ -8,7 +8,7 @@ import { MAX_TARGETS_FOR_MODIFY_REQUEST } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { ITEMS_PAGE_SIZE } from '../../constants';
-import { itemSchemaRef } from '../../item.schemas';
+import { itemSchemaRef } from '../../schemas';
 
 export const recycledItemSchemaRef = registerSchemaAsRef(
   'recycledItemData',

@@ -13,6 +13,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
+import { toItemDTO } from '../../../../drizzle/item.dto';
 import { itemLikesTable } from '../../../../drizzle/schema';
 import type { ItemLikeRaw } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
@@ -103,7 +104,7 @@ describe('Item Like', () => {
         // check returned items
         expectManyPackedItems(
           res.json<{ item: PackedItem }[]>().map(({ item }) => item),
-          items.map((i) => new ItemWrapper({ ...i, creator: null }).packed()),
+          items.map((i) => new ItemWrapper({ ...toItemDTO(i), creator: null }).packed()),
           actor,
         );
       });
@@ -126,7 +127,7 @@ describe('Item Like', () => {
         // check returned items
         expectManyPackedItems(
           res.json().map(({ item }) => item),
-          items.map((i) => new ItemWrapper({ ...i, creator: null }).packed()),
+          items.map((i) => new ItemWrapper({ ...toItemDTO(i), creator: null }).packed()),
           actor,
         );
       });

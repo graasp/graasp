@@ -17,6 +17,7 @@ import {
 } from '@graasp/sdk';
 
 import { db } from '../../src/drizzle/db';
+import { ItemRaw } from '../../src/drizzle/item.dto';
 import {
   accountsTable,
   actionRequestExportsTable,
@@ -67,7 +68,6 @@ import type {
   ItemLoginSchemaRaw,
   ItemMembershipRaw,
   ItemPublishedRaw,
-  ItemRaw,
   ItemTagRaw,
   ItemValidationGroupRaw,
   ItemValidationRaw,
@@ -98,7 +98,7 @@ type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' 
   creator?: M | null;
   permission?: PermissionLevel;
 };
-type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?: M | null }) & {
+type SeedItem<M = SeedMember> = (Partial<ItemRaw> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;

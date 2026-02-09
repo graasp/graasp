@@ -33,6 +33,7 @@ import {
 } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
+import { FolderItem, ItemDTO, ItemRaw, toItemDTO } from '../../drizzle/item.dto';
 import {
   isAncestorOrSelf,
   isDescendantOrSelf,
@@ -50,12 +51,7 @@ import {
   membersView,
   publishedItemsTable,
 } from '../../drizzle/schema';
-import type {
-  ItemRaw,
-  ItemWithCreator,
-  MemberRaw,
-  MinimalItemForInsert,
-} from '../../drizzle/types';
+import type { ItemWithCreator, MemberRaw, MinimalItemForInsert } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { ItemType } from '../../schemas/global';
 import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
@@ -76,7 +72,6 @@ import {
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
 import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
-import { type FolderItem, isItemType } from './discrimination';
 import { ItemOrderingError } from './errors';
 import {
   type ItemChildrenParams,
@@ -208,26 +203,32 @@ export class ItemRepository {
 
     const { account, item_view } = results[0];
     return {
-      ...item_view,
+      ...toItemDTO(item_view),
       creator: account as MemberRaw,
     };
   }
 
-  async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<ItemRaw> {
+  async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<ItemDTO> {
     const result = await dbConnection.select().from(items).where(eq(items.id, id)).limit(1);
 
     if (!result.length) {
       throw new ItemNotFound(id);
     }
 
-    return result[0];
+    return toItemDTO(result[0]);
   }
 
   async getOneWithCreatorOrThrow(dbConnection: DBConnection, id: string): Promise<ItemWithCreator> {
     const result = await dbConnection
-      .select()
+      .select({
+        ...getViewSelectedFields(items),
+        creator: {
+          id: membersView.id,
+          name: membersView.name,
+        },
+      })
       .from(items)
-      .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
+      .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(eq(items.id, id))
       .limit(1);
 
@@ -235,8 +236,8 @@ export class ItemRepository {
       throw new ItemNotFound(id);
     }
     return {
-      ...result[0].item_view,
-      creator: result[0].account as MemberRaw,
+      ...toItemDTO(result[0]),
+      creator: result[0].creator,
     };
   }
 
@@ -271,7 +272,7 @@ export class ItemRepository {
       .orderBy(asc(items.path));
 
     return result.map(({ account, item_view }) => ({
-      ...item_view,
+      ...toItemDTO(item_view),
       creator: account as MemberRaw,
     }));
   }
@@ -459,7 +460,13 @@ export class ItemRepository {
     }
 
     const result = await dbConnection
-      .select()
+      .select({
+        ...getViewSelectedFields(items),
+        creator: {
+          id: membersView.id,
+          name: membersView.name,
+        },
+      })
       .from(items)
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(and(...andConditions))
@@ -467,9 +474,9 @@ export class ItemRepository {
       // backup order by in case two items has same ordering
       .orderBy(() => [asc(items.order), asc(items.createdAt)]);
 
-    return result.map(({ item_view, members_view }) => ({
-      ...item_view,
-      creator: members_view as MemberRaw,
+    return result.map((itemWithCreator) => ({
+      ...toItemDTO(itemWithCreator),
+      creator: itemWithCreator.creator,
     }));
   }
 
@@ -511,15 +518,21 @@ export class ItemRepository {
     }
 
     const result = await dbConnection
-      .select()
+      .select({
+        ...getViewSelectedFields(items),
+        creator: {
+          id: membersView.id,
+          name: membersView.name,
+        },
+      })
       .from(items)
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(and(...whereConditions))
       .orderBy(asc(items.path));
 
-    const descendants = result.map(({ members_view, item_view }) => ({
-      ...item_view,
-      creator: members_view as MemberRaw,
+    const descendants = result.map((itemWithCreator) => ({
+      ...toItemDTO(itemWithCreator),
+      creator: itemWithCreator.creator,
     }));
 
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
@@ -543,7 +556,7 @@ export class ItemRepository {
         .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
         .where(inArray(items.id, ids))
     ).map(({ account, item_view }) => ({
-      ...item_view,
+      ...toItemDTO(item_view),
       creator: account as MemberRaw,
     }));
 
@@ -721,12 +734,12 @@ export class ItemRepository {
   /////// -------- COPY
   async copy(
     dbConnection: DBConnection,
-    item: ItemRaw,
+    item: ItemDTO,
     creator: MinimalMember,
     siblingsName: string[],
     parentItem?: FolderItem,
   ): Promise<{
-    copyRoot: ItemRaw;
+    copyRoot: ItemDTO;
     treeCopyMap: Map<string, { original: ItemRaw; copy: MinimalItemForInsert }>;
   }> {
     // cannot copy inside non folder item
@@ -761,7 +774,7 @@ export class ItemRepository {
    */
   private async _copy(
     dbConnection: DBConnection,
-    original: ItemRaw,
+    original: ItemDTO,
     creator: MinimalMember,
     siblingsName: string[],
     parentItem?: FolderItem,
@@ -781,7 +794,7 @@ export class ItemRepository {
     old2New.set(original.id, { copy: copiedItem, original: original });
 
     // handle descendants - change path
-    if (isItemType(original, 'folder')) {
+    if (original.type === 'folder') {
       await this.copyDescendants(dbConnection, original, creator, old2New);
     }
 
@@ -966,7 +979,13 @@ export class ItemRepository {
     memberId: MinimalMember['id'],
   ): Promise<ItemWithCreator[]> {
     const result = await dbConnection
-      .select()
+      .select({
+        ...getViewSelectedFields(items),
+        creator: {
+          id: accountsTable.id,
+          name: accountsTable.name,
+        },
+      })
       .from(items)
       .innerJoin(publishedItemsTable, eq(publishedItemsTable.itemPath, items.path))
       .innerJoin(
@@ -981,9 +1000,9 @@ export class ItemRepository {
         and(eq(accountsTable.id, memberId), eq(items.creatorId, accountsTable.id)),
       );
 
-    return result.map(({ item_view, account }) => ({
-      ...item_view,
-      creator: account as MemberRaw,
+    return result.map((itemWithCreator) => ({
+      ...toItemDTO(itemWithCreator),
+      creator: itemWithCreator.creator,
     }));
   }
 
@@ -1254,7 +1273,24 @@ export class ItemRepository {
 
     // select top most items from above subquery
     const result = await dbConnection
-      .select()
+      .select({
+        id: iom.id,
+        name: iom.name,
+        description: iom.description,
+        type: iom.type,
+        createdAt: iom.createdAt,
+        updatedAt: iom.updatedAt,
+        extra: iom.extra,
+        settings: iom.settings,
+        path: iom.path,
+        lang: iom.lang,
+        creatorId: iom.creatorId,
+        order: iom.order,
+        creator: {
+          id: membersView.id,
+          name: membersView.name,
+        },
+      })
       .from(iom)
       .leftJoin(membersView, eq(iom.creatorId, membersView.id))
       .where(
@@ -1273,9 +1309,9 @@ export class ItemRepository {
       .limit(limit);
 
     return {
-      data: result.map(({ item_and_ordered_membership, members_view }) => ({
-        ...item_and_ordered_membership,
-        creator: members_view as MemberRaw | null,
+      data: result.map((itemWithCreator) => ({
+        ...toItemDTO(itemWithCreator),
+        creator: itemWithCreator.creator,
       })),
       pagination: { page, pageSize },
     };

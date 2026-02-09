@@ -2,7 +2,8 @@ import { inject, singleton } from 'tsyringe';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
+import { ItemRaw } from '../../../../drizzle/item.dto';
+import type { ItemGeolocationRaw } from '../../../../drizzle/types';
 import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemWrapper, type PackedItem } from '../../ItemWrapper';

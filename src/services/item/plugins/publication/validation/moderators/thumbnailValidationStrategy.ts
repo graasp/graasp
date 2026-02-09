@@ -3,7 +3,7 @@ import { inject, injectWithTransform, singleton } from 'tsyringe';
 import { ItemValidationProcess, ItemValidationStatus, ThumbnailSize } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
-import { type ItemRaw } from '../../../../../../drizzle/types';
+import { type ItemRaw } from '../../../../../../drizzle/item.dto';
 import {
   ITEM_THUMBNAIL_PREFIX,
   ThumbnailService,

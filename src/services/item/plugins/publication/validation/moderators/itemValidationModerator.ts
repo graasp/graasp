@@ -3,7 +3,8 @@ import { singleton } from 'tsyringe';
 import { ItemValidationReviewStatus, ItemValidationStatus } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../../drizzle/db';
-import type { ItemRaw, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
+import { ItemRaw } from '../../../../../../drizzle/item.dto';
+import type { ItemValidationGroupRaw } from '../../../../../../drizzle/types';
 import { ProcessExecutionError } from '../errors';
 import { ItemValidationRepository } from '../itemValidation.repository';
 import { ItemValidationReviewRepository } from '../itemValidationReview.repository';

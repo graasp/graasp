@@ -4,8 +4,9 @@ import { singleton } from 'tsyringe';
 import type { FastifyRequest } from 'fastify';
 
 import { type DBConnection } from '../../../../drizzle/db';
+import { ItemRaw } from '../../../../drizzle/item.dto';
 import { actionsTable } from '../../../../drizzle/schema';
-import type { ActionWithItem, ItemRaw } from '../../../../drizzle/types';
+import type { ActionWithItem } from '../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';

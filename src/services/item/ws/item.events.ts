@@ -3,7 +3,7 @@ import type {
   ItemOpFeedbackEvent as ItemOpFeedbackEventType,
 } from '@graasp/sdk';
 
-import { type ItemRaw } from '../../../drizzle/types';
+import { type ItemRaw } from '../../../drizzle/item.dto';
 
 // changes on items of given user
 export const memberItemsTopic = 'item/member';

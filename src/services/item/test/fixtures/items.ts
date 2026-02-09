@@ -1,12 +1,13 @@
 import { ItemVisibilityType, ThumbnailSize, buildPathFromIds } from '@graasp/sdk';
 
-import type { ItemRaw, ItemVisibilityRaw } from '../../../../drizzle/types';
+import type { ItemRaw } from '../../../../drizzle/item.dto';
+import type { ItemVisibilityRaw } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import type { PackedItem } from '../../ItemWrapper';
 
 export const expectItem = (
   newItem: Partial<ItemRaw> | undefined | null,
-  correctItem: Partial<Omit<ItemRaw, 'createdAt' | 'updatedAt' | 'creator'>> | undefined | null,
+  correctItem: Partial<Omit<ItemRaw, 'createdAt' | 'updatedAt'>> | undefined | null,
   creator?: MinimalMember,
   parent?: ItemRaw,
 ) => {

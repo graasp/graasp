@@ -11,7 +11,7 @@ import { v4 } from 'uuid';
 import type { FastifyBaseLogger } from 'fastify';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { TMP_FOLDER } from '../../../../utils/config';

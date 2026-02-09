@@ -5,7 +5,8 @@ import { MultipartFile } from '@fastify/multipart';
 import { AppDataVisibility, PermissionLevelCompare, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import type { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
+import { ItemRaw } from '../../../../../drizzle/item.dto';
+import type { AppDataRaw, ItemMembershipRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import type { AuthenticatedUser, MaybeUser, PermissionLevel } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';

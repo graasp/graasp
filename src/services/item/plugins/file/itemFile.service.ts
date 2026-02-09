@@ -13,7 +13,7 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';

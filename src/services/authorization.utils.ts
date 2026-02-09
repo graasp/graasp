@@ -1,7 +1,8 @@
 import { ItemVisibilityType, PermissionLevelCompare } from '@graasp/sdk';
 
 import type { DBConnection } from '../drizzle/db';
-import type { ItemRaw, ItemWithCreator } from '../drizzle/types';
+import { ItemRaw } from '../drizzle/item.dto';
+import type { ItemWithCreator } from '../drizzle/types';
 import type { MaybeUser } from '../types';
 import { ItemWrapper, type PackedItem } from './item/ItemWrapper';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';

@@ -5,13 +5,12 @@ import { DocumentItemExtraFlavor, DocumentItemFactory, FolderItemFactory } from 
 
 import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { db } from '../../../../drizzle/db';
-import type { ItemRaw } from '../../../../drizzle/types';
+import type { DocumentItem, ItemRaw } from '../../../../drizzle/item.dto';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import type { DocumentItem } from '../../discrimination';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';

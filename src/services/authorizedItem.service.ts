@@ -3,7 +3,8 @@ import { singleton } from 'tsyringe';
 import { ItemVisibilityType, type ResultOf } from '@graasp/sdk';
 
 import type { DBConnection } from '../drizzle/db';
-import type { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
+import { ItemRaw, toItemDTO } from '../drizzle/item.dto';
+import type { ItemMembershipRaw, ItemVisibilityWithItem } from '../drizzle/types';
 import type { PermissionLevel } from '../types';
 import {
   MemberCannotAccess,
@@ -229,7 +230,7 @@ export class AuthorizedItemService {
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
     await this.assertAccess(dbConnection, { permission, accountId, item });
-    return item;
+    return toItemDTO(item);
   }
 
   /**

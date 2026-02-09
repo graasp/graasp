@@ -1,13 +1,13 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { customType } from '../../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../../member/member.schemas';
-import { itemSchemaRef } from '../../../item.schemas';
 import { packedItemSchemaRef } from '../../../item.schemas.packed';
+import { itemSchemaRef } from '../../../schemas';
 
-const publishEntry = customType.StrictObject(
+const publishEntrySchema = customType.StrictObject(
   {
     id: customType.UUID(),
     item: itemSchemaRef,
@@ -17,6 +17,12 @@ const publishEntry = customType.StrictObject(
   {
     description: 'Information of a published item',
   },
+);
+
+const publishEntrySchemaRef = registerSchemaAsRef(
+  'itemPublished',
+  'Item Published',
+  publishEntrySchema,
 );
 
 export const getCollectionsForMember = {
@@ -76,7 +82,10 @@ export const getInformations = {
   }),
   response: {
     [StatusCodes.OK]: customType.Nullable(
-      Type.Composite([publishEntry, customType.StrictObject({ totalViews: Type.Number() })]),
+      Type.Composite([
+        publishEntrySchemaRef,
+        customType.StrictObject({ totalViews: Type.Number() }),
+      ]),
     ),
     '4xx': errorSchemaRef,
   },

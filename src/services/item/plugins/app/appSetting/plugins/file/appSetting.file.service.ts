@@ -7,11 +7,8 @@ import type { MultipartFile } from '@fastify/multipart';
 import { type FileItemProperties, MAX_ITEM_NAME_LENGTH, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../../../drizzle/db';
-import type {
-  AppSettingRaw,
-  AppSettingWithItem,
-  ItemRaw,
-} from '../../../../../../../drizzle/types';
+import { ItemRaw } from '../../../../../../../drizzle/item.dto';
+import type { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types';
 import type { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import FileService from '../../../../../../file/file.service';
 import { AppSettingRepository } from '../../appSetting.repository';

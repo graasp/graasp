@@ -15,6 +15,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevelCompare, type ResultOf, type UUID, getChildFromPath } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
+import { ItemRaw } from '../../drizzle/item.dto';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
 import {
   accountsTable,
@@ -28,7 +29,6 @@ import type {
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
   ItemMembershipWithItemAndCompleteAccount,
-  ItemRaw,
   MemberRaw,
 } from '../../drizzle/types';
 import type { AuthenticatedUser, MinimalMember, PermissionLevel } from '../../types';

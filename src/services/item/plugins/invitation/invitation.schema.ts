@@ -7,7 +7,7 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { permissionLevelSchemaRef } from '../../../../types';
 import { itemMembershipWithoutRelationsSchemaRef } from '../../../itemMembership/membership.schemas';
-import { itemSchemaRef } from '../../item.schemas';
+import { itemSchemaRef } from '../../schemas';
 
 export const invitationSchemaRef = registerSchemaAsRef(
   'invitation',

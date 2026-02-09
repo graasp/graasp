@@ -7,6 +7,7 @@ import { ItemFactory } from '../../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory';
 import { seedFromJson } from '../../../test/mocks/seed';
 import type { DBConnection } from '../../drizzle/db';
+import { toItemDTO } from '../../drizzle/item.dto';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMemberForTest } from '../authentication';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
@@ -94,7 +95,7 @@ describe('ItemWrapperService', () => {
         itemThumbnailService,
       ).createPackedItems(
         MOCK_DB,
-        items.map((i) => ({ ...i, creator: actor })),
+        items.map((i) => ({ ...toItemDTO(i), creator: actor })),
         resultOfMemberships,
       );
 

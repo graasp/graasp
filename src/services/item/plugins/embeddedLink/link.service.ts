@@ -13,14 +13,17 @@ import {
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import {
+  EmbeddedLinkItem,
+  type ItemRaw,
+  isEmbeddedLinkItemDTO,
+} from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { type EmbeddedLinkItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -257,7 +260,7 @@ export class EmbeddedLinkItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is link
-    if (!isItemType(item, 'embeddedLink')) {
+    if (!isEmbeddedLinkItemDTO(item)) {
       throw new WrongItemTypeError(item.type);
     }
 

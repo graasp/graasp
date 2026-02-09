@@ -8,10 +8,10 @@ import { ZipFile } from 'yazl';
 import { Context, DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
+import { ItemRaw } from '../../../../../drizzle/item.dto';
 import type {
   ActionRequestExportFormat,
   ActionRequestExportRaw,
-  ItemRaw,
 } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';

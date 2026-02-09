@@ -5,7 +5,7 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
-import type { ItemRaw } from '../../drizzle/types';
+import { ItemRaw } from '../../drizzle/item.dto';
 import type { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
@@ -147,12 +147,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = query;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return itemService.getAccessible(
+
+      const result = await itemService.getAccessible(
         db,
         member,
         { creatorId, keywords, sortBy, ordering, permissions, types },
         { page, pageSize },
       );
+      return result;
     },
   );
 
@@ -173,7 +175,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:id/descendants',
     { schema: getDescendantItems, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query }) => {
-      return itemService.getPackedDescendants(db, user?.account, id, query);
+      const result = await itemService.getPackedDescendants(db, user?.account, id, query);
+      return result;
     },
   );
 

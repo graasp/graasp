@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import { type ItemRaw } from '../../../../drizzle/item.dto';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';

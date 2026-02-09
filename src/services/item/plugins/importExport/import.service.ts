@@ -10,7 +10,8 @@ import { singleton } from 'tsyringe';
 import { type DocumentItemExtraProperties, type ItemSettings } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import type { AppSettingInsertDTO, AppSettingRaw, ItemRaw } from '../../../../drizzle/types';
+import type { ItemRaw } from '../../../../drizzle/item.dto';
+import type { AppSettingInsertDTO, AppSettingRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { ItemType } from '../../../../schemas/global';
 import type { MinimalMember } from '../../../../types';

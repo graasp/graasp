@@ -3,6 +3,7 @@ import { desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
+import { ItemRaw } from '../../../../drizzle/item.dto';
 import {
   actionsTable,
   appActionsTable,
@@ -24,7 +25,6 @@ import type {
   ChatMessageRaw,
   ItemLikeWithItem,
   ItemMembershipRaw,
-  ItemRaw,
 } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';

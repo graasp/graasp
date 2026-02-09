@@ -2,7 +2,7 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
-import type { ItemRaw } from '../../../../../drizzle/types';
+import type { ItemRaw } from '../../../../../drizzle/item.dto';
 import type { AuthenticatedUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import {

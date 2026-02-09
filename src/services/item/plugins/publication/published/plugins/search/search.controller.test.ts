@@ -15,8 +15,8 @@ import build, {
 } from '../../../../../../../../test/app';
 import { seedFromJson } from '../../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../../drizzle/db';
+import { type ItemRaw } from '../../../../../../../drizzle/item.dto';
 import { itemsRawTable } from '../../../../../../../drizzle/schema';
-import { type ItemRaw } from '../../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../../utils/assertions';
 import { GRAASPER_CREATOR_ID, ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
 import { MeiliSearchWrapper } from './meilisearch';

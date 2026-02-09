@@ -5,6 +5,7 @@ import { singleton } from 'tsyringe';
 import { type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
+import { ItemRaw } from '../../../../../drizzle/item.dto';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../../drizzle/operations';
 import {
   accountsTable,
@@ -24,7 +25,6 @@ import {
   type AppSettingRaw,
   type ChatMessageRaw,
   type ItemMembershipRaw,
-  type ItemRaw,
   type MinimalAccount,
 } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';

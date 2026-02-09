@@ -8,6 +8,7 @@ import fetch from 'node-fetch';
 import { DEFAULT_LANG } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
+import { ItemRaw, toItemDTO } from '../../../../drizzle/item.dto';
 import {
   isAncestorOrSelf,
   isDescendantOrSelf,
@@ -21,7 +22,6 @@ import type {
   ItemGeolocationRaw,
   ItemGeolocationWithItem,
   ItemGeolocationWithItemWithCreator,
-  ItemRaw,
   MemberRaw,
 } from '../../../../drizzle/types';
 import type { MaybeUser } from '../../../../types';
@@ -160,7 +160,7 @@ export class ItemGeolocationRepository {
 
     return result.map(({ item_view, account, item_geolocation }) => ({
       ...item_geolocation,
-      item: { ...item_view, creator: account as MemberRaw },
+      item: { ...toItemDTO(item_view), creator: account as MemberRaw },
     }));
   }
 

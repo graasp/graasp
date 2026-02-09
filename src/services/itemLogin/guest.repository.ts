@@ -4,9 +4,10 @@ import { singleton } from 'tsyringe';
 import type { UUID } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
+import { ItemRaw } from '../../drizzle/item.dto';
 import { isAncestorOrSelf } from '../../drizzle/operations';
 import { accountsTable, guestsView, itemLoginSchemasTable } from '../../drizzle/schema';
-import { type GuestRaw, type GuestWithItemLoginSchema, type ItemRaw } from '../../drizzle/types';
+import { type GuestRaw, type GuestWithItemLoginSchema } from '../../drizzle/types';
 import { AccountType } from '../../types';
 
 @singleton()

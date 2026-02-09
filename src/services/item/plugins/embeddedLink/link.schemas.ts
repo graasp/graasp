@@ -3,9 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema } from '../../item.schemas';
+import { itemCommonSchema } from '../../schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
 const linkSettingsSchema = customType.StrictObject({
@@ -13,10 +13,11 @@ const linkSettingsSchema = customType.StrictObject({
   showLinkButton: Type.Optional(Type.Boolean()),
 });
 
-export const embeddedLinkSchema = Type.Composite(
+const linkItemSchema = Type.Composite(
   [
-    itemSchema,
+    itemCommonSchema,
     customType.StrictObject({
+      type: Type.Literal('embeddedLink'),
       extra: customType.StrictObject({
         embeddedLink: customType.StrictObject({
           url: Type.String({ format: 'uri' }),
@@ -34,6 +35,12 @@ export const embeddedLinkSchema = Type.Composite(
     title: 'Embedded Link',
     description: 'Item of type embedded link, represents a resource to an external website.',
   },
+);
+
+export const embeddedLinkItemSchemaRef = registerSchemaAsRef(
+  'embeddedLinkItem',
+  'Embedded Link Item',
+  linkItemSchema,
 );
 
 export const getLinkMetadata = {
@@ -67,8 +74,8 @@ export const createLink = {
     customType.StrictObject({ parentId: customType.UUID(), previousItemId: customType.UUID() }),
   ),
   body: Type.Composite([
-    Type.Pick(itemSchema, ['name']),
-    Type.Partial(Type.Pick(itemSchema, ['description', 'lang', 'settings'])),
+    Type.Pick(linkItemSchema, ['name']),
+    Type.Partial(Type.Pick(linkItemSchema, ['description', 'lang', 'settings'])),
 
     // link flat config
     // uri is stricter than uri-reference
@@ -79,7 +86,7 @@ export const createLink = {
       geolocation: Type.Optional(geoCoordinateSchemaRef),
     }),
   ]),
-  response: { [StatusCodes.OK]: embeddedLinkSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: embeddedLinkItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
 export const updateLink = {
@@ -94,7 +101,7 @@ export const updateLink = {
   body: Type.Partial(
     Type.Composite(
       [
-        Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']),
+        Type.Pick(linkItemSchema, ['name', 'description', 'lang', 'settings']),
 
         // flat config for links
         customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
@@ -104,5 +111,5 @@ export const updateLink = {
     ),
     { minProperties: 1 },
   ),
-  response: { [StatusCodes.OK]: embeddedLinkSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: embeddedLinkItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

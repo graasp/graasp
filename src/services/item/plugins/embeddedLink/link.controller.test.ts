@@ -15,10 +15,10 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
+import { EmbeddedLinkItem } from '../../../../drizzle/item.dto';
 import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
-import type { EmbeddedLinkItem } from '../../discrimination';
 import { FETCH_RESULT } from './link.service.test';
 
 const MOCK_URL = 'https://url.com';

@@ -4,6 +4,7 @@ import { singleton } from 'tsyringe';
 import { type IndexItem, ItemVisibilityType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../../drizzle/db';
+import type { ItemRaw } from '../../../../../../../drizzle/item.dto';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../../../../drizzle/operations';
 import {
   accountsTable,
@@ -14,7 +15,6 @@ import {
   publishedItemsTable,
   tagsTable,
 } from '../../../../../../../drizzle/schema';
-import { ItemRaw } from '../../../../../../../drizzle/types';
 import { TagCategory } from '../../../../../../tag/tag.schemas';
 import { stripHtml } from '../../../validation/utils';
 

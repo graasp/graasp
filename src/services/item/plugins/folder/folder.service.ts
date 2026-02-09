@@ -4,7 +4,12 @@ import { singleton } from 'tsyringe';
 import { type ItemGeolocation, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
+import {
+  CapsuleItem,
+  type FolderItem,
+  type ItemRaw,
+  isFolderItemDTO,
+} from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MaybeUser, MinimalMember, PermissionLevel } from '../../../../types';
 import { ItemNotFolder } from '../../../../utils/errors';
@@ -12,7 +17,6 @@ import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
-import { CapsuleItem, type FolderItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -66,7 +70,7 @@ export class FolderItemService extends ItemService {
       itemId,
       permission,
     });
-    if (!isItemType(item, 'folder')) {
+    if (!isFolderItemDTO(item)) {
       throw new WrongItemTypeError(item.type);
     }
     return item as FolderItem;

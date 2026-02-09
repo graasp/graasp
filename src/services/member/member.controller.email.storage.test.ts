@@ -13,8 +13,8 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { EMAIL_CHANGE_JWT_SECRET } from '../../config/secrets';
 import { db } from '../../drizzle/db';
+import type { ItemRaw } from '../../drizzle/item.dto';
 import { accountsTable } from '../../drizzle/schema';
-import type { ItemRaw } from '../../drizzle/types';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMember } from '../authentication';

@@ -10,7 +10,7 @@ import {
   augmentedAccountSchemaRef,
   nullableAugmentedAccountSchemaRef,
 } from '../account/account.schemas';
-import { itemSchemaRef } from '../item/item.schemas';
+import { itemSchemaRef } from '../item/schemas';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',

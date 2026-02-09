@@ -3,11 +3,11 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, type UUID } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
+import { ItemRaw } from '../../drizzle/item.dto';
 import type {
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
-  ItemRaw,
 } from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';

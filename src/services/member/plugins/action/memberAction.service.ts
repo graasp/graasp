@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { ActionTriggers } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw } from '../../../../drizzle/types';
+import type { ItemRaw } from '../../../../drizzle/item.dto';
 import type { AuthenticatedUser } from '../../../../types';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';

@@ -5,9 +5,10 @@ import { singleton } from 'tsyringe';
 import { type ItemVisibilityOptionsType, type ResultOf, getChildFromPath } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
+import { ItemRaw } from '../../../../drizzle/item.dto';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import { itemVisibilitiesTable, items, itemsRawTable } from '../../../../drizzle/schema';
-import type { ItemRaw, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
+import type { ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import { mapById } from '../../../utils';
 import {

@@ -2,7 +2,7 @@ import { expect } from 'vitest';
 
 import { buildPathFromIds } from '@graasp/sdk';
 
-import { ItemRaw } from '../../../../drizzle/types';
+import type { ItemRaw } from '../../../../drizzle/item.dto';
 import { MinimalMember } from '../../../../types';
 
 export const expectItem = (

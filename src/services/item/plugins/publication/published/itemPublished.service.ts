@@ -9,7 +9,8 @@ import {
 } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
-import type { ItemPublishedRaw, ItemRaw } from '../../../../../drizzle/types';
+import { ItemRaw } from '../../../../../drizzle/item.dto';
+import type { ItemPublishedRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';

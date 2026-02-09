@@ -9,7 +9,6 @@ import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../aut
 import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../item.service';
 import { createPage, pageWebsocketsSchema } from './page.schemas';
@@ -23,7 +22,7 @@ export const pageItemPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // register post copy handler to copy the updates for page
   itemService.hooks.setPostHook('copy', async (_actor, thisDb, { original: item, copy }) => {
-    if (isItemType(item, 'page')) {
+    if (item.type === 'page') {
       await pageItemService.copy(thisDb, item.id, copy.id);
     }
   });

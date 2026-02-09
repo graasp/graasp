@@ -15,6 +15,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
+import { toItemDTO } from '../../../../../drizzle/item.dto';
 import { publishedItemsTable } from '../../../../../drizzle/schema';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../../utils/assertions';
@@ -183,7 +184,7 @@ describe('Item Published', () => {
         expectManyPackedItems(
           res.json(),
           items.map((i) =>
-            new ItemWrapper({ ...i, creator: member }, { permission: 'admin' }).packed(),
+            new ItemWrapper({ ...toItemDTO(i), creator: member }, { permission: 'admin' }).packed(),
           ),
           undefined,
           undefined,
@@ -232,7 +233,7 @@ describe('Item Published', () => {
         expectManyPackedItems(
           res.json(),
           items.map((i) =>
-            new ItemWrapper({ ...i, creator: member }, { permission: 'admin' }).packed(),
+            new ItemWrapper({ ...toItemDTO(i), creator: member }, { permission: 'admin' }).packed(),
           ),
           member,
           undefined,

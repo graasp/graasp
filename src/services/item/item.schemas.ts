@@ -4,73 +4,14 @@ import { StatusCodes } from 'http-status-codes';
 import type { FastifySchema } from 'fastify';
 
 import {
-  Alignment,
-  CCLicenseAdaptions,
-  DescriptionPlacement,
   DocumentItemExtraFlavor,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-  MaxWidth,
 } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
+import { customType } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import { nullableAccountSchemaRef } from '../account/account.schemas';
-
-export const settingsSchema = Type.Partial(
-  customType.StrictObject(
-    {
-      lang: Type.String({ deprecated: true }),
-      isPinned: Type.Boolean(),
-      /**
-       * @deprecated use entities tags and item tags instead
-       */
-      tags: Type.Array(Type.String(), { deprecated: true }),
-      showChatbox: Type.Boolean(),
-      isResizable: Type.Boolean(),
-      hasThumbnail: Type.Boolean(),
-      ccLicenseAdaption: customType.Nullable(
-        customType.EnumString(Object.values(CCLicenseAdaptions)),
-      ),
-      displayCoEditors: Type.Boolean(),
-      descriptionPlacement: customType.EnumString(Object.values(DescriptionPlacement)),
-      isCollapsible: Type.Boolean(),
-      enableSaveActions: Type.Boolean(),
-      // link settings
-      showLinkIframe: Type.Boolean(),
-      showLinkButton: Type.Boolean(),
-      // file settings
-      maxWidth: Type.Enum(MaxWidth),
-      alignment: Type.Enum(Alignment),
-    },
-    {
-      title: 'Item settings',
-      description: 'Parameters, mostly visual, common to all types of items.',
-    },
-  ),
-);
-
-export const itemSchema = customType.StrictObject(
-  {
-    id: customType.UUID(),
-    name: customType.ItemName(),
-    description: Type.Optional(customType.Nullable(Type.String())),
-    type: Type.String(),
-    path: Type.String(),
-    lang: Type.String(),
-    extra: Type.Object({}, { additionalProperties: true }),
-    settings: settingsSchema,
-    creator: Type.Optional(nullableAccountSchemaRef),
-    createdAt: customType.DateTime(),
-    updatedAt: customType.DateTime(),
-  },
-  {
-    title: 'Item',
-    description: 'Smallest unit of a learning collection',
-  },
-);
-
-export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
+import { itemSchema, itemSchemaRef, settingsSchema } from './schemas';
 
 export const itemUpdateSchema = Type.Partial(
   Type.Composite(

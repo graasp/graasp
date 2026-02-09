@@ -19,12 +19,12 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import type {
-  ItemGeolocationRaw,
-  ItemMembershipRaw,
-  ItemRaw,
-  ItemWithCreator,
-  MinimalItemForInsert,
+import { FolderItem, ItemRaw, isFolderItemDTO } from '../../drizzle/item.dto';
+import {
+  type ItemGeolocationRaw,
+  type ItemMembershipRaw,
+  type ItemWithCreator,
+  type MinimalItemForInsert,
 } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { ItemType } from '../../schemas/global';
@@ -50,7 +50,6 @@ import { ItemMembershipRepository } from '../itemMembership/membership.repositor
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { ItemWrapper, ItemWrapperService, type PackedItem } from './ItemWrapper';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { type FolderItem, isItemType } from './discrimination';
 import { ItemRepository } from './item.repository';
 import { ItemGeolocationRepository } from './plugins/geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
@@ -289,7 +288,7 @@ export class ItemService {
     );
 
     // quick check, necessary for ts
-    if (!isItemType(parentItem, 'folder')) {
+    if (parentItem.type !== 'folder') {
       throw new ItemNotFolder(parentItem);
     }
 
@@ -556,7 +555,7 @@ export class ItemService {
       itemId,
     });
 
-    if (!isItemType(item, 'folder')) {
+    if (item.type !== 'folder') {
       return { item, descendants: <ItemWithCreator[]>[] };
     }
 
@@ -648,7 +647,7 @@ export class ItemService {
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
     let items = [item];
-    if (isItemType(item, 'folder')) {
+    if (item.type === 'folder') {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(descendants.length);
@@ -883,7 +882,7 @@ export class ItemService {
     }
 
     let items = [item];
-    if (isItemType(item, 'folder')) {
+    if (isFolderItemDTO(item)) {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       items = [...descendants, item];
     }
