@@ -41,11 +41,11 @@ export class ThumbnailService {
         file.unpipe(image);
         file.destroy();
       } catch (err) {
-        this.logger.debug('Failed to unpipe file from image:', err);
+        this.logger.debug(`Failed to unpipe file from image: ${err}`);
       }
       image.destroy(err);
     } catch (err) {
-      this.logger.debug('Failed to to destroy image:', err);
+      this.logger.debug(`Failed to to destroy image: ${err}`);
     }
   }
 
@@ -55,7 +55,7 @@ export class ThumbnailService {
       try {
         image.destroy(err);
       } catch (e) {
-        this.logger.debug('Failed to destroy image:', e);
+        this.logger.debug(`Failed to destroy image: ${e}`);
       }
       throw err;
     };
@@ -69,7 +69,7 @@ export class ThumbnailService {
     try {
       file.removeListener('error', listeners.onFileError);
     } catch (err) {
-      this.logger.debug('Failed to remove error listener from file:', err);
+      this.logger.debug(`Failed to remove error listener from file: ${err}`);
     }
   }
 
