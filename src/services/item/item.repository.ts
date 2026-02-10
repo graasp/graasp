@@ -72,7 +72,7 @@ import {
 } from '../member/constants';
 import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
 import { ItemOrderingError } from './errors';
-import { FolderItem, Item, ItemRaw, resolveItemType } from './item';
+import { FolderItem, Item, ItemRaw, isFolderItem, resolveItemType } from './item';
 import {
   type ItemChildrenParams,
   type ItemSearchParams,
@@ -786,7 +786,7 @@ export class ItemRepository {
     old2New.set(original.id, { copy: copiedItem, original: original });
 
     // handle descendants - change path
-    if (original.type === 'folder') {
+    if (isFolderItem(original)) {
       await this.copyDescendants(dbConnection, original, creator, old2New);
     }
 

@@ -21,7 +21,7 @@ import { filterOutHiddenItems } from '../../../../authorization.utils';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../../itemMembership/membership.repository';
 import { MemberRepository } from '../../../../member/member.repository';
-import { ItemRaw } from '../../../item';
+import type { ItemRaw } from '../../../item';
 import { ItemRepository } from '../../../item.repository';
 import { PackedItemService } from '../../../packedItem.dto';
 import { ItemActionService } from '../../action/itemAction.service';

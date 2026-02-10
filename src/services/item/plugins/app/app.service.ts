@@ -11,7 +11,7 @@ import type { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { WrongItemTypeError } from '../../errors';
-import { ItemRaw } from '../../item';
+import type { ItemRaw } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { AppRepository } from './app.repository';
 import { DEFAULT_JWT_EXPIRATION } from './constants';

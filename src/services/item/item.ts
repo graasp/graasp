@@ -18,6 +18,7 @@ import { items } from '../../drizzle/schema';
 export type ItemRaw = typeof items.$inferSelect;
 
 export type PageItem = Omit<ItemRaw, 'type'> & { type: 'page' };
+export const isPageItem = (item: ItemRaw): item is DocumentItem => item.type === 'page';
 
 export type DocumentItem = Omit<ItemRaw, 'type'> & { type: 'document'; extra: DocumentItemExtra };
 export const isDocumentItem = (item: ItemRaw): item is DocumentItem => item.type === 'document';

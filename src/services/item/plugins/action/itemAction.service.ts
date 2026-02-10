@@ -17,7 +17,7 @@ import {
 } from '../../../action/constants';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { ItemRaw } from '../../item';
+import type { ItemRaw } from '../../item';
 import { type ActionDateFilters, ItemActionRepository } from './itemAction.repository';
 import { View, type ViewOptions } from './itemAction.schemas';
 import { ItemActionType } from './utils';

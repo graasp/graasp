@@ -7,7 +7,7 @@ import { MAX_TARGETS_FOR_MODIFY_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef } from '../../common.schemas';
+import { genericItemSchemaRef } from '../../common.schemas';
 import { ITEMS_PAGE_SIZE } from '../../constants';
 
 export const recycledItemSchemaRef = registerSchemaAsRef(
@@ -16,7 +16,7 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
   customType.StrictObject(
     {
       id: customType.UUID(),
-      item: itemSchemaRef,
+      item: genericItemSchemaRef,
       createdAt: customType.DateTime(),
     },
     {
@@ -43,7 +43,7 @@ export const getOwnRecycledItems = {
   ),
   response: {
     [StatusCodes.OK]: customType.StrictObject({
-      data: Type.Array(itemSchemaRef),
+      data: Type.Array(genericItemSchemaRef),
       pagination: customType.Pagination({
         page: {
           minimum: 0,

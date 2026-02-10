@@ -10,7 +10,7 @@ import { itemVisibilitiesTable, items, itemsRawTable } from '../../../../drizzle
 import type { ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import { mapById } from '../../../utils';
-import { ItemRaw } from '../../item';
+import type { ItemRaw } from '../../item';
 import {
   CannotModifyParentVisibility,
   ConflictingVisibilitiesInTheHierarchy,

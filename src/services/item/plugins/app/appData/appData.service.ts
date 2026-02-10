@@ -10,7 +10,7 @@ import { BaseLogger } from '../../../../../logger';
 import type { AuthenticatedUser, MaybeUser, PermissionLevel } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import FileService from '../../../../file/file.service';
-import { ItemRaw } from '../../../item';
+import type { ItemRaw } from '../../../item';
 import { AppDataRepository } from './appData.repository';
 import { AppDataFileServiceAdapter } from './appDataFileServiceAdapter';
 import {

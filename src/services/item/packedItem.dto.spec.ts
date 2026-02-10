@@ -71,6 +71,7 @@ describe('PackedItemService', () => {
         data: {
           [items[0].id]: [itemVisibilities[0]],
           [items[1].id]: [itemVisibilities[1]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         errors: [],
       }));

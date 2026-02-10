@@ -26,7 +26,7 @@ import FileService from '../../../../file/file.service';
 import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
 import { convertToValidFilename } from '../../../../utils';
-import { ItemRaw } from '../../../item';
+import type { ItemRaw } from '../../../item';
 import { ActionRequestExportRepository } from './itemAction.requestExport.repository';
 import { formatData } from './utils';
 

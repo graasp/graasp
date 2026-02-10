@@ -28,7 +28,7 @@ import {
 } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants';
-import { ItemRaw } from '../../../item';
+import type { ItemRaw } from '../../../item';
 
 @singleton()
 export class ActionRequestExportRepository {

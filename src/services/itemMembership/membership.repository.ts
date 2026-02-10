@@ -39,7 +39,7 @@ import {
   MemberNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
-import { ItemRaw } from '../item/item';
+import type { ItemRaw } from '../item/item';
 import { mapById } from '../utils';
 import { PermissionType, getPermissionsAtItemSql } from './utils';
 

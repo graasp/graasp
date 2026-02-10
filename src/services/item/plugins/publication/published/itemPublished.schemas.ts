@@ -4,13 +4,13 @@ import { StatusCodes } from 'http-status-codes';
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../../member/member.schemas';
-import { itemSchemaRef } from '../../../common.schemas';
+import { genericItemSchemaRef } from '../../../common.schemas';
 import { packedItemSchemaRef } from '../../../item.schemas.packed';
 
 const publishEntrySchema = customType.StrictObject(
   {
     id: customType.UUID(),
-    item: itemSchemaRef,
+    item: genericItemSchemaRef,
     creator: nullableMemberSchemaRef,
     createdAt: customType.DateTime(),
   },

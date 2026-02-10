@@ -9,7 +9,7 @@ import type { DBConnection } from '../drizzle/db';
 import type { ItemVisibilityRaw, ItemVisibilityWithItem } from '../drizzle/types';
 import { AccountType, MinimalMember, PermissionLevel } from '../types';
 import { filterOutPackedDescendants } from './authorization.utils';
-import { ItemRaw } from './item/item';
+import type { ItemRaw } from './item/item';
 import type { PackedItem } from './item/packedItem.dto';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { expectItem } from './item/test/fixtures/items.vitest';

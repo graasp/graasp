@@ -58,7 +58,7 @@ export const itemCommonSchema = customType.StrictObject(
   },
 );
 
-export const itemSchema = Type.Intersect([
+export const genericItemSchema = Type.Intersect([
   itemCommonSchema,
   Type.Object({
     type: itemTypeSchemaRef,
@@ -66,4 +66,8 @@ export const itemSchema = Type.Intersect([
   }),
 ]);
 
-export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
+export const genericItemSchemaRef = registerSchemaAsRef(
+  'genericItem',
+  'Generic Item',
+  genericItemSchema,
+);

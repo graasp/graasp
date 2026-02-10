@@ -11,12 +11,12 @@ import {
 
 import { customType } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import { itemSchema, itemSchemaRef, settingsSchema } from './common.schemas';
+import { genericItemSchema, itemCommonSchema, settingsSchema } from './common.schemas';
 
 export const itemUpdateSchema = Type.Partial(
   Type.Composite(
     [
-      Type.Pick(itemSchema, ['name', 'description', 'lang']),
+      Type.Pick(itemCommonSchema, ['name', 'description', 'lang']),
       customType.StrictObject({
         settings: Type.Optional(settingsSchema),
         extra: Type.Union([
@@ -82,7 +82,7 @@ export const updateOne = {
     id: customType.UUID(),
   }),
   body: itemUpdateSchema,
-  response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: genericItemSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
 export const reorder = {
@@ -103,7 +103,7 @@ export const reorder = {
     ),
   }),
   response: {
-    [StatusCodes.OK]: itemSchemaRef,
+    [StatusCodes.OK]: genericItemSchema,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

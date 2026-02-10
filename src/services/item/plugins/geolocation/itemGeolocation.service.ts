@@ -5,7 +5,7 @@ import { type DBConnection } from '../../../../drizzle/db';
 import type { ItemGeolocationRaw } from '../../../../drizzle/types';
 import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
-import { ItemRaw } from '../../item';
+import type { ItemRaw } from '../../item';
 import { type PackedItem, PackedItemDTO } from '../../packedItem.dto';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { MissingGeolocationApiKey } from './errors';

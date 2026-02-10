@@ -19,7 +19,7 @@ import { pageItemSchemaRef } from './plugins/page/page.schemas';
 import { shortcutItemSchemaRef } from './plugins/shortcut/shortcut.schemas';
 import { Ordering, SortBy } from './types';
 
-export const discriminatedItemSchema = Type.Union([
+export const itemSchema = Type.Union([
   appItemSchemaRef,
   documentItemSchemaRef,
   embeddedLinkItemSchemaRef,
@@ -30,11 +30,7 @@ export const discriminatedItemSchema = Type.Union([
   pageItemSchemaRef,
   shortcutItemSchemaRef,
 ]);
-export const discriminatedItemSchemaRef = registerSchemaAsRef(
-  'discriminatedItem',
-  'DiscriminatedItem',
-  discriminatedItemSchema,
-);
+export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
 
 const packedSchema = customType.StrictObject({
   permission: Type.Union([permissionLevelSchemaRef, Type.Null()]),

@@ -21,7 +21,7 @@ import {
 import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { AuthorizedItemService } from '../authorizedItem.service';
-import { ItemRaw } from '../item/item';
+import type { ItemRaw } from '../item/item';
 import { MemberRepository } from '../member/member.repository';
 import { ItemMembershipRepository } from './membership.repository';
 import { MembershipRequestRepository } from './plugins/MembershipRequest/membershipRequest.repository';

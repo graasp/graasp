@@ -19,6 +19,7 @@ import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { WrongItemTypeError } from '../../errors';
+import { isFolderItem } from '../../item';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { GraaspExportService } from './graaspExport.service';
@@ -116,7 +117,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       });
 
       // do not allow folders
-      if (item.type === 'folder') {
+      if (isFolderItem(item)) {
         throw new WrongItemTypeError(item.type);
       }
 

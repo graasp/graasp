@@ -1,4 +1,4 @@
-import { ItemRaw } from '../services/item/item';
+import type { ItemRaw } from '../services/item/item';
 import type { MinimalGuest, MinimalMember } from '../types';
 import {
   accountsTable,

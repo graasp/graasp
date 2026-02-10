@@ -10,7 +10,7 @@ import { type DBConnection } from '../../../../../../../drizzle/db';
 import type { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types';
 import type { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import FileService from '../../../../../../file/file.service';
-import { ItemRaw } from '../../../../../item';
+import type { ItemRaw } from '../../../../../item';
 import { AppSettingRepository } from '../../appSetting.repository';
 import { AppSettingService } from '../../appSetting.service';
 import { NotAppSettingFile } from '../../errors';

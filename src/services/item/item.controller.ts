@@ -12,7 +12,7 @@ import { assertIsMember } from '../authentication';
 import { memberAccountRole } from '../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from './constants';
-import { ItemRaw } from './item';
+import type { ItemRaw } from './item';
 import { copyMany, deleteMany, getParentItems, moveMany, reorder, updateOne } from './item.schemas';
 import { create, createWithThumbnail } from './item.schemas.create';
 import { getAccessible, getChildren, getDescendantItems, getOne } from './item.schemas.packed';
@@ -181,7 +181,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: getDescendantItems, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query }) => {
       const result = await itemService.getPackedDescendants(db, user?.account, id, query);
-      console.log(result);
       return result;
     },
   );

@@ -28,7 +28,7 @@ import type {
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { NoChatMentionForMember } from '../../../chat/errors';
-import { ItemRaw } from '../../../item/item';
+import type { ItemRaw } from '../../../item/item';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 
 @singleton()

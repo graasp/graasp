@@ -9,7 +9,7 @@ import type { ItemMembershipWithItemAndAccount } from '../drizzle/types';
 import { PermissionLevel } from '../types';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { AuthorizedItemService } from './authorizedItem.service';
-import { ItemRaw } from './item/item';
+import type { ItemRaw } from './item/item';
 import { ItemRepository } from './item/item.repository';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';

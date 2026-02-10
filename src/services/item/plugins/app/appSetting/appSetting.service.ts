@@ -8,7 +8,7 @@ import type { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
-import { ItemRaw } from '../../../item';
+import type { ItemRaw } from '../../../item';
 import { AppSettingRepository } from './appSetting.repository';
 
 @singleton()

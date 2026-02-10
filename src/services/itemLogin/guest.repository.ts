@@ -8,7 +8,7 @@ import { isAncestorOrSelf } from '../../drizzle/operations';
 import { accountsTable, guestsView, itemLoginSchemasTable } from '../../drizzle/schema';
 import { type GuestRaw, type GuestWithItemLoginSchema } from '../../drizzle/types';
 import { AccountType } from '../../types';
-import { ItemRaw } from '../item/item';
+import type { ItemRaw } from '../item/item';
 
 @singleton()
 export class GuestRepository {

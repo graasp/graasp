@@ -646,7 +646,7 @@ export class ItemService {
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
     let items: ItemRaw[] = [item];
-    if (item.type === 'folder') {
+    if (isFolderItem(item)) {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(descendants.length);
@@ -876,7 +876,7 @@ export class ItemService {
     );
 
     // make sure the order of the descendants are correct
-    if (item.type === 'folder') {
+    if (isFolderItem(item)) {
       await this.itemRepository.fixOrderForTree(dbConnection, item.path);
     }
 

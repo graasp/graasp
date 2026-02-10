@@ -23,7 +23,7 @@ import type {
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';
-import { ItemRaw } from '../../../item';
+import type { ItemRaw } from '../../../item';
 import { ItemValidationService } from './itemValidation.service';
 import { type ItemModeratorValidate, stubItemModerator } from './test/utils';
 
