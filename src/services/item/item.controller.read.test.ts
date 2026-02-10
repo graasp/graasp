@@ -505,14 +505,17 @@ describe('Item routes tests', () => {
           items: [
             {
               type: 'document',
+              extra: { document: { content: 'content' } },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               type: 'folder',
+              extra: { folder: {} },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
             {
               type: 'app',
+              extra: { app: { url: 'https://graasp.org' } },
               memberships: [{ account: 'actor', permission: 'admin' }],
             },
           ],
@@ -1125,15 +1128,18 @@ describe('Item routes tests', () => {
                 {
                   creator: 'actor',
                   type: 'document',
+                  extra: { document: { content: 'content' } },
                 },
                 {
                   creator: 'actor',
                   type: 'folder',
+                  extra: { folder: {} },
                 },
                 {
                   creator: 'actor',
                   type: 'folder',
                   children: [{ name: 'noise' }],
+                  extra: { folder: {} },
                 },
               ],
             },
