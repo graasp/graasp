@@ -26,7 +26,7 @@ import type {
 import type { MaybeUser } from '../../../../types';
 import { GEOLOCATION_API_HOST, getSearchLang } from '../../../../utils/config';
 import { isMember } from '../../../authentication';
-import { ItemRaw, resolveItemType } from '../../item';
+import { type ItemRaw, resolveItemType } from '../../item';
 import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
 
 export class ItemGeolocationRepository {

@@ -11,7 +11,7 @@ import {
   MemberCannotReadItem,
   MemberCannotWriteItem,
 } from '../utils/errors';
-import { ItemRaw, resolveItemType } from './item/item';
+import { type ItemRaw, resolveItemType } from './item/item';
 import { ItemRepository } from './item/item.repository';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';

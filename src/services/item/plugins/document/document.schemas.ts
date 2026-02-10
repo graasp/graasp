@@ -53,7 +53,7 @@ export const createDocument = {
   body: Type.Composite(
     [
       Type.Pick(documentItemSchema, ['name']),
-      Type.Partial(Type.Pick(documentItemSchemaRef, ['description', 'lang', 'settings'])),
+      Type.Partial(Type.Pick(documentItemSchema, ['description', 'lang', 'settings'])),
       customType.StrictObject({
         content: Type.String({ minLength: 1 }),
         flavor: Type.Optional(Type.Union([Type.Enum(DocumentItemExtraFlavor)])),
@@ -66,7 +66,7 @@ export const createDocument = {
     ],
     { additionalProperties: false },
   ),
-  response: { [StatusCodes.OK]: documentItemSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: documentItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
 export const updateDocument = {
@@ -89,5 +89,5 @@ export const updateDocument = {
     ]),
     { minProperties: 1 },
   ),
-  response: { [StatusCodes.OK]: documentItemSchema, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: documentItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

@@ -5,7 +5,7 @@ import type { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemCommonSchema } from '../../common.schemas';
+import { itemCommonSchema, settingsSchema } from '../../common.schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
 const linkSettingsSchema = customType.StrictObject({
@@ -28,7 +28,9 @@ const linkItemSchema = Type.Composite(
           title: Type.Optional(Type.String()),
         }),
       }),
-      settings: linkSettingsSchema,
+    }),
+    customType.StrictObject({
+      settings: Type.Composite([settingsSchema, linkSettingsSchema]),
     }),
   ],
   {
@@ -75,12 +77,11 @@ export const createLink = {
   ),
   body: Type.Composite([
     Type.Pick(linkItemSchema, ['name']),
-    Type.Partial(Type.Pick(linkItemSchema, ['description', 'lang', 'settings'])),
+    Type.Partial(Type.Pick(linkItemSchema, ['description', 'lang'])),
 
     // link flat config
     // uri is stricter than uri-reference
     customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
-    linkSettingsSchema,
 
     customType.StrictObject({
       geolocation: Type.Optional(geoCoordinateSchemaRef),

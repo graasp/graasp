@@ -10,7 +10,7 @@ import type {
   ItemBookmarkRawWithItemWithCreator,
 } from '../../../../drizzle/types';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
-import { ItemRaw, resolveItemType } from '../../item';
+import { type ItemRaw, resolveItemType } from '../../item';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 
 @singleton()

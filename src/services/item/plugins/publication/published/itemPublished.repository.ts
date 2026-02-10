@@ -10,7 +10,7 @@ import type {
   MemberRaw,
 } from '../../../../../drizzle/types';
 import type { MinimalMember } from '../../../../../types';
-import { ItemRaw, resolveItemType } from '../../../item';
+import { type ItemRaw, resolveItemType } from '../../../item';
 import { ItemPublishedNotFound } from './errors';
 
 @singleton()
