@@ -24,43 +24,6 @@ import { injectH5PImport } from './test/helpers';
 
 const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX ?? '');
 
-// const listObjectsV2Mock = jest.fn(async () => console.debug('listObjectsV2'));
-// const deleteObjectsMock = jest.fn(async () => console.debug('deleteObjects'));
-// const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
-// const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
-// const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
-
-// const MOCK_SIGNED_URL = 'signed-url';
-// jest.mock('@aws-sdk/client-s3', () => {
-//   return {
-//     GetObjectCommand: jest.fn(),
-//     NotFound: jest.fn(() => ({ name: 'NotFound' })),
-//     S3: function () {
-//       return {
-//         copyObject: copyObjectMock,
-//         deleteObjects: deleteObjectsMock,
-//         headObject: headObjectMock,
-//         listObjectsV2: listObjectsV2Mock,
-//       };
-//     },
-//   };
-// });
-// jest.mock('@aws-sdk/s3-request-presigner', () => {
-//   const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
-//   return {
-//     getSignedUrl,
-//   };
-// });
-// jest.mock('@aws-sdk/lib-storage', () => {
-//   return {
-//     Upload: jest.fn().mockImplementation(() => {
-//       return {
-//         done: uploadDoneMock,
-//       };
-//     }),
-//   };
-// });
-
 const buildExpectedItem = (item: H5PItem) => {
   const contentId = item.extra.h5p.contentId;
 
