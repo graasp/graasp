@@ -332,7 +332,7 @@ export class S3FileRepository implements FileRepository {
     });
 
     try {
-      await Promise.all(uploads.map((upload) => upload.done()));
+      await Promise.allSettled(uploads.map((upload) => upload.done()));
 
       console.debug(
         'Upload successfully at',

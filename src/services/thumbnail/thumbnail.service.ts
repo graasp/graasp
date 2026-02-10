@@ -1,7 +1,6 @@
 import path from 'path';
-import sharp from 'sharp';
+import sharp, { type Sharp } from 'sharp';
 import { Readable } from 'stream';
-import { pipeline as streamPipeline } from 'stream/promises';
 import { injectable } from 'tsyringe';
 
 import { BaseLogger } from '../../logger';
@@ -35,27 +34,72 @@ export class ThumbnailService {
     return path.join(this._prefix, itemId);
   }
 
-  async upload(authenticatedUser: AuthenticatedUser, id: string, file: Readable) {
-    // upload all thumbnails in parallel
-    const filesToUpload = await Promise.all(
-      Object.entries(ThumbnailSizeFormat).map(async ([sizeName, width]) => {
-        // create thumbnail from image stream
-        const pipeline = sharp().resize({ width }).toFormat(THUMBNAIL_FORMAT);
-        await streamPipeline(file, pipeline);
-
-        return {
-          file: pipeline,
-          filepath: this.buildFilePath(id, sizeName),
-          mimetype: THUMBNAIL_MIMETYPE,
-        };
-      }),
-    );
-
-    // upload the thumbnails
+  // cleanup helper for original input file and sharp image
+  private destroyAll(file: Readable, image: Sharp, err?: Error) {
     try {
+      try {
+        file.unpipe(image);
+        file.destroy();
+      } catch (err) {
+        this.logger.debug(`Failed to unpipe file from image: ${err}`);
+      }
+      image.destroy(err);
+    } catch (err) {
+      this.logger.debug(`Failed to to destroy image: ${err}`);
+    }
+  }
+
+  // ensure errors on the source propagate
+  private attachListeners(image: Sharp, file: Readable) {
+    const onFileError = (err: Error) => {
+      try {
+        image.destroy(err);
+      } catch (e) {
+        this.logger.debug(`Failed to destroy image: ${e}`);
+      }
+      throw err;
+    };
+    file.on('error', onFileError);
+
+    return { onFileError };
+  }
+
+  // remove listeners to avoid leaks
+  private removeListeners(file: Readable, listeners: { onFileError }) {
+    try {
+      file.removeListener('error', listeners.onFileError);
+    } catch (err) {
+      this.logger.debug(`Failed to remove error listener from file: ${err}`);
+    }
+  }
+
+  async upload(authenticatedUser: AuthenticatedUser, id: string, file: Readable) {
+    // pipe incoming file into a sharp instance for further clone
+    const image = sharp();
+    file.pipe(image);
+
+    // prepare pipelines per size
+    const pipelines = Object.entries(ThumbnailSizeFormat).map(([sizeName, width]) => {
+      const transform = image.clone().resize({ width }).toFormat(THUMBNAIL_FORMAT);
+      return { transform, filepath: this.buildFilePath(id, sizeName), sizeName };
+    });
+
+    const listeners = this.attachListeners(image, file);
+    try {
+      // prepare upload payloads (the fileService will consume the readable sides)
+      const filesToUpload = pipelines.map(({ transform, filepath }) => ({
+        file: transform,
+        filepath,
+        mimetype: THUMBNAIL_MIMETYPE,
+      }));
+
       await this.fileService.uploadMany(authenticatedUser, filesToUpload);
-    } catch (_err) {
+    } catch (err) {
+      this.destroyAll(file, image, err as Error);
       this.logger.debug(`Could not upload the ${id} item thumbnails`);
+      throw err;
+    } finally {
+      this.removeListeners(file, listeners);
     }
   }
 
