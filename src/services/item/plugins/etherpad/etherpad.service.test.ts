@@ -9,7 +9,7 @@ import { db } from '../../../../drizzle/db';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import type { EtherpadItem } from '../../discrimination';
+import { EtherpadItem } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from './etherpad.service';

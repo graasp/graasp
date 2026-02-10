@@ -7,7 +7,6 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
-import type { ItemRaw } from '../../../../../drizzle/types';
 import type { MaybeUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { H5P_FILE_STORAGE_TYPE } from '../../../../../utils/config';
@@ -16,7 +15,7 @@ import { assertIsMember, isMember } from '../../../../authentication';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { FileStorage } from '../../../../file/types';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { isItemType } from '../../../discrimination';
+import { type ItemRaw, isH5PItem } from '../../../item';
 import { ItemService } from '../../../item.service';
 import type { FastifyStaticReply } from '../types';
 import {
@@ -140,7 +139,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
    * Delete H5P assets on item delete
    */
   itemService.hooks.setPostHook('delete', async (actor, _dbConnection, { item }) => {
-    if (!isItemType(item, 'h5p')) {
+    if (!isH5PItem(item)) {
       return;
     }
     if (!actor) {
@@ -159,7 +158,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
     { original: item, copy }: { original: ItemRaw; copy: ItemRaw },
   ) {
     // only execute this handler for H5P item types
-    if (!isItemType(item, 'h5p') || !isItemType(copy, 'h5p')) {
+    if (!isH5PItem(item) || !isH5PItem(copy)) {
       return;
     }
     if (!actor || !isMember(actor)) {

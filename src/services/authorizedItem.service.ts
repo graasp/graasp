@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemVisibilityType, type ResultOf } from '@graasp/sdk';
 
 import type { DBConnection } from '../drizzle/db';
-import type { ItemMembershipRaw, ItemRaw, ItemVisibilityWithItem } from '../drizzle/types';
+import type { ItemMembershipRaw, ItemVisibilityWithItem } from '../drizzle/types';
 import type { PermissionLevel } from '../types';
 import {
   MemberCannotAccess,
@@ -11,6 +11,7 @@ import {
   MemberCannotReadItem,
   MemberCannotWriteItem,
 } from '../utils/errors';
+import { type ItemRaw, resolveItemType } from './item/item';
 import { ItemRepository } from './item/item.repository';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
@@ -229,7 +230,7 @@ export class AuthorizedItemService {
   ) {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
     await this.assertAccess(dbConnection, { permission, accountId, item });
-    return item;
+    return resolveItemType(item);
   }
 
   /**

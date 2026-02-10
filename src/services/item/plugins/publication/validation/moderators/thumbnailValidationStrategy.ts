@@ -3,12 +3,12 @@ import { inject, injectWithTransform, singleton } from 'tsyringe';
 import { ItemValidationProcess, ItemValidationStatus, ThumbnailSize } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
-import { type ItemRaw } from '../../../../../../drizzle/types';
 import {
   ITEM_THUMBNAIL_PREFIX,
   ThumbnailService,
   ThumbnailServiceTransformer,
 } from '../../../../../thumbnail/thumbnail.service';
+import { type ItemRaw } from '../../../../item';
 import { classifyImage } from '../processes/imageClassification';
 import type { ValidationProcessResult, ValidationStrategy } from './types';
 

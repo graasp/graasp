@@ -11,14 +11,14 @@ import {
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
+import type { MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { type EtherpadItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { EtherpadItem, ItemRaw, isEtherpadItem } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
@@ -120,7 +120,7 @@ export class EtherpadItemService {
     });
 
     try {
-      return this.itemService.post(dbConnection, member, {
+      await this.itemService.post(dbConnection, member, {
         item: {
           name: args.name,
           type: 'etherpad',
@@ -160,7 +160,7 @@ export class EtherpadItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is link
-    if (!isItemType(item, 'etherpad')) {
+    if (!isEtherpadItem(item)) {
       throw new WrongItemTypeError(item.type);
     }
 
@@ -241,7 +241,7 @@ export class EtherpadItemService {
       itemId,
     });
 
-    if (!isItemType(item, 'etherpad') || !item.extra?.etherpad) {
+    if (!isEtherpadItem(item) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
 
@@ -392,7 +392,7 @@ export class EtherpadItemService {
       itemId,
     });
 
-    if (!isItemType(item, 'etherpad') || !item.extra?.etherpad) {
+    if (!isEtherpadItem(item) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
 
@@ -405,7 +405,7 @@ export class EtherpadItemService {
    * Deletes an Etherpad associated to an item
    */
   public async deleteEtherpadForItem(item: ItemRaw) {
-    if (!isItemType(item, 'etherpad')) {
+    if (!isEtherpadItem(item)) {
       return;
     }
 
@@ -424,7 +424,7 @@ export class EtherpadItemService {
    * Copies an Etherpad for an associated copied mutable item
    */
   public async copyEtherpadInMutableItem(item: ItemRaw) {
-    if (!isItemType(item, 'etherpad')) {
+    if (!isEtherpadItem(item)) {
       return;
     }
 

@@ -16,9 +16,9 @@ import build, {
 import { seedFromJson } from '../../../../../../../../test/mocks/seed';
 import { db } from '../../../../../../../drizzle/db';
 import { itemsRawTable } from '../../../../../../../drizzle/schema';
-import { type ItemRaw } from '../../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../../utils/assertions';
 import { GRAASPER_CREATOR_ID, ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
+import { type ItemRaw } from '../../../../../item';
 import { MeiliSearchWrapper } from './meilisearch';
 
 jest.mock('./meilisearch');

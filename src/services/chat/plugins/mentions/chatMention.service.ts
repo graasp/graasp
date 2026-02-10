@@ -3,12 +3,13 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, MentionStatus } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ChatMessageRaw, type ItemRaw } from '../../../../drizzle/types';
+import { type ChatMessageRaw } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { AccountType, type AuthenticatedUser } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
+import type { ItemRaw } from '../../../item/item';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberCannotAccessMention } from '../../errors';
 import { ChatMentionRepository } from './chatMention.repository';

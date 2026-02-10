@@ -3,11 +3,12 @@ import { singleton } from 'tsyringe';
 import { type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import type { AppSettingInsertDTO, AppSettingRaw, ItemRaw } from '../../../../../drizzle/types';
+import type { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
+import type { ItemRaw } from '../../../item';
 import { AppSettingRepository } from './appSetting.repository';
 
 @singleton()

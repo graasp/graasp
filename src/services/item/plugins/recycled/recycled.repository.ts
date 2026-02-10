@@ -13,12 +13,12 @@ import {
   membersView,
   recycledItemDatasTable,
 } from '../../../../drizzle/schema';
-import type { ItemRaw, MemberRaw } from '../../../../drizzle/types';
+import type { MemberRaw } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import type { MinimalMember } from '../../../../types';
 import { MemberCannotAdminItem } from '../../../../utils/errors';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
-import type { FolderItem } from '../../discrimination';
+import { FolderItem, ItemRaw } from '../../item';
 
 type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
 

@@ -234,7 +234,6 @@ describe('Member routes tests', () => {
 
         const m = response.json();
         expect(m.name).toEqual(member.name);
-        expect(m.email).toEqual(member.email);
         expect(m.id).toEqual(member.id);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -256,7 +255,6 @@ describe('Member routes tests', () => {
 
         const m = response.json();
         expect(m.name).toEqual(member.name);
-        expect(m.email).toEqual(member.email);
         expect(m.id).toEqual(member.id);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

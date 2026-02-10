@@ -4,18 +4,17 @@ import { singleton } from 'tsyringe';
 import { type ItemGeolocation, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { MaybeUser, MinimalMember, PermissionLevel } from '../../../../types';
 import { ItemNotFolder } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapperService } from '../../ItemWrapper';
-import { CapsuleItem, type FolderItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { CapsuleItem, type FolderItem, type ItemRaw, isFolderItem } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { PackedItemService } from '../../packedItem.dto';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -34,7 +33,7 @@ export class FolderItemService extends ItemService {
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     authorizedItemService: AuthorizedItemService,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
@@ -66,7 +65,7 @@ export class FolderItemService extends ItemService {
       itemId,
       permission,
     });
-    if (!isItemType(item, 'folder')) {
+    if (!isFolderItem(item)) {
       throw new WrongItemTypeError(item.type);
     }
     return item as FolderItem;

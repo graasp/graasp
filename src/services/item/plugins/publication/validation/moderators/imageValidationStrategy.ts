@@ -3,8 +3,8 @@ import { inject, singleton } from 'tsyringe';
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
-import { type ItemRaw } from '../../../../../../drizzle/types';
 import FileService from '../../../../../file/file.service';
+import { type ItemRaw } from '../../../../item';
 import { InvalidFileItemError } from '../errors';
 import { classifyImage } from '../processes/imageClassification';
 import { isImage } from '../utils';

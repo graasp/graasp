@@ -6,14 +6,13 @@ import { AppItemFactory, FolderItemFactory } from '@graasp/sdk';
 import { MOCK_LOGGER } from '../../../../../test/app.vitest';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapperService } from '../../ItemWrapper';
-import type { AppItem } from '../../discrimination';
+import { AppItem, type ItemRaw } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { PackedItemService } from '../../packedItem.dto';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -37,7 +36,7 @@ const appService = new AppItemService(
   {} as ItemPublishedRepository,
   {} as ItemGeolocationRepository,
   {} as AuthorizedItemService,
-  {} as ItemWrapperService,
+  {} as PackedItemService,
   {} as ItemVisibilityRepository,
   {} as RecycledBinService,
   MOCK_LOGGER,

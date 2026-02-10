@@ -11,7 +11,6 @@ import { type DBConnection } from '../../../../../drizzle/db';
 import type {
   ActionRequestExportFormat,
   ActionRequestExportRaw,
-  ItemRaw,
 } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
@@ -27,6 +26,7 @@ import FileService from '../../../../file/file.service';
 import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
 import { convertToValidFilename } from '../../../../utils';
+import type { ItemRaw } from '../../../item';
 import { ActionRequestExportRepository } from './itemAction.requestExport.repository';
 import { formatData } from './utils';
 

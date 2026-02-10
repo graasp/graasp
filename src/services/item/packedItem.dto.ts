@@ -5,33 +5,18 @@ import { ItemVisibilityType, type ResultOf, type ThumbnailsBySize } from '@graas
 import type { DBConnection } from '../../drizzle/db';
 import type {
   ItemMembershipRaw,
-  ItemRaw,
   ItemVisibilityRaw,
   ItemWithCreator,
-  MemberRaw,
+  MinimalAccount,
 } from '../../drizzle/types';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
+import { Item, resolveItemType } from './item';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import type { ItemsThumbnails } from './plugins/thumbnail/types';
 
-type GraaspItem = Pick<
-  ItemRaw,
-  | 'id'
-  | 'name'
-  | 'type'
-  | 'path'
-  | 'description'
-  | 'extra'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'settings'
-  | 'lang'
-> & {
-  creator: MemberRaw | null;
-};
-
-export type PackedItem = GraaspItem & {
+export type PackedItem = Item & {
+  creator: MinimalAccount | null;
   // permission can be undefined because the item is public
   permission: ItemMembershipRaw['permission'] | null;
   hidden?: ItemVisibilityRaw;
@@ -39,7 +24,17 @@ export type PackedItem = GraaspItem & {
   thumbnails?: ThumbnailsBySize;
 };
 
-export class ItemWrapper {
+export const getCreator = (creator: MinimalAccount | null): MinimalAccount | null => {
+  if (!creator) {
+    return null;
+  }
+  return {
+    id: creator.id,
+    name: creator.name,
+  };
+};
+
+export class PackedItemDTO {
   item: ItemWithCreator;
   actorPermission?: { permission: ItemMembershipRaw['permission'] } | null;
   visibilities?: ItemVisibilityRaw[] | null;
@@ -68,7 +63,8 @@ export class ItemWrapper {
     }
 
     return {
-      ...this.item,
+      ...resolveItemType(this.item),
+      creator: getCreator(this.item.creator),
       permission: this.actorPermission?.permission ?? null,
       hidden: this.visibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
       public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
@@ -78,7 +74,7 @@ export class ItemWrapper {
 }
 
 @singleton()
-export class ItemWrapperService {
+export class PackedItemService {
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemThumbnailService: ItemThumbnailService;
@@ -91,42 +87,6 @@ export class ItemWrapperService {
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemMembershipRepository = itemMembershipRepository;
     this.itemThumbnailService = itemThumbnailService;
-  }
-
-  /**
-   * merge items and their permission in a result of structure
-   * @param items result of many items
-   * @param memberships result memberships for many items
-   * @returns PackedItem[]
-   */
-  merge(
-    items: ItemWithCreator[],
-    memberships: ResultOf<ItemMembershipRaw | null>,
-    visibilities?: ResultOf<ItemVisibilityRaw[] | null>,
-    itemsThumbnails?: ItemsThumbnails,
-  ): PackedItem[] {
-    const data: PackedItem[] = [];
-
-    for (const i of items) {
-      const { permission = null } = memberships.data[i.id] ?? {};
-      const thumbnails = itemsThumbnails?.[i.id];
-
-      // sort visibilities to retrieve the most restrictive (highest) visibility first
-      const itemVisibilities = visibilities?.data?.[i.id];
-      if (itemVisibilities) {
-        itemVisibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
-      }
-
-      data.push({
-        ...i,
-        permission,
-        hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
-        public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
-        ...(thumbnails ? { thumbnails } : {}),
-      });
-    }
-
-    return data;
   }
 
   /**
@@ -154,7 +114,8 @@ export class ItemWrapperService {
       }
 
       data[i.id] = {
-        ...i,
+        ...resolveItemType(i),
+        creator: getCreator(i),
         permission,
         hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
         public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
@@ -193,12 +154,13 @@ export class ItemWrapperService {
       }
 
       return {
-        ...item,
+        ...resolveItemType(item),
+        creator: getCreator(item.creator),
         permission,
         hidden: itemVisibilities.find((t) => t.type === ItemVisibilityType.Hidden),
         public: itemVisibilities.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
-      } as unknown as PackedItem;
+      };
     });
   }
 }

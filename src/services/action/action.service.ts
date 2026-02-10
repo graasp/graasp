@@ -6,9 +6,9 @@ import type { FastifyRequest } from 'fastify';
 import { ClientManager } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import type { ItemRaw } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { AccountType, type MaybeUser } from '../../types';
+import type { ItemRaw } from '../item/item';
 import { View, ViewOptions } from '../item/plugins/action/itemAction.schemas';
 import { MemberRepository } from '../member/member.repository';
 import { ActionRepository } from './action.repository';

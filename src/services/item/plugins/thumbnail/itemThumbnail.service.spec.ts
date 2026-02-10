@@ -8,6 +8,7 @@ import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { db } from '../../../../drizzle/db';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
+import { resolveItemType } from '../../item';
 import { ItemService } from '../../item.service';
 import { ItemThumbnailService } from './itemThumbnail.service';
 import { constructMockedUrl, expectValidUrls } from './test/fixtures/utils';
@@ -44,7 +45,9 @@ describe('ItemThumbnailService', () => {
   describe('getUrl', () => {
     it('return url for item and size', async () => {
       const MOCK_ITEM = ItemFactory({ settings: { hasThumbnail: true } });
-      vi.spyOn(stubAuthorizedItemService, 'getItemById').mockResolvedValue(MOCK_ITEM);
+      vi.spyOn(stubAuthorizedItemService, 'getItemById').mockResolvedValue(
+        resolveItemType(MOCK_ITEM),
+      );
 
       const size = ThumbnailSize.Large;
       const result = await itemThumbnailService.getUrl(db, undefined, {
@@ -55,7 +58,9 @@ describe('ItemThumbnailService', () => {
     });
     it('return null for item without thumbnail', async () => {
       const MOCK_ITEM = ItemFactory({ settings: { hasThumbnail: false } });
-      vi.spyOn(stubAuthorizedItemService, 'getItemById').mockResolvedValue(MOCK_ITEM);
+      vi.spyOn(stubAuthorizedItemService, 'getItemById').mockResolvedValue(
+        resolveItemType(MOCK_ITEM),
+      );
 
       const result = await itemThumbnailService.getUrl(db, undefined, {
         size: ThumbnailSize.Large,

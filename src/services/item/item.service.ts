@@ -19,12 +19,11 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import type {
-  ItemGeolocationRaw,
-  ItemMembershipRaw,
-  ItemRaw,
-  ItemWithCreator,
-  MinimalItemForInsert,
+import {
+  type ItemGeolocationRaw,
+  type ItemMembershipRaw,
+  type ItemWithCreator,
+  type MinimalItemForInsert,
 } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { ItemType } from '../../schemas/global';
@@ -48,10 +47,10 @@ import {
 import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
-import { ItemWrapper, ItemWrapperService, type PackedItem } from './ItemWrapper';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { type FolderItem, isItemType } from './discrimination';
+import { FolderItem, ItemRaw, isFolderItem } from './item';
 import { ItemRepository } from './item.repository';
+import { type PackedItem, PackedItemDTO, PackedItemService } from './packedItem.dto';
 import { ItemGeolocationRepository } from './plugins/geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
@@ -71,7 +70,7 @@ export class ItemService {
   private readonly itemPublishedRepository: ItemPublishedRepository;
   protected readonly itemRepository: ItemRepository;
   protected readonly authorizedItemService: AuthorizedItemService;
-  private readonly itemWrapperService: ItemWrapperService;
+  private readonly itemWrapperService: PackedItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   public readonly recycledBinService: RecycledBinService;
 
@@ -108,7 +107,7 @@ export class ItemService {
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     authorizedItemService: AuthorizedItemService,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
@@ -289,7 +288,7 @@ export class ItemService {
     );
 
     // quick check, necessary for ts
-    if (!isItemType(parentItem, 'folder')) {
+    if (parentItem.type !== 'folder') {
       throw new ItemNotFolder(parentItem);
     }
 
@@ -463,7 +462,7 @@ export class ItemService {
     );
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
-    const packedItem = new ItemWrapper(
+    const packedItem = new PackedItemDTO(
       item,
       itemMembership,
       visibilities,
@@ -477,7 +476,7 @@ export class ItemService {
     member: MinimalMember,
     params: ItemSearchParams,
     pagination: Pagination,
-  ): Promise<Paginated<PackedItem>> {
+  ): Promise<Paginated<ItemWithCreator>> {
     const { data: items } = await this.itemRepository.getAccessibleItems(
       dbConnection,
       member,
@@ -485,8 +484,7 @@ export class ItemService {
       pagination,
     );
 
-    const packedItems = await this.itemWrapperService.createPackedItems(dbConnection, items);
-    return { data: packedItems, pagination };
+    return { data: items, pagination };
   }
 
   private async _getChildren(
@@ -556,7 +554,7 @@ export class ItemService {
       itemId,
     });
 
-    if (!isItemType(item, 'folder')) {
+    if (item.type !== 'folder') {
       return { item, descendants: <ItemWithCreator[]>[] };
     }
 
@@ -647,8 +645,8 @@ export class ItemService {
 
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
-    let items = [item];
-    if (isItemType(item, 'folder')) {
+    let items: ItemRaw[] = [item];
+    if (isFolderItem(item)) {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(descendants.length);
@@ -878,12 +876,12 @@ export class ItemService {
     );
 
     // make sure the order of the descendants are correct
-    if (item.type === 'folder') {
+    if (isFolderItem(item)) {
       await this.itemRepository.fixOrderForTree(dbConnection, item.path);
     }
 
-    let items = [item];
-    if (isItemType(item, 'folder')) {
+    let items: ItemRaw[] = [item];
+    if (isFolderItem(item)) {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       items = [...descendants, item];
     }

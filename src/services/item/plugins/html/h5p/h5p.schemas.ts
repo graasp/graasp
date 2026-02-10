@@ -4,10 +4,32 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { itemSchemaRef } from '../../../item.schemas';
+import { itemCommonSchema } from '../../../common.schemas';
 import { H5P } from './validation/h5p';
+
+const h5pItemSchema = Type.Composite([
+  itemCommonSchema,
+  customType.StrictObject(
+    {
+      type: Type.Literal('h5p'),
+      extra: customType.StrictObject({
+        h5p: customType.StrictObject({
+          contentId: Type.String(),
+          h5pFilePath: Type.String(),
+          contentFilePath: Type.String(),
+        }),
+      }),
+    },
+    {
+      title: 'H5P Item',
+      description: 'Item of type H5P.',
+    },
+  ),
+]);
+
+export const h5pItemSchemaRef = registerSchemaAsRef('h5pItem', 'H5P Item', h5pItemSchema);
 
 export const h5pImport = {
   operationId: 'importH5p',
@@ -29,7 +51,7 @@ export const h5pImport = {
     ),
   }),
   response: {
-    [StatusCodes.OK]: itemSchemaRef,
+    [StatusCodes.OK]: h5pItemSchemaRef,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

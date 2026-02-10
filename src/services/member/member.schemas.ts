@@ -32,7 +32,6 @@ const memberSchema = customType.StrictObject(
   {
     id: customType.UUID(),
     name: customType.Username(),
-    email: Type.String({ format: 'email' }),
   },
   {
     description: 'Member sharable information',

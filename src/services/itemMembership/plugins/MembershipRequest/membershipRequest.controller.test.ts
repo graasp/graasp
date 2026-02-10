@@ -15,10 +15,10 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { membershipRequestsTable } from '../../../../drizzle/schema';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
+import { type ItemRaw } from '../../../item/item';
 
 function expectMemberRequestToBe(
   membershipRequest,

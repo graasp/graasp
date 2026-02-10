@@ -10,7 +10,7 @@ import {
   augmentedAccountSchemaRef,
   nullableAugmentedAccountSchemaRef,
 } from '../account/account.schemas';
-import { itemSchemaRef } from '../item/item.schemas';
+import { genericItemSchemaRef } from '../item/common.schemas';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',
@@ -19,7 +19,7 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
     {
       id: customType.UUID(),
       account: augmentedAccountSchemaRef,
-      item: itemSchemaRef,
+      item: genericItemSchemaRef,
       permission: permissionLevelSchemaRef,
       creator: Type.Optional(nullableAugmentedAccountSchemaRef),
       createdAt: customType.DateTime(),

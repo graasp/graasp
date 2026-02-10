@@ -1,16 +1,4 @@
-import type {
-  AppItemExtra,
-  DocumentItemExtra,
-  EtherpadItemExtra,
-  FileItemExtra,
-  FolderItemExtra,
-  H5PItemExtra,
-  ItemSettings,
-  LinkItemExtra,
-  LinkItemSettings,
-  ShortcutItemExtra,
-} from '@graasp/sdk';
-
+import type { ItemRaw } from '../services/item/item';
 import type { MinimalGuest, MinimalMember } from '../types';
 import {
   accountsTable,
@@ -35,7 +23,6 @@ import {
   itemValidationReviewsTable,
   itemValidationsTable,
   itemVisibilitiesTable,
-  items,
   itemsRawTable,
   memberProfilesTable,
   membersView,
@@ -77,57 +64,11 @@ export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
  */
 export type ItemInsertDTO = typeof itemsRawTable.$inferInsert;
 
-/**
- * Raw return type given when retrieveing from the db.
- */
-export type ItemRaw = typeof items.$inferSelect;
-
 export type NullableItem = ItemRaw | null;
 
-export type ItemLoginSchemaRaw = typeof itemLoginSchemasTable.$inferSelect;
-export type ItemLoginSchemaWithItem = ItemLoginSchemaRaw & { item: ItemRaw };
-export type GuestInsertDTO = typeof accountsTable.$inferInsert;
-export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
-  type: 'guest';
-};
-export type GuestWithItemLoginSchema = GuestRaw & {
-  itemLoginSchema: ItemLoginSchemaRaw | null;
-};
-
-export type ItemExtraMap = {
-  ['app']: AppItemExtra;
-  ['document']: DocumentItemExtra;
-  ['etherpad']: EtherpadItemExtra;
-  ['folder']: FolderItemExtra;
-  ['h5p']: H5PItemExtra;
-  ['embeddedLink']: LinkItemExtra;
-  ['file']: FileItemExtra;
-  ['shortcut']: ShortcutItemExtra;
-  ['page']: never;
-};
-
-export type ItemSettingsMap = {
-  ['app']: ItemSettings;
-  ['document']: ItemSettings;
-  ['etherpad']: ItemSettings;
-  ['folder']: ItemSettings;
-  ['h5p']: ItemSettings;
-  ['embeddedLink']: LinkItemSettings;
-  ['file']: ItemSettings;
-  ['shortcut']: ItemSettings;
-  ['page']: ItemSettings;
-};
-
-// local type alias to simplify the notation
-export type ItemTypeEnumKeys = keyof ItemExtraMap;
-
-export type ItemWithType<T extends ItemTypeEnumKeys> = ItemRaw & {
-  extra: ItemExtraMap[T];
-  settings: ItemSettingsMap[T];
-};
 // note: cannot combine nicely Item and ItemWithCreator when defined with omit
 // export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: MinimalAccount };
-export type ItemWithCreator = ItemRaw & { creator: MemberRaw | null };
+export type ItemWithCreator = ItemRaw & { creator: NullableAccount };
 
 // item created by the server with necessary properties
 export type MinimalItemForInsert = {
@@ -138,6 +79,16 @@ export type MinimalItemForInsert = {
   extra: ItemRaw['extra'];
   settings: ItemRaw['settings'];
   order?: ItemRaw['order'];
+};
+
+export type ItemLoginSchemaRaw = typeof itemLoginSchemasTable.$inferSelect;
+export type ItemLoginSchemaWithItem = ItemLoginSchemaRaw & { item: ItemRaw };
+export type GuestInsertDTO = typeof accountsTable.$inferInsert;
+export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
+  type: 'guest';
+};
+export type GuestWithItemLoginSchema = GuestRaw & {
+  itemLoginSchema: ItemLoginSchemaRaw | null;
 };
 
 // --- ItemVisibilities

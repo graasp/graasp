@@ -7,13 +7,13 @@ import { DocumentItemExtraFlavor } from '@graasp/sdk';
 
 import { customType } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import { itemSchema, itemSchemaRef, settingsSchema } from './item.schemas';
+import { genericItemSchemaRef, itemCommonSchema, settingsSchema } from './common.schemas';
 import { geoCoordinateSchemaRef } from './plugins/geolocation/itemGeolocation.schemas';
 
 const baseItemCreateSchema = Type.Composite(
   [
-    Type.Pick(itemSchema, ['name']),
-    Type.Partial(Type.Pick(itemSchema, ['description', 'settings', 'lang'])),
+    Type.Pick(itemCommonSchema, ['name']),
+    Type.Partial(Type.Pick(itemCommonSchema, ['description', 'settings', 'lang'])),
     customType.StrictObject({
       geolocation: Type.Optional(geoCoordinateSchemaRef),
     }),
@@ -152,7 +152,7 @@ export const create = {
     ],
     'type',
   ),
-  response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: genericItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
 export const createWithThumbnail = {
@@ -162,5 +162,5 @@ export const createWithThumbnail = {
   description: 'Create an item with a thumbnail. The data is sent using a form-data.',
 
   querystring: Type.Partial(customType.StrictObject({ parentId: customType.UUID() })),
-  response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: genericItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

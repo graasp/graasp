@@ -14,10 +14,10 @@ import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { EMAIL_CHANGE_JWT_SECRET } from '../../config/secrets';
 import { db } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
-import type { ItemRaw } from '../../drizzle/types';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMember } from '../authentication';
+import type { ItemRaw } from '../item/item';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,

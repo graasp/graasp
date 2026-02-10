@@ -28,7 +28,6 @@ import type {
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
   ItemMembershipWithItemAndCompleteAccount,
-  ItemRaw,
   MemberRaw,
 } from '../../drizzle/types';
 import type { AuthenticatedUser, MinimalMember, PermissionLevel } from '../../types';
@@ -40,6 +39,7 @@ import {
   MemberNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
+import type { ItemRaw } from '../item/item';
 import { mapById } from '../utils';
 import { PermissionType, getPermissionsAtItemSql } from './utils';
 

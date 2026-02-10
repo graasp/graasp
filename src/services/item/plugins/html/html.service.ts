@@ -11,7 +11,6 @@ import { v4 } from 'uuid';
 import type { FastifyBaseLogger } from 'fastify';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { TMP_FOLDER } from '../../../../utils/config';
@@ -19,6 +18,7 @@ import FileService, { type FileServiceConfig } from '../../../file/file.service'
 import type { FileStorageType } from '../../../file/types';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
+import { type ItemRaw } from '../../item';
 import { GraaspHtmlError, HtmlImportError } from './errors';
 import { DEFAULT_MIME_TYPE } from './h5p/constants';
 import type { HtmlValidator } from './validator';

@@ -8,13 +8,13 @@ import { AppDataVisibility } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../../account/account.schemas';
-import { itemSchemaRef } from '../../../item.schemas';
+import { genericItemSchemaRef } from '../../../common.schemas';
 
 const appDataSchema = customType.StrictObject(
   {
     id: customType.UUID(),
     account: accountSchemaRef,
-    item: itemSchemaRef,
+    item: genericItemSchemaRef,
     data: Type.Object({}, { additionalProperties: true }),
     type: Type.String(),
     visibility: Type.String({ enum: ['member', 'item'] }),

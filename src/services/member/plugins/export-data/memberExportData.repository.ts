@@ -24,11 +24,11 @@ import type {
   ChatMessageRaw,
   ItemLikeWithItem,
   ItemMembershipRaw,
-  ItemRaw,
 } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { NoChatMentionForMember } from '../../../chat/errors';
+import type { ItemRaw } from '../../../item/item';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 
 @singleton()

@@ -6,11 +6,12 @@ import { type AuthTokenSubject } from '@graasp/sdk';
 
 import { APPS_JWT_SECRET } from '../../../../config/secrets';
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw, MinimalAccount } from '../../../../drizzle/types';
+import type { MinimalAccount } from '../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { WrongItemTypeError } from '../../errors';
+import type { ItemRaw } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { AppRepository } from './app.repository';
 import { DEFAULT_JWT_EXPIRATION } from './constants';

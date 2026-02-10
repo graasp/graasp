@@ -8,11 +8,12 @@ import {
 } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
-import type { ItemRaw, MinimalAccount } from '../../drizzle/types';
+import type { MinimalAccount } from '../../drizzle/types';
 import type { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
+import type { ItemRaw } from '../item/item';
 import { ItemRepository } from '../item/item.repository';
 import { ItemVisibilityRepository } from '../item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';

@@ -11,7 +11,6 @@ import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
 import { items, itemsRawTable, publishedItemsTable } from '../../drizzle/schema';
-import type { ItemRaw } from '../../drizzle/types';
 import { assertIsDefined } from '../../utils/assertions';
 import {
   HierarchyTooDeep,
@@ -21,10 +20,10 @@ import {
   TooManyDescendants,
 } from '../../utils/errors';
 import { assertIsMember, assertIsMemberForTest } from '../authentication';
-import { expectMember } from '../member/test/fixtures/members';
+import { expectAccount } from '../member/test/fixtures/members';
 import { MemberDTO } from '../member/types';
 import { DEFAULT_ORDER } from './constants';
-import type { FolderItem } from './discrimination';
+import { type FolderItem, type ItemRaw, resolveItemType } from './item';
 import { ItemRepository } from './item.repository';
 import { expectItem, expectManyItems } from './test/fixtures/items.vitest';
 
@@ -244,7 +243,7 @@ describe('Item Repository', () => {
       const result = await itemRepository.getOne(db, item.id);
       expectItem(result, item);
       // contains creator
-      expectMember(result?.creator, new MemberDTO(actor).toCurrent());
+      expectAccount(result?.creator, actor);
     });
     it('getOrThrow item successfully', async () => {
       const {
@@ -276,7 +275,7 @@ describe('Item Repository', () => {
       const result = await itemRepository.getOneWithCreatorOrThrow(db, item.id);
       expectItem(result, item);
       // contains creator
-      expectMember(result.creator, new MemberDTO(actor).toCurrent());
+      expectAccount(result.creator, actor);
     });
   });
 
@@ -956,9 +955,12 @@ describe('Item Repository', () => {
         members: [member],
         items: [item],
       } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
-      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
-        item.name,
-      ]);
+      const result = await itemRepository.copy(
+        db,
+        resolveItemType(item),
+        new MemberDTO(member).toMinimal(),
+        [item.name],
+      );
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
@@ -973,7 +975,7 @@ describe('Item Repository', () => {
 
       const result = await itemRepository.copy(
         db,
-        item,
+        resolveItemType(item),
         new MemberDTO(member).toMinimal(),
         [item.name],
         parentItem as FolderItem,
@@ -993,9 +995,12 @@ describe('Item Repository', () => {
         items: [item],
       } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
 
-      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
-        item.name,
-      ]);
+      const result = await itemRepository.copy(
+        db,
+        resolveItemType(item),
+        new MemberDTO(member).toMinimal(),
+        [item.name],
+      );
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
@@ -1028,7 +1033,7 @@ describe('Item Repository', () => {
       await expect(
         itemRepository.copy(
           db,
-          item,
+          resolveItemType(item),
           new MemberDTO(member).toMinimal(),
           [],
           parentItem as FolderItem,
@@ -1045,9 +1050,12 @@ describe('Item Repository', () => {
         items: [{}],
       });
 
-      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
-        item.name,
-      ]);
+      const result = await itemRepository.copy(
+        db,
+        resolveItemType(item),
+        new MemberDTO(member).toMinimal(),
+        [item.name],
+      );
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
 
@@ -1071,9 +1079,12 @@ describe('Item Repository', () => {
 
       item.name = '()(/\\)(..)() (a) (3) ';
       await itemRepository.updateOne(db, item.id, item);
-      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
-        item.name,
-      ]);
+      const result = await itemRepository.copy(
+        db,
+        resolveItemType(item),
+        new MemberDTO(member).toMinimal(),
+        [item.name],
+      );
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
 
@@ -1097,9 +1108,12 @@ describe('Item Repository', () => {
 
       item.name = faker.string.sample(MAX_ITEM_NAME_LENGTH);
       await itemRepository.updateOne(db, item.id, item);
-      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
-        item.name,
-      ]);
+      const result = await itemRepository.copy(
+        db,
+        resolveItemType(item),
+        new MemberDTO(member).toMinimal(),
+        [item.name],
+      );
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (2)`);
 

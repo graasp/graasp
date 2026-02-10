@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { add, isAfter, isBefore, sub } from 'date-fns';
+import { and, eq } from 'drizzle-orm/sql';
 import { StatusCodes } from 'http-status-codes';
 import { cleanAll } from 'nock';
 import { v4 } from 'uuid';
@@ -21,7 +22,7 @@ import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ETHERPAD_PUBLIC_URL } from '../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../utils/errors';
-import type { EtherpadItem } from '../../discrimination';
+import { EtherpadItem } from '../../item';
 import { ItemService } from '../../item.service';
 import { MAX_SESSIONS_IN_COOKIE } from './constants';
 import { ItemMissingExtraError } from './errors';
@@ -52,18 +53,26 @@ const createEtherpad = async (app, parentId?: string) => {
     ],
     createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
   });
+  const name = faker.word.sample();
   const res = await app.inject({
     method: HttpMethod.Post,
     url: '/api/items/etherpad/create',
     payload: {
-      name: faker.word.sample(),
+      name,
     },
     query: parentId ? { parentId } : undefined,
   });
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  const item = res.json();
+  expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
+
   cleanAll();
-  return item;
+
+  const saved = await db.query.itemsRawTable.findFirst({
+    where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.type, 'etherpad')),
+  });
+
+  assertIsDefined(saved);
+
+  return saved as EtherpadItem;
 };
 
 describe('Etherpad service API', () => {
@@ -112,14 +121,17 @@ describe('Etherpad service API', () => {
       // groupMapper sent to etherpad is equal to the generated padID
       expect(createGroupIfNotExistsFor?.get('groupMapper')).toEqual(createGroupPad?.get('padName'));
 
-      expect(res.statusCode).toEqual(StatusCodes.OK);
-      expect(res.json()).toMatchObject({
-        name: payload.name,
-        extra: {
-          etherpad: {
-            padID: `${MOCK_GROUP_ID}$${createGroupPad?.get('padName')}`,
-            groupID: MOCK_GROUP_ID,
-          },
+      expect(res.statusCode).toEqual(StatusCodes.NO_CONTENT);
+
+      const savedEtherpad = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.name, payload.name),
+      });
+      assertIsDefined(savedEtherpad);
+      expect(savedEtherpad.extra).toEqual({
+        etherpad: {
+          padID: `${MOCK_GROUP_ID}$${createGroupPad?.get('padName')}`,
+          groupID: MOCK_GROUP_ID,
+          readerPermission: 'read',
         },
       });
     });
@@ -151,15 +163,16 @@ describe('Etherpad service API', () => {
       // groupMapper sent to etherpad is equal to the generated padID
       expect(createGroupIfNotExistsFor?.get('groupMapper')).toEqual(createGroupPad?.get('padName'));
 
-      expect(res.statusCode).toEqual(StatusCodes.OK);
-      expect(res.json()).toMatchObject({
-        name,
-        extra: {
-          etherpad: {
-            padID: `${MOCK_GROUP_ID}$${createGroupPad?.get('padName')}`,
-            groupID: MOCK_GROUP_ID,
-            readerPermission: EtherpadPermission.Write,
-          },
+      expect(res.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      const savedEtherpad = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.name, name),
+      });
+      assertIsDefined(savedEtherpad);
+      expect(savedEtherpad.extra).toEqual({
+        etherpad: {
+          padID: `${MOCK_GROUP_ID}$${createGroupPad?.get('padName')}`,
+          groupID: MOCK_GROUP_ID,
+          readerPermission: EtherpadPermission.Write,
         },
       });
     });

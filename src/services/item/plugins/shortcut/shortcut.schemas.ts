@@ -3,14 +3,15 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema } from '../../item.schemas';
+import { itemCommonSchema } from '../../common.schemas';
 
-export const shortcutSchema = Type.Composite([
-  itemSchema,
+const shortcutSchema = Type.Composite([
+  itemCommonSchema,
   customType.StrictObject(
     {
+      type: Type.Literal('shortcut'),
       extra: customType.StrictObject({
         shortcut: customType.StrictObject({
           target: customType.UUID(),
@@ -23,6 +24,12 @@ export const shortcutSchema = Type.Composite([
     },
   ),
 ]);
+
+export const shortcutItemSchemaRef = registerSchemaAsRef(
+  'shortcutItem',
+  'Shortcut Item',
+  shortcutSchema,
+);
 
 export const createShortcut = {
   operationId: 'createShortcut',

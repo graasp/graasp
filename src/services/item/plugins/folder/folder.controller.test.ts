@@ -459,6 +459,11 @@ describe('Folder routes tests', () => {
       });
 
       it('Throw if geolocation is partial', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,

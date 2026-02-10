@@ -48,7 +48,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: getInformations,
     },
     async ({ params, user }) => {
-      return itemPublishedService.get(db, user?.account, params.itemId);
+      const info = await itemPublishedService.get(db, user?.account, params.itemId);
+      return info;
     },
   );
 

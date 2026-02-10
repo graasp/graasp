@@ -3,12 +3,11 @@ import { singleton } from 'tsyringe';
 import { type Paginated, type Pagination } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import { ItemNotFound } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
-import { isItemType } from '../../discrimination';
+import { type ItemRaw, isFolderItem } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { RecycledItemDataRepository } from './recycled.repository';
 
@@ -75,7 +74,7 @@ export class RecycledBinService {
     let allDescendants: ItemRaw[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('recycle', member, dbConnection, { item, isRecycledRoot: true });
-      if (isItemType(item, 'folder')) {
+      if (isFolderItem(item)) {
         allDescendants = allDescendants.concat(
           await this.itemRepository.getDescendants(dbConnection, item),
         );
@@ -127,7 +126,7 @@ export class RecycledBinService {
     let allDescendants: ItemRaw[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('restore', member, dbConnection, { item, isRestoredRoot: true });
-      if (isItemType(item, 'folder')) {
+      if (isFolderItem(item)) {
         const descendants = await this.recycledItemRepository.getDeletedDescendants(
           dbConnection,
           item,

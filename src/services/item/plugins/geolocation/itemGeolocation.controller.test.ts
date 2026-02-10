@@ -17,7 +17,8 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
 import { assertIsMemberForTest } from '../../../authentication';
-import { ItemWrapper } from '../../ItemWrapper';
+import { resolveItemType } from '../../item';
+import { PackedItemDTO } from '../../packedItem.dto';
 import { expectPackedItem, expectThumbnails } from '../../test/fixtures/items';
 import { PackedItemGeolocation } from './itemGeolocation.service';
 
@@ -126,7 +127,7 @@ describe('Item Geolocation', () => {
           [
             {
               ...geoloc,
-              item: new ItemWrapper({ ...item, creator: null }, im, itemVisibilities).packed(),
+              item: new PackedItemDTO({ ...item, creator: null }, im, itemVisibilities).packed(),
             },
           ],
         );
@@ -182,7 +183,7 @@ describe('Item Geolocation', () => {
         });
         expectPackedItem(
           result.item,
-          new ItemWrapper({ ...item, creator: actor }, im, itemVisibilities).packed(),
+          new PackedItemDTO({ ...item, creator: actor }, im, itemVisibilities).packed(),
         );
       });
       it('Get geolocation with thumbnails', async () => {
@@ -219,7 +220,7 @@ describe('Item Geolocation', () => {
         });
         expectPackedItem(
           result.item,
-          new ItemWrapper({ ...item, creator: actor }, im, itemVisibilities).packed(),
+          new PackedItemDTO({ ...item, creator: actor }, im, itemVisibilities).packed(),
         );
         expectThumbnails(result.item, MOCK_SIGNED_URL, true);
       });
@@ -257,7 +258,7 @@ describe('Item Geolocation', () => {
         });
         expectPackedItem(
           result.item,
-          new ItemWrapper({ ...item, creator: actor }, im, itemVisibilities).packed(),
+          new PackedItemDTO({ ...item, creator: actor }, im, itemVisibilities).packed(),
         );
       });
       it('Return null if no geolocation', async () => {
@@ -356,7 +357,7 @@ describe('Item Geolocation', () => {
           res.json(),
           children.map((c, idx) => ({
             ...geolocations[idx],
-            item: new ItemWrapper({ ...c, creator: null }).packed(),
+            item: new PackedItemDTO({ ...c, creator: null }).packed(),
           })),
         );
       });
@@ -423,7 +424,7 @@ describe('Item Geolocation', () => {
           results,
           items.map((i, idx) => ({
             ...geolocations[idx],
-            item: new ItemWrapper({ ...i, creator: null }, itemMemberships[idx]).packed(),
+            item: new PackedItemDTO({ ...i, creator: null }, itemMemberships[idx]).packed(),
           })),
         );
         expectThumbnails(results[0].item, MOCK_SIGNED_URL, true);
@@ -469,9 +470,9 @@ describe('Item Geolocation', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(3);
         expectPackedItemGeolocations(res.json(), [
-          { ...geoloc1, item: { ...item1, creator: null, permission: 'admin' } },
-          { ...geoloc2, item: { ...item2, creator: null, permission: 'admin' } },
-          { ...geoloc3, item: { ...item3, creator: null, permission: 'admin' } },
+          { ...geoloc1, item: { ...resolveItemType(item1), creator: null, permission: 'admin' } },
+          { ...geoloc2, item: { ...resolveItemType(item2), creator: null, permission: 'admin' } },
+          { ...geoloc3, item: { ...resolveItemType(item3), creator: null, permission: 'admin' } },
         ]);
       });
       it('Get item geolocations within parent item', async () => {
@@ -511,8 +512,14 @@ describe('Item Geolocation', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(2);
         const expectedPackedItemGeolocations = [
-          { ...geoloc1, item: new ItemWrapper({ ...child1, creator: null }, im1).packed() },
-          { ...geoloc2, item: new ItemWrapper({ ...child2, creator: null }, im1).packed() },
+          {
+            ...geoloc1,
+            item: new PackedItemDTO({ ...child1, creator: null }, im1).packed(),
+          },
+          {
+            ...geoloc2,
+            item: new PackedItemDTO({ ...child2, creator: null }, im1).packed(),
+          },
         ];
         expectPackedItemGeolocations(res.json(), expectedPackedItemGeolocations);
       });

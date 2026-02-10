@@ -7,6 +7,7 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { ItemNotFound, MemberCannotWriteItem } from '../../../../utils/errors';
 import { assertIsMemberForTest } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
+import { resolveItemType } from '../../item';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ItemGeolocationRepository } from './itemGeolocation.repository';
 import { ItemGeolocationService } from './itemGeolocation.service';
@@ -55,7 +56,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(item);
+      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(resolveItemType(item));
       const deleteMock = vi.spyOn(itemGeolocationRepository, 'delete');
 
       await service.delete(db, actor, item.id);
@@ -110,7 +111,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(item);
+      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(resolveItemType(item));
       const getByItemMock = vi
         .spyOn(itemGeolocationRepository, 'getByItem')
         .mockResolvedValue({ ...geolocation, item });
@@ -131,7 +132,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(item);
+      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(resolveItemType(item));
       vi.spyOn(itemGeolocationRepository, 'getByItem').mockResolvedValue(undefined);
 
       const res = await service.getByItem(db, actor, item.id);
@@ -190,8 +191,8 @@ describe('ItemGeolocationService', () => {
       assertIsMemberForTest(actor);
 
       vi.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([
-        { ...geolocations[0], item: { ...items[0], creator: actor } },
-        { ...geolocations[1], item: { ...items[1], creator: actor } },
+        { ...geolocations[0], item: { ...resolveItemType(items[0]), creator: actor } },
+        { ...geolocations[1], item: { ...resolveItemType(items[1]), creator: actor } },
       ]);
       vi.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
@@ -218,11 +219,11 @@ describe('ItemGeolocationService', () => {
       expectPackedItemGeolocations(res, [
         {
           ...geolocations[0],
-          item: { ...items[0], creator: actor, permission: 'read' },
+          item: { ...resolveItemType(items[0]), creator: actor, permission: 'read' },
         },
         {
           ...geolocations[1],
-          item: { ...items[1], creator: actor, permission: 'read' },
+          item: { ...resolveItemType(items[1]), creator: actor, permission: 'read' },
         },
       ]);
     });
@@ -251,8 +252,8 @@ describe('ItemGeolocationService', () => {
       assertIsMemberForTest(actor);
 
       vi.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([
-        { ...geolocations[0], item: { ...items[0], creator: actor } },
-        { ...geolocations[1], item: { ...items[1], creator: actor } },
+        { ...geolocations[0], item: { ...resolveItemType(items[0]), creator: actor } },
+        { ...geolocations[1], item: { ...resolveItemType(items[1]), creator: actor } },
       ]);
       vi.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
@@ -278,7 +279,7 @@ describe('ItemGeolocationService', () => {
       expectPackedItemGeolocations(res, [
         {
           ...geolocations[1],
-          item: { ...items[1], creator: actor, permission: 'read' },
+          item: { ...resolveItemType(items[1]), creator: actor, permission: 'read' },
         },
       ]);
     });
@@ -314,7 +315,7 @@ describe('ItemGeolocationService', () => {
       assertIsMemberForTest(actor);
 
       vi.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([
-        { ...geolocations[0], item: { ...parent, creator: actor } },
+        { ...geolocations[0], item: { ...resolveItemType(parent), creator: actor } },
       ]);
       vi.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
@@ -343,7 +344,7 @@ describe('ItemGeolocationService', () => {
       expectPackedItemGeolocations(res, [
         {
           ...geolocations[1],
-          item: { ...parent, creator: actor, permission: null },
+          item: { ...resolveItemType(parent), creator: actor, permission: null },
         },
       ]);
     });
@@ -373,7 +374,7 @@ describe('ItemGeolocationService', () => {
       assertIsMemberForTest(actor);
 
       vi.spyOn(itemGeolocationRepository, 'getItemsIn').mockResolvedValue([
-        { ...geolocations[0], item: { ...child, creator: actor } },
+        { ...geolocations[0], item: { ...resolveItemType(child), creator: actor } },
       ]);
       vi.spyOn(authorizedItemService, 'getPropertiesForItems').mockResolvedValue({
         itemMemberships: {
@@ -403,7 +404,7 @@ describe('ItemGeolocationService', () => {
       expectPackedItemGeolocations(res, [
         {
           ...geolocations[0],
-          item: { ...child, creator: actor, permission: null },
+          item: { ...resolveItemType(child), creator: actor, permission: null },
         },
       ]);
     });
@@ -464,7 +465,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(item);
+      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(resolveItemType(item));
       const putMock = vi.spyOn(itemGeolocationRepository, 'put');
 
       await service.put(db, actor, item.id, { lat: 1, lng: 2 });
@@ -485,7 +486,7 @@ describe('ItemGeolocationService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(item);
+      vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValueOnce(resolveItemType(item));
       const putMock = vi.spyOn(itemGeolocationRepository, 'put');
 
       await service.put(db, actor, item.id, { lat: 1, lng: 2 });

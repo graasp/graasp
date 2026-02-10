@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef } from '../../item.schemas';
+import { genericItemSchemaRef } from '../../common.schemas';
 import { packedItemSchemaRef } from '../../item.schemas.packed';
 
 export const itemLikeSchemaRef = registerSchemaAsRef(
@@ -12,7 +12,7 @@ export const itemLikeSchemaRef = registerSchemaAsRef(
   customType.StrictObject(
     {
       id: customType.UUID(),
-      item: itemSchemaRef,
+      item: genericItemSchemaRef,
     },
     {
       description: 'Like object of an item when a member likes it.',

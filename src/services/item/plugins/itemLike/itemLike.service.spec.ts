@@ -1,15 +1,13 @@
 import { v4 } from 'uuid';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { db } from '../../../../drizzle/db';
-import type {
-  ItemLikeRaw,
-  ItemPublishedWithItemWithCreator,
-  ItemWithCreator,
-} from '../../../../drizzle/types';
+import type { ItemLikeRaw, ItemPublishedWithItemWithCreator } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
+import { resolveItemType } from '../../item';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -54,7 +52,9 @@ describe('Item Like post', () => {
     vi.clearAllMocks();
   });
   it('does not update like count for indexed item if it is not published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(
+      resolveItemType(ItemFactory({})),
+    );
     vi.spyOn(itemLikeRepository, 'addOne').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = vi.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
@@ -65,7 +65,9 @@ describe('Item Like post', () => {
   });
 
   it('update like count for indexed item if it is published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(
+      resolveItemType(ItemFactory({})),
+    );
     vi.spyOn(itemLikeRepository, 'addOne').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = vi.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(
@@ -83,7 +85,9 @@ describe('Item Like removeOne', () => {
     vi.clearAllMocks();
   });
   it('do not update like count for indexed item if it is not published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(
+      resolveItemType(ItemFactory({})),
+    );
     vi.spyOn(itemLikeRepository, 'deleteOneByCreatorAndItem').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = vi.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(null);
@@ -94,7 +98,9 @@ describe('Item Like removeOne', () => {
   });
 
   it('update like count for indexed item if it is published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemWithCreator);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(
+      resolveItemType(ItemFactory({})),
+    );
     vi.spyOn(itemLikeRepository, 'deleteOneByCreatorAndItem').mockResolvedValue(MOCK_LIKE);
     const updateItemMock = vi.spyOn(meilisearchWrapper, 'updateItem').mockResolvedValue();
     vi.spyOn(itemPublishedRepository, 'getForItem').mockResolvedValue(

@@ -5,14 +5,40 @@ import type { FastifySchema } from 'fastify';
 
 import { EtherpadPermission } from '@graasp/sdk';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema, itemSchemaRef } from '../../item.schemas';
+import { itemCommonSchema } from '../../common.schemas';
 
 const readerPermissionType = Type.Union([
   Type.Literal(EtherpadPermission.Read),
   Type.Literal(EtherpadPermission.Write),
 ]);
+
+const etherpadItemSchema = Type.Composite([
+  itemCommonSchema,
+  customType.StrictObject(
+    {
+      type: Type.Literal('etherpad'),
+      extra: customType.StrictObject({
+        etherpad: customType.StrictObject({
+          padID: Type.String(),
+          groupID: Type.String(),
+          readerPermission: Type.Optional(readerPermissionType),
+        }),
+      }),
+    },
+    {
+      title: 'Etherpad Item',
+      description: 'Item of type Etherpad.',
+    },
+  ),
+]);
+
+export const etherpadItemSchemaRef = registerSchemaAsRef(
+  'etherpadItem',
+  'Etherpad Item',
+  etherpadItemSchema,
+);
 
 export const createEtherpad = {
   operationId: 'createEtherpad',
@@ -28,7 +54,7 @@ export const createEtherpad = {
     readerPermission: Type.Optional(readerPermissionType),
   }),
   response: {
-    [StatusCodes.OK]: itemSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -68,7 +94,7 @@ export const updateEtherpad = {
   body: Type.Partial(
     Type.Composite(
       [
-        Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']),
+        Type.Pick(etherpadItemSchema, ['name', 'description', 'lang', 'settings']),
         customType.StrictObject({
           readerPermission: readerPermissionType,
         }),
