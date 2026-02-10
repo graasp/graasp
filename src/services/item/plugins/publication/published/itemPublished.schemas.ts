@@ -19,11 +19,7 @@ const publishEntrySchema = customType.StrictObject(
   },
 );
 
-const publishEntrySchemaRef = registerSchemaAsRef(
-  'itemPublished',
-  'Item Published',
-  publishEntrySchema,
-);
+registerSchemaAsRef('itemPublished', 'Item Published', publishEntrySchema);
 
 export const getCollectionsForMember = {
   operationId: 'getCollectionsForMember',
@@ -82,10 +78,7 @@ export const getInformations = {
   }),
   response: {
     [StatusCodes.OK]: customType.Nullable(
-      Type.Composite([
-        publishEntrySchemaRef,
-        customType.StrictObject({ totalViews: Type.Number() }),
-      ]),
+      Type.Composite([publishEntrySchema, customType.StrictObject({ totalViews: Type.Number() })]),
     ),
     '4xx': errorSchemaRef,
   },
