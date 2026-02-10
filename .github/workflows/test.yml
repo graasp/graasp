@@ -89,6 +89,15 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      # used to test aws services locally
+      garage:
+        image: dxflrs/garage:v2.0.0
+        ports:
+          - '3900:3900'
+          - '3901:3901'
+          - '3902:3902'
+          - '3903:3903'
+
     steps:
       - uses: actions/checkout@v4
 

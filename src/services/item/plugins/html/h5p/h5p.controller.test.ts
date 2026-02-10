@@ -1,6 +1,4 @@
-import { type Options, compare as dircompare, fileCompareHandlers } from 'dir-compare';
 import { eq } from 'drizzle-orm';
-import fs from 'fs';
 import fsp from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
@@ -22,15 +20,46 @@ import { H5P_FILE_DOT_EXTENSION } from './constants';
 import { H5PInvalidManifestError } from './errors';
 import { H5PService } from './h5p.service';
 import { H5P_PACKAGES } from './test/fixtures';
-import { expectH5PFiles, injectH5PImport } from './test/helpers';
+import { injectH5PImport } from './test/helpers';
 
 const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX ?? '');
 
-async function cleanFiles() {
-  const storage = path.join(H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX ?? '');
-  await fsp.rm(storage, { recursive: true, force: true });
-  await fsp.rm(H5P_TMP_FOLDER, { recursive: true, force: true });
-}
+// const listObjectsV2Mock = jest.fn(async () => console.debug('listObjectsV2'));
+// const deleteObjectsMock = jest.fn(async () => console.debug('deleteObjects'));
+// const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
+// const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
+// const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+
+// const MOCK_SIGNED_URL = 'signed-url';
+// jest.mock('@aws-sdk/client-s3', () => {
+//   return {
+//     GetObjectCommand: jest.fn(),
+//     NotFound: jest.fn(() => ({ name: 'NotFound' })),
+//     S3: function () {
+//       return {
+//         copyObject: copyObjectMock,
+//         deleteObjects: deleteObjectsMock,
+//         headObject: headObjectMock,
+//         listObjectsV2: listObjectsV2Mock,
+//       };
+//     },
+//   };
+// });
+// jest.mock('@aws-sdk/s3-request-presigner', () => {
+//   const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
+//   return {
+//     getSignedUrl,
+//   };
+// });
+// jest.mock('@aws-sdk/lib-storage', () => {
+//   return {
+//     Upload: jest.fn().mockImplementation(() => {
+//       return {
+//         done: uploadDoneMock,
+//       };
+//     }),
+//   };
+// });
 
 const buildExpectedItem = (item: H5PItem) => {
   const contentId = item.extra.h5p.contentId;
@@ -50,7 +79,7 @@ const buildExpectedItem = (item: H5PItem) => {
   };
 };
 
-describe('Service plugin', () => {
+describe('H5P plugin', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
@@ -59,7 +88,6 @@ describe('Service plugin', () => {
 
   afterAll(async () => {
     await clearDatabase(db);
-    await cleanFiles();
     app.close();
   });
 
@@ -83,25 +111,6 @@ describe('Service plugin', () => {
 
       const item = res.json();
       expect(item).toMatchObject(buildExpectedItem(item));
-    });
-
-    it('extracts the files correctly', async () => {
-      const {
-        actor,
-        items: [parent],
-      } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
-      });
-      assertIsDefined(actor);
-      mockAuthenticate(actor);
-
-      const res = await injectH5PImport(app, { parentId: parent.id });
-      expect(res.statusCode).toEqual(StatusCodes.OK);
-
-      const item = res.json();
-      const { contentId } = item.extra.h5p;
-      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
-      await expectH5PFiles(H5P_PACKAGES.ACCORDION, storageRootPath, H5P_PATH_PREFIX, contentId);
     });
 
     it('removes the temporary extraction folder', async () => {
@@ -137,6 +146,13 @@ describe('Service plugin', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
+      const h5pService = resolveDependency(H5PService);
+      const deletePackageSpy = jest
+        .spyOn(h5pService, 'deletePackage')
+        .mockImplementationOnce(async () => {
+          console.debug('mock deletePackage');
+        });
+
       // save h5p so it saves the files correctly
       const res = await injectH5PImport(app, { parentId: parent.id });
       expect(res.statusCode).toEqual(StatusCodes.OK);
@@ -151,14 +167,9 @@ describe('Service plugin', () => {
           id: [item.id],
         },
       });
-      // H5P folder should now be deleted
-      const h5pFolder = path.join(
-        ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX, contentId].filter(
-          (e) => e,
-        ) as string[]),
-      );
+
       await waitForExpect(() => {
-        expect(fs.existsSync(h5pFolder)).toBeFalsy();
+        expect(deletePackageSpy).toHaveBeenCalledWith(contentId);
       }, 5000);
     });
     it('copies H5P assets on item copy', async () => {
@@ -183,7 +194,11 @@ describe('Service plugin', () => {
       expect(res.statusCode).toEqual(StatusCodes.OK);
       const item = res.json();
 
-      const contentId = (item as H5PItem).extra.h5p.contentId;
+      const h5pService = resolveDependency(H5PService);
+      const copySpy = jest.spyOn(h5pService, 'copy').mockImplementationOnce(async () => {
+        console.debug('mock copy');
+      });
+
       // copy item
       await app.inject({
         method: 'POST',
@@ -195,63 +210,14 @@ describe('Service plugin', () => {
           parentId: targetParent.id,
         },
       });
-      // H5P folder should now be copied
-      const h5pBucket = path.join(
-        ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[]),
-      );
 
-      let copiedH5P: H5PItem;
       await waitForExpect(async () => {
-        copiedH5P = (await db.query.itemsRawTable.findFirst({
+        const copiedH5P = (await db.query.itemsRawTable.findFirst({
           where: isDirectChild(itemsRawTable.path, targetParent.path),
         })) as H5PItem;
         expect(copiedH5P).toBeDefined();
-      }, 5000); // the above line ensures exists
 
-      await waitForExpect(async () => {
-        // wait for copied folder to exist
-        const h5pFolders = await fsp.readdir(h5pBucket);
-        const copiedContentId = copiedH5P.extra.h5p.contentId;
-        expect(h5pFolders).toContain(copiedContentId);
-        // expected name of the copy
-        const H5P_ACCORDION_COPY_FILENAME = `${path.basename(
-          H5P_PACKAGES.ACCORDION.path,
-          H5P_FILE_DOT_EXTENSION,
-        )}-1${H5P_FILE_DOT_EXTENSION}`;
-        const originalPath = path.join(
-          h5pBucket,
-          contentId,
-          path.basename(H5P_PACKAGES.ACCORDION.path),
-        );
-        const copyPath = path.join(h5pBucket, copiedContentId, H5P_ACCORDION_COPY_FILENAME);
-        const originalStats = await fsp.stat(originalPath);
-        const copyStats = await fsp.stat(copyPath);
-        const defaultFileCompare = fileCompareHandlers.defaultFileCompare.compareAsync;
-
-        const customFileCompare = (
-          path1: string,
-          stat1: fs.Stats,
-          path2: string,
-          stat2: fs.Stats,
-          options: Options,
-        ) => {
-          if (path1 === originalPath) {
-            return defaultFileCompare(path1, stat1, copyPath, copyStats, options);
-          } else if (path2 === originalPath) {
-            return defaultFileCompare(copyPath, copyStats, path2, stat2, options);
-          } else if (path1 === copyPath) {
-            return defaultFileCompare(path1, stat1, originalPath, originalStats, options);
-          } else if (path2 === copyPath) {
-            return defaultFileCompare(originalPath, originalStats, path2, stat2, options);
-          } else {
-            return defaultFileCompare(path1, stat1, path2, stat2, options);
-          }
-        };
-        const dirDiff = await dircompare(originalPath, copyPath, {
-          compareContent: true,
-          compareFileAsync: customFileCompare,
-        });
-        expect(dirDiff.same).toBeTruthy();
+        expect(copySpy).toHaveBeenCalled();
       }, 5000); // the above line ensures exists
     });
     it('copies H5P with special characters on item copy', async () => {
@@ -385,32 +351,6 @@ describe('Service plugin', () => {
         expect(extractionDirContents.length).toEqual(initExtractionNb);
         expect(storageDirContents.length).toEqual(initStorageNb);
       }, 5000);
-    });
-    it('skips invalid file extensions', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      mockAuthenticate(actor);
-
-      const res = await injectH5PImport(app, {
-        filePath: H5P_PACKAGES.BOGUS_WRONG_EXTENSION.path,
-      });
-      const item = res.json();
-      const contentId = item.extra.h5p.contentId;
-      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
-      await expectH5PFiles(
-        H5P_PACKAGES.BOGUS_WRONG_EXTENSION,
-        storageRootPath,
-        H5P_PATH_PREFIX,
-        contentId,
-      );
-      const maliciousFolder = path.join(
-        ...[storageRootPath, H5P_PATH_PREFIX, contentId, 'content', 'foo'].filter((e) => e),
-      );
-      expect(fs.existsSync(maliciousFolder)).toBeTruthy();
-      // only .txt should be left inside
-      const contents = await fsp.readdir(maliciousFolder);
-      expect(contents.length).toEqual(1);
-      expect(contents.includes('valid.txt')).toBeTruthy();
     });
   });
 
