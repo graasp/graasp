@@ -13,7 +13,6 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { toItemDTO } from '../../../../drizzle/item.dto';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
@@ -22,6 +21,7 @@ import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { MemberRepository } from '../../../member/member.repository';
+import { resolveItemType } from '../../item';
 import { ItemActionRepository } from './itemAction.repository';
 import { ItemActionService } from './itemAction.service';
 import { ItemActionType } from './utils';
@@ -83,7 +83,7 @@ describe('ItemActionService', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(toItemDTO(item));
+      jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(resolveItemType(item));
 
       await service.getForItem(db, actor, item.id).catch((e) => {
         expect(e).toBeInstanceOf(UnauthorizedMember);
@@ -123,7 +123,7 @@ describe('ItemActionService', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(toItemDTO(item));
+        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(resolveItemType(item));
         const result = await service.getForItem(db, actor, item.id);
 
         expect(result).toHaveLength(3);
@@ -167,7 +167,7 @@ describe('ItemActionService', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(toItemDTO(item));
+        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(resolveItemType(item));
 
         const result = await service.getForItem(db, actor, item.id);
 
@@ -203,7 +203,7 @@ describe('ItemActionService', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(toItemDTO(item));
+        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(resolveItemType(item));
 
         const result = await service.getForItem(db, actor, item.id);
 
@@ -234,7 +234,7 @@ describe('ItemActionService', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(toItemDTO(item));
+        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(resolveItemType(item));
 
         const result = await service.getForItem(db, actor, item.id, {
           sampleSize: 2,
@@ -264,7 +264,7 @@ describe('ItemActionService', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(toItemDTO(item));
+        jest.spyOn(authorizedItemService, 'getItemById').mockResolvedValue(resolveItemType(item));
 
         const result = await service.getForItem(db, actor, item.id, {
           view: Context.Player,

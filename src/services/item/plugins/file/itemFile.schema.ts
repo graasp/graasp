@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemCommonSchema } from '../../schemas';
+import { itemCommonSchema } from '../../common.schemas';
 
 const fileItemSchema = Type.Composite(
   [

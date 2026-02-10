@@ -7,7 +7,7 @@ import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { itemSchemaRef } from '../../../schemas';
+import { itemSchemaRef } from '../../../common.schemas';
 
 const itemValidationGroupSchema = customType.StrictObject(
   {

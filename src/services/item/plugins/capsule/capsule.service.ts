@@ -3,16 +3,16 @@ import { singleton } from 'tsyringe';
 import { UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import type { CapsuleItem, FolderItem, ItemRaw } from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { ItemNotFolder } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapperService } from '../../ItemWrapper';
+import type { CapsuleItem, FolderItem, ItemRaw } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { PackedItemService } from '../../packedItem.dto';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -31,7 +31,7 @@ export class CapsuleItemService extends ItemService {
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     authorizedItemService: AuthorizedItemService,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
     log: BaseLogger,

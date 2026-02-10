@@ -5,7 +5,6 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
-import { ItemRaw } from '../../drizzle/item.dto';
 import type { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
@@ -13,10 +12,12 @@ import { assertIsMember } from '../authentication';
 import { memberAccountRole } from '../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from './constants';
+import { ItemRaw } from './item';
 import { copyMany, deleteMany, getParentItems, moveMany, reorder, updateOne } from './item.schemas';
 import { create, createWithThumbnail } from './item.schemas.create';
 import { getAccessible, getChildren, getDescendantItems, getOne } from './item.schemas.packed';
 import { ItemService } from './item.service';
+import { PackedItemService } from './packedItem.dto';
 import { ItemActionService } from './plugins/action/itemAction.service';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/item.events';
@@ -26,6 +27,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   const itemService = resolveDependency(ItemService);
   const itemActionService = resolveDependency(ItemActionService);
+  const itemWrapperService = resolveDependency(PackedItemService);
 
   // create item
   // question: add link hook here? or have another endpoint?
@@ -154,7 +156,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         { creatorId, keywords, sortBy, ordering, permissions, types },
         { page, pageSize },
       );
-      return result;
+
+      // remap to discriminated packed items
+      const packedItems = await itemWrapperService.createPackedItems(db, result.data);
+      return { ...result, data: packedItems };
     },
   );
 
@@ -176,6 +181,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: getDescendantItems, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query }) => {
       const result = await itemService.getPackedDescendants(db, user?.account, id, query);
+      console.log(result);
       return result;
     },
   );

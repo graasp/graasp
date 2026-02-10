@@ -11,7 +11,7 @@ import {
 
 import { customType } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import { itemSchema, itemSchemaRef, settingsSchema } from './schemas';
+import { itemSchema, itemSchemaRef, settingsSchema } from './common.schemas';
 
 export const itemUpdateSchema = Type.Partial(
   Type.Composite(

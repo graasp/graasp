@@ -9,8 +9,8 @@ import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../../itemMembership/membership.repository';
 import { MemberRepository } from '../../../../member/member.repository';
-import { ItemWrapperService } from '../../../ItemWrapper';
 import { ItemRepository } from '../../../item.repository';
+import { PackedItemService } from '../../../packedItem.dto';
 import { ItemActionService } from '../../action/itemAction.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from './itemPublished.repository';
@@ -30,7 +30,7 @@ const itemPublishedService = new ItemPublishedService(
   {} as ItemVisibilityRepository,
   {} as ItemMembershipRepository,
   itemPublishedRepository,
-  {} as ItemWrapperService,
+  {} as PackedItemService,
   {} as ItemRepository,
   {} as MemberRepository,
   {} as ItemActionService,

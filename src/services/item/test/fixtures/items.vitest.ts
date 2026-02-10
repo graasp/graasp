@@ -2,8 +2,8 @@ import { expect } from 'vitest';
 
 import { buildPathFromIds } from '@graasp/sdk';
 
-import type { ItemRaw } from '../../../../drizzle/item.dto';
 import { MinimalMember } from '../../../../types';
+import type { ItemRaw } from '../../item';
 
 export const expectItem = (
   newItem: Partial<ItemRaw> | undefined | null,

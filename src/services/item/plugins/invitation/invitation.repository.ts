@@ -2,7 +2,6 @@ import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { ItemRaw } from '../../../../drizzle/item.dto';
 import { isAncestorOrSelf } from '../../../../drizzle/operations';
 import { invitationsTable, items } from '../../../../drizzle/schema';
 import type {
@@ -12,6 +11,7 @@ import type {
 } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import type { AuthenticatedUser } from '../../../../types';
+import { ItemRaw } from '../../item';
 
 type ItemPath = ItemRaw['path'];
 type Email = InvitationRaw['email'];

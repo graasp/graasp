@@ -3,7 +3,6 @@ import { singleton } from 'tsyringe';
 import { ItemVisibilityType, type ResultOf, type ThumbnailsBySize } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
-import { ItemDTO } from '../../drizzle/item.dto';
 import type {
   ItemMembershipRaw,
   ItemVisibilityRaw,
@@ -11,15 +10,13 @@ import type {
   MinimalAccount,
 } from '../../drizzle/types';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
+import { Item, resolveItemType } from './item';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import type { ItemsThumbnails } from './plugins/thumbnail/types';
 
-type GraaspItem = ItemDTO & {
+export type PackedItem = Item & {
   creator: MinimalAccount | null;
-};
-
-export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
   permission: ItemMembershipRaw['permission'] | null;
   hidden?: ItemVisibilityRaw;
@@ -27,7 +24,17 @@ export type PackedItem = GraaspItem & {
   thumbnails?: ThumbnailsBySize;
 };
 
-export class ItemWrapper {
+export const getCreator = (creator: MinimalAccount | null): MinimalAccount | null => {
+  if (!creator) {
+    return null;
+  }
+  return {
+    id: creator.id,
+    name: creator.name,
+  };
+};
+
+export class PackedItemDTO {
   item: ItemWithCreator;
   actorPermission?: { permission: ItemMembershipRaw['permission'] } | null;
   visibilities?: ItemVisibilityRaw[] | null;
@@ -56,7 +63,8 @@ export class ItemWrapper {
     }
 
     return {
-      ...this.item,
+      ...resolveItemType(this.item),
+      creator: getCreator(this.item.creator),
       permission: this.actorPermission?.permission ?? null,
       hidden: this.visibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
       public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
@@ -66,7 +74,7 @@ export class ItemWrapper {
 }
 
 @singleton()
-export class ItemWrapperService {
+export class PackedItemService {
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemThumbnailService: ItemThumbnailService;
@@ -106,7 +114,8 @@ export class ItemWrapperService {
       }
 
       data[i.id] = {
-        ...i,
+        ...resolveItemType(i),
+        creator: getCreator(i),
         permission,
         hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
         public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
@@ -145,12 +154,13 @@ export class ItemWrapperService {
       }
 
       return {
-        ...item,
+        ...resolveItemType(item),
+        creator: getCreator(item.creator),
         permission,
         hidden: itemVisibilities.find((t) => t.type === ItemVisibilityType.Hidden),
         public: itemVisibilities.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
-      } as unknown as PackedItem;
+      };
     });
   }
 }

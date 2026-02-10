@@ -4,16 +4,16 @@ import { singleton } from 'tsyringe';
 import { type DocumentItemExtraProperties, type ItemGeolocation, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { DocumentItem, type ItemRaw, isDocumentItemDTO } from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapperService } from '../../ItemWrapper';
 import { WrongItemTypeError } from '../../errors';
+import { DocumentItem, type ItemRaw, isDocumentItem } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { PackedItemService } from '../../packedItem.dto';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -34,7 +34,7 @@ export class DocumentItemService extends ItemService {
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     authorizedItemService: AuthorizedItemService,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
@@ -128,7 +128,7 @@ export class DocumentItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is document
-    if (!isDocumentItemDTO(item)) {
+    if (!isDocumentItem(item)) {
       throw new WrongItemTypeError(item.type);
     }
 

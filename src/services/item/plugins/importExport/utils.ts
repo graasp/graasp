@@ -11,17 +11,17 @@ import type { FastifyBaseLogger } from 'fastify';
 
 import { getMimetype } from '@graasp/sdk';
 
+import { ItemType } from '../../../../schemas/global';
 import {
   type ItemRaw,
-  isAppItemDTO,
-  isDocumentItemDTO,
-  isEmbeddedLinkItemDTO,
-  isEtherpadItemDTO,
-  isFileItemDTO,
-  isFolderItemDTO,
-  isH5PItemDTO,
-} from '../../../../drizzle/item.dto';
-import { ItemType } from '../../../../schemas/global';
+  isAppItem,
+  isDocumentItem,
+  isEmbeddedLinkItem,
+  isEtherpadItem,
+  isFileItem,
+  isFolderItem,
+  isH5PItem,
+} from '../../item';
 import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants';
 
 export const prepareZip = async (file: Readable, log?: FastifyBaseLogger) => {
@@ -79,26 +79,26 @@ const extractExtension = ({ name, mimetype }: { name: string; mimetype?: string 
 
 export const getFilenameFromItem = (item: ItemRaw): string => {
   switch (true) {
-    case isAppItemDTO(item): {
+    case isAppItem(item): {
       return extractFileName(item.name, 'app');
     }
-    case isDocumentItemDTO(item): {
+    case isDocumentItem(item): {
       return extractFileName(item.name, 'html');
     }
-    case isFileItemDTO(item): {
+    case isFileItem(item): {
       const mimetype = getMimetype(item.extra);
       return extractFileName(item.name, extractExtension({ name: item.name, mimetype }));
     }
-    case isFolderItemDTO(item): {
+    case isFolderItem(item): {
       return extractFileName(item.name, 'zip');
     }
-    case isH5PItemDTO(item): {
+    case isH5PItem(item): {
       return extractFileName(item.name, 'h5p');
     }
-    case isEmbeddedLinkItemDTO(item): {
+    case isEmbeddedLinkItem(item): {
       return extractFileName(item.name, 'url');
     }
-    case isEtherpadItemDTO(item): {
+    case isEtherpadItem(item): {
       return extractFileName(item.name, 'html');
     }
     default:

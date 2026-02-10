@@ -13,20 +13,16 @@ import {
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import {
-  EmbeddedLinkItem,
-  type ItemRaw,
-  isEmbeddedLinkItemDTO,
-} from '../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../logger';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapperService } from '../../ItemWrapper';
 import { WrongItemTypeError } from '../../errors';
+import { EmbeddedLinkItem, type ItemRaw, isEmbeddedLinkItem } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { PackedItemService } from '../../packedItem.dto';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -82,7 +78,7 @@ export class EmbeddedLinkItemService extends ItemService {
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     authorizedItemService: AuthorizedItemService,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
@@ -260,7 +256,7 @@ export class EmbeddedLinkItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is link
-    if (!isEmbeddedLinkItemDTO(item)) {
+    if (!isEmbeddedLinkItem(item)) {
       throw new WrongItemTypeError(item.type);
     }
 

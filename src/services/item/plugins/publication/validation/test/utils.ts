@@ -2,8 +2,8 @@ import { ItemValidationStatus } from '@graasp/sdk';
 
 import { registerValue } from '../../../../../../di/utils';
 import type { DBConnection } from '../../../../../../drizzle/db';
-import { ItemRaw } from '../../../../../../drizzle/item.dto';
 import type { ItemValidationGroupRaw } from '../../../../../../drizzle/types';
+import { ItemRaw } from '../../../../item';
 import { ItemValidationRepository } from '../itemValidation.repository';
 import { ItemValidationReviewRepository } from '../itemValidationReview.repository';
 import { ItemValidationModerator } from '../moderators/itemValidationModerator';

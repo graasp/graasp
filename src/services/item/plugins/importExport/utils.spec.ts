@@ -9,7 +9,7 @@ import {
   LinkItemFactory,
 } from '@graasp/sdk';
 
-import { type ItemRaw } from '../../../../drizzle/item.dto';
+import { type ItemRaw } from '../../item';
 import { getFilenameFromItem } from './utils';
 
 describe('File name', () => {

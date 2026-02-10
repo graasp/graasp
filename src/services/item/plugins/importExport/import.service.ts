@@ -10,13 +10,13 @@ import { singleton } from 'tsyringe';
 import { type DocumentItemExtraProperties, type ItemSettings } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw } from '../../../../drizzle/item.dto';
 import type { AppSettingInsertDTO, AppSettingRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { ItemType } from '../../../../schemas/global';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
+import type { ItemRaw } from '../../item';
 import { ItemService } from '../../item.service';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import FileItemService from '../file/itemFile.service';

@@ -6,7 +6,7 @@ import type { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { itemCommonSchema } from '../../../schemas';
+import { itemCommonSchema } from '../../../common.schemas';
 import { H5P } from './validation/h5p';
 
 const h5pItemSchema = Type.Composite([

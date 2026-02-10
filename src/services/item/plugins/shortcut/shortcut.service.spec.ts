@@ -8,8 +8,8 @@ import { db } from '../../../../drizzle/db';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapperService } from '../../ItemWrapper';
 import { ItemRepository } from '../../item.repository';
+import { PackedItemService } from '../../packedItem.dto';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -36,7 +36,7 @@ const shortcutService = new ShortcutItemService(
   {} as unknown as ItemPublishedRepository,
   {} as unknown as ItemGeolocationRepository,
   {} as unknown as AuthorizedItemService,
-  {} as unknown as ItemWrapperService,
+  {} as unknown as PackedItemService,
   {} as unknown as ItemVisibilityRepository,
   {} as unknown as RecycledBinService,
   MOCK_LOGGER,

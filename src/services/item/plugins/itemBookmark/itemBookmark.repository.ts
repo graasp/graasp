@@ -3,7 +3,6 @@ import { and, desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { ItemRaw, toItemDTO } from '../../../../drizzle/item.dto';
 import { itemBookmarksTable, items, membersView } from '../../../../drizzle/schema';
 import type {
   ItemBookmarkInsertDTO,
@@ -11,6 +10,7 @@ import type {
   ItemBookmarkRawWithItemWithCreator,
 } from '../../../../drizzle/types';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
+import { ItemRaw, resolveItemType } from '../../item';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 
 @singleton()
@@ -59,7 +59,7 @@ export class ItemBookmarkRepository {
       const { item, creator, ...b } = bookmark;
       return {
         ...b,
-        item: { ...toItemDTO(item), creator: creator },
+        item: { ...resolveItemType(item), creator: creator },
       };
     });
     return bookmarksResult;

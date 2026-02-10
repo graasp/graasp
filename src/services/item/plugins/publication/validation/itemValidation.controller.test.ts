@@ -14,7 +14,6 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { ItemRaw } from '../../../../../drizzle/item.dto';
 import { itemValidationsTable } from '../../../../../drizzle/schema';
 import type {
   ItemValidationGroupRaw,
@@ -24,6 +23,7 @@ import type {
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';
+import { ItemRaw } from '../../../item';
 import { ItemValidationService } from './itemValidation.service';
 import { type ItemModeratorValidate, stubItemModerator } from './test/utils';
 

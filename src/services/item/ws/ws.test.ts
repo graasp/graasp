@@ -9,11 +9,11 @@ import { HttpMethod, type ItemOpFeedbackEvent as ItemOpFeedbackEventType } from 
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { db } from '../../../drizzle/db';
-import { type ItemRaw } from '../../../drizzle/item.dto';
 import { itemsRawTable } from '../../../drizzle/schema';
 import { assertIsDefined } from '../../../utils/assertions';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
+import { type ItemRaw } from '../item';
 import { ItemRepository } from '../item.repository';
 import {
   expectCopyFeedbackOp,

@@ -15,13 +15,13 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
-import { toItemDTO } from '../../../../../drizzle/item.dto';
 import { publishedItemsTable } from '../../../../../drizzle/schema';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';
-import { ItemWrapper } from '../../../ItemWrapper';
+import { resolveItemType } from '../../../item';
+import { PackedItemDTO } from '../../../packedItem.dto';
 import { expectItem, expectManyPackedItems } from '../../../test/fixtures/items';
 import { ItemVisibilityNotFound } from '../../itemVisibility/errors';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
@@ -184,7 +184,10 @@ describe('Item Published', () => {
         expectManyPackedItems(
           res.json(),
           items.map((i) =>
-            new ItemWrapper({ ...toItemDTO(i), creator: member }, { permission: 'admin' }).packed(),
+            new PackedItemDTO(
+              { ...resolveItemType(i), creator: member },
+              { permission: 'admin' },
+            ).packed(),
           ),
           undefined,
           undefined,
@@ -233,7 +236,10 @@ describe('Item Published', () => {
         expectManyPackedItems(
           res.json(),
           items.map((i) =>
-            new ItemWrapper({ ...toItemDTO(i), creator: member }, { permission: 'admin' }).packed(),
+            new PackedItemDTO(
+              { ...resolveItemType(i), creator: member },
+              { permission: 'admin' },
+            ).packed(),
           ),
           member,
           undefined,

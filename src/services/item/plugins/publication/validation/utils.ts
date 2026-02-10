@@ -3,8 +3,8 @@ import striptags from 'striptags';
 
 import { MimeTypes, getMimetype } from '@graasp/sdk';
 
-import { FileItem, type ItemRaw, isFileItemDTO } from '../../../../../drizzle/item.dto';
 import { TMP_FOLDER } from '../../../../../utils/config';
+import { FileItem, type ItemRaw, isFileItem } from '../../../item';
 
 export const stripHtml = (str?: string | null): string => (str ? striptags(str) : '');
 
@@ -12,7 +12,7 @@ export const buildStoragePath = (itemId: string): string =>
   path.join(TMP_FOLDER, 'validations', itemId);
 
 export const isImage = (item: ItemRaw): item is FileItem => {
-  if (!isFileItemDTO(item)) {
+  if (!isFileItem(item)) {
     return false;
   }
 

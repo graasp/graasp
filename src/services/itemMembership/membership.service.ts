@@ -3,7 +3,6 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, type UUID } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
-import { ItemRaw } from '../../drizzle/item.dto';
 import type {
   ItemMembershipRaw,
   ItemMembershipWithItem,
@@ -22,6 +21,7 @@ import {
 import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { AuthorizedItemService } from '../authorizedItem.service';
+import { ItemRaw } from '../item/item';
 import { MemberRepository } from '../member/member.repository';
 import { ItemMembershipRepository } from './membership.repository';
 import { MembershipRequestRepository } from './plugins/MembershipRequest/membershipRequest.repository';

@@ -7,12 +7,12 @@ import { type IndexItem } from '@graasp/sdk';
 
 import { REDIS_CONNECTION } from '../../../../../../../config/redis';
 import { type DBConnection } from '../../../../../../../drizzle/db';
-import { ItemRaw, isFolderItemDTO } from '../../../../../../../drizzle/item.dto';
 import { items } from '../../../../../../../drizzle/schema';
 import type { ItemPublishedWithItemWithCreator } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
 import { ItemType } from '../../../../../../../schemas/global';
 import { Queues } from '../../../../../../../workers/config';
+import { ItemRaw, isFolderItem } from '../../../../../item';
 import { ItemRepository } from '../../../../../item.repository';
 import { MeilisearchRepository } from './meilisearch.repository';
 import type { Hit } from './search.schemas';
@@ -153,7 +153,7 @@ export class MeiliSearchWrapper {
   async deleteOne(dbConnection: DBConnection, item: ItemRaw) {
     try {
       let itemsToIndex = [item];
-      if (isFolderItemDTO(item)) {
+      if (isFolderItem(item)) {
         itemsToIndex = itemsToIndex.concat(
           await this.itemRepository.getDescendants(dbConnection, item),
         );

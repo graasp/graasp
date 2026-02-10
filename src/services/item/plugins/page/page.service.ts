@@ -10,8 +10,8 @@ import * as Y from 'yjs';
 import { ItemGeolocation } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw, PageItem } from '../../../../drizzle/item.dto';
 import { MinimalMember } from '../../../../types';
+import type { ItemRaw, PageItem } from '../../item';
 import { ItemService } from '../../item.service';
 import { PageRepository } from './page.repository';
 

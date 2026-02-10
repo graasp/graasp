@@ -19,7 +19,6 @@ import {
 } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
-import { FolderItem, ItemRaw, isFolderItemDTO } from '../../drizzle/item.dto';
 import {
   type ItemGeolocationRaw,
   type ItemMembershipRaw,
@@ -48,9 +47,10 @@ import {
 import { AuthorizedItemService } from '../authorizedItem.service';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
-import { ItemWrapper, ItemWrapperService, type PackedItem } from './ItemWrapper';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
+import { FolderItem, ItemRaw, isFolderItem } from './item';
 import { ItemRepository } from './item.repository';
+import { type PackedItem, PackedItemDTO, PackedItemService } from './packedItem.dto';
 import { ItemGeolocationRepository } from './plugins/geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
@@ -70,7 +70,7 @@ export class ItemService {
   private readonly itemPublishedRepository: ItemPublishedRepository;
   protected readonly itemRepository: ItemRepository;
   protected readonly authorizedItemService: AuthorizedItemService;
-  private readonly itemWrapperService: ItemWrapperService;
+  private readonly itemWrapperService: PackedItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   public readonly recycledBinService: RecycledBinService;
 
@@ -107,7 +107,7 @@ export class ItemService {
     itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     authorizedItemService: AuthorizedItemService,
-    itemWrapperService: ItemWrapperService,
+    itemWrapperService: PackedItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     recycledBinService: RecycledBinService,
     log: BaseLogger,
@@ -462,7 +462,7 @@ export class ItemService {
     );
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
-    const packedItem = new ItemWrapper(
+    const packedItem = new PackedItemDTO(
       item,
       itemMembership,
       visibilities,
@@ -476,7 +476,7 @@ export class ItemService {
     member: MinimalMember,
     params: ItemSearchParams,
     pagination: Pagination,
-  ): Promise<Paginated<PackedItem>> {
+  ): Promise<Paginated<ItemWithCreator>> {
     const { data: items } = await this.itemRepository.getAccessibleItems(
       dbConnection,
       member,
@@ -484,8 +484,7 @@ export class ItemService {
       pagination,
     );
 
-    const packedItems = await this.itemWrapperService.createPackedItems(dbConnection, items);
-    return { data: packedItems, pagination };
+    return { data: items, pagination };
   }
 
   private async _getChildren(
@@ -646,7 +645,7 @@ export class ItemService {
 
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
-    let items = [item];
+    let items: ItemRaw[] = [item];
     if (item.type === 'folder') {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
@@ -881,8 +880,8 @@ export class ItemService {
       await this.itemRepository.fixOrderForTree(dbConnection, item.path);
     }
 
-    let items = [item];
-    if (isFolderItemDTO(item)) {
+    let items: ItemRaw[] = [item];
+    if (isFolderItem(item)) {
       const descendants = await this.itemRepository.getDescendants(dbConnection, item);
       items = [...descendants, item];
     }

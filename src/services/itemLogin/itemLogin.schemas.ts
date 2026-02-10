@@ -8,7 +8,7 @@ import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { accountSchemaRef } from '../account/account.schemas';
-import { itemSchemaRef } from '../item/schemas';
+import { itemSchemaRef } from '../item/common.schemas';
 
 const itemLoginSchemaSchema = customType.StrictObject(
   {

@@ -4,12 +4,12 @@ import { describe, expect, it } from 'vitest';
 
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { type ItemRaw, toItemDTO } from '../../../../drizzle/item.dto';
 import { itemGeolocationsTable } from '../../../../drizzle/schema';
 import type { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
 import { TagCategory } from '../../../tag/tag.schemas';
+import { type ItemRaw, resolveItemType } from '../../item';
 import { MissingGeolocationSearchParams } from './errors';
 import { ItemGeolocationRepository } from './itemGeolocation.repository';
 import { expectItemGeolocations } from './test/utils';
@@ -347,7 +347,7 @@ describe('ItemGeolocationRepository', () => {
       assertIsDefined(wantedItem);
       expectItemGeolocations(
         [wantedItem],
-        [{ ...geoloc, item: { ...toItemDTO(parent), creator: actor } }],
+        [{ ...geoloc, item: { ...resolveItemType(parent), creator: actor } }],
       );
     });
     it('return with keywords in english and spanish', async () => {
@@ -401,7 +401,7 @@ describe('ItemGeolocationRepository', () => {
       assertIsDefined(wantedItem);
       expectItemGeolocations(
         [wantedItem],
-        [{ ...geoloc, item: { ...toItemDTO(parent), creator: actor } }],
+        [{ ...geoloc, item: { ...resolveItemType(parent), creator: actor } }],
       );
     });
     it('return only item within keywords in name', async () => {
@@ -458,8 +458,8 @@ describe('ItemGeolocationRepository', () => {
       expectItemGeolocations(
         [p, c],
         [
-          { ...parentGeoloc, item: { ...toItemDTO(parent), creator: actor } },
-          { ...childGeoloc, item: { ...toItemDTO(child), creator: actor } },
+          { ...parentGeoloc, item: { ...resolveItemType(parent), creator: actor } },
+          { ...childGeoloc, item: { ...resolveItemType(child), creator: actor } },
         ],
       );
     });
@@ -508,7 +508,7 @@ describe('ItemGeolocationRepository', () => {
       assertIsDefined(wantedItem);
       expectItemGeolocations(
         [wantedItem],
-        [{ ...parentGeoloc, item: { ...toItemDTO(parent), creator: actor } }],
+        [{ ...parentGeoloc, item: { ...resolveItemType(parent), creator: actor } }],
       );
     });
     it('return only item within keywords in tags', async () => {
@@ -560,7 +560,7 @@ describe('ItemGeolocationRepository', () => {
       });
       expect(res.length).toBeGreaterThanOrEqual(1);
       expectItemGeolocations(res, [
-        { ...geolocParent, item: { ...toItemDTO(parent), creator: actor } },
+        { ...geolocParent, item: { ...resolveItemType(parent), creator: actor } },
       ]);
       expect(res.map((r) => r.id)).not.toContain(childGeoloc);
     });
@@ -611,7 +611,7 @@ describe('ItemGeolocationRepository', () => {
       expect(res.map((i) => i.id)).not.toContain(noise.id);
       expect(res.length).toBeGreaterThanOrEqual(1);
       expectItemGeolocations(res, [
-        { ...childGeoloc, item: { ...toItemDTO(child), creator: actor } },
+        { ...childGeoloc, item: { ...resolveItemType(child), creator: actor } },
       ]);
     });
     it('return only item with keywords in document content', async () => {
@@ -666,7 +666,7 @@ describe('ItemGeolocationRepository', () => {
       assertIsDefined(wantedItem);
       expectItemGeolocations(
         [wantedItem],
-        [{ ...childGeoloc, item: { ...toItemDTO(child), creator: actor } }],
+        [{ ...childGeoloc, item: { ...resolveItemType(child), creator: actor } }],
       );
     });
     it('return only non-recycled items in parent', async () => {
@@ -717,7 +717,9 @@ describe('ItemGeolocationRepository', () => {
         parent,
       );
       expect(res.length).toEqual(1);
-      expectItemGeolocations(res, [{ ...geoloc, item: { ...toItemDTO(item), creator: actor } }]);
+      expectItemGeolocations(res, [
+        { ...geoloc, item: { ...resolveItemType(item), creator: actor } },
+      ]);
     });
     it('return only children for given parent item with bounds', async () => {
       const {

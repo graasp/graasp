@@ -2,9 +2,9 @@ import { Ajv } from 'ajv';
 
 import type { ItemGeolocation } from '@graasp/sdk';
 
-import { type ItemRaw } from '../../drizzle/item.dto';
+import { settingsSchema } from './common.schemas';
+import { type ItemRaw } from './item';
 import { geoCoordinateSchema } from './plugins/geolocation/itemGeolocation.schemas';
-import { settingsSchema } from './schemas';
 
 /**
  * Declare compiled validators to be used in manual validation

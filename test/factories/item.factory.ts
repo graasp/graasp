@@ -3,8 +3,8 @@ import { v4 } from 'uuid';
 
 import { CCLicenseAdaptions, buildPathFromIds } from '@graasp/sdk';
 
-import { toItemDTO } from '../../src/drizzle/item.dto';
 import type { ItemWithCreator } from '../../src/drizzle/types';
+import { resolveItemType } from '../../src/services/item/item';
 
 /**
  * This factory does not guarantee valid items given their type. But they are acceptable when seed into the db.
@@ -22,7 +22,7 @@ export const ItemFactory = (
   const path = `${parentPrefix}${buildPathFromIds(id)}`;
 
   return {
-    ...toItemDTO({
+    ...resolveItemType({
       type: 'folder',
       order: null,
       name: faker.word.words(4),

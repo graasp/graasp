@@ -10,7 +10,6 @@ import { MAX_ITEM_NAME_LENGTH, MAX_TREE_LEVELS, buildPathFromIds } from '@graasp
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
-import { type FolderItem, type ItemRaw, toItemDTO } from '../../drizzle/item.dto';
 import { items, itemsRawTable, publishedItemsTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
 import {
@@ -24,6 +23,7 @@ import { assertIsMember, assertIsMemberForTest } from '../authentication';
 import { expectAccount } from '../member/test/fixtures/members';
 import { MemberDTO } from '../member/types';
 import { DEFAULT_ORDER } from './constants';
+import { type FolderItem, type ItemRaw, resolveItemType } from './item';
 import { ItemRepository } from './item.repository';
 import { expectItem, expectManyItems } from './test/fixtures/items.vitest';
 
@@ -957,7 +957,7 @@ describe('Item Repository', () => {
       } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
       const result = await itemRepository.copy(
         db,
-        toItemDTO(item),
+        resolveItemType(item),
         new MemberDTO(member).toMinimal(),
         [item.name],
       );
@@ -975,7 +975,7 @@ describe('Item Repository', () => {
 
       const result = await itemRepository.copy(
         db,
-        toItemDTO(item),
+        resolveItemType(item),
         new MemberDTO(member).toMinimal(),
         [item.name],
         parentItem as FolderItem,
@@ -997,7 +997,7 @@ describe('Item Repository', () => {
 
       const result = await itemRepository.copy(
         db,
-        toItemDTO(item),
+        resolveItemType(item),
         new MemberDTO(member).toMinimal(),
         [item.name],
       );
@@ -1033,7 +1033,7 @@ describe('Item Repository', () => {
       await expect(
         itemRepository.copy(
           db,
-          toItemDTO(item),
+          resolveItemType(item),
           new MemberDTO(member).toMinimal(),
           [],
           parentItem as FolderItem,
@@ -1052,7 +1052,7 @@ describe('Item Repository', () => {
 
       const result = await itemRepository.copy(
         db,
-        toItemDTO(item),
+        resolveItemType(item),
         new MemberDTO(member).toMinimal(),
         [item.name],
       );
@@ -1081,7 +1081,7 @@ describe('Item Repository', () => {
       await itemRepository.updateOne(db, item.id, item);
       const result = await itemRepository.copy(
         db,
-        toItemDTO(item),
+        resolveItemType(item),
         new MemberDTO(member).toMinimal(),
         [item.name],
       );
@@ -1110,7 +1110,7 @@ describe('Item Repository', () => {
       await itemRepository.updateOne(db, item.id, item);
       const result = await itemRepository.copy(
         db,
-        toItemDTO(item),
+        resolveItemType(item),
         new MemberDTO(member).toMinimal(),
         [item.name],
       );

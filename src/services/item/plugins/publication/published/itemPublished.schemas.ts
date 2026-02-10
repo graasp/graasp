@@ -4,8 +4,8 @@ import { StatusCodes } from 'http-status-codes';
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../../member/member.schemas';
+import { itemSchemaRef } from '../../../common.schemas';
 import { packedItemSchemaRef } from '../../../item.schemas.packed';
-import { itemSchemaRef } from '../../../schemas';
 
 const publishEntrySchema = customType.StrictObject(
   {

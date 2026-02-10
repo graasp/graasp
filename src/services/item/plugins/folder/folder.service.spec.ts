@@ -12,9 +12,9 @@ import { ItemNotFound } from '../../../../utils/errors';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { ItemWrapperService } from '../../ItemWrapper';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
+import { PackedItemService } from '../../packedItem.dto';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -40,7 +40,7 @@ const folderService = new FolderItemService(
   {} as ItemPublishedRepository,
   {} as ItemGeolocationRepository,
   authorizedItemService as unknown as AuthorizedItemService,
-  {} as ItemWrapperService,
+  {} as PackedItemService,
   {} as ItemVisibilityRepository,
   {} as RecycledBinService,
   MOCK_LOGGER,

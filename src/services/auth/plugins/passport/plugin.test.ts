@@ -17,11 +17,11 @@ import {
 } from '../../../../config/secrets';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import type { ItemRaw } from '../../../../drizzle/item.dto';
 import type { MemberRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { BadCredentials } from '../../../../utils/errors';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
+import type { ItemRaw } from '../../../item/item';
 import { expectItem } from '../../../item/test/fixtures/items';
 import { MemberPasswordService } from '../password/password.service';
 import {

@@ -8,7 +8,7 @@ import { AppDataVisibility } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../../account/account.schemas';
-import { itemSchemaRef } from '../../../schemas';
+import { itemSchemaRef } from '../../../common.schemas';
 
 const appDataSchema = customType.StrictObject(
   {

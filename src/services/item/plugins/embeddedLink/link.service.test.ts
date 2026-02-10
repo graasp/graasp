@@ -13,7 +13,7 @@
 // import { AuthorizationService } from '../../../authorization';
 // import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 // import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-// import { ItemWrapperService } from '../../ItemWrapper';
+// import { PackedItemService } from '../../ItemWrapper';
 // import { BasicItemService } from '../../basic.service';
 // import { EmbeddedLinkItem } from '../../discrimination';
 // import { WrongItemTypeError } from '../../errors';
@@ -40,7 +40,7 @@
 //   {} as ItemPublishedRepository,
 //   {} as ItemGeolocationRepository,
 //   {} as AuthorizationService,
-//   {} as ItemWrapperService,
+//   {} as PackedItemService,
 //   {} as ItemVisibilityRepository,
 //   {} as BasicItemService,
 //   {} as RecycledBinService,

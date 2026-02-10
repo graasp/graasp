@@ -8,7 +8,6 @@ import { ZipFile } from 'yazl';
 import { Context, DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { ItemRaw } from '../../../../../drizzle/item.dto';
 import type {
   ActionRequestExportFormat,
   ActionRequestExportRaw,
@@ -27,6 +26,7 @@ import FileService from '../../../../file/file.service';
 import { S3FileNotFound } from '../../../../file/utils/errors';
 import { MemberService } from '../../../../member/member.service';
 import { convertToValidFilename } from '../../../../utils';
+import { ItemRaw } from '../../../item';
 import { ActionRequestExportRepository } from './itemAction.requestExport.repository';
 import { formatData } from './utils';
 

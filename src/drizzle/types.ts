@@ -1,5 +1,5 @@
+import { ItemRaw } from '../services/item/item';
 import type { MinimalGuest, MinimalMember } from '../types';
-import { ItemDTO, ItemRaw } from './item.dto';
 import {
   accountsTable,
   actionRequestExportsTable,
@@ -68,7 +68,7 @@ export type NullableItem = ItemRaw | null;
 
 // note: cannot combine nicely Item and ItemWithCreator when defined with omit
 // export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: MinimalAccount };
-export type ItemWithCreator = ItemDTO & { creator: NullableAccount };
+export type ItemWithCreator = ItemRaw & { creator: NullableAccount };
 
 // item created by the server with necessary properties
 export type MinimalItemForInsert = {

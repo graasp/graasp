@@ -4,10 +4,10 @@ import { and, count, desc, gte, inArray, lte } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw } from '../../../../drizzle/item.dto';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import { actionsTable, itemsRawTable } from '../../../../drizzle/schema';
 import type { MaybeUser } from '../../../../types';
+import type { ItemRaw } from '../../item';
 
 export type ActionDateFilters = { startDate?: string; endDate?: string };
 

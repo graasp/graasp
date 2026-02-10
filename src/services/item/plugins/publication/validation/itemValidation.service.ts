@@ -5,11 +5,11 @@ import { singleton } from 'tsyringe';
 import { ItemValidationStatus, type UUID } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
-import { FolderItem, type ItemRaw } from '../../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../../logger';
 import type { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
+import { FolderItem, type ItemRaw } from '../../../item';
 import { ItemRepository } from '../../../item.repository';
 import { ItemPublishedService } from '../published/itemPublished.service';
 import { ItemValidationGroupRepository } from './ItemValidationGroup.repository';

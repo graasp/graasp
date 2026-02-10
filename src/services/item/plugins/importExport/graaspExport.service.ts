@@ -7,15 +7,10 @@ import { ZipFile } from 'yazl';
 import { ThumbnailSize } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import {
-  ItemRaw,
-  isAppItemDTO,
-  isFolderItemDTO,
-  isShortcutItemDTO,
-} from '../../../../drizzle/item.dto';
 import type { AppSettingRaw } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser } from '../../../../types';
+import { ItemRaw, isAppItem, isFolderItem, isShortcutItem } from '../../item';
 import { ItemService } from '../../item.service';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
@@ -139,7 +134,7 @@ export class GraaspExportService {
 
     // Get the app settings if an item is an APP
     let appSettings: Omit<AppSettingRaw, 'id'>[] | undefined = undefined;
-    if (isAppItemDTO(item)) {
+    if (isAppItem(item)) {
       const itemAppSettings = await this.appSettingRepository.getForItem(dbConnection, item.id);
 
       appSettings = itemAppSettings.map((appSetting) => {
@@ -149,13 +144,13 @@ export class GraaspExportService {
 
     // TODO EXPORT treat the shortcut items correctly
     // ignore the shortcuts for now
-    if (isShortcutItemDTO(item)) {
+    if (isShortcutItem(item)) {
       return itemManifest;
     }
 
     // treat folder items recursively
     const childrenManifest: GraaspExportItem[] = [];
-    if (isFolderItemDTO(item)) {
+    if (isFolderItem(item)) {
       const childrenItems = await this.itemService.getChildren(dbConnection, actor, item.id);
       for (const child of childrenItems) {
         await this.addItemToGraaspExport(dbConnection, actor, {

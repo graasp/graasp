@@ -5,12 +5,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TagFactory } from '@graasp/sdk';
 
 import { db } from '../../../../drizzle/db';
-import { ItemDTO } from '../../../../drizzle/item.dto';
 import type { ItemPublishedWithItemWithCreator, TagRaw } from '../../../../drizzle/types';
 import type { MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { TagRepository } from '../../../tag/tag.repository';
+import { Item } from '../../item';
 import { ItemRepository } from '../../item.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
@@ -51,7 +51,7 @@ describe('Item Tag create', () => {
     vi.clearAllMocks();
   });
   it('does not index item if it is not published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemDTO);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as Item);
     vi.spyOn(itemTagRepository, 'create').mockResolvedValue();
     const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')
@@ -64,7 +64,7 @@ describe('Item Tag create', () => {
   });
 
   it('index item if it is published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemDTO);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as Item);
     vi.spyOn(itemTagRepository, 'create').mockResolvedValue();
     const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')
@@ -84,7 +84,7 @@ describe('Item Tag delete', () => {
     vi.clearAllMocks();
   });
   it('does not index item if it is not published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemDTO);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as Item);
     vi.spyOn(itemTagRepository, 'delete').mockResolvedValue();
     const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')
@@ -97,7 +97,7 @@ describe('Item Tag delete', () => {
   });
 
   it('index item if it is published', async () => {
-    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as ItemDTO);
+    vi.spyOn(authorizedItemService, 'getItemById').mockResolvedValue({} as Item);
     vi.spyOn(itemTagRepository, 'delete').mockResolvedValue();
     const indexOneMock = vi
       .spyOn(meilisearchWrapper, 'indexOne')

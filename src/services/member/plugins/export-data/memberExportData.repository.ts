@@ -3,7 +3,6 @@ import { desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { ItemRaw } from '../../../../drizzle/item.dto';
 import {
   actionsTable,
   appActionsTable,
@@ -29,6 +28,7 @@ import type {
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { NoChatMentionForMember } from '../../../chat/errors';
+import { ItemRaw } from '../../../item/item';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 
 @singleton()

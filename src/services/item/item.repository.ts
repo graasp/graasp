@@ -33,7 +33,6 @@ import {
 } from '@graasp/sdk';
 
 import type { DBConnection } from '../../drizzle/db';
-import { FolderItem, ItemDTO, ItemRaw, toItemDTO } from '../../drizzle/item.dto';
 import {
   isAncestorOrSelf,
   isDescendantOrSelf,
@@ -73,6 +72,7 @@ import {
 } from '../member/constants';
 import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
 import { ItemOrderingError } from './errors';
+import { FolderItem, Item, ItemRaw, resolveItemType } from './item';
 import {
   type ItemChildrenParams,
   type ItemSearchParams,
@@ -203,19 +203,19 @@ export class ItemRepository {
 
     const { account, item_view } = results[0];
     return {
-      ...toItemDTO(item_view),
+      ...resolveItemType(item_view),
       creator: account as MemberRaw,
     };
   }
 
-  async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<ItemDTO> {
+  async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<Item> {
     const result = await dbConnection.select().from(items).where(eq(items.id, id)).limit(1);
 
     if (!result.length) {
       throw new ItemNotFound(id);
     }
 
-    return toItemDTO(result[0]);
+    return resolveItemType(result[0]);
   }
 
   async getOneWithCreatorOrThrow(dbConnection: DBConnection, id: string): Promise<ItemWithCreator> {
@@ -236,7 +236,7 @@ export class ItemRepository {
       throw new ItemNotFound(id);
     }
     return {
-      ...toItemDTO(result[0]),
+      ...resolveItemType(result[0]),
       creator: result[0].creator,
     };
   }
@@ -272,7 +272,7 @@ export class ItemRepository {
       .orderBy(asc(items.path));
 
     return result.map(({ account, item_view }) => ({
-      ...toItemDTO(item_view),
+      ...resolveItemType(item_view),
       creator: account as MemberRaw,
     }));
   }
@@ -474,10 +474,7 @@ export class ItemRepository {
       // backup order by in case two items has same ordering
       .orderBy(() => [asc(items.order), asc(items.createdAt)]);
 
-    return result.map((itemWithCreator) => ({
-      ...toItemDTO(itemWithCreator),
-      creator: itemWithCreator.creator,
-    }));
+    return result;
   }
 
   async getChildrenNames(
@@ -517,7 +514,7 @@ export class ItemRepository {
       whereConditions.push(inArray(items.type, types));
     }
 
-    const result = await dbConnection
+    const descendants = await dbConnection
       .select({
         ...getViewSelectedFields(items),
         creator: {
@@ -529,11 +526,6 @@ export class ItemRepository {
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(and(...whereConditions))
       .orderBy(asc(items.path));
-
-    const descendants = result.map((itemWithCreator) => ({
-      ...toItemDTO(itemWithCreator),
-      creator: itemWithCreator.creator,
-    }));
 
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
@@ -556,7 +548,7 @@ export class ItemRepository {
         .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
         .where(inArray(items.id, ids))
     ).map(({ account, item_view }) => ({
-      ...toItemDTO(item_view),
+      ...resolveItemType(item_view),
       creator: account as MemberRaw,
     }));
 
@@ -734,12 +726,12 @@ export class ItemRepository {
   /////// -------- COPY
   async copy(
     dbConnection: DBConnection,
-    item: ItemDTO,
+    item: Item,
     creator: MinimalMember,
     siblingsName: string[],
     parentItem?: FolderItem,
   ): Promise<{
-    copyRoot: ItemDTO;
+    copyRoot: Item;
     treeCopyMap: Map<string, { original: ItemRaw; copy: MinimalItemForInsert }>;
   }> {
     // cannot copy inside non folder item
@@ -774,7 +766,7 @@ export class ItemRepository {
    */
   private async _copy(
     dbConnection: DBConnection,
-    original: ItemDTO,
+    original: Item,
     creator: MinimalMember,
     siblingsName: string[],
     parentItem?: FolderItem,
@@ -1001,7 +993,7 @@ export class ItemRepository {
       );
 
     return result.map((itemWithCreator) => ({
-      ...toItemDTO(itemWithCreator),
+      ...resolveItemType(itemWithCreator),
       creator: itemWithCreator.creator,
     }));
   }
@@ -1310,7 +1302,7 @@ export class ItemRepository {
 
     return {
       data: result.map((itemWithCreator) => ({
-        ...toItemDTO(itemWithCreator),
+        ...itemWithCreator,
         creator: itemWithCreator.creator,
       })),
       pagination: { page, pageSize },

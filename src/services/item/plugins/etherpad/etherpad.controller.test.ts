@@ -16,12 +16,12 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { EtherpadItem } from '../../../../drizzle/item.dto';
 import { isDirectChild } from '../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ETHERPAD_PUBLIC_URL } from '../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../utils/errors';
+import { EtherpadItem } from '../../item';
 import { ItemService } from '../../item.service';
 import { MAX_SESSIONS_IN_COOKIE } from './constants';
 import { ItemMissingExtraError } from './errors';

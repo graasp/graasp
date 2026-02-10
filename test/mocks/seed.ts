@@ -17,7 +17,6 @@ import {
 } from '@graasp/sdk';
 
 import { db } from '../../src/drizzle/db';
-import { ItemRaw } from '../../src/drizzle/item.dto';
 import {
   accountsTable,
   actionRequestExportsTable,
@@ -79,6 +78,7 @@ import type {
   TagRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
+import { ItemRaw } from '../../src/services/item/item';
 import { PermissionLevel } from '../../src/types';
 import { APPS_PUBLISHER_ID } from '../../src/utils/config';
 import { ActionFactory } from '../factories/action.factory';

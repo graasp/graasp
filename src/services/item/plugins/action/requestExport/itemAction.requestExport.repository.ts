@@ -5,7 +5,6 @@ import { singleton } from 'tsyringe';
 import { type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../drizzle/db';
-import { ItemRaw } from '../../../../../drizzle/item.dto';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../../drizzle/operations';
 import {
   accountsTable,
@@ -29,6 +28,7 @@ import {
 } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants';
+import { ItemRaw } from '../../../item';
 
 @singleton()
 export class ActionRequestExportRepository {

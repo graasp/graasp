@@ -8,7 +8,6 @@ import type { FastifyBaseLogger } from 'fastify';
 import { type H5PItemExtra } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
-import { H5PItem, ItemRaw, isH5PItemDTO } from '../../../../../drizzle/item.dto';
 import { BaseLogger } from '../../../../../logger';
 import type { MinimalMember } from '../../../../../types';
 import {
@@ -17,6 +16,7 @@ import {
   H5P_PATH_PREFIX,
 } from '../../../../../utils/config';
 import { StorageService } from '../../../../member/plugins/storage/memberStorage.service';
+import { H5PItem, ItemRaw, isH5PItem } from '../../../item';
 import { ItemRepository } from '../../../item.repository';
 import { ItemService } from '../../../item.service';
 import { HtmlService } from '../html.service';
@@ -167,7 +167,7 @@ export class H5PService extends HtmlService {
         previousItemId,
       });
 
-      if (!isH5PItemDTO(item)) {
+      if (!isH5PItem(item)) {
         throw new Error('Expected item to be H5P but it was something else');
       }
       return item;

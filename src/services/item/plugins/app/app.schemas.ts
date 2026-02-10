@@ -6,7 +6,7 @@ import type { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef } from '../../../account/account.schemas';
-import { itemCommonSchema } from '../../schemas';
+import { itemCommonSchema } from '../../common.schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
 const appItemSchema = Type.Composite(

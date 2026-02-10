@@ -6,9 +6,9 @@ import type { MultipartFields, MultipartFile } from '@fastify/multipart';
 
 import { type ItemGeolocation, isChildOf } from '@graasp/sdk';
 
-import { type FolderItem, type ItemRaw, isFolderItemDTO } from '../../drizzle/item.dto';
 import { ITEM_TYPES, ItemType } from '../../schemas/global';
 import { NoFileProvided } from '../../utils/errors';
+import { type FolderItem, type ItemRaw, isFolderItem } from './item';
 import { validateGeolocation, validateSettings } from './validation';
 
 const itemOrderFn = (a: ItemRaw, b: ItemRaw) => {
@@ -25,7 +25,7 @@ export const sortChildrenForTreeWith = <T extends ItemRaw>(
   directChildren.sort(itemOrderFn);
 
   const tree = directChildren.map((directChild) => {
-    if (!isFolderItemDTO(directChild)) {
+    if (!isFolderItem(directChild)) {
       return [directChild];
     }
     return [directChild, ...sortChildrenForTreeWith(descendants, directChild)];
