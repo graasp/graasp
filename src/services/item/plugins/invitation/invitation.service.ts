@@ -96,7 +96,7 @@ export class InvitationService {
       .build();
 
     this.mailerService.send(mail, invitation.email).catch((err) => {
-      this.log.warn(err, `mailerService failed. invitation link: ${link}`);
+      this.log.warn(`mailerService failed with: ${err.message}. invitation link: ${link}`);
     });
   }
 
@@ -311,7 +311,10 @@ export class InvitationService {
     member: MinimalMember,
     itemId: ItemRaw['id'],
     file: MultipartFile,
-  ): Promise<{ memberships: ItemMembershipRaw[]; invitations: InvitationRaw[] }> {
+  ): Promise<{
+    memberships: ItemMembershipRaw[];
+    invitations: InvitationRaw[];
+  }> {
     // verify file is CSV
     verifyCSVFileFormat(file);
 

@@ -156,7 +156,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = user?.account;
       assertIsDefined(member);
       assertIsMember(member);
-      const item = await authorizedItemService.getItemById(db, { accountId: member.id, itemId });
+      const item = await authorizedItemService.getItemById(db, {
+        accountId: member.id,
+        itemId,
+      });
 
       // only allow folders
       if (item.type !== 'folder') {
@@ -173,7 +176,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       });
 
       // will generate archive in the background
-      reply.status(StatusCodes.ACCEPTED).send();
+      reply.status(StatusCodes.ACCEPTED).send({ message: 'Export started' });
     },
   );
 

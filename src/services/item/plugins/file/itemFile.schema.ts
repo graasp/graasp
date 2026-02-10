@@ -18,11 +18,13 @@ export const upload = {
       }),
     ),
     previousItemId: Type.Optional(
-      customType.UUID({ description: 'The uploaded files should be created after this item.' }),
+      customType.UUID({
+        description: 'The uploaded files should be created after this item.',
+      }),
     ),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful response' }),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 };

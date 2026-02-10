@@ -76,7 +76,7 @@ export class MembershipRequestService {
         .build();
 
       this.mailerService.send(mail, admin.email!).catch((err) => {
-        this.log.error(err, `mailerService failed. shared link: ${link}`);
+        this.log.error(`mailerService failed with ${err.message}. shared link: ${link}`);
       });
     }
   }

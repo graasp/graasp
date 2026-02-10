@@ -115,7 +115,9 @@ export class MemberService {
     });
   }
   async validate(dbConnection: DBConnection, id: UUID) {
-    return await this.memberRepository.patch(dbConnection, id, { isValidated: true });
+    return await this.memberRepository.patch(dbConnection, id, {
+      isValidated: true,
+    });
   }
 
   createEmailChangeRequest(member: MemberInfo, newEmail: string) {
@@ -154,7 +156,7 @@ export class MemberService {
     // don't wait for mailer's response; log error and link if it fails.
     this.mailerService
       .send(mail, newEmail)
-      .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
+      .catch((err) => this.log.warn(`mailer failed with ${err.message}: link: ${link}`));
   }
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
@@ -166,7 +168,9 @@ export class MemberService {
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.
-    this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
+    this.mailerService
+      .send(mail, oldEmail)
+      .catch((err) => this.log.warn(`mailer failed with ${err.message}`));
   }
 
   updateMarketingEmailsSubscription(

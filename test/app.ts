@@ -7,7 +7,7 @@ import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
 import type { DBConnection } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
-import ajvFormats from '../src/schemas/ajvFormats';
+import { modifyAjvInstance } from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
 
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
@@ -58,7 +58,7 @@ const build = async () => {
         discriminator: true,
         allowUnionTypes: true,
       },
-      plugins: [ajvFormats],
+      onCreate: modifyAjvInstance,
     },
   });
 

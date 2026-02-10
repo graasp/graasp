@@ -110,7 +110,7 @@ export class ItemPublishedService {
           .build();
 
         await this.mailerService.send(mail, member.email).catch((err) => {
-          this.log.warn(err, `mailerService failed. published link: ${link}`);
+          this.log.warn(`mailerService failed with: ${err.message}. published link: ${link}`);
         });
       }
     }

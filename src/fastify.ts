@@ -6,7 +6,7 @@ import registerAppPlugins from './app';
 import { bustFileCache } from './bustCache';
 import { DEV, NODE_ENV, PROD } from './config/env';
 import { client } from './drizzle/db';
-import ajvFormats from './schemas/ajvFormats';
+import { modifyAjvInstance } from './schemas/ajvFormats';
 import { initSentry } from './sentry';
 import { APP_VERSION, CORS_ORIGIN_REGEX, HOST_LISTEN_ADDRESS, PORT } from './utils/config';
 import { GREETING } from './utils/constants';
@@ -33,7 +33,7 @@ export const instance = fastify({
       // This enables the use of discriminator keyword in oneof or anyof in schemas so it optimizes validation.
       discriminator: true,
     },
-    plugins: [ajvFormats],
+    onCreate: modifyAjvInstance,
   },
 }).withTypeProvider<TypeBoxTypeProvider>();
 

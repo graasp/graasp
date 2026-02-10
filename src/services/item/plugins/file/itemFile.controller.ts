@@ -173,7 +173,7 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw errors[0];
       }
 
-      reply.status(StatusCodes.NO_CONTENT).send();
+      reply.status(StatusCodes.NO_CONTENT).send(null);
     },
   });
 

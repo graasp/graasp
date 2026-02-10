@@ -113,7 +113,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
         pageSize < FILE_METADATA_MIN_PAGE_SIZE ||
         pageSize > FILE_METADATA_MAX_PAGE_SIZE
       ) {
-        return reply.status(StatusCodes.BAD_REQUEST).send();
+        return reply.code(StatusCodes.BAD_REQUEST).send({ error: 'Bad parameters passed' });
       }
       const member = asDefined(user?.account);
       assertIsMember(member);
@@ -272,7 +272,10 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
 
       // save action
       await actionService.postMany(db, account, req, [
-        { type: 'marketing-emails-unsubscribe', extra: { memberId: account.id } },
+        {
+          type: 'marketing-emails-unsubscribe',
+          extra: { memberId: account.id },
+        },
       ]);
     },
   );

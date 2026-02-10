@@ -67,7 +67,7 @@ export class WSDoc extends Y.Doc {
    * @param conn
    */
   addConnection(conn: WebSocket) {
-    this.logger.info('Page', this.name, ': add connection to reach', this.conns.size + 1);
+    this.logger.info(`Page ${this.name}: add connection to reach ${this.conns.size + 1}`);
     this.conns.set(conn, new Set());
     // listen and reply to events
     conn.on('message', (message: ArrayBuffer) => {

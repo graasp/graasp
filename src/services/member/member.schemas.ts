@@ -208,6 +208,12 @@ export const getStorageFiles = {
       },
       { description: 'Successful Response' },
     ),
+    [StatusCodes.BAD_REQUEST]: customType.StrictObject(
+      {
+        error: Type.String({ description: 'Error message' }),
+      },
+      { description: 'Bad Request' },
+    ),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

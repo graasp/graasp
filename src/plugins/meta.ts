@@ -117,12 +117,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 };
 
-const getDBStatusCheck = async (log: FastifyBaseLogger): Promise<ServiceStatus> => {
+const getDBStatusCheck = async (_log: FastifyBaseLogger): Promise<ServiceStatus> => {
   try {
     // this just checks that we can execute queries on the database.
     // if tables are locked it will still execute fine as long as the connection is working
     const res = await db.execute(sql`select 1 result;`);
-    log.error('value', res.rows[0]);
     if (res.rows[0]['result'] === 1) {
       return new HealthyStatus();
     }

@@ -57,7 +57,7 @@ export class AuthService {
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, member.email)
-      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
+      .catch((err) => this.log.warn(`mailerService failed with ${err.message}. link: ${link}`));
   }
 
   public async generateLoginLinkAndEmailIt(
@@ -90,6 +90,6 @@ export class AuthService {
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, member.email)
-      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
+      .catch((err) => this.log.warn(`mailerService failed: ${err.message}. link: ${link}`));
   }
 }

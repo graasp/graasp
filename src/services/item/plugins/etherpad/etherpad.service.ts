@@ -138,7 +138,9 @@ export class EtherpadItemService {
       this.api
         .deletePad({ padID })
         .catch((e) =>
-          this.log.error(`${PLUGIN_NAME}: failed to delete orphan etherpad ${padID}`, e),
+          this.log.error(
+            `${PLUGIN_NAME}: failed to delete orphan etherpad ${padID} because of ${e.message}`,
+          ),
         );
       throw error;
     }
@@ -351,9 +353,7 @@ export class EtherpadItemService {
         .deleteSession({ sessionID })
         .catch((e) =>
           this.log.error(
-            `${PLUGIN_NAME}: failed to delete etherpad session ${sessionID}`,
-            sessions[sessionID],
-            e,
+            `${PLUGIN_NAME}: failed to delete etherpad session ${sessionID}, because ${e.message}`,
           ),
         );
     });

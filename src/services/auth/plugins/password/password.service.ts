@@ -210,7 +210,9 @@ export class MemberPasswordService {
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, email)
-      .catch((err) => this.log.warn(err, `mailerService failed. link: ${destinationUrl}`));
+      .catch((err) =>
+        this.log.warn(`mailerService failed with: ${err.message}. link: ${destinationUrl}`),
+      );
   }
 
   /**
