@@ -51,6 +51,9 @@ describe('H5P Service', () => {
 
     const copyItem = { id: 'copy-id' } as ItemWithType<'h5p'>;
 
+    vi.spyOn(h5pService.fileService, 'copy').mockResolvedValue('copy-value');
+    vi.spyOn(h5pService.fileService, 'copyFolder').mockResolvedValue('folder-path');
+
     await h5pService.copy(MOCK_DB, member, { original, copy: copyItem });
 
     const baseName = path.basename(original.name, H5P_FILE_DOT_EXTENSION);

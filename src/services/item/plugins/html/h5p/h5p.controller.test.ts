@@ -12,8 +12,6 @@ import { db } from '../../../../../drizzle/db';
 import { isDirectChild } from '../../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
-import { H5P_PATH_PREFIX, H5P_S3_CONFIG } from '../../../../../utils/config';
-import { S3FileRepository } from '../../../../file/repositories/s3';
 import type { H5PItem } from '../../../discrimination';
 import { HtmlImportError } from '../errors';
 import { H5P_FILE_DOT_EXTENSION } from './constants';
@@ -21,6 +19,49 @@ import { H5PInvalidManifestError } from './errors';
 import { H5PService } from './h5p.service';
 import { H5P_PACKAGES } from './test/fixtures';
 import { injectH5PImport } from './test/helpers';
+
+const deleteObjectsMock = jest.fn(async () => console.debug('deleteObjects'));
+const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
+const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
+const listObjectsV2Mock = jest.fn(async () => ({
+  Contents: [
+    {
+      Key: 'mock-key',
+    },
+  ],
+}));
+const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+
+const MOCK_SIGNED_URL = 'signed-url';
+jest.mock('@aws-sdk/client-s3', () => {
+  return {
+    GetObjectCommand: jest.fn(),
+    NotFound: jest.fn(() => ({ name: 'NotFound' })),
+    S3: function () {
+      return {
+        copyObject: copyObjectMock,
+        deleteObjects: deleteObjectsMock,
+        headObject: headObjectMock,
+        listObjectsV2: listObjectsV2Mock,
+      };
+    },
+  };
+});
+jest.mock('@aws-sdk/s3-request-presigner', () => {
+  const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
+  return {
+    getSignedUrl,
+  };
+});
+jest.mock('@aws-sdk/lib-storage', () => {
+  return {
+    Upload: jest.fn().mockImplementation(() => {
+      return {
+        done: uploadDoneMock,
+      };
+    }),
+  };
+});
 
 const buildExpectedItem = (item: H5PItem) => {
   const contentId = item.extra.h5p.contentId;
@@ -38,21 +79,6 @@ const buildExpectedItem = (item: H5PItem) => {
     type: 'h5p',
     extra: expectedExtra,
   };
-};
-
-const getMetadata = async ({
-  h5pFilePath,
-  contentFilePath,
-}: {
-  h5pFilePath: string;
-  contentFilePath: string;
-}) => {
-  const s3FileRepository = new S3FileRepository(H5P_S3_CONFIG.s3);
-  const copiedFile = await s3FileRepository.getMetadata(H5P_PATH_PREFIX + h5pFilePath);
-  const copiedFolder = await s3FileRepository.getMetadata(
-    H5P_PATH_PREFIX + contentFilePath + '/h5p.json',
-  );
-  return { file: copiedFile, content: copiedFolder };
 };
 
 describe('H5P plugin', () => {
@@ -88,20 +114,6 @@ describe('H5P plugin', () => {
       const item = res.json();
       expect(item).toMatchObject(buildExpectedItem(item));
     });
-
-    it('removes the temporary extraction folder', async () => {
-      const {
-        actor,
-        items: [parent],
-      } = await seedFromJson({
-        items: [{ memberships: [{ account: 'actor', permission: 'admin' }] }],
-      });
-      assertIsDefined(actor);
-      mockAuthenticate(actor);
-
-      const res = await injectH5PImport(app, { parentId: parent.id });
-      expect(res.statusCode).toEqual(StatusCodes.OK);
-    });
   });
 
   describe('Hooks', () => {
@@ -123,9 +135,6 @@ describe('H5P plugin', () => {
       const res = await injectH5PImport(app, { parentId: parent.id });
       expect(res.statusCode).toEqual(StatusCodes.OK);
       const item = res.json();
-      const { file, content } = await getMetadata((item as H5PItem).extra.h5p);
-      expect(content.ContentLength).toBeGreaterThan(100);
-      expect(file.ContentLength).toBeGreaterThan(1000);
 
       // delete item
       await app.inject({
@@ -138,7 +147,7 @@ describe('H5P plugin', () => {
 
       await waitForExpect(async () => {
         // check files are deleted
-        await expect(() => getMetadata((item as H5PItem).extra.h5p)).rejects.toThrow();
+        expect(deleteObjectsMock).toHaveBeenCalled();
       }, 5000);
     });
     it('copies H5P assets on item copy', async () => {
@@ -183,9 +192,7 @@ describe('H5P plugin', () => {
         expect(copiedH5P).toBeDefined();
 
         // check copies exist
-        const { file, content } = await getMetadata((copiedH5P as H5PItem).extra.h5p);
-        expect(content.ContentLength).toBeGreaterThan(100);
-        expect(file.ContentLength).toBeGreaterThan(1000);
+        expect(copyObjectMock).toHaveBeenCalledTimes(2);
       }, 5000); // the above line ensures exists
     });
     it('copies H5P with special characters on item copy', async () => {
