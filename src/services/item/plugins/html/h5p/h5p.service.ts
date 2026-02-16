@@ -98,7 +98,7 @@ export class H5PService extends HtmlService {
     // copy .h5p file
     await this.fileService.copy(member, {
       originalPath: path.join(this.pathPrefix, extra.h5p.h5pFilePath),
-      newFilePath: this.buildPackagePath(newContentId, newName),
+      newFilePath: path.join(this.pathPrefix, this.buildPackagePath(newContentId, newName)),
     });
 
     // copy content folder

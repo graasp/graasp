@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm';
-import fsp from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import waitForExpect from 'wait-for-expect';
@@ -13,7 +12,8 @@ import { db } from '../../../../../drizzle/db';
 import { isDirectChild } from '../../../../../drizzle/operations';
 import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
-import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../utils/config';
+import { H5P_PATH_PREFIX, H5P_S3_CONFIG } from '../../../../../utils/config';
+import { S3FileRepository } from '../../../../file/repositories/s3';
 import type { H5PItem } from '../../../discrimination';
 import { HtmlImportError } from '../errors';
 import { H5P_FILE_DOT_EXTENSION } from './constants';
@@ -21,8 +21,6 @@ import { H5PInvalidManifestError } from './errors';
 import { H5PService } from './h5p.service';
 import { H5P_PACKAGES } from './test/fixtures';
 import { injectH5PImport } from './test/helpers';
-
-const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX ?? '');
 
 const buildExpectedItem = (item: H5PItem) => {
   const contentId = item.extra.h5p.contentId;
@@ -40,6 +38,21 @@ const buildExpectedItem = (item: H5PItem) => {
     type: 'h5p',
     extra: expectedExtra,
   };
+};
+
+const getMetadata = async ({
+  h5pFilePath,
+  contentFilePath,
+}: {
+  h5pFilePath: string;
+  contentFilePath: string;
+}) => {
+  const s3FileRepository = new S3FileRepository(H5P_S3_CONFIG.s3);
+  const copiedFile = await s3FileRepository.getMetadata(H5P_PATH_PREFIX + h5pFilePath);
+  const copiedFolder = await s3FileRepository.getMetadata(
+    H5P_PATH_PREFIX + contentFilePath + '/h5p.json',
+  );
+  return { file: copiedFile, content: copiedFolder };
 };
 
 describe('H5P plugin', () => {
@@ -88,9 +101,6 @@ describe('H5P plugin', () => {
 
       const res = await injectH5PImport(app, { parentId: parent.id });
       expect(res.statusCode).toEqual(StatusCodes.OK);
-
-      const contents = await fsp.readdir(H5P_TMP_FOLDER);
-      expect(contents.length).toEqual(0);
     });
   });
 
@@ -109,19 +119,14 @@ describe('H5P plugin', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
-      const h5pService = resolveDependency(H5PService);
-      const deletePackageSpy = jest
-        .spyOn(h5pService, 'deletePackage')
-        .mockImplementationOnce(async () => {
-          console.debug('mock deletePackage');
-        });
-
       // save h5p so it saves the files correctly
       const res = await injectH5PImport(app, { parentId: parent.id });
       expect(res.statusCode).toEqual(StatusCodes.OK);
-
       const item = res.json();
-      const contentId = (item as H5PItem).extra.h5p.contentId;
+      const { file, content } = await getMetadata((item as H5PItem).extra.h5p);
+      expect(content.ContentLength).toBeGreaterThan(100);
+      expect(file.ContentLength).toBeGreaterThan(1000);
+
       // delete item
       await app.inject({
         method: 'DELETE',
@@ -131,8 +136,9 @@ describe('H5P plugin', () => {
         },
       });
 
-      await waitForExpect(() => {
-        expect(deletePackageSpy).toHaveBeenCalledWith(contentId);
+      await waitForExpect(async () => {
+        // check files are deleted
+        await expect(() => getMetadata((item as H5PItem).extra.h5p)).rejects.toThrow();
       }, 5000);
     });
     it('copies H5P assets on item copy', async () => {
@@ -157,11 +163,6 @@ describe('H5P plugin', () => {
       expect(res.statusCode).toEqual(StatusCodes.OK);
       const item = res.json();
 
-      const h5pService = resolveDependency(H5PService);
-      const copySpy = jest.spyOn(h5pService, 'copy').mockImplementationOnce(async () => {
-        console.debug('mock copy');
-      });
-
       // copy item
       await app.inject({
         method: 'POST',
@@ -174,13 +175,17 @@ describe('H5P plugin', () => {
         },
       });
 
+      let copiedH5P;
       await waitForExpect(async () => {
-        const copiedH5P = (await db.query.itemsRawTable.findFirst({
+        copiedH5P = (await db.query.itemsRawTable.findFirst({
           where: isDirectChild(itemsRawTable.path, targetParent.path),
         })) as H5PItem;
         expect(copiedH5P).toBeDefined();
 
-        expect(copySpy).toHaveBeenCalled();
+        // check copies exist
+        const { file, content } = await getMetadata((copiedH5P as H5PItem).extra.h5p);
+        expect(content.ContentLength).toBeGreaterThan(100);
+        expect(file.ContentLength).toBeGreaterThan(1000);
       }, 5000); // the above line ensures exists
     });
     it('copies H5P with special characters on item copy', async () => {
@@ -272,8 +277,7 @@ describe('H5P plugin', () => {
       expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       expect(res.json()).toEqual(new H5PInvalidManifestError('Missing h5p.json manifest file'));
     });
-    it('returns error and deletes extracted files on item creation failure', async () => {
-      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
+    it('returns error on item creation failure', async () => {
       const uploadPackage = jest.spyOn(resolveDependency(H5PService), 'uploadPackage');
       uploadPackage.mockImplementationOnce(() => {
         throw new Error('mock error on HTML package upload');
@@ -292,28 +296,10 @@ describe('H5P plugin', () => {
       assertIsDefined(actor);
       mockAuthenticate(actor);
 
-      // count initial number of files
-      const initExtractionDirContents = await fsp.readdir(H5P_TMP_FOLDER);
-      const initStorageDirContents = await fsp.readdir(
-        path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),
-      );
-      const initExtractionNb = initExtractionDirContents.length;
-      const initStorageNb = initStorageDirContents.length;
-
       // import h5p
       const res = await injectH5PImport(app, { parentId: parent.id });
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toEqual(new HtmlImportError());
-
-      // should not contain the files for this request anymore
-      await waitForExpect(async () => {
-        const extractionDirContents = await fsp.readdir(H5P_TMP_FOLDER);
-        const storageDirContents = await fsp.readdir(
-          path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),
-        );
-        expect(extractionDirContents.length).toEqual(initExtractionNb);
-        expect(storageDirContents.length).toEqual(initStorageNb);
-      }, 5000);
     });
   });
 
