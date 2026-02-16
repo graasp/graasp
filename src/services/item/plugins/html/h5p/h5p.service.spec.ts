@@ -65,7 +65,7 @@ describe('H5P Service', () => {
     const [_db, itemId, updateData] = updateCall;
 
     expect(itemId).toBe(copyItem.id);
-    expect(updateData.name).toBe('mypackage-1');
+    expect(updateData.name).toBe('MyPackage-1');
     expect(updateData.extra.h5p.contentId).toBe('mocked-uuid');
     expect(updateData.extra.h5p.contentFilePath).toBe(h5pService.buildContentPath(newCid));
     expect(updateData.extra.h5p.h5pFilePath).toBe(
