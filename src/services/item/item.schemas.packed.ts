@@ -6,6 +6,7 @@ import type { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef, itemTypeSchemaRef } from '../../schemas/global';
 import { permissionLevelSchemaRef } from '../../types';
+import { nullableMemberSchemaRef } from '../member/member.schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { appItemSchemaRef } from './plugins/app/app.schemas';
 import { documentItemSchemaRef } from './plugins/document/document.schemas';
@@ -33,6 +34,7 @@ export const itemSchema = Type.Union([
 export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
 
 const packedSchema = customType.StrictObject({
+  creator: nullableMemberSchemaRef,
   permission: Type.Union([permissionLevelSchemaRef, Type.Null()]),
   hidden: Type.Optional(itemVisibilitySchemaRef),
   public: Type.Optional(itemVisibilitySchemaRef),

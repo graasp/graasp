@@ -4,7 +4,6 @@ import { Alignment, CCLicenseAdaptions, DescriptionPlacement, MaxWidth } from '@
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { itemTypeSchemaRef } from '../../schemas/global';
-import { nullableMemberSchemaRef } from '../member/member.schemas';
 
 export const settingsSchema = Type.Partial(
   customType.StrictObject(
@@ -48,7 +47,6 @@ export const itemCommonSchema = customType.StrictObject(
     path: Type.String(),
     lang: Type.String(),
     settings: settingsSchema,
-    creator: Type.Optional(nullableMemberSchemaRef),
     createdAt: customType.DateTime(),
     updatedAt: customType.DateTime(),
   },
