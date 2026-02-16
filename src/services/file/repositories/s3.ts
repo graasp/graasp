@@ -121,7 +121,7 @@ export class S3FileRepository implements FileRepository {
             CopySource: `${bucket}/${filepath}`,
             Bucket: bucket,
             Key: filepath.replace(originalFolderPath, newFolderPath),
-            MetadataDirective: 'COPY',
+            MetadataDirective: MetadataDirective.COPY,
             CacheControl: 'no-cache', // TODO: improve?
           };
           return this.s3Instance.copyObject(params);

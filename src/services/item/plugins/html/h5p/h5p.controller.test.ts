@@ -37,6 +37,9 @@ jest.mock('@aws-sdk/client-s3', () => {
   return {
     GetObjectCommand: jest.fn(),
     NotFound: jest.fn(() => ({ name: 'NotFound' })),
+    MetadataDirective: {
+      COPY: 'COPY',
+    },
     S3: function () {
       return {
         copyObject: copyObjectMock,
