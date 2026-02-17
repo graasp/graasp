@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.0](https://github.com/graasp/graasp/compare/v2.12.0...v2.13.0) (2026-02-17)
+
+
+### Features
+
+* allow switching from folder to capsule ([#2052](https://github.com/graasp/graasp/issues/2052)) ([d079383](https://github.com/graasp/graasp/commit/d079383e234db460506e41f89553462987d5f1a7))
+* allow users to subscribe and unsubscribe to email notifications ([#2060](https://github.com/graasp/graasp/issues/2060)) ([af96280](https://github.com/graasp/graasp/commit/af96280f99c5028d7840db9e105b46213e24a1f5))
+* export document item as html ([#2063](https://github.com/graasp/graasp/issues/2063)) ([5e6509a](https://github.com/graasp/graasp/commit/5e6509ac5feea11a90672fe654db39ce9d06875e))
+* improve item discrimination ([#2074](https://github.com/graasp/graasp/issues/2074)) ([24eb5d7](https://github.com/graasp/graasp/commit/24eb5d7fa00c15bf6db9f62edbd7190c2f1bc25a))
+
+
+### Bug Fixes
+
+* correctly tee thumbnail stream on upload ([#2068](https://github.com/graasp/graasp/issues/2068)) ([69ab32a](https://github.com/graasp/graasp/commit/69ab32a29e2c6df61216892873394adeeb96ef47))
+* **deps:** update dependency fastify to v5.7.3 [security] ([#2069](https://github.com/graasp/graasp/issues/2069)) ([4f2d703](https://github.com/graasp/graasp/commit/4f2d703025a1e4129ba9da5fb59681ab2dc2aa5d))
+* fix copy for h5p with custom filename on upload ([#2071](https://github.com/graasp/graasp/issues/2071)) ([660272d](https://github.com/graasp/graasp/commit/660272d67b7ecbe979c82c918fb53be41d377bed))
+* update umami tag to v3.0.3 ([#2072](https://github.com/graasp/graasp/issues/2072)) ([325ccc3](https://github.com/graasp/graasp/commit/325ccc3f3c1229d8e4d8c56b96d14295e8d7e25a))
+
 ## [2.12.0](https://github.com/graasp/graasp/compare/v2.11.0...v2.12.0) (2026-01-19)
 
 
