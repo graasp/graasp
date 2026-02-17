@@ -1,0 +1,1 @@
+update item set extra='{"folder":{}}'::jsonb where type='folder' and extra = '{}';

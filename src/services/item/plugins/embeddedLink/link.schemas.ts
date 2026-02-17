@@ -77,7 +77,7 @@ export const createLink = {
   ),
   body: Type.Composite([
     Type.Pick(linkItemSchema, ['name']),
-    Type.Partial(Type.Pick(linkItemSchema, ['description', 'lang'])),
+    Type.Partial(Type.Pick(linkItemSchema, ['description', 'lang', 'settings'])),
 
     // link flat config
     // uri is stricter than uri-reference

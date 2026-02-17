@@ -14,12 +14,10 @@ export const folderSchema = Type.Composite([
     {
       type: Type.Literal('folder'),
       extra: customType.StrictObject({
-        folder: Type.Optional(
-          customType.StrictObject({
-            isCapsule: Type.Optional(Type.Boolean()),
-            childrenOrder: Type.Optional(Type.Array(customType.UUID(), { deprecated: true })),
-          }),
-        ),
+        folder: customType.StrictObject({
+          isCapsule: Type.Optional(Type.Boolean()),
+          childrenOrder: Type.Optional(Type.Array(customType.UUID(), { deprecated: true })),
+        }),
       }),
     },
     {
