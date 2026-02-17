@@ -55,6 +55,7 @@ const MOCK_S3_CONFIG = {
 };
 
 const MOCK_ACTOR = MemberFactory();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MOCK_DB = {} as any;
 
 const createService = (

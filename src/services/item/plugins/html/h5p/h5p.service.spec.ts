@@ -22,6 +22,7 @@ function createService() {
   return new H5PService({} as ItemService, {} as StorageService, mockItemRepository, logger);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MOCK_DB = {} as any;
 
 describe('H5P Service', () => {
