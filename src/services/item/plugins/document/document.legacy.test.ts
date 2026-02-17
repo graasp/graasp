@@ -102,8 +102,7 @@ describe('Document Item tests', () => {
         const payload = {
           name: 'name',
           type: 'document',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          extra: { ['folder']: { content: 'content' } } as any,
+          extra: { ['folder']: { content: 'content' } },
         };
 
         const response = await app.inject({
@@ -119,8 +118,7 @@ describe('Document Item tests', () => {
         const payload1 = {
           name: 'name',
           type: 'document',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          extra: { ['document']: {} } as any,
+          extra: { ['document']: {} },
         };
 
         const response1 = await app.inject({

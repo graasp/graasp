@@ -2,10 +2,11 @@ import { inject, singleton } from 'tsyringe';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemGeolocationRaw, ItemRaw } from '../../../../drizzle/types';
+import type { ItemGeolocationRaw } from '../../../../drizzle/types';
 import type { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
-import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
+import type { ItemRaw } from '../../item';
+import { type PackedItem, PackedItemDTO } from '../../packedItem.dto';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { MissingGeolocationApiKey } from './errors';
 import { ItemGeolocationRepository } from './itemGeolocation.repository';
@@ -112,7 +113,7 @@ export class ItemGeolocationService {
           // and add permission for item packed
           // TODO optimize?
           const thumbnails = thumbnailsByItem[g.item.id];
-          const newItem = new ItemWrapper(
+          const newItem = new PackedItemDTO(
             g.item,
             itemMemberships.data[itemId],
             visibilities.data[itemId],

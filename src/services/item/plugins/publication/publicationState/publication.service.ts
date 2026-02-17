@@ -5,8 +5,8 @@ import { ItemVisibilityType } from '@graasp/sdk';
 import type { DBConnection } from '../../../../../drizzle/db';
 import type { AuthenticatedUser } from '../../../../../types';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
-import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemRepository } from '../../../item.repository';
+import { PackedItemDTO } from '../../../packedItem.dto';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../published/itemPublished.repository';
 import { ItemValidationGroupRepository } from '../validation/ItemValidationGroup.repository';
@@ -57,7 +57,7 @@ export class PublicationService {
         shouldThrow: false,
       },
     );
-    const packedItem = new ItemWrapper(
+    const packedItem = new PackedItemDTO(
       item,
       undefined,
       publicVisibility ? [publicVisibility] : [],

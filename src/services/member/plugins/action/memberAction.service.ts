@@ -4,12 +4,12 @@ import { singleton } from 'tsyringe';
 import { ActionTriggers } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import type { ItemRaw } from '../../../../drizzle/types';
 import type { AuthenticatedUser } from '../../../../types';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
+import type { ItemRaw } from '../../../item/item';
 import type { ActionDateFilters } from '../../../item/plugins/action/itemAction.repository';
 
 export const getPreviousMonthFromNow = () => {

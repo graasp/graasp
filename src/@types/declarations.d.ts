@@ -1,6 +1,5 @@
 import 'fastify';
 
-import { ItemRaw } from '../drizzle/types';
 import { WebsocketService } from '../services/websockets/ws-service';
 import { MaybeUser } from '../types';
 

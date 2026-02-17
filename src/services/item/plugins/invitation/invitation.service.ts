@@ -9,7 +9,6 @@ import type {
   InvitationRaw,
   InvitationWithItem,
   ItemMembershipRaw,
-  ItemRaw,
 } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
@@ -21,7 +20,7 @@ import { ItemMembershipRepository } from '../../../itemMembership/membership.rep
 import { ItemMembershipService } from '../../../itemMembership/membership.service';
 import { MemberService } from '../../../member/member.service';
 import { MemberDTO } from '../../../member/types';
-import { isItemType } from '../../discrimination';
+import { ItemRaw, isFolderItem } from '../../item';
 import { ItemService } from '../../item.service';
 import { InvitationRepository } from './invitation.repository';
 import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './utils/constants';
@@ -391,7 +390,7 @@ export class InvitationService {
     if (!hasGrpCol) {
       throw new MissingGroupColumnInCSVError();
     }
-    if (!isItemType(parentItem, 'folder')) {
+    if (!isFolderItem(parentItem)) {
       throw new CantCreateStructureInNoFolderItem();
     }
 

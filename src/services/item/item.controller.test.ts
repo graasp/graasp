@@ -85,7 +85,11 @@ describe('Item controller', () => {
         items: [
           {
             memberships: [{ account: 'actor', permission: 'admin' }],
-            children: [{}, { isHidden: true, type: 'app' }, { isPublic: true, type: 'app' }],
+            children: [
+              {},
+              { isHidden: true, type: 'app', extra: { app: { url: 'https://graasp.org' } } },
+              { isPublic: true, type: 'app', extra: { app: { url: 'https://graasp.org' } } },
+            ],
           },
         ],
       });
@@ -94,7 +98,7 @@ describe('Item controller', () => {
       mockAuthenticate(actor);
       const response = await app.inject({
         method: 'GET',
-        url: `/api/items/${rootUUID}/descendants?types=${'app'}`,
+        url: `/api/items/${rootUUID}/descendants?types=app`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();

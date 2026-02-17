@@ -21,12 +21,12 @@ import type {
   ItemGeolocationRaw,
   ItemGeolocationWithItem,
   ItemGeolocationWithItemWithCreator,
-  ItemRaw,
   MemberRaw,
 } from '../../../../drizzle/types';
 import type { MaybeUser } from '../../../../types';
 import { GEOLOCATION_API_HOST, getSearchLang } from '../../../../utils/config';
 import { isMember } from '../../../authentication';
+import { type ItemRaw, resolveItemType } from '../../item';
 import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
 
 export class ItemGeolocationRepository {
@@ -160,7 +160,7 @@ export class ItemGeolocationRepository {
 
     return result.map(({ item_view, account, item_geolocation }) => ({
       ...item_geolocation,
-      item: { ...item_view, creator: account as MemberRaw },
+      item: { ...resolveItemType(item_view), creator: account as MemberRaw },
     }));
   }
 

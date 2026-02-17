@@ -8,7 +8,7 @@ import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { accountSchemaRef } from '../account/account.schemas';
-import { itemSchemaRef } from '../item/item.schemas';
+import { genericItemSchemaRef } from '../item/common.schemas';
 
 const itemLoginSchemaSchema = customType.StrictObject(
   {
@@ -20,7 +20,7 @@ const itemLoginSchemaSchema = customType.StrictObject(
       description:
         'Item login status, which can be enabled, frozen, or disabled. Item login cannot be deleted, an item login can be disabled instead to prevent deleting associated guest accounts.',
     }),
-    item: Type.Optional(itemSchemaRef),
+    item: Type.Optional(genericItemSchemaRef),
     createdAt: customType.DateTime(),
     updatedAt: customType.DateTime(),
   },

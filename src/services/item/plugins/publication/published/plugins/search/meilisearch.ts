@@ -8,14 +8,11 @@ import { type IndexItem } from '@graasp/sdk';
 import { REDIS_CONNECTION } from '../../../../../../../config/redis';
 import { type DBConnection } from '../../../../../../../drizzle/db';
 import { items } from '../../../../../../../drizzle/schema';
-import type {
-  ItemPublishedWithItemWithCreator,
-  ItemRaw,
-  ItemTypeEnumKeys,
-} from '../../../../../../../drizzle/types';
+import type { ItemPublishedWithItemWithCreator } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
+import { ItemType } from '../../../../../../../schemas/global';
 import { Queues } from '../../../../../../../workers/config';
-import { isItemType } from '../../../../../discrimination';
+import { ItemRaw, isFolderItem } from '../../../../../item';
 import { ItemRepository } from '../../../../../item.repository';
 import { MeilisearchRepository } from './meilisearch.repository';
 import type { Hit } from './search.schemas';
@@ -156,7 +153,7 @@ export class MeiliSearchWrapper {
   async deleteOne(dbConnection: DBConnection, item: ItemRaw) {
     try {
       let itemsToIndex = [item];
-      if (isItemType(item, 'folder')) {
+      if (isFolderItem(item)) {
         itemsToIndex = itemsToIndex.concat(
           await this.itemRepository.getDescendants(dbConnection, item),
         );
@@ -197,7 +194,7 @@ export class MeiliSearchWrapper {
 
   async findAndCountItems(
     dbConnection: DBConnection,
-    args: { where: { type: ItemTypeEnumKeys }; take: number; skip: number; order: SQL },
+    args: { where: { type: ItemType }; take: number; skip: number; order: SQL },
   ): Promise<[ItemRaw[], number]> {
     const result = await dbConnection
       .select()

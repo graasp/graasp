@@ -5,10 +5,11 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, UUID } from '@graasp/sdk';
 
-import { AppDataRaw, ItemRaw } from '../../../../../drizzle/types';
+import type { AppDataRaw } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import { AuthenticatedUser } from '../../../../../types';
 import FileService from '../../../../file/file.service';
+import type { ItemRaw } from '../../../item';
 import { NotAppDataFile } from './errors';
 import { AppDataFileService } from './interfaces/appDataFileService';
 

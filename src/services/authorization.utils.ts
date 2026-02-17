@@ -1,9 +1,10 @@
 import { ItemVisibilityType, PermissionLevelCompare } from '@graasp/sdk';
 
 import type { DBConnection } from '../drizzle/db';
-import type { ItemRaw, ItemWithCreator } from '../drizzle/types';
+import type { ItemWithCreator } from '../drizzle/types';
 import type { MaybeUser } from '../types';
-import { ItemWrapper, type PackedItem } from './item/ItemWrapper';
+import type { ItemRaw } from './item/item';
+import { type PackedItem, PackedItemDTO } from './item/packedItem.dto';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import type { ItemsThumbnails } from './item/plugins/thumbnail/types';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
@@ -114,7 +115,7 @@ export const filterOutPackedItems = async <T extends ItemRaw = ItemRaw>(
     );
     const thumbnails = itemsThumbnails?.[item.id];
     // return packed item
-    return new ItemWrapper(
+    return new PackedItemDTO(
       item,
       permission ? { permission } : undefined,
       visibilities?.data[item.id],
@@ -164,7 +165,7 @@ export const filterOutPackedDescendants = async (
         const permission = PermissionLevelCompare.getHighest(permissions);
         const itemVisibilities = visibilities.filter((t) => item.path.includes(t.item.path));
 
-        const packedItem = new ItemWrapper(
+        const packedItem = new PackedItemDTO(
           item,
           permission ? { permission } : undefined,
           itemVisibilities,

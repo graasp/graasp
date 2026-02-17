@@ -3,9 +3,9 @@ import { singleton } from 'tsyringe';
 import { type ItemVisibilityOptionsType } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { type MinimalMember } from '../../../../types';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
+import { type ItemRaw } from '../../item';
 import { ItemVisibilityRepository } from './itemVisibility.repository';
 
 @singleton()

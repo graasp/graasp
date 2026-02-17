@@ -7,20 +7,22 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { packedItemSchemaRef } from '../../item.schemas.packed';
 
+const packedBookmarkSchema = customType.StrictObject(
+  {
+    // Object definition
+    id: customType.UUID(),
+    item: packedItemSchemaRef,
+    createdAt: customType.DateTime(),
+  },
+  {
+    description: 'Bookmark instance for member of a given packed item.',
+  },
+);
+
 const packedBookmarkSchemaRef = registerSchemaAsRef(
   'packedBookmark',
   'Packed Bookmark',
-  customType.StrictObject(
-    {
-      // Object definition
-      id: customType.UUID(),
-      item: packedItemSchemaRef,
-      createdAt: customType.DateTime(),
-    },
-    {
-      description: 'Bookmark instance for member of a given packed item.',
-    },
-  ),
+  packedBookmarkSchema,
 );
 
 export const getOwnBookmark = {

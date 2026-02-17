@@ -2,12 +2,19 @@ import fetch from 'node-fetch';
 import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 
-import { getMimetype } from '@graasp/sdk';
+import { FileItemExtra, getMimetype } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { type ItemRaw } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
-import { isItemType } from '../../discrimination';
+import {
+  type ItemRaw,
+  isAppItem,
+  isDocumentItem,
+  isEmbeddedLinkItem,
+  isEtherpadItem,
+  isFileItem,
+  isH5PItem,
+} from '../../item';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
 import FileItemService from '../file/itemFile.service';
 import { H5PService } from '../html/h5p/h5p.service';
@@ -35,8 +42,9 @@ export class ItemExportService {
     item: ItemRaw,
   ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
     switch (true) {
-      case isItemType(item, 'file'): {
-        const mimetype = getMimetype(item.extra) || 'application/octet-stream';
+      case isFileItem(item): {
+        // bug: we need to cast because of mismatch with sdk
+        const mimetype = getMimetype(item.extra as FileItemExtra) || 'application/octet-stream';
         const url = await this.fileItemService.getUrl(dbConnection, actor, {
           itemId: item.id,
         });
@@ -49,35 +57,35 @@ export class ItemExportService {
           stream: res.body,
         };
       }
-      case isItemType(item, 'h5p'): {
+      case isH5PItem(item): {
         const h5pUrl = await this.h5pService.getUrl(item);
         const res = await fetch(h5pUrl);
 
         const filename = getFilenameFromItem(item);
         return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
       }
-      case isItemType(item, 'document'): {
+      case isDocumentItem(item): {
         return {
           stream: Readable.from([item.extra.document?.content]),
           name: getFilenameFromItem(item),
           mimetype: 'text/html',
         };
       }
-      case isItemType(item, 'embeddedLink'): {
+      case isEmbeddedLinkItem(item): {
         return {
           stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, 'embeddedLink')),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
       }
-      case isItemType(item, 'app'): {
+      case isAppItem(item): {
         return {
           stream: Readable.from(buildTextContent(item.extra.app?.url, 'app')),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
       }
-      case isItemType(item, 'etherpad'): {
+      case isEtherpadItem(item): {
         return {
           stream: Readable.from(
             await this.etherpadService.getEtherpadContentFromItem(dbConnection, actor, item.id),

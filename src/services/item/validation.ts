@@ -2,8 +2,8 @@ import { Ajv } from 'ajv';
 
 import type { ItemGeolocation } from '@graasp/sdk';
 
-import { type ItemRaw } from '../../drizzle/types';
-import { settingsSchema } from './item.schemas';
+import { settingsSchema } from './common.schemas';
+import { type ItemRaw } from './item';
 import { geoCoordinateSchema } from './plugins/geolocation/itemGeolocation.schemas';
 
 /**

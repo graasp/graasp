@@ -72,7 +72,7 @@ export class ItemLikeRepository {
     }
     const result = await dbConnection.query.itemLikesTable.findMany({
       where: eq(itemLikesTable.creatorId, creatorId),
-      with: { item: { with: { creator: true } } },
+      with: { item: { with: { creator: { columns: { id: true, name: true } } } } },
     });
     return result as ItemLikeWithItemWithCreator[];
   }

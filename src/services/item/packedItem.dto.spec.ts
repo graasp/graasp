@@ -10,11 +10,12 @@ import type { DBConnection } from '../../drizzle/db';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMemberForTest } from '../authentication';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
-import { ItemWrapper, ItemWrapperService } from './ItemWrapper';
+import { resolveItemType } from './item';
+import { PackedItemDTO, PackedItemService } from './packedItem.dto';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 
-describe('ItemWrapper', () => {
+describe('PackedItemDTO', () => {
   describe('packed', () => {
     it('Return the most restrictive visibility for child item', async () => {
       const parentItem = ItemFactory({});
@@ -34,7 +35,7 @@ describe('ItemWrapper', () => {
       });
       // unordered visibilities
       const visibilities = [hiddenVisibility, publicVisibility, parentHiddenTag];
-      const itemWrapper = new ItemWrapper(item, undefined, visibilities);
+      const itemWrapper = new PackedItemDTO(item, undefined, visibilities);
 
       const packedItem = itemWrapper.packed();
       expect(packedItem.public!.id).toEqual(publicVisibility.id);
@@ -44,7 +45,7 @@ describe('ItemWrapper', () => {
   });
 });
 
-describe('ItemWrapperService', () => {
+describe('PackedItemService', () => {
   describe('createPackedItems', () => {
     it('Return the most restrictive visibilities for child item', async () => {
       const MOCK_DB = {} as DBConnection;
@@ -70,6 +71,7 @@ describe('ItemWrapperService', () => {
         data: {
           [items[0].id]: [itemVisibilities[0]],
           [items[1].id]: [itemVisibilities[1]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         errors: [],
       }));
@@ -88,13 +90,13 @@ describe('ItemWrapperService', () => {
       const itemThumbnailService = { getUrlsByItems: vi.fn() } as unknown as ItemThumbnailService;
       vi.spyOn(itemThumbnailService, 'getUrlsByItems').mockImplementation(async () => ({}));
 
-      const packedItems = await new ItemWrapperService(
+      const packedItems = await new PackedItemService(
         itemVisibilityRepository,
         itemMembershipRepository,
         itemThumbnailService,
       ).createPackedItems(
         MOCK_DB,
-        items.map((i) => ({ ...i, creator: actor })),
+        items.map((i) => ({ ...resolveItemType(i), creator: actor })),
         resultOfMemberships,
       );
 

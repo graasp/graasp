@@ -2,9 +2,9 @@ import path from 'path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MemberFactory } from '../../../../../../test/factories/member.factory';
-import { ItemWithType } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import { StorageService } from '../../../../member/plugins/storage/memberStorage.service';
+import { H5PItem } from '../../../item';
 import { ItemRepository } from '../../../item.repository';
 import { ItemService } from '../../../item.service';
 import { H5P_FILE_DOT_EXTENSION } from './constants';
@@ -48,9 +48,9 @@ describe('H5P Service', () => {
           contentFilePath: 'orig-root/content',
         },
       },
-    } as ItemWithType<'h5p'>;
+    } as H5PItem;
 
-    const copyItem = { id: 'copy-id' } as ItemWithType<'h5p'>;
+    const copyItem = { id: 'copy-id' } as H5PItem;
 
     vi.spyOn(h5pService.fileService, 'copy').mockResolvedValue('copy-value');
     vi.spyOn(h5pService.fileService, 'copyFolder').mockResolvedValue('folder-path');

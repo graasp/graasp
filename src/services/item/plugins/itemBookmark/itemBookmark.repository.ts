@@ -1,3 +1,4 @@
+import { getTableColumns, getViewSelectedFields } from 'drizzle-orm';
 import { and, desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
@@ -7,10 +8,9 @@ import type {
   ItemBookmarkInsertDTO,
   ItemBookmarkRawWithItemAndAccount,
   ItemBookmarkRawWithItemWithCreator,
-  ItemRaw,
-  MemberRaw,
 } from '../../../../drizzle/types';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
+import { type ItemRaw, resolveItemType } from '../../item';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 
 @singleton()
@@ -42,16 +42,26 @@ export class ItemBookmarkRepository {
     memberId: string,
   ): Promise<ItemBookmarkRawWithItemWithCreator[]> {
     const bookmarks = await dbConnection
-      .select()
+      .select({
+        ...getTableColumns(itemBookmarksTable),
+        item: getViewSelectedFields(items),
+        creator: {
+          id: membersView.id,
+          name: membersView.name,
+        },
+      })
       .from(itemBookmarksTable)
       .innerJoin(items, eq(itemBookmarksTable.itemId, items.id))
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(eq(itemBookmarksTable.memberId, memberId));
 
-    const bookmarksResult = bookmarks.map(({ item_favorite, item_view, members_view }) => ({
-      ...item_favorite,
-      item: { ...item_view, creator: members_view as MemberRaw | null },
-    }));
+    const bookmarksResult = bookmarks.map((bookmark) => {
+      const { item, creator, ...b } = bookmark;
+      return {
+        ...b,
+        item: { ...resolveItemType(item), creator: creator },
+      };
+    });
     return bookmarksResult;
   }
 

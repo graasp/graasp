@@ -3,15 +3,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import type { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema } from '../../item.schemas';
+import { itemCommonSchema } from '../../common.schemas';
 import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
-export const pageSchema = Type.Composite([
-  itemSchema,
+const pageSchema = Type.Composite([
+  itemCommonSchema,
   customType.StrictObject(
     {
+      type: Type.Literal('page'),
       extra: customType.StrictObject({}),
     },
     {
@@ -20,6 +21,8 @@ export const pageSchema = Type.Composite([
     },
   ),
 ]);
+
+export const pageItemSchemaRef = registerSchemaAsRef('pageItem', 'Page Item', pageSchema);
 
 export const createPage = {
   operationId: 'createPage',

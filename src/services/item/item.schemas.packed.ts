@@ -8,39 +8,67 @@ import { errorSchemaRef, itemTypeSchemaRef } from '../../schemas/global';
 import { permissionLevelSchemaRef } from '../../types';
 import { nullableMemberSchemaRef } from '../member/member.schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
+import { appItemSchemaRef } from './plugins/app/app.schemas';
+import { documentItemSchemaRef } from './plugins/document/document.schemas';
+import { embeddedLinkItemSchemaRef } from './plugins/embeddedLink/link.schemas';
+import { etherpadItemSchemaRef } from './plugins/etherpad/etherpad.schemas';
+import { fileItemSchemaRef } from './plugins/file/itemFile.schema';
+import { folderItemSchemaRef } from './plugins/folder/folder.schemas';
+import { h5pItemSchemaRef } from './plugins/html/h5p/h5p.schemas';
 import { itemVisibilitySchemaRef } from './plugins/itemVisibility/itemVisibility.schemas';
+import { pageItemSchemaRef } from './plugins/page/page.schemas';
+import { shortcutItemSchemaRef } from './plugins/shortcut/shortcut.schemas';
 import { Ordering, SortBy } from './types';
+
+export const itemSchema = Type.Union([
+  appItemSchemaRef,
+  documentItemSchemaRef,
+  embeddedLinkItemSchemaRef,
+  etherpadItemSchemaRef,
+  fileItemSchemaRef,
+  folderItemSchemaRef,
+  h5pItemSchemaRef,
+  pageItemSchemaRef,
+  shortcutItemSchemaRef,
+]);
+export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
+
+const packedSchema = customType.StrictObject({
+  creator: nullableMemberSchemaRef,
+  permission: Type.Union([permissionLevelSchemaRef, Type.Null()]),
+  hidden: Type.Optional(itemVisibilitySchemaRef),
+  public: Type.Optional(itemVisibilitySchemaRef),
+  thumbnails: Type.Optional(
+    customType.StrictObject(
+      {
+        small: Type.String({ format: 'uri' }),
+        medium: Type.String({ format: 'uri' }),
+      },
+      { additionalProperties: true },
+    ),
+  ),
+});
 
 export const packedItemSchemaRef = registerSchemaAsRef(
   'packedItem',
   'Packed Item',
-  customType.StrictObject(
+  Type.Intersect(
+    [
+      Type.Union([
+        appItemSchemaRef,
+        documentItemSchemaRef,
+        embeddedLinkItemSchemaRef,
+        etherpadItemSchemaRef,
+        fileItemSchemaRef,
+        folderItemSchemaRef,
+        h5pItemSchemaRef,
+        pageItemSchemaRef,
+        shortcutItemSchemaRef,
+      ]),
+      packedSchema,
+    ],
     {
-      id: customType.UUID(),
-      name: Type.String(),
-      description: Type.Optional(customType.Nullable(Type.String())),
-      type: itemTypeSchemaRef,
-      path: Type.String(),
-      lang: Type.String(),
-      extra: Type.Object({}, { additionalProperties: true }),
-      settings: Type.Object({}, { additionalProperties: true }),
-      creator: nullableMemberSchemaRef,
-      createdAt: customType.DateTime(),
-      updatedAt: customType.DateTime(),
-      permission: Type.Union([permissionLevelSchemaRef, Type.Null()]),
-      hidden: Type.Optional(itemVisibilitySchemaRef),
-      public: Type.Optional(itemVisibilitySchemaRef),
-      thumbnails: Type.Optional(
-        customType.StrictObject(
-          {
-            small: Type.String({ format: 'uri' }),
-            medium: Type.String({ format: 'uri' }),
-          },
-          { additionalProperties: true },
-        ),
-      ),
-    },
-    {
+      discriminator: 'type',
       description: 'Item with additional information',
     },
   ),
