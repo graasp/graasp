@@ -305,8 +305,6 @@ describe('Item routes tests', () => {
               creator: 'actor',
               memberships: [{ account: 'actor', permission: 'admin' }],
               children: [{ name: 'should-not-return' }],
-              // empty extra for folder
-              extra: {},
             },
             {
               name: 'item2',
