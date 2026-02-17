@@ -131,7 +131,7 @@ services:
     ports:
       - 8000:3000
 
-  # Localstack is used to test aws services locally
+  # used to test aws services locally
   garage:
     hostname: garage
     image: dxflrs/garage:v2.0.0

@@ -22,7 +22,6 @@ import { ItemRepository } from '../../../item.repository';
 import { ItemService } from '../../../item.service';
 import { HtmlService } from '../html.service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
-import { H5P } from './validation/h5p';
 import { H5PValidator } from './validation/h5p-validator';
 
 /**
@@ -69,13 +68,6 @@ export class H5PService extends HtmlService {
   }
 
   /**
-   * Helper to build the local or remote path of the .h5p file
-   */
-  buildH5PPath = (rootPath: string, filename: string) => {
-    return path.join(rootPath, `${filename}.${H5P.H5P_FILE_EXTENSION}`);
-  };
-
-  /**
    * Get the H5P file url referenced by a given Item
    */
   getUrl(item: ItemWithType<'h5p'>) {
@@ -106,8 +98,9 @@ export class H5PService extends HtmlService {
     // copy .h5p file
     await this.fileService.copy(member, {
       originalPath: path.join(this.pathPrefix, extra.h5p.h5pFilePath),
-      newFilePath: this.buildH5PPath(remoteRootPath, newName),
+      newFilePath: path.join(this.pathPrefix, this.buildPackagePath(newContentId, newName)),
     });
+
     // copy content folder
     await this.fileService.copyFolder({
       originalFolderPath: path.join(this.pathPrefix, extra.h5p.contentFilePath),
@@ -115,7 +108,7 @@ export class H5PService extends HtmlService {
     });
 
     await this.itemRepository.updateOne(dbConnection, copy.id, {
-      name: this.buildH5PPath('', newName),
+      name: newName,
       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
     });
   }
@@ -156,7 +149,7 @@ export class H5PService extends HtmlService {
     );
 
     const metadata = {
-      name: this.buildH5PPath('', baseName),
+      name: baseName,
       type: 'h5p' as const,
       extra: this.buildH5PExtra(contentId, baseName),
     };
