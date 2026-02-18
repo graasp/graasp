@@ -47,7 +47,7 @@ function logBootMessage(log: FastifyBaseLogger, options: WebsocketsPluginOptions
   };
   delete loggedOptions.redis.password;
 
-  log.info('graasp-plugin-websockets: plugin booted with options', loggedOptions);
+  log.info(loggedOptions, 'graasp-plugin-websockets: plugin booted with options');
 }
 
 const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, options) => {

@@ -146,8 +146,7 @@ export class WebsocketService {
     // validation error, send bad request
     if (request === undefined) {
       this.logger.info(
-        `graasp-plugin-websockets: Bad client request (memberID: ${member?.id} with message`,
-        data?.toString(),
+        `graasp-plugin-websockets: Bad client request (memberID: ${member?.id}) with message: ${data?.toString()}`,
       );
       const err = new GraaspWS.BadRequestError();
       this.wsChannels.clientSend(client, createServerErrorResponse(err));

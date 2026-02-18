@@ -135,7 +135,7 @@ export abstract class HtmlService {
         const ext = path.extname(childPath);
 
         if (!this.validator.isExtensionAllowed(ext)) {
-          log?.info('HTML import: illegal file extension detected, skipping file: ', ext);
+          log?.info(`HTML import: illegal file extension detected, skipping file: ${ext}`);
           // we're using flatMap, represent none value with empty array
           return [];
         }

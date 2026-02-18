@@ -12,6 +12,11 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
+type WsLogger = {
+  info: (obj: unknown, ...args: unknown[]) => void;
+  error: (obj: unknown, ...args: unknown[]) => void;
+};
+
 /**
  * Represents a WebSocket channel which clients can subscribe to
  * @member name Name of the channel
@@ -106,7 +111,7 @@ class WebSocketChannels {
   // Heartbeat interval instance
   heartbeat: NodeJS.Timeout;
   // Logging interface
-  logger: FastifyBaseLogger | Console;
+  logger: WsLogger;
 
   /**
    * Creates a new WebSocketChannels instance
@@ -126,10 +131,19 @@ class WebSocketChannels {
     this.channels = new Map();
     this.subscriptions = new Map();
     this.serialize = serialize;
-    this.logger = log ?? console;
+    this.logger = log
+      ? {
+          info: log.info.bind(log),
+          error: log.error.bind(log),
+        }
+      : {
+          // eslint-disable-next-line no-console
+          info: console.info.bind(console),
+          error: console.error.bind(console),
+        };
 
     // log errors
-    this.wsServer.on('error', this.logger.error);
+    this.wsServer.on('error', (error) => this.logger.error(error));
 
     // checks lost connections every defined time interval
     this.heartbeat = setInterval(() => {
@@ -149,9 +163,7 @@ class WebSocketChannels {
           // remove from this instance also
           this.clientRemove(ws);
           this.logger.info(
-            'graasp-plugin-websockets: ejecting client, timeout detected',
-            'client:',
-            client?.toString(),
+            `graasp-plugin-websockets: ejecting client, timeout detected. client: ${client?.toString()}`,
           );
           return ws.terminate();
         }
@@ -167,8 +179,6 @@ class WebSocketChannels {
           this.channelDelete(name);
           this.logger.info(
             `graasp-plugin-websockets: removing channel "${name}" with removeIfEmpty=${channel.removeIfEmpty}: no subscribers left on this instance`,
-            'channel:',
-            channel,
           );
         }
       });
@@ -188,9 +198,7 @@ class WebSocketChannels {
   clientSend(client: WebSocket, message: Websocket.ServerMessage): boolean {
     if (client.readyState !== WebSocket.OPEN) {
       this.logger.info(
-        'graasp-plugin-websockets: attempted to send message to client that was not ready,',
-        'message:',
-        message,
+        `graasp-plugin-websockets: attempted to send message to client that was not ready. message: ${JSON.stringify(message)}`,
       );
       return false;
     } else {
