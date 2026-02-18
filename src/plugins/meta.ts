@@ -7,10 +7,8 @@ import { FastifySchema } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
-import { resolveDependency } from '../di/utils';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import { assertIsError } from '../utils/assertions';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../utils/config';
 
 const Status = {
   Healthy: 'healthy',
@@ -87,11 +85,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.get('/status', async (_, reply) => {
     const { db } = fastify;
-    const searchService = resolveDependency(SearchService);
     const api = new HealthyStatus().format();
     const database = (await getDBStatusCheck(db.manager)).format();
-    const etherpad = (await getEtherpadStatusCheck()).format();
-    const meilisearch = (await getSearchStatusCheck(searchService)).format();
     const iframely = (await getIframelyStatusCheck()).format();
 
     // allow request cross origin
@@ -99,8 +94,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     return {
       api,
       database,
-      meilisearch,
-      etherpad,
       iframely,
       // add nudenet, etc...
     };
@@ -125,24 +118,6 @@ const getDBStatusCheck = async (manager: EntityManager): Promise<ServiceStatus> 
   }
 };
 
-const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
-  try {
-    const etherpadApiEndpoint = new URL(`${ETHERPAD_URL}/api`);
-    const res = await fetch(etherpadApiEndpoint.toString());
-    if (res.ok) {
-      const response = (await res.json()) satisfies { currentVersion: string };
-      return new HealthyStatus(`Running ${response.currentVersion}`);
-    }
-    return new UnHealthyStatus('Etherpad');
-  } catch (err) {
-    assertIsError(err);
-    if ('code' in err && err.code === 'ENOTFOUND') {
-      return new UnreachableStatus();
-    }
-    return new UnexpectedErrorStatus(err);
-  }
-};
-
 const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   try {
     const iframelyEndpoint = new URL(`${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`);
@@ -152,22 +127,6 @@ const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
       return new HealthyStatus();
     }
     return new UnHealthyStatus('Iframely');
-  } catch (err) {
-    assertIsError(err);
-    if ('code' in err && err.code === 'ENOTFOUND') {
-      return new UnreachableStatus();
-    }
-    return new UnexpectedErrorStatus(err);
-  }
-};
-
-const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatus> => {
-  try {
-    const res = await search.getHealth();
-    if (res.status) {
-      return new HealthyStatus();
-    }
-    return new UnHealthyStatus('Meilisearch');
   } catch (err) {
     assertIsError(err);
     if ('code' in err && err.code === 'ENOTFOUND') {

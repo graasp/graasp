@@ -110,16 +110,7 @@ jobs:
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             SENTRY_ENV=${{ vars.SENTRY_ENV }}
             EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=${{ vars.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
-            ETHERPAD_API_KEY=${{ secrets.ETHERPAD_API_KEY }}
-            ETHERPAD_COOKIE_DOMAIN=${{ vars.ETHERPAD_COOKIE_DOMAIN }}
-            ETHERPAD_URL=${{ vars.ETHERPAD_URL }}
             FILE_STORAGE_ROOT_PATH=${{ secrets.FILE_STORAGE_ROOT_PATH }}
-            H5P_CONTENT_ACCESS_KEY_ID=${{ secrets.H5P_CONTENT_ACCESS_KEY_ID }}
-            H5P_CONTENT_BUCKET=${{ vars.H5P_CONTENT_BUCKET }}
-            H5P_CONTENT_REGION=${{ vars.H5P_CONTENT_REGION }}
-            H5P_CONTENT_SECRET_ACCESS_KEY_ID=${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
-            H5P_FILE_STORAGE_TYPE=${{ vars.H5P_FILE_STORAGE_TYPE }}
-            H5P_PATH_PREFIX=${{ vars.H5P_PATH_PREFIX }}
             HOSTNAME=${{ vars.HOSTNAME }}
             IMAGE_CLASSIFIER_API=${{ vars.IMAGE_CLASSIFIER_API }}
             JOB_SCHEDULING=${{ vars.JOB_SCHEDULING || false }}
@@ -132,9 +123,6 @@ jobs:
             MAILER_CONFIG_PASSWORD=${{ secrets.MAILER_CONFIG_PASSWORD_DEV }}
             MAILER_CONFIG_SMTP_HOST=${{ secrets.MAILER_CONFIG_SMTP_HOST }}
             MAILER_CONFIG_USERNAME=${{ secrets.MAILER_CONFIG_USERNAME }}
-            MEILISEARCH_MASTER_KEY=${{ secrets.MEILISEARCH_MASTER_KEY }}
-            MEILISEARCH_REBUILD_SECRET=${{ secrets.MEILISEARCH_REBUILD_SECRET }}
-            MEILISEARCH_URL=${{ secrets.MEILISEARCH_URL }}
             NODE_ENV=${{ vars.NODE_ENV }}
             PLAYER_CLIENT_HOST=${{ vars.PLAYER_CLIENT_HOST }}
             PORT=${{ vars.PORT }}

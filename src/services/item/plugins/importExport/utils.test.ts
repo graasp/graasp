@@ -2,7 +2,6 @@ import {
   AppItemFactory,
   DocumentItemFactory,
   FolderItemFactory,
-  H5PItemFactory,
   ItemType,
   LinkItemFactory,
   LocalFileItemFactory,
@@ -120,16 +119,6 @@ describe('File name', () => {
         }) as unknown as Item,
       ),
     ).toEqual('myfile.jpeg');
-  });
-  it('get file name from h5p item', () => {
-    const item = H5PItemFactory({
-      name: 'myh5p',
-    }) as unknown as Item;
-    expect(getFilenameFromItem(item)).toEqual('myh5p.h5p');
-    const item1 = H5PItemFactory({
-      name: 'myh5p.h5p',
-    }) as unknown as Item;
-    expect(getFilenameFromItem(item1)).toEqual('myh5p.h5p');
   });
   it('get file name from app item', () => {
     const item = AppItemFactory({

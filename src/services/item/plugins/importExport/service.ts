@@ -19,9 +19,7 @@ import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
-import { H5PService } from '../html/h5p/service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
@@ -38,9 +36,7 @@ const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
   private readonly fileItemService: FileItemService;
-  private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
-  private readonly etherpadService: EtherpadItemService;
   private readonly db: DataSource;
   private readonly log: BaseLogger;
 
@@ -48,15 +44,11 @@ export class ImportExportService {
     db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
-    h5pService: H5PService,
-    etherpadService: EtherpadItemService,
     log: BaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
-    this.h5pService = h5pService;
     this.itemService = itemService;
-    this.etherpadService = etherpadService;
     this.log = log;
   }
 
@@ -230,13 +222,6 @@ export class ImportExportService {
           stream: res.body,
         };
       }
-      case isItemType(item, ItemType.H5P): {
-        const h5pUrl = await this.h5pService.getUrl(item);
-        const res = await fetch(h5pUrl);
-
-        const filename = getFilenameFromItem(item);
-        return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
-      }
       case isItemType(item, ItemType.DOCUMENT): {
         return {
           stream: Readable.from([item.extra.document?.content]),
@@ -256,15 +241,6 @@ export class ImportExportService {
           stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.ETHERPAD): {
-        return {
-          stream: Readable.from(
-            await this.etherpadService.getEtherpadContentFromItem(actor, item.id),
-          ),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/html',
         };
       }
     }

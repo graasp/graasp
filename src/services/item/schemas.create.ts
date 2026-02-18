@@ -112,20 +112,6 @@ const fileItemExtra = customType.StrictObject({
 });
 const localFileItemCreateSchema = itemCreateSchemaFactory(ItemType.LOCAL_FILE, fileItemExtra);
 const s3FileItemCreateSchema = itemCreateSchemaFactory(ItemType.S3_FILE, fileItemExtra);
-const etherpadItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.ETHERPAD,
-  customType.StrictObject({ groupID: Type.String(), padID: Type.String() }),
-);
-
-// H5P
-const h5pItemCreateSchema = itemCreateSchemaFactory(
-  ItemType.H5P,
-  customType.StrictObject({
-    contentId: Type.String(),
-    h5pFilePath: Type.String(),
-    contentFilePath: Type.String(),
-  }),
-);
 
 // SHORTCUT
 const shortcutItemCreateSchema = itemCreateSchemaFactory(
@@ -138,7 +124,7 @@ export const create = {
   tags: ['item'],
   summary: 'Create item',
   description:
-    'Create item, whose possible types are folder, app, document, embeddedLink, localFile, s3File, etherpad, h5p and shortcut.',
+    'Create item, whose possible types are folder, app, document, embeddedLink, localFile, s3File and shortcut.',
 
   querystring: Type.Partial(
     customType.StrictObject({ parentId: customType.UUID(), previousItemId: customType.UUID() }),
@@ -151,8 +137,6 @@ export const create = {
       linkItemCreateSchema,
       localFileItemCreateSchema,
       s3FileItemCreateSchema,
-      etherpadItemCreateSchema,
-      h5pItemCreateSchema,
       shortcutItemCreateSchema,
     ],
     'type',

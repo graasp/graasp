@@ -11,7 +11,6 @@ import { assertIsMember } from '../../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../service';
 import { PublicationService } from '../publicationState/service';
-import graaspSearchPlugin from './plugins/search';
 import {
   getCollectionsForMember,
   getInformations,
@@ -28,8 +27,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemPublishedService = resolveDependency(ItemPublishedService);
   const publicationService = resolveDependency(PublicationService);
   const itemService = resolveDependency(ItemService);
-
-  fastify.register(graaspSearchPlugin);
 
   fastify.get(
     '/collections/members/:memberId',

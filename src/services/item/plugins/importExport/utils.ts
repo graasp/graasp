@@ -87,14 +87,8 @@ export const getFilenameFromItem = (item: Item): string => {
     case isItemType(item, ItemType.FOLDER): {
       return extractFileName(item.name, 'zip');
     }
-    case isItemType(item, ItemType.H5P): {
-      return extractFileName(item.name, 'h5p');
-    }
     case isItemType(item, ItemType.LINK): {
       return extractFileName(item.name, 'url');
-    }
-    case isItemType(item, ItemType.ETHERPAD): {
-      return extractFileName(item.name, 'html');
     }
     default:
       return item.name;

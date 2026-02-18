@@ -257,7 +257,7 @@ describe('File Item routes tests', () => {
           expect(membership).toBeNull();
         });
 
-        it('Upload several files with one H5P file', async () => {
+        it('Upload several files with one .h5p file', async () => {
           const form = createFormData();
           form.append(
             'H5PFile',
@@ -287,7 +287,11 @@ describe('File Item routes tests', () => {
 
           const h5pItem = await testUtils.rawItemRepository.findOneBy({ id: newItems[1].id });
           expectItem(h5pItem, newItems[1]);
-          expect(h5pItem?.type).toBe(ItemType.H5P);
+          if (S3_FILE_ITEM_PLUGIN) {
+            expect(h5pItem?.type).toEqual(ItemType.S3_FILE);
+          } else {
+            expect(h5pItem?.type).toEqual(ItemType.LOCAL_FILE);
+          }
         });
 
         it('Cannot upload in parent with read rights', async () => {

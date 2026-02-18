@@ -31,12 +31,9 @@ import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
 import { saveItemValidation } from '../../validation/test/utils';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
-import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 const testUtils = new ItemTestUtils();
-
-jest.mock('../plugins/search/meilisearch');
 
 const rawRepository = AppDataSource.getRepository(ItemVisibility);
 
@@ -317,18 +314,12 @@ describe('Item Published', () => {
         // should validate before publishing
         await saveItemValidation({ item });
 
-        const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'indexOne');
-
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectPublishedEntry(res.json(), { item, creator: actor });
-
-        // Publishing an item triggers an indexing
-        expect(indexSpy).toHaveBeenCalledTimes(1);
-        expectItem(indexSpy.mock.calls[0][0], item);
       });
 
       it('Publish item with admin rights and send notification', async () => {
@@ -533,16 +524,12 @@ describe('Item Published', () => {
         await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
         await new ItemPublishedRepository().post(member, item);
 
-        const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
-
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectPublishedEntry(res.json(), { item, creator: member });
-        expect(indexSpy).toHaveBeenCalledTimes(1);
-        expectItem(indexSpy.mock.calls[0][0], item);
       });
 
       it('Throws when unpublish non-published item', async () => {

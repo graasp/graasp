@@ -21,8 +21,6 @@ services:
       FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
       # the localfile config host points to the static file server defined below
       FILE_STORAGE_HOST: http://localhost:1081
-      # H5P local storage host used in local only
-      H5P_FILE_STORAGE_HOST: http://localhost:1081
       # enpoint of the nudenet model
       IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
       # the DB config is set by the "db" service below
@@ -80,49 +78,6 @@ services:
     container_name: graasp-redis
     image: redis
     restart: on-failure
-
-  etherpad:
-    container_name: graasp-etherpad
-    image: etherpad/etherpad
-    # start the server with dev API key
-    # https://hub.docker.com/r/etherpad/etherpad/dockerfile
-    # https://github.com/ether/etherpad-lite/issues/3849
-    volumes:
-      # bind copy the dev API key
-      - ./etherpad/devApiKey.txt:/opt/etherpad-lite/APIKEY.txt
-    ports:
-      - 9001:9001
-    environment:
-      - DB_TYPE=postgres
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=etherpad
-      - DB_USER=etherpad
-      - DB_PASS=etherpad
-      # allow only group pads
-      # - REQUIRE_SESSION=true
-      # only API can create pads
-      - EDIT_ONLY=true
-    # restart the container until db has created tables
-    restart: on-failure
-    depends_on:
-      - db
-
-  meilisearch:
-    container_name: graasp-meilisearch
-    image: getmeili/meilisearch:v1.8
-    restart: on-failure
-    environment:
-      - MEILI_MASTER_KEY=masterKey
-      - MEILI_NO_ANALYTICS=true
-      - MEILI_ENV=development
-      - MEILI_LOG_LEVEL
-    # uncomment below to develop on the meilisearch interface from your local machine
-    # by default ports do not need to be exposed as all queries are proxied by the backend
-    # ports:
-    #   - 7700:7700
-    volumes:
-      - ./meilisearch_data:/meili_data
 
   umami:
     container_name: umami

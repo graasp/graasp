@@ -3,9 +3,7 @@ import { Repository } from 'typeorm';
 import {
   AppItemFactory,
   DocumentItemFactory,
-  EtherpadItemFactory,
   FolderItemFactory,
-  H5PItemFactory,
   ItemType,
   ItemVisibilityType,
   LinkItemFactory,
@@ -74,12 +72,6 @@ export class ItemTestUtils {
         break;
       case ItemType.S3_FILE:
         item = S3FileItemFactory(castedArgs);
-        break;
-      case ItemType.H5P:
-        item = H5PItemFactory(castedArgs);
-        break;
-      case ItemType.ETHERPAD:
-        item = EtherpadItemFactory(castedArgs);
         break;
       case ItemType.SHORTCUT:
         item = ShortcutItemFactory(castedArgs);

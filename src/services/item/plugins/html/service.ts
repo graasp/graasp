@@ -20,8 +20,8 @@ import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { Item } from '../../entities/Item';
+import { DEFAULT_MIME_TYPE } from './constants';
 import { GraaspHtmlError, HtmlImportError } from './errors';
-import { DEFAULT_MIME_TYPE } from './h5p/constants';
 import { HtmlValidator } from './validator';
 
 /**

@@ -16,9 +16,7 @@ import { v4 } from 'uuid';
 import {
   AppItemExtra,
   DocumentItemExtra,
-  EtherpadItemExtra,
   FolderItemExtra,
-  H5PItemExtra,
   ItemSettings,
   ItemType,
   LinkItemExtra,
@@ -36,9 +34,7 @@ import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 export type ItemExtraMap = {
   [ItemType.APP]: AppItemExtra;
   [ItemType.DOCUMENT]: DocumentItemExtra;
-  [ItemType.ETHERPAD]: EtherpadItemExtra;
   [ItemType.FOLDER]: FolderItemExtra;
-  [ItemType.H5P]: H5PItemExtra;
   [ItemType.LINK]: LinkItemExtra;
   [ItemType.LOCAL_FILE]: LocalFileItemExtra;
   [ItemType.S3_FILE]: S3FileItemExtra;
@@ -49,9 +45,7 @@ export type ItemExtraMap = {
 export type ItemSettingsMap = {
   [ItemType.APP]: ItemSettings;
   [ItemType.DOCUMENT]: ItemSettings;
-  [ItemType.ETHERPAD]: ItemSettings;
   [ItemType.FOLDER]: ItemSettings;
-  [ItemType.H5P]: ItemSettings;
   [ItemType.LINK]: LinkItemSettings;
   [ItemType.LOCAL_FILE]: ItemSettings;
   [ItemType.S3_FILE]: ItemSettings;
@@ -212,9 +206,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
 // all sub-item types defined using a specific variant of the `ItemType` enumeration
 export type AppItem = Item<typeof ItemType.APP>;
 export type DocumentItem = Item<typeof ItemType.DOCUMENT>;
-export type EtherpadItem = Item<typeof ItemType.ETHERPAD>;
 export type FolderItem = Item<typeof ItemType.FOLDER>;
-export type H5PItem = Item<typeof ItemType.H5P>;
 export type EmbeddedLinkItem = Item<typeof ItemType.LINK>;
 export type LocalFileItem = Item<typeof ItemType.LOCAL_FILE>;
 export type S3FileItem = Item<typeof ItemType.S3_FILE>;

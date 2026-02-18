@@ -5,7 +5,6 @@ import {
   BUILDER_ITEMS_PREFIX,
   ClientHostManager,
   Context,
-  FileItemType,
   GPTVersion,
   ItemType,
   LIBRARY_ITEMS_PREFIX,
@@ -16,11 +15,8 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
-import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
 import { asDefined } from './assertions';
 import { ExpectedEnvVariable } from './errors';
-import { validateEnv } from './validators/utils';
-import { RegexValidator, UrlValidator } from './validators/validators';
 
 enum Environment {
   production = 'production',
@@ -279,61 +275,6 @@ export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration | undefined = S3_F
   ? getS3FilePluginConfig()
   : undefined;
 
-if (!process.env.H5P_PATH_PREFIX) {
-  throw new Error('Invalid H5P path prefix');
-}
-export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
-
-// ugly runtime type checking since typescript cannot infer types
-// todo: please use a typed env checker library, this is awful
-if (
-  process.env.H5P_FILE_STORAGE_TYPE !== ItemType.S3_FILE &&
-  process.env.H5P_FILE_STORAGE_TYPE !== ItemType.LOCAL_FILE
-) {
-  throw new Error('Invalid H5P file storage type provided');
-}
-export const H5P_FILE_STORAGE_TYPE = process.env.H5P_FILE_STORAGE_TYPE as FileItemType;
-
-// ugly runtime type checking since typescript cannot infer types
-if (H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE) {
-  if (
-    !process.env.H5P_CONTENT_REGION ||
-    !process.env.H5P_CONTENT_BUCKET ||
-    !process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID ||
-    !process.env.H5P_CONTENT_ACCESS_KEY_ID
-  )
-    throw new Error('H5P S3 configuration missing');
-}
-export const H5P_S3_CONFIG = {
-  s3: {
-    s3Region: process.env.H5P_CONTENT_REGION,
-    s3Bucket: process.env.H5P_CONTENT_BUCKET,
-    s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID,
-    s3AccessKeyId: process.env.H5P_CONTENT_ACCESS_KEY_ID,
-  } as S3FileConfiguration,
-};
-
-// ugly runtime type checking since typescript cannot infer types
-if (H5P_FILE_STORAGE_TYPE === ItemType.LOCAL_FILE) {
-  if (!process.env.H5P_STORAGE_ROOT_PATH) throw new Error('H5P local storage root path missing');
-}
-export const H5P_LOCAL_CONFIG = {
-  local: {
-    storageRootPath: process.env.H5P_STORAGE_ROOT_PATH,
-    localFilesHost: process.env.H5P_FILE_STORAGE_HOST,
-  } as LocalFileConfiguration,
-};
-
-// ugly runtime type checking since typescript cannot infer types
-export const H5P_FILE_STORAGE_CONFIG =
-  H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE ? H5P_S3_CONFIG : H5P_LOCAL_CONFIG;
-
-export const ETHERPAD_URL = validateEnv('ETHERPAD_URL', new UrlValidator());
-
-export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
-export const ETHERPAD_API_KEY = validateEnv('ETHERPAD_API_KEY', new RegexValidator(API_KEY_FORMAT));
-export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
-
 export const FILE_ITEM_TYPE = S3_FILE_ITEM_PLUGIN ? ItemType.S3_FILE : ItemType.LOCAL_FILE;
 
 if (!process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN) {
@@ -393,14 +334,6 @@ export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
 
 // Job scheduling
 export const JOB_SCHEDULING: boolean = process.env.JOB_SCHEDULING === 'true';
-
-// Graasp Search
-
-export const MEILISEARCH_URL = process.env.MEILISEARCH_URL || '';
-export const MEILISEARCH_MASTER_KEY = process.env.MEILISEARCH_MASTER_KEY;
-export const MEILISEARCH_REBUILD_SECRET = process.env.MEILISEARCH_REBUILD_SECRET;
-export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
-  process.env.MEILISEARCH_STORE_LEGACY_PDF_CONTENT === 'true';
 
 // OpenAI
 const getGptVersion = (): GPTVersion => {
