@@ -14,7 +14,7 @@ import { embeddedLinkItemSchemaRef } from './plugins/embeddedLink/link.schemas';
 import { etherpadItemSchemaRef } from './plugins/etherpad/etherpad.schemas';
 import { fileItemSchemaRef } from './plugins/file/itemFile.schema';
 import { folderItemSchemaRef } from './plugins/folder/folder.schemas';
-import { h5pItemSchemaRef } from './plugins/html/h5p/h5p.schemas';
+import { h5pItemSchemaRef, h5pPackedItemSchema } from './plugins/html/h5p/h5p.schemas';
 import { itemVisibilitySchemaRef } from './plugins/itemVisibility/itemVisibility.schemas';
 import { pageItemSchemaRef } from './plugins/page/page.schemas';
 import { shortcutItemSchemaRef } from './plugins/shortcut/shortcut.schemas';
@@ -61,7 +61,7 @@ export const packedItemSchemaRef = registerSchemaAsRef(
         etherpadItemSchemaRef,
         fileItemSchemaRef,
         folderItemSchemaRef,
-        h5pItemSchemaRef,
+        h5pPackedItemSchema,
         pageItemSchemaRef,
         shortcutItemSchemaRef,
       ]),
