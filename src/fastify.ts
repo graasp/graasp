@@ -16,17 +16,27 @@ import {
 } from './utils/config';
 import { GREETING } from './utils/constants';
 
+const resolveLoggerTransport = () => {
+  if (PROD || !DEV) {
+    return undefined;
+  }
+
+  try {
+    require.resolve('pino-pretty');
+    return {
+      target: 'pino-pretty',
+    };
+  } catch {
+    return undefined;
+  }
+};
+
 export const instance = fastify({
   // allows to remove logging of incomming requests
   // can not be set using an environnement variable
   disableRequestLogging: false,
   logger: {
-    // Do not use pino-pretty in production
-    transport: PROD
-      ? undefined
-      : {
-          target: 'pino-pretty',
-        },
+    transport: resolveLoggerTransport(),
     level: process.env.LOG_LEVEL,
   },
   ajv: {
