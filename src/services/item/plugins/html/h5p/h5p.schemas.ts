@@ -29,7 +29,7 @@ const h5pItemSchema = Type.Composite([
   ),
 ]);
 
-export const h5pPackedItemSchema = Type.Composite([
+export const h5pExtendedItemSchema = Type.Composite([
   itemCommonSchema,
   customType.StrictObject(
     {
@@ -44,8 +44,8 @@ export const h5pPackedItemSchema = Type.Composite([
       }),
     },
     {
-      title: 'H5P Packed Item',
-      description: 'Packed item of type H5P.',
+      title: 'H5P Extended Item',
+      description: 'Extended item of type H5P.',
     },
   ),
 ]);
