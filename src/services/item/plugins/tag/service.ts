@@ -22,6 +22,8 @@ export class ItemTagService {
   ) {
     const { itemTagRepository, tagRepository } = repositories;
 
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
     // create tag if does not exist
     const tag = await tagRepository.addOneIfDoesNotExist(tagInfo);
 
@@ -41,6 +43,9 @@ export class ItemTagService {
 
   async delete(actor: Member, repositories: Repositories, itemId: UUID, tagId: UUID) {
     const { itemTagRepository } = repositories;
+
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
     return await itemTagRepository.delete(itemId, tagId);
   }
 }

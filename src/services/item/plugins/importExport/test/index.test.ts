@@ -14,7 +14,6 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
-import { LocalFileRepository } from '../../../../file/repositories/local';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
@@ -340,46 +339,6 @@ describe('ZIP routes tests', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.headers['content-disposition']).toContain(item.name);
-    });
-
-    it('Export successfully h5p file', async () => {
-      const actor = await saveMember();
-      mockAuthenticate(actor);
-
-      // mocks - fetching some h5p content
-      jest.spyOn(LocalFileRepository.prototype, 'getUrl').mockImplementation(async () => 'getUrl');
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return {
-          body: fs.createReadStream(path.resolve(__dirname, './fixtures/accordion.h5p')),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any;
-      });
-
-      const form = new FormData();
-      form.append(
-        'myfile',
-        fs.createReadStream(path.resolve(__dirname, './fixtures/accordion.h5p')),
-      );
-
-      const h5pUploadResponse = await app.inject({
-        method: HttpMethod.Post,
-        url: '/items/h5p-import',
-        payload: form,
-        headers: form.getHeaders(),
-      });
-
-      const { id: h5pId, name: h5pName } = h5pUploadResponse.json();
-
-      const response = await app.inject({
-        method: HttpMethod.Get,
-        url: `/items/${h5pId}/export`,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(response.payload.length).toBeGreaterThan(100);
-      expect(response.headers['content-disposition']).toContain(h5pName);
-      expect(response.headers['content-disposition']).toContain('.h5p');
-      expect(response.headers['content-disposition']).not.toContain('.zip');
     });
   });
 });

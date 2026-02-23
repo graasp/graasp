@@ -126,7 +126,7 @@ describe('Item Tag Endpoints', () => {
 
       it('Throw if does not have access to item', async () => {
         const member = await saveMember();
-        const item = await testUtils.saveItem({ actor: member });
+        const item = await testUtils.saveItem({ actor: member, item: { id: v4() } });
         await createTagsForItem(item, tags);
 
         const response = await app.inject({
@@ -261,6 +261,7 @@ describe('Item Tag Endpoints', () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
+          item: { id: v4() },
           creator: member,
           permission: PermissionLevel.Write,
         });
