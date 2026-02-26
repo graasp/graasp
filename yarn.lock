@@ -2400,7 +2400,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/forwarded@npm:3.0.0, @fastify/forwarded@npm:^3.0.0":
+"@fastify/forwarded@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@fastify/forwarded@npm:3.0.1"
+  checksum: 10/2cde644dc3b678abeb8f35fa052501a896ae9aa7917a6197ad7fd6b6b8b134c5069c2f647f928fed38d42bf70dca99eb1c9835751afada0edbc205660179b0f2
+  languageName: node
+  linkType: hard
+
+"@fastify/forwarded@npm:^3.0.0":
   version: 3.0.0
   resolution: "@fastify/forwarded@npm:3.0.0"
   checksum: 10/5da4417fa6a4c39f40cb10aa6f6fe0c970d24974ad9e729512ba381c7b1b768c924a3deadc60eb3a02d756086746aa9b12a5afb4032c16ca7a7ca5e3c2830155
@@ -9343,7 +9350,7 @@ __metadata:
     "@fastify/busboy": "npm:3.1.1"
     "@fastify/cors": "npm:11.0.1"
     "@fastify/error": "npm:4.1.0"
-    "@fastify/forwarded": "npm:3.0.0"
+    "@fastify/forwarded": "npm:3.0.1"
     "@fastify/helmet": "npm:13.0.1"
     "@fastify/multipart": "npm:9.0.3"
     "@fastify/passport": "npm:3.0.2"
