@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.1](https://github.com/graasp/graasp/compare/v2.13.0...v2.13.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/swagger to v9.5.2 ([#2040](https://github.com/graasp/graasp/issues/2040)) ([cf11fc6](https://github.com/graasp/graasp/commit/cf11fc6a716af33b8f784c2b80e872fc1a48892b))
+* **deps:** update dependency @fastify/swagger-ui to v5.2.5 ([#2066](https://github.com/graasp/graasp/issues/2066)) ([383a33e](https://github.com/graasp/graasp/commit/383a33eb642d9a49ceff11174c6f899eea8439bb))
+* fix packed h5p schema to include integrationUrl ([#2077](https://github.com/graasp/graasp/issues/2077)) ([ece1bbd](https://github.com/graasp/graasp/commit/ece1bbd7c99d5b9fa4602fbc23d66b38886791b7))
+* update reverse proxy to allow single origin with admin ([#2073](https://github.com/graasp/graasp/issues/2073)) ([721c16d](https://github.com/graasp/graasp/commit/721c16d31a04c731c8c47ad0992849890e8a579d))
+
 ## [2.13.0](https://github.com/graasp/graasp/compare/v2.12.0...v2.13.0) (2026-02-17)
 
 
