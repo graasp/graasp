@@ -72,11 +72,16 @@ export class ItemValidationModerator {
 
     try {
       ({ status, result } = await validate());
-    } catch (error) {
+    } catch (error: unknown) {
       // if some error happend during the execution of a process, it is counted as failure
       status = ItemValidationStatus.Failure;
       // in the case of a missing s3 file, we count it as OK
-      if (error.message == 'S3_FILE_NOT_FOUND') {
+      if (
+        error !== null &&
+        typeof error === 'object' &&
+        'message' in error &&
+        error.message === 'S3_FILE_NOT_FOUND'
+      ) {
         status = ItemValidationStatus.Success;
       }
       if (error instanceof Error) {

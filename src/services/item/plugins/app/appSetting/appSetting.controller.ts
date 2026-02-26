@@ -2,7 +2,8 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
-import type { AuthenticatedUser } from '../../../../../types';
+import { MinimalItemForInsert } from '../../../../../drizzle/types';
+import type { MaybeUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import {
   authenticateAppsJWT,
@@ -34,9 +35,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // copy app settings and related files on item copy
   const hook = async (
-    actor: AuthenticatedUser,
+    actor: MaybeUser,
     dbConnection: DBConnection,
-    { original, copy }: { original: ItemRaw; copy: ItemRaw },
+    { original, copy }: { original: ItemRaw; copy: MinimalItemForInsert },
   ) => {
     if (original.type !== 'app' || copy.type !== 'app') return;
 

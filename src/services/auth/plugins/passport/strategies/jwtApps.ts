@@ -4,7 +4,7 @@ import { Authenticator } from '@fastify/passport';
 
 import { APPS_JWT_SECRET } from '../../../../../config/secrets';
 import { db } from '../../../../../drizzle/db';
-import { UnauthorizedMember } from '../../../../../utils/errors';
+import { UnauthorizedMember, buildError } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/account.repository';
 import { ItemRepository } from '../../../../item/item.repository';
 import { PassportStrategy } from '../strategies';
@@ -53,11 +53,14 @@ export default (
               key,
             },
           });
-        } catch (err) {
+        } catch (error: unknown) {
           // Exception occurred while fetching item
           // itemRepository.getOneOrThrow() can fail for many reasons like the item was not found, database error, etc.
           // To avoid leaking information, we prefer to return UnauthorizedMember error.
-          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
+          return done(
+            options?.propagateError ? buildError(error) : new UnauthorizedMember(),
+            false,
+          );
         }
       },
     ),

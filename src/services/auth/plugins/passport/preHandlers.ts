@@ -79,6 +79,8 @@ export const guestAuthenticateAppsJWT = fastifyPassport.authenticate(
 export function matchOne<R extends RouteGenericInterface>(
   ...strategies: RessourceAuthorizationStrategy<R>[]
 ): RouteHandlerMethod {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
   return async (req: FastifyRequest<R>) => {
     if (!strategies.some((strategy) => strategy.test(req))) {
       // If none of the strategies pass, throw an error.
