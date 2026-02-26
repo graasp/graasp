@@ -73,7 +73,7 @@
     "@sentry/node": "7.119.2",
     "@sentry/tracing": "7.120.3",
     "@sinclair/typebox": "0.34.48",
-    "ajv": "8.17.1",
+    "ajv": "8.18.0",
     "bcrypt": "5.1.1",
     "bullmq": "5.46.1",
     "date-fns": "4.1.0",
