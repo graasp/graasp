@@ -12,8 +12,13 @@ async function listenOnRandomPort(app: FastifyInstance): Promise<string> {
       port: Math.floor(Math.random() * (MAX_PORT - MIN_PORT)) + MIN_PORT,
       host: HOST_LISTEN_ADDRESS,
     });
-  } catch (error) {
-    if (error.code === 'EADDRINUSE') {
+  } catch (error: unknown) {
+    if (
+      error !== null &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'EADDRINUSE'
+    ) {
       return listenOnRandomPort(app);
     }
     throw error;

@@ -44,13 +44,18 @@ export class ShortLinkRepository {
         .returning();
 
       return res[0];
-    } catch (e) {
+    } catch (err: unknown) {
       // can throw on alias conflict
-      if (e.code === DUPLICATE_ERROR_CODE) {
+      if (
+        err !== null &&
+        typeof err === 'object' &&
+        'code' in err &&
+        err.code === DUPLICATE_ERROR_CODE
+      ) {
         throw new ShortLinkDuplication(alias);
       }
-      assertIsError(e);
-      throw e;
+      assertIsError(err);
+      throw err;
     }
   }
 
@@ -114,13 +119,18 @@ export class ShortLinkRepository {
       }
 
       return updatedEntity;
-    } catch (e) {
-      if (e.code === DUPLICATE_ERROR_CODE) {
+    } catch (error: unknown) {
+      if (
+        error !== null &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === DUPLICATE_ERROR_CODE
+      ) {
         throw new ShortLinkDuplication(entity.alias);
       }
-      assertIsError(e);
+      assertIsError(error);
 
-      throw new UpdateException(e.message);
+      throw new UpdateException(error.message);
     }
   }
 

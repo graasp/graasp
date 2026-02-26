@@ -150,10 +150,11 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
             }
 
             items.push(item);
-          } catch (e) {
+          } catch (err: unknown) {
             // ignore errors
-            log.error(e);
-            errors.push(e);
+            log.error(err);
+            const error = err instanceof Error ? err : new Error(String(err));
+            errors.push(error);
           } finally {
             // force close to avoid hanging
             // necessary for errors that don't read the stream

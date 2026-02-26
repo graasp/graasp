@@ -21,17 +21,20 @@ export const fetchOpenAI = async (
     const choice = completion.choices[0];
 
     return computeResult(choice, gptVersion);
-  } catch (e) {
+  } catch (e: unknown) {
     if (e instanceof OpenAIBaseError) {
       throw e;
-    } else if (e.status === 429) {
-      // if the catched error is OpenAI insufficient quota
-      // throw a new OpenAIQuota error
-      throw new OpenAIQuotaError();
+    } else if (e !== null && typeof e === 'object') {
+      if ('status' in e && e.status === 429) {
+        // if the catched error is OpenAI insufficient quota
+        // throw a new OpenAIQuota error
+        throw new OpenAIQuotaError();
+      } else if ('message' in e && typeof e.message === 'string') {
+        // handle unexpected errors (like billing expired)
+        throw new OpenAIBaseError({ message: e.message });
+      }
     }
-
-    // handle unexpected errors (like billing expired)
-    throw new OpenAIBaseError({ message: e.message });
+    throw new OpenAIBaseError({ message: String(e) });
   }
 };
 

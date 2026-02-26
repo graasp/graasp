@@ -57,9 +57,10 @@ export default (
               false,
             );
           }
-        } catch (err) {
+        } catch (err: unknown) {
           // Exception occurred while fetching member
-          return done(spreadException ? err : new UnauthorizedMember(), false);
+          const error = err instanceof Error ? err : new Error(String(err));
+          return done(spreadException ? error : new UnauthorizedMember(), false);
         }
       },
     ),

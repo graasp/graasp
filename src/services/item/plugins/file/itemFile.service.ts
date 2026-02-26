@@ -246,7 +246,7 @@ class FileItemService extends ItemService {
 
     // check member storage limit in pre copy because all items are pretested
 
-    const filepath = await this.fileService.copy(member, data);
+    const filepath = await this.fileService.copy(member.id, data);
 
     // update item copy's 'extra'
     await this.itemRepository.updateOne(dbConnection, copy.id, {

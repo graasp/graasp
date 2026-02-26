@@ -810,15 +810,13 @@ describe('Item Repository', () => {
       const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
       const itemPathsInDb = insertedItems.map((i) => i.path);
 
-      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemNames.sort(alphabeticalOrder),
+      expect(itemNamesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemNames.toSorted(alphabeticalOrder),
       );
-      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemTypes.sort(alphabeticalOrder),
+      expect(itemTypesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemTypes.toSorted(alphabeticalOrder),
       );
-      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemCreatorIds.sort(alphabeticalOrder),
-      );
+      expect(itemCreatorIdsInDB).toEqual(insertedItemCreatorIds);
       expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
     });
     it('post many with parent item', async () => {
@@ -848,17 +846,15 @@ describe('Item Repository', () => {
       const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
       const itemPathsInDB = insertedItems.map((i) => i.path);
 
-      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemNames.sort(alphabeticalOrder),
+      expect(itemNamesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemNames.toSorted(alphabeticalOrder),
       );
-      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemTypes.sort(alphabeticalOrder),
+      expect(itemTypesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemTypes.toSorted(alphabeticalOrder),
       );
-      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemCreatorIds.sort(alphabeticalOrder),
-      );
-      expect(itemPathsInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemPaths.sort(alphabeticalOrder),
+      expect(itemCreatorIdsInDB).toEqual(insertedItemCreatorIds);
+      expect(itemPathsInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemPaths.toSorted(alphabeticalOrder),
       );
       expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
     });
@@ -891,15 +887,13 @@ describe('Item Repository', () => {
       const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
       const itemPathsInDb = insertedItems.map((i) => i.path);
 
-      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemNames.sort(alphabeticalOrder),
+      expect(itemNamesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemNames.toSorted(alphabeticalOrder),
       );
-      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemTypes.sort(alphabeticalOrder),
+      expect(itemTypesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemTypes.toSorted(alphabeticalOrder),
       );
-      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemCreatorIds.sort(alphabeticalOrder),
-      );
+      expect(itemCreatorIdsInDB).toEqual(insertedItemCreatorIds);
       expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
     });
     it('post many with parent item', async () => {
@@ -933,17 +927,15 @@ describe('Item Repository', () => {
       const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
       const itemPathsInDB = insertedItems.map((i) => i.path);
 
-      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemNames.sort(alphabeticalOrder),
+      expect(itemNamesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemNames.toSorted(alphabeticalOrder),
       );
-      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemTypes.sort(alphabeticalOrder),
+      expect(itemTypesInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemTypes.toSorted(alphabeticalOrder),
       );
-      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemCreatorIds.sort(alphabeticalOrder),
-      );
-      expect(itemPathsInDB.sort(alphabeticalOrder)).toEqual(
-        insertedItemPaths.sort(alphabeticalOrder),
+      expect(itemCreatorIdsInDB).toEqual(insertedItemCreatorIds);
+      expect(itemPathsInDB.toSorted(alphabeticalOrder)).toEqual(
+        insertedItemPaths.toSorted(alphabeticalOrder),
       );
       expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
     });

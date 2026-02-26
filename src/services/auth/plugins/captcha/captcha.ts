@@ -25,6 +25,8 @@ export default function captchaPreHandler(
   action: RecaptchaActionType,
   options?: { shouldFail: boolean },
 ): RouteHandlerMethod {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   return async (request: FastifyRequest<{ Body: { captcha: string } }>, _reply: FastifyReply) => {
     const { captcha } = request.body;
     return await validateCaptcha(request, captcha, action, options);
