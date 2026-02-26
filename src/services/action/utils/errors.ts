@@ -1,19 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory } from '@graasp/sdk';
+import { createError } from '@fastify/error';
 
-import { PLUGIN_NAME } from '../constants';
-
-export const GraaspActionError = ErrorFactory(PLUGIN_NAME);
-export class CannotWriteFileError extends GraaspActionError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPAERR001',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'A file was not created properly for the requested archive',
-      },
-      data,
-    );
-  }
-}
+export const CannotWriteFileError = createError(
+  'GPAERR001',
+  'A file was not created properly for the requested archive',
+  StatusCodes.NOT_FOUND,
+);
