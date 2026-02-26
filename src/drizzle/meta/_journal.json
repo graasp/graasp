@@ -141,6 +141,13 @@
       "when": 1768915971957,
       "tag": "0019_folder-extra",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1768915972957,
+      "tag": "0020_remove-extra-item-login",
+      "breakpoints": true
     }
   ]
 }
