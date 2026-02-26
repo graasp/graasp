@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.2](https://github.com/graasp/graasp/compare/v2.13.1...v2.13.2) (2026-02-26)
+
+
+### Bug Fixes
+
+* add migration to remove item login prop from extra ([#2083](https://github.com/graasp/graasp/issues/2083)) ([f1cbf5b](https://github.com/graasp/graasp/commit/f1cbf5bbbcca7f583da000b66731b6d8d2cb9148))
+* **deps:** update dependency @fastify/forwarded to v3.0.1 ([#2029](https://github.com/graasp/graasp/issues/2029)) ([3783ff8](https://github.com/graasp/graasp/commit/3783ff844e01997c71512d4a7475d286b20800a5))
+* **deps:** update dependency @fastify/helmet to v13.0.2 ([#2039](https://github.com/graasp/graasp/issues/2039)) ([2bfe5e3](https://github.com/graasp/graasp/commit/2bfe5e31239d92f3f72ed53d15f902c4d9af8c4a))
+* **deps:** update dependency @sinclair/typebox to v0.34.48 ([#2067](https://github.com/graasp/graasp/issues/2067)) ([3be817a](https://github.com/graasp/graasp/commit/3be817ab113a1c6021e9b7bbd087a09ea14fa785))
+
 ## [2.13.1](https://github.com/graasp/graasp/compare/v2.13.0...v2.13.1) (2026-02-26)
 
 
