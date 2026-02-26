@@ -52,7 +52,7 @@ export default (
           return done(
             options?.propagateError ? buildError(error) : new UnauthorizedMember(),
             false,
-          );
+          ); 
         }
       },
     ),
