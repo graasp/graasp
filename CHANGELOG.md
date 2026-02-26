@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.3](https://github.com/graasp/graasp-api/compare/v2.13.2...v2.13.3) (2026-02-26)
+
+
+### Miscellaneous Chores
+
+* release 2.13.3 ([ccfee16](https://github.com/graasp/graasp-api/commit/ccfee16379b8121edeadaae465bde0ff6a30a5c1))
+
 ## [2.13.2](https://github.com/graasp/graasp/compare/v2.13.1...v2.13.2) (2026-02-26)
 
 
