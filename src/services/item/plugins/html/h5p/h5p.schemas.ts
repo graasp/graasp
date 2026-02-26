@@ -29,6 +29,27 @@ const h5pItemSchema = Type.Composite([
   ),
 ]);
 
+export const h5pExtendedItemSchema = Type.Composite([
+  itemCommonSchema,
+  customType.StrictObject(
+    {
+      type: Type.Literal('h5p'),
+      extra: customType.StrictObject({
+        h5p: customType.StrictObject({
+          contentId: Type.String(),
+          h5pFilePath: Type.String(),
+          contentFilePath: Type.String(),
+          integrationUrl: Type.String({ description: 'url of the h5p integration' }),
+        }),
+      }),
+    },
+    {
+      title: 'H5P Extended Item',
+      description: 'Extended item of type H5P.',
+    },
+  ),
+]);
+
 export const h5pItemSchemaRef = registerSchemaAsRef('h5pItem', 'H5P Item', h5pItemSchema);
 
 export const h5pImport = {

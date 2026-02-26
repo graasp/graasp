@@ -11,6 +11,7 @@ import { db } from '../../drizzle/db';
 import { assertIsDefined } from '../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
+import { H5PItem } from './item';
 import { type PackedItem, PackedItemDTO } from './packedItem.dto';
 import { expectManyPackedItems, expectPackedItem, expectThumbnails } from './test/fixtures/items';
 import { Ordering, SortBy } from './types';
@@ -336,7 +337,6 @@ describe('Item routes tests', () => {
               ],
             },
             // schema check
-
             {
               name: 'app with settings',
               type: 'app',
@@ -945,6 +945,46 @@ describe('Item routes tests', () => {
         expectManyPackedItems(data, children);
         expect(response.statusCode).toBe(StatusCodes.OK);
         data.forEach((i) => expectThumbnails(i, MOCK_SIGNED_URL, false));
+      });
+
+      it('Returns a child h5p successfully', async () => {
+        const {
+          actor,
+          items: [parentItem],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: 'admin' }],
+              children: [
+                {
+                  type: 'h5p',
+                  extra: {
+                    h5p: {
+                      contentId: 'content-id',
+                      h5pFilePath: 'file-path',
+                      contentFilePath: 'content-file-path',
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/api/items/${parentItem.id}/children`,
+        });
+
+        const data = response.json<PackedItem[]>();
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        expect(data).toHaveLength(1);
+        // expect additionnal packed property
+        expect((data[0] as H5PItem).extra.h5p.contentFilePath).toBeDefined();
       });
 
       it('Returns successfully with thumbnails', async () => {
