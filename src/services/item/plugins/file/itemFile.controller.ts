@@ -8,6 +8,7 @@ import { type FileItemProperties, getFileExtension } from '@graasp/sdk';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
+import { buildError } from '../../../../utils/errors';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
@@ -150,11 +151,10 @@ const basePlugin: FastifyPluginAsyncTypebox = async (fastify) => {
             }
 
             items.push(item);
-          } catch (err: unknown) {
+          } catch (error: unknown) {
             // ignore errors
-            log.error(err);
-            const error = err instanceof Error ? err : new Error(String(err));
-            errors.push(error);
+            log.error(error);
+            errors.push(buildError(error));
           } finally {
             // force close to avoid hanging
             // necessary for errors that don't read the stream

@@ -5,7 +5,12 @@ import { Authenticator } from '@fastify/passport';
 
 import { JWT_SECRET } from '../../../../../config/secrets';
 import { db } from '../../../../../drizzle/db';
-import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
+import {
+  ChallengeFailed,
+  MemberNotFound,
+  UnauthorizedMember,
+  buildError,
+} from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/account.repository';
 import { SHORT_TOKEN_PARAM } from '../constants';
 import { PassportStrategy } from '../strategies';
@@ -57,10 +62,9 @@ export default (
               false,
             );
           }
-        } catch (err: unknown) {
+        } catch (error: unknown) {
           // Exception occurred while fetching member
-          const error = err instanceof Error ? err : new Error(String(err));
-          return done(spreadException ? error : new UnauthorizedMember(), false);
+          return done(spreadException ? buildError(error) : new UnauthorizedMember(), false);
         }
       },
     ),

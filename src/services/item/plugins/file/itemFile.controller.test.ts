@@ -345,7 +345,9 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json()).toMatchObject(new StorageExceeded(expect.anything()));
+          const error = new StorageExceeded();
+          expect(response.statusCode).toEqual(error.statusCode);
+          expect(response.json().message).toMatch(error.message);
         });
 
         it('Cannot upload empty file', async () => {
@@ -367,7 +369,9 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json().message).toEqual(new UploadEmptyFileError().message);
+          const error = new UploadEmptyFileError();
+          expect(response.statusCode).toEqual(error.statusCode);
+          expect(response.json().message).toEqual(error.message);
           expect(deleteObjectsMock).toHaveBeenCalled();
         });
       });
@@ -431,7 +435,9 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json()).toMatchObject(new UploadFileUnexpectedError(expect.anything()));
+          const error = new UploadFileUnexpectedError();
+          expect(response.statusCode).toEqual(error.statusCode);
+          expect(response.json().message).toMatch(error.message);
         });
       });
     });

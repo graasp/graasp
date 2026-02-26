@@ -4,6 +4,13 @@ import { createError } from '@fastify/error';
 
 import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
 
+export function buildError(err: unknown) {
+  if (err instanceof Error) {
+    return err;
+  }
+  return new Error(String(err));
+}
+
 export const ConfigurationError = ErrorFactory('config');
 
 export const CoreError = ErrorFactory('core');
