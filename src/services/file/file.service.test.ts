@@ -276,19 +276,19 @@ describe('FileService', () => {
       const copyMock = jest
         .spyOn(s3Repository, 'copyFile')
         .mockImplementation(async () => 'string');
-      await s3FileService.copy(member, copyPayload);
+      await s3FileService.copy(member.id, copyPayload);
       expect(copyMock).toHaveBeenCalled();
     });
 
     it('empty originalPath throws', async () => {
       await expect(
-        s3FileService.copy(member, { ...copyPayload, originalPath: '' }),
+        s3FileService.copy(member.id, { ...copyPayload, originalPath: '' }),
       ).rejects.toMatchObject(new CopyFileInvalidPathError(expect.anything()));
     });
 
     it('empty newFilePath throws', async () => {
       await expect(
-        s3FileService.copy(member, { ...copyPayload, newFilePath: '' }),
+        s3FileService.copy(member.id, { ...copyPayload, newFilePath: '' }),
       ).rejects.toMatchObject(new CopyFileInvalidPathError(expect.anything()));
     });
   });

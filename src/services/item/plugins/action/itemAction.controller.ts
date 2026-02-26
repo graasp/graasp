@@ -3,8 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
-import { type FileItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
@@ -13,10 +11,6 @@ import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { AuthorizedItemService } from '../../../authorizedItem.service';
-import type {
-  LocalFileConfiguration,
-  S3FileConfiguration,
-} from '../../../file/interfaces/configuration';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import {
   ItemOpFeedbackErrorEvent,
@@ -34,16 +28,7 @@ import {
 import { ItemActionService } from './itemAction.service';
 import { ActionRequestExportService } from './requestExport/itemAction.requestExport.service';
 
-export interface GraaspActionsOptions {
-  shouldSave?: boolean;
-  fileItemType: FileItemType;
-  fileConfigurations: {
-    s3: S3FileConfiguration;
-    local: LocalFileConfiguration;
-  };
-}
-
-const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;
 
   const authorizedItemService = resolveDependency(AuthorizedItemService);

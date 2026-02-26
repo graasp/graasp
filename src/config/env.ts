@@ -14,6 +14,8 @@ const once = (fn) => {
   return function (...args) {
     if (called) return;
     called = true;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     return fn.apply(this, args);
   };
 };

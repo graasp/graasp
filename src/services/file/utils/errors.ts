@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { createError } from '@fastify/error';
+
 import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
 
 import { PLUGIN_NAME } from './constants';
@@ -108,32 +110,17 @@ export class S3FileNotFound extends GraaspFileError {
   }
 }
 
-export class UploadEmptyFileError extends GraaspFileError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR008',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.UPLOAD_EMPTY_FILE,
-      },
-      data,
-    );
-  }
-}
+export const UploadEmptyFileError = createError(
+  'GPFERR008',
+  FAILURE_MESSAGES.UPLOAD_EMPTY_FILE,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class UploadFileUnexpectedError extends GraaspFileError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR010',
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        // TODO: change message
-        message: FAILURE_MESSAGES.UPLOAD_FILE_UNEXPECTED_ERROR,
-      },
-      data,
-    );
-  }
-}
+export const UploadFileUnexpectedError = createError(
+  'GPFERR010',
+  FAILURE_MESSAGES.UPLOAD_FILE_UNEXPECTED_ERROR,
+  StatusCodes.INTERNAL_SERVER_ERROR,
+);
 
 export class DownloadFileUnexpectedError extends GraaspFileError {
   constructor(data?: unknown) {

@@ -3,8 +3,8 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../../../drizzle/db';
-import { type AppSettingRaw, type AppSettingWithItem } from '../../../../../../../drizzle/types';
-import type { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
+import { type AppSettingRaw } from '../../../../../../../drizzle/types';
+import type { MaybeUser } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import {
   authenticateAppsJWT,
@@ -44,7 +44,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
   // register post delete handler to remove the file object after item delete
   const deleteHook = async (
-    actor: AuthenticatedUser,
+    actor: MaybeUser,
     dbConnection: DBConnection,
     { appSetting }: { appSetting: AppSettingRaw; itemId: string },
   ) => {
@@ -54,21 +54,25 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
   // app setting copy hook
   const hook = async (
-    actor: MinimalMember,
+    actor: MaybeUser,
     dbConnection: DBConnection,
     {
       appSettings,
     }: {
-      appSettings: AppSettingWithItem[];
+      appSettings: AppSettingRaw[];
       originalItemId: string;
       copyItemId: string;
     },
   ) => {
+    if (!actor) {
+      return;
+    }
+
     // copy file only if content is a file
     const isFileSetting = (a) => a.data['file'];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
-      await appSettingFileService.copyMany(db, actor, toCopy);
+      await appSettingFileService.copyMany(db, actor.id, toCopy);
     }
   };
   appSettingService.hooks.setPostHook('copyMany', hook);

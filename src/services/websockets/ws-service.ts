@@ -10,6 +10,7 @@ import {
   createServerSuccessResponse,
   createServerUpdate,
 } from './message';
+import { AjvMessageSerializer } from './message-serializer';
 import { MultiInstanceChannelsBroker } from './multi-instance';
 import { WebSocketChannels } from './ws-channels';
 
@@ -39,14 +40,14 @@ export class WebsocketService {
   // multi-instance channels broker reference (to send across servers cluster)
   private wsMultiBroker: MultiInstanceChannelsBroker;
   // parser function that converts raw client websocket data into JS
-  private parse: (data: Data) => GraaspWS.ClientMessage | undefined;
+  private parse: AjvMessageSerializer['parse'];
   // logger
   private logger: FastifyBaseLogger;
 
   constructor(
     wsChannels: WebSocketChannels,
     wsMultiBroker: MultiInstanceChannelsBroker,
-    parse: (data: Data) => GraaspWS.ClientMessage | undefined,
+    parse: AjvMessageSerializer['parse'],
     log: FastifyBaseLogger,
   ) {
     this.wsChannels = wsChannels;
