@@ -1,72 +1,35 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
+import { createError } from '@fastify/error';
 
-import { PLUGIN_NAME } from './constants';
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 
-export const GraaspItemZipError = ErrorFactory(PLUGIN_NAME);
+export const FileIsInvalidArchiveError = createError(
+  'GPIZERR001',
+  FAILURE_MESSAGES.INVALID_ARCHIVE_FILE,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class FileIsInvalidArchiveError extends GraaspItemZipError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPIZERR001',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_ARCHIVE_FILE,
-      },
-      data,
-    );
-  }
-}
+export const InvalidFileItemError = createError(
+  'GPIZERR002',
+  FAILURE_MESSAGES.INVALID_FILE_ITEM,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class InvalidFileItemError extends GraaspItemZipError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPIZERR002',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_FILE_ITEM,
-      },
-      data,
-    );
-  }
-}
+export const UnexpectedExportError = createError(
+  'GPIZERR003',
+  FAILURE_MESSAGES.UNEXPECTED_EXPORT_ERROR,
+  StatusCodes.INTERNAL_SERVER_ERROR,
+);
 
-export class UnexpectedExportError extends GraaspItemZipError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPIZERR003',
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: FAILURE_MESSAGES.UNEXPECTED_EXPORT_ERROR,
-      },
-      data,
-    );
-  }
-}
+export const InvalidItemTypeForDownloadError = createError(
+  'GPIZERR004',
+  FAILURE_MESSAGES.INVALID_ITEM_TYPE_FOR_DOWNLOAD,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class InvalidItemTypeForDownloadError extends GraaspItemZipError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPIZERR004',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_ITEM_TYPE_FOR_DOWNLOAD,
-      },
-      data,
-    );
-  }
-}
-
-export class GraaspExportInvalidFileError extends GraaspItemZipError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPIZERR005',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.GRAASP_EXPORT_FILE_ERROR,
-      },
-      data,
-    );
-  }
-}
+export const GraaspExportInvalidFileError = createError(
+  'GPIZERR005',
+  FAILURE_MESSAGES.GRAASP_EXPORT_FILE_ERROR,
+  StatusCodes.BAD_REQUEST,
+);

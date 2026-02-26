@@ -19,7 +19,7 @@ import type { FileStorageType } from '../../../file/types';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { type ItemRaw } from '../../item';
-import { GraaspHtmlError, HtmlImportError } from './errors';
+import { HtmlImportError } from './errors';
 import { DEFAULT_MIME_TYPE } from './h5p/constants';
 import type { HtmlValidator } from './validator';
 
@@ -214,10 +214,8 @@ export abstract class HtmlService {
       log?.error('graasp-plugin-html: unexpected error occured while importing Html:');
       log?.error(error);
       // wrap into plugin error type if not ours
-      if (!(error instanceof GraaspHtmlError)) {
-        error = new HtmlImportError();
-      }
-      throw error;
+      // if the caught error is not one of our plugin errors (codes start with GPHTMLERR)
+      throw new HtmlImportError(error);
     } finally {
       // in all cases, remove local temp folder
       await tmpDir.cleanup();
