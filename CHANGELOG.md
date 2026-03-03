@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.4](https://github.com/graasp/graasp-api/compare/v2.13.3...v2.13.4) (2026-03-03)
+
+
+### Bug Fixes
+
+* allow multiple spaces in item name ([#2091](https://github.com/graasp/graasp-api/issues/2091)) ([70ccba7](https://github.com/graasp/graasp-api/commit/70ccba748b8e70e15f36e331c6893572c5d4e592))
+
 ## [2.13.3](https://github.com/graasp/graasp-api/compare/v2.13.2...v2.13.3) (2026-02-26)
 
 
