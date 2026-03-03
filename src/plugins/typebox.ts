@@ -23,7 +23,6 @@ import type {
 
 import { MAX_ITEM_NAME_LENGTH, MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
-import { ITEM_NAME_REGEX } from '../schemas/regex';
 import { discriminable } from './typebox/discriminable';
 
 /**
@@ -114,7 +113,6 @@ export const customType = {
       ...options,
       minLength: 1,
       maxLength: MAX_ITEM_NAME_LENGTH,
-      pattern: ITEM_NAME_REGEX,
     }),
 } as const;
 
