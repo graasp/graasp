@@ -168,10 +168,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:id/children',
     { schema: getChildren, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query: { types, keywords } }) => {
-      return itemService.getPackedChildren(db, user?.account, id, {
+      const children = await itemService.getPackedChildren(db, user?.account, id, {
         types,
         keywords,
       });
+      return children;
     },
   );
 
