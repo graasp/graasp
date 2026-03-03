@@ -7,6 +7,7 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { type DBConnection, db } from '../../../../../drizzle/db';
+import { MinimalItemForInsert } from '../../../../../drizzle/types';
 import type { MaybeUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { H5P_FILE_STORAGE_TYPE } from '../../../../../utils/config';
@@ -155,10 +156,10 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   async function copyH5PAssets(
     actor: MaybeUser,
     dbConnection: DBConnection,
-    { original: item, copy }: { original: ItemRaw; copy: ItemRaw },
+    { original: item, copy }: { original: ItemRaw; copy: MinimalItemForInsert },
   ) {
     // only execute this handler for H5P item types
-    if (!isH5PItem(item) || !isH5PItem(copy)) {
+    if (!isH5PItem(item) || copy.type !== 'h5p') {
       return;
     }
     if (!actor || !isMember(actor)) {

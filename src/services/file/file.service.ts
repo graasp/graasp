@@ -161,7 +161,7 @@ class FileService {
   }
 
   async copy(
-    member: MinimalMember,
+    memberId: MinimalMember['id'],
     data: {
       newId?: string;
       newFilePath: string;
@@ -180,7 +180,7 @@ class FileService {
 
     return this.repository.copyFile({
       newId,
-      memberId: member.id,
+      memberId,
       originalPath,
       newFilePath,
       mimetype,

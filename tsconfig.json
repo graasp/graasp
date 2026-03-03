@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es2022",
-      "es6",
-      "esnext.asynciterable"
-    ],
+    "lib": ["es2023", "es6", "esnext.asynciterable"],
     "target": "es6",
     "module": "node16", // TODO: use "preserve" when moving to ESM
     // "strict": true, // TODO: enable
@@ -23,14 +19,9 @@
     // for running typescript with tsx without the need to build and watch
     // "verbatimModuleSyntax": true, // TODO: enable when we want to move to ESM
     "strictPropertyInitialization": false, // disable because of entities,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/@types/*"
-    ],
+    "strict": true,
+    "typeRoots": ["./node_modules/@types", "./src/@types/*"],
     "sourceMap": true
   },
-  "include": [
-    "src/**/*",
-    "test"
-  ]
+  "include": ["src/**/*", "test"]
 }

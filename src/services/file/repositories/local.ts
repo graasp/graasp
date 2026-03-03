@@ -69,7 +69,7 @@ export class LocalFileRepository implements FileRepository {
     try {
       await access(this.buildFullPath(filepath));
     } catch (e) {
-      if (e.code === 'ENOENT') {
+      if (e !== null && typeof e === 'object' && 'code' in e && e.code === 'ENOENT') {
         throw new LocalFileNotFound({ filepath });
       }
       throw e;

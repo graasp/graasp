@@ -9,9 +9,8 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { ItemActionService } from '../action/itemAction.service';
 import { createApp, updateApp } from './app.schemas';
 import { AppItemService } from './appItemService';
-import type { AppsPluginOptions } from './types';
 
-export const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify) => {
+export const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // service for item app api
   const appItemService = resolveDependency(AppItemService);
   const itemActionService = resolveDependency(ItemActionService);

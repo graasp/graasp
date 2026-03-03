@@ -1,28 +1,13 @@
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import type { FileItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
-import type {
-  LocalFileConfiguration,
-  S3FileConfiguration,
-} from '../../../file/interfaces/configuration';
 import { deleteAllById, getMemberFilteredActions } from './memberAction.schemas';
 import { ActionMemberService } from './memberAction.service';
 
-export interface GraaspActionsOptions {
-  shouldSave?: boolean;
-  fileItemType: FileItemType;
-  fileConfigurations: {
-    s3: S3FileConfiguration;
-    local: LocalFileConfiguration;
-  };
-}
-
-const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const actionMemberService = resolveDependency(ActionMemberService);
 
   fastify.get(

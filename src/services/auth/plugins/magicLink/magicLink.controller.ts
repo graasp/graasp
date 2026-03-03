@@ -82,6 +82,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: auth,
       preHandler: fastifyPassport.authenticate(
         PassportStrategy.WebMagicLink,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         async (request, reply, err, user?: PassportUser, info?: PassportInfo) => {
           // This function is called after the strategy has been executed.
           // It is necessary, so we match the behavior of the original implementation.

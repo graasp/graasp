@@ -204,10 +204,10 @@ export class EmbeddedLinkItemService extends ItemService {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       const msgError = 'Error checking embedding permission:';
       if (logger) {
-        logger?.error(msgError, error);
+        logger?.error(`${msgError}: ${String(error)}`);
       } else {
         console.error(msgError, error);
       }

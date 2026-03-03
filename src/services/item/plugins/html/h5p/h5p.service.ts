@@ -8,6 +8,7 @@ import type { FastifyBaseLogger } from 'fastify';
 import { type H5PItemExtra } from '@graasp/sdk';
 
 import type { DBConnection } from '../../../../../drizzle/db';
+import { MinimalItemForInsert } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
 import type { MinimalMember } from '../../../../../types';
 import {
@@ -82,7 +83,7 @@ export class H5PService extends HtmlService {
       copy,
     }: {
       original: H5PItem;
-      copy: H5PItem;
+      copy: MinimalItemForInsert;
     },
   ): Promise<void> {
     const { extra } = item;
@@ -95,7 +96,7 @@ export class H5PService extends HtmlService {
     const remoteRootPath = this.buildRootPath(this.pathPrefix, newContentId);
 
     // copy .h5p file
-    await this.fileService.copy(member, {
+    await this.fileService.copy(member.id, {
       originalPath: path.join(this.pathPrefix, extra.h5p.h5pFilePath),
       newFilePath: path.join(this.pathPrefix, this.buildPackagePath(newContentId, newName)),
     });

@@ -7,8 +7,8 @@ import type { MultipartFile } from '@fastify/multipart';
 import { type FileItemProperties, MAX_ITEM_NAME_LENGTH, type UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../../../../drizzle/db';
-import type { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types';
-import type { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
+import type { AppSettingRaw } from '../../../../../../../drizzle/types';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../../../../types';
 import FileService from '../../../../../../file/file.service';
 import type { ItemRaw } from '../../../../../item';
 import { AppSettingRepository } from '../../appSetting.repository';
@@ -115,14 +115,18 @@ class AppSettingFileService {
     return result;
   }
 
-  async copyMany(dbConnection: DBConnection, actor: MinimalMember, toCopy: AppSettingWithItem[]) {
+  async copyMany(
+    dbConnection: DBConnection,
+    actorId: MinimalMember['id'],
+    toCopy: AppSettingRaw[],
+  ) {
     for (const appSetting of toCopy) {
       if (!appSetting.data) {
         throw new Error('App setting file is not correctly defined');
       }
 
       // create file data object
-      const itemId = appSetting.item.id;
+      const itemId = appSetting.itemId;
       const newFilePath = this.buildFilePath(itemId, appSetting.id);
       const originalFileExtra = appSetting.data['file'] as AppSettingFileProperties;
       const newFileData = {
@@ -134,7 +138,7 @@ class AppSettingFileService {
       };
 
       // run copy task
-      await this.fileService.copy(actor, {
+      await this.fileService.copy(actorId, {
         newId: appSetting.id,
         newFilePath,
         originalPath: originalFileExtra.path,
@@ -148,7 +152,7 @@ class AppSettingFileService {
     }
   }
 
-  async deleteOne(dbConnection: DBConnection, actor: AuthenticatedUser, appSetting: AppSettingRaw) {
+  async deleteOne(dbConnection: DBConnection, actor: MaybeUser, appSetting: AppSettingRaw) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type

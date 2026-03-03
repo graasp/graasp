@@ -4,7 +4,7 @@ import { Authenticator } from '@fastify/passport';
 
 import { EMAIL_CHANGE_JWT_SECRET } from '../../../../../config/secrets';
 import { db } from '../../../../../drizzle/db';
-import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
+import { MemberNotFound, UnauthorizedMember, buildError } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/member.repository';
 import { PassportStrategy } from '../strategies';
 import type { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
@@ -47,9 +47,12 @@ export default (
               false,
             );
           }
-        } catch (err) {
+        } catch (error: unknown) {
           // Exception occurred while fetching member
-          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
+          return done(
+            options?.propagateError ? buildError(error) : new UnauthorizedMember(),
+            false,
+          );
         }
       },
     ),
