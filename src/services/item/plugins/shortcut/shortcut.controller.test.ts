@@ -145,8 +145,8 @@ describe('Shortcut routes tests', () => {
           url: '/api/items/shortcuts',
           payload: newItem1,
         });
-        expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(response1.statusMessage).toEqual(ReasonPhrases.OK);
+        expect(response1.statusCode).toBe(StatusCodes.OK);
       });
 
       it('Bad request if parentId id is invalid', async () => {

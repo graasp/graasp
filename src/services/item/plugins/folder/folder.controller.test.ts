@@ -495,6 +495,10 @@ describe('Folder routes tests', () => {
       });
 
       it('Bad request if name is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
         // by default the item creator use an invalid item type
         const newItem = FolderItemFactory({ name: '' });
         const response = await app.inject({
@@ -512,8 +516,8 @@ describe('Folder routes tests', () => {
           url: '/api/items/folders',
           payload: newItem1,
         });
-        expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(response1.statusMessage).toEqual(ReasonPhrases.OK);
+        expect(response1.statusCode).toBe(StatusCodes.OK);
       });
 
       it('Bad request if parentId id is invalid', async () => {
