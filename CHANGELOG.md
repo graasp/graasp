@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.5](https://github.com/graasp/graasp-api/compare/v2.13.4...v2.13.5) (2026-03-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency ajv to v8.18.0 [security] ([#2075](https://github.com/graasp/graasp-api/issues/2075)) ([aa66f6c](https://github.com/graasp/graasp-api/commit/aa66f6cbd0730f7f001f7e80a42567dd3d1e2c3c))
+* **deps:** update dependency fastify to v5.7.4 ([#2089](https://github.com/graasp/graasp-api/issues/2089)) ([3377b48](https://github.com/graasp/graasp-api/commit/3377b482dc0e61b63386d22d30e06127e73e7a87))
+* **deps:** update dependency form-data to v4.0.5 ([#2090](https://github.com/graasp/graasp-api/issues/2090)) ([202d87e](https://github.com/graasp/graasp-api/commit/202d87e5ce726a561fb4ba9c8a7abba5c321e5f9))
+* remove item name regex ([#2093](https://github.com/graasp/graasp-api/issues/2093)) ([d23a8e8](https://github.com/graasp/graasp-api/commit/d23a8e8596bf79dec91ac7e426df929f541c4b82))
+
 ## [2.13.4](https://github.com/graasp/graasp-api/compare/v2.13.3...v2.13.4) (2026-03-03)
 
 
