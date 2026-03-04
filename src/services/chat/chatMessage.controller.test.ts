@@ -467,7 +467,7 @@ describe('Chat Message tests', () => {
           payload,
         });
 
-        expect(response.json()).toMatch(new ChatMessageNotFound(expect.anything()).message);
+        expect(response.json()).toMatchObject(new ChatMessageNotFound(expect.anything()));
       });
 
       it('Throws if member does not have access to item', async () => {
