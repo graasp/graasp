@@ -121,8 +121,8 @@ export const customType = {
  */
 export type FastifyInstanceTypebox<
   RawServer extends RawServerBase = RawServerDefault,
-  RawRequest extends
-    RawRequestDefaultExpression<RawServer> = RawRequestDefaultExpression<RawServer>,
+  RawRequest extends RawRequestDefaultExpression<RawServer> =
+    RawRequestDefaultExpression<RawServer>,
   RawReply extends RawReplyDefaultExpression<RawServer> = RawReplyDefaultExpression<RawServer>,
   Logger extends FastifyBaseLogger = FastifyBaseLogger,
   TypeProvider extends TypeBoxTypeProvider = TypeBoxTypeProvider,
