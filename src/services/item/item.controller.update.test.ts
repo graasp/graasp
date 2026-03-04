@@ -142,6 +142,10 @@ describe('Item routes tests', () => {
       });
 
       it('Bad request if name is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
         // by default the item creator use an invalid item type
         const newItem = FolderItemFactory({ name: '' });
         const response = await app.inject({
@@ -152,15 +156,15 @@ describe('Item routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
 
-        // by default the item creator use an invalid item type
+        // a single space is a valid name for the item
         const newItem1 = FolderItemFactory({ name: ' ' });
         const response1 = await app.inject({
           method: HttpMethod.Post,
           url: '/api/items',
           payload: newItem1,
         });
-        expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(response1.statusMessage).toEqual(ReasonPhrases.OK);
+        expect(response1.statusCode).toBe(StatusCodes.OK);
       });
 
       it('Bad request if type is invalid', async () => {
