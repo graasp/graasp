@@ -1,44 +1,22 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
+import { createError } from '@fastify/error';
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 
-export const GraaspPasswordError = ErrorFactory('graasp-plugin-password');
+export const PasswordNotDefined = createError(
+  'GPPWDERR001',
+  FAILURE_MESSAGES.PASSWORD_NOT_DEFINED_ERROR,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class PasswordNotDefined extends GraaspPasswordError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPPWDERR001',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.PASSWORD_NOT_DEFINED_ERROR,
-      },
-      data,
-    );
-  }
-}
+export const PasswordNotStrong = createError(
+  'GPPWDERR002',
+  FAILURE_MESSAGES.PASSWORD_WEAK_ERROR,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class PasswordNotStrong extends GraaspPasswordError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPPWDERR002',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.PASSWORD_WEAK_ERROR,
-      },
-      data,
-    );
-  }
-}
-
-export class PasswordConflict extends GraaspPasswordError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPPWDERR003',
-        statusCode: StatusCodes.CONFLICT,
-        message: FAILURE_MESSAGES.PASSWORD_CONFLICT_ERROR,
-      },
-      data,
-    );
-  }
-}
+export const PasswordConflict = createError(
+  'GPPWDERR003',
+  FAILURE_MESSAGES.PASSWORD_CONFLICT_ERROR,
+  StatusCodes.CONFLICT,
+);

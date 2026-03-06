@@ -379,7 +379,7 @@ describe('Item Login Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
         });
 
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
 
       it('Throws if id is not valid', async () => {
@@ -417,7 +417,7 @@ describe('Item Login Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
           payload: { username: faker.internet.username() },
         });
-        expect(res.json()).toMatchObject(new ValidMemberSession(expect.anything()));
+        expect(res.json().message).toEqual(new ValidMemberSession(actor).message);
       });
     });
 
@@ -978,13 +978,13 @@ describe('Item Login Tests', () => {
           payload: { status: ItemLoginSchemaStatus.Freeze },
         });
 
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
 
       it('Cannot put item login schema if is inherited', async () => {
         const {
           actor,
-          items: [_parentItem, child],
+          items: [parentItem, child],
         } = await seedFromJson({
           items: [
             {
@@ -1004,7 +1004,7 @@ describe('Item Login Tests', () => {
           payload: { status: ItemLoginSchemaStatus.Freeze },
         });
 
-        expect(res.json()).toMatchObject(new CannotNestItemLoginSchema(expect.anything()));
+        expect(res.json().message).toEqual(new CannotNestItemLoginSchema(parentItem.path).message);
       });
 
       it('Throws if id is invalid', async () => {
@@ -1127,7 +1127,7 @@ describe('Item Login Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
         });
 
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
     });
   });

@@ -1,63 +1,27 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory } from '@graasp/sdk';
+import { createError } from '@fastify/error';
 
-const PLUGIN_NAME = 'graasp-plugin-item-geolocation';
+export const ItemGeolocationNotFound = createError(
+  'GIGEOERR001',
+  'Geolocation not found',
+  StatusCodes.NOT_FOUND,
+);
 
-/**
- * Errors thrown by item geolocation
- */
+export const PartialItemGeolocation = createError(
+  'GIGEOERR002',
+  'Geolocation should have both lat and lng',
+  StatusCodes.BAD_REQUEST,
+);
 
-export const GraaspItemGeolocationError = ErrorFactory(PLUGIN_NAME);
+export const MissingGeolocationSearchParams = createError(
+  'GIGEOERR003',
+  'Geolocation Search should include parent item, or all lat1, lat2, lng1 and lng2',
+  StatusCodes.BAD_REQUEST,
+);
 
-export class ItemGeolocationNotFound extends GraaspItemGeolocationError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GIGEOERR001',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'Geolocation not found',
-      },
-      data,
-    );
-  }
-}
-
-export class PartialItemGeolocation extends GraaspItemGeolocationError {
-  constructor(data?: { lat?: unknown; lng?: unknown }) {
-    super(
-      {
-        code: 'GIGEOERR002',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Geolocation should have both lat and lng',
-      },
-      data,
-    );
-  }
-}
-
-export class MissingGeolocationSearchParams extends GraaspItemGeolocationError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GIGEOERR003',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Geolocation Search should include parent item, or all lat1, lat2, lng1 and lng2',
-      },
-      data,
-    );
-  }
-}
-
-export class MissingGeolocationApiKey extends GraaspItemGeolocationError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GIGEOERR004',
-        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
-        message: 'Geolocation API key is not defined',
-      },
-      data,
-    );
-  }
-}
+export const MissingGeolocationApiKey = createError(
+  'GIGEOERR004',
+  'Geolocation API key is not defined',
+  StatusCodes.SERVICE_UNAVAILABLE,
+);

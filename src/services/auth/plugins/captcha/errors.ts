@@ -1,16 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { CoreError } from '../../../../utils/errors';
+import { createError } from '@fastify/error';
 
-export class AuthenticationError extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR028',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'The authentication failed',
-      },
-      data,
-    );
-  }
-}
+export const AuthenticationError = createError(
+  'GERR028',
+  'The authentication failed',
+  StatusCodes.UNAUTHORIZED,
+);

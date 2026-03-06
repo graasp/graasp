@@ -2,11 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createError } from '@fastify/error';
 
-import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
-
-const PLUGIN_NAME = 'graasp-plugin-item-login';
-
-export const GraaspItemLoginError = ErrorFactory(PLUGIN_NAME);
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 
 export const MemberIdentifierNotFound = createError(
   'GILERR002',
@@ -20,185 +16,82 @@ export const InvalidMember = createError(
   StatusCodes.NOT_FOUND,
 );
 
-export class MissingItemLoginSchema extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR004',
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: 'Missing login schema',
-      },
-      data,
-    );
-  }
-}
+export const MissingItemLoginSchema = createError(
+  'GILERR004',
+  'Missing login schema',
+  StatusCodes.INTERNAL_SERVER_ERROR,
+);
 
-export class MissingItemLoginTag extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR005',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Item does not possess the required visibility',
-      },
-      data,
-    );
-  }
-}
+export const MissingItemLoginTag = createError(
+  'GILERR005',
+  'Item does not possess the required visibility',
+  StatusCodes.BAD_REQUEST,
+);
 
-export class ValidMemberSession extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR006',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Member with valid session trying to (re)login',
-      },
-      data,
-    );
-  }
-}
+export const ValidMemberSession = createError(
+  'GILERR006',
+  'Member with valid session trying to (re)login',
+  StatusCodes.BAD_REQUEST,
+);
 
-export class InvalidCredentials extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR007',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        // eslint-disable-next-line quotes
-        message: "Provided credentials don't match member's",
-      },
-      data,
-    );
-  }
-}
+export const InvalidCredentials = createError(
+  'GILERR007',
+  "Provided credentials don't match member's",
+  StatusCodes.UNAUTHORIZED,
+);
 
-export class MissingCredentialsForLoginSchema extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR008',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Missing credentials for set login schema',
-      },
-      data,
-    );
-  }
-}
+export const MissingCredentialsForLoginSchema = createError(
+  'GILERR008',
+  'Missing credentials for set login schema',
+  StatusCodes.BAD_REQUEST,
+);
 
-export class UnnecessaryCredentialsForLoginSchema extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR008',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Unnecessary credentials for set login schema',
-      },
-      data,
-    );
-  }
-}
+export const UnnecessaryCredentialsForLoginSchema = createError(
+  'GILERR008',
+  'Unnecessary credentials for set login schema',
+  StatusCodes.BAD_REQUEST,
+);
 
-export class ItemLoginSchemaNotFound extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR009',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'Item login schema not found for item',
-      },
-      data,
-    );
-  }
-}
+export const ItemLoginSchemaNotFound = createError(
+  'GILERR009',
+  'Item login schema not found for item',
+  StatusCodes.NOT_FOUND,
+);
 
-export class CannotNestItemLoginSchema extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR010',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: 'Item login schema already item exists in an ancestor',
-      },
-      data,
-    );
-  }
-}
+export const CannotNestItemLoginSchema = createError(
+  'GILERR010',
+  'Item login schema already item exists in an ancestor',
+  StatusCodes.FORBIDDEN,
+);
 
-export class NotGuest extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR011',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.NOT_A_GUEST,
-      },
-      data,
-    );
-  }
-}
+export const NotGuest = createError(
+  'GILERR011',
+  FAILURE_MESSAGES.NOT_A_GUEST,
+  StatusCodes.FORBIDDEN,
+);
 
-export class ItemLoginSchemaExists extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR012',
-        statusCode: StatusCodes.CONFLICT,
-        message: FAILURE_MESSAGES.CANNOT_CREATE_MEMBERSHIP_CAUSE_ITEM_LOGIN_SCHEMA_EXISTS,
-      },
-      data,
-    );
-  }
-}
+export const ItemLoginSchemaExists = createError(
+  'GILERR012',
+  FAILURE_MESSAGES.CANNOT_CREATE_MEMBERSHIP_CAUSE_ITEM_LOGIN_SCHEMA_EXISTS,
+  StatusCodes.CONFLICT,
+);
 
-export class CannotEnrollItemWithoutItemLoginSchema extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR013',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.CANNOT_ENROLL_ITEM_WITHOUT_ITEM_LOGIN_SCHEMA,
-      },
-      data,
-    );
-  }
-}
+export const CannotEnrollItemWithoutItemLoginSchema = createError(
+  'GILERR013',
+  FAILURE_MESSAGES.CANNOT_ENROLL_ITEM_WITHOUT_ITEM_LOGIN_SCHEMA,
+  StatusCodes.FORBIDDEN,
+);
 
-export class CannotRegisterOnFrozenItemLoginSchema extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR014',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.CANNOT_REGISTER_ON_FROZEN_ITEM_LOGIN_SCHEMA,
-      },
-      data,
-    );
-  }
-}
+export const CannotRegisterOnFrozenItemLoginSchema = createError(
+  'GILERR014',
+  FAILURE_MESSAGES.CANNOT_REGISTER_ON_FROZEN_ITEM_LOGIN_SCHEMA,
+  StatusCodes.FORBIDDEN,
+);
 
-export class CannotEnrollFrozenItemLoginSchema extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR015',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.CANNOT_ENROLL_FROZEN_ITEM_LOGIN_SCHEMA,
-      },
-      data,
-    );
-  }
-}
+export const CannotEnrollFrozenItemLoginSchema = createError(
+  'GILERR015',
+  FAILURE_MESSAGES.CANNOT_ENROLL_FROZEN_ITEM_LOGIN_SCHEMA,
+  StatusCodes.FORBIDDEN,
+);
 
-export class GuestNotFound extends GraaspItemLoginError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GILERR016',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'GUEST_NOT_FOUND',
-      },
-      data,
-    );
-  }
-}
+export const GuestNotFound = createError('GILERR016', 'GUEST_NOT_FOUND', StatusCodes.NOT_FOUND);
