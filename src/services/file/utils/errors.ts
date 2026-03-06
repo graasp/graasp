@@ -2,113 +2,55 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createError } from '@fastify/error';
 
-import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 
-import { PLUGIN_NAME } from './constants';
+export const UploadFileInvalidParameterError = createError(
+  'GPFERR001',
+  FAILURE_MESSAGES.INVALID_UPLOAD_PARAMETERS,
+  StatusCodes.BAD_REQUEST,
+);
 
-export const GraaspFileError = ErrorFactory(PLUGIN_NAME);
+export const CopyFileInvalidPathError = createError(
+  'GPFERR002',
+  FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_COPY,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class UploadFileInvalidParameterError extends GraaspFileError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR001',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_UPLOAD_PARAMETERS,
-      },
-      data,
-    );
-  }
-}
+export const CopyFolderInvalidPathError = createError(
+  'GPFERR009',
+  FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_COPY,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class CopyFileInvalidPathError extends GraaspFileError {
-  constructor(filepath?: unknown) {
-    super(
-      {
-        code: 'GPFERR002',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_COPY,
-      },
-      filepath,
-    );
-  }
-}
+export const DeleteFileInvalidPathError = createError(
+  'GPFERR003',
+  FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_DELETE,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class CopyFolderInvalidPathError extends GraaspFileError {
-  constructor(filepath?: unknown) {
-    super(
-      {
-        code: 'GPFERR009',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_COPY,
-      },
-      filepath,
-    );
-  }
-}
+export const DeleteFolderInvalidPathError = createError(
+  'GPFERR004',
+  FAILURE_MESSAGES.INVALID_FOLDER_PATH_FOR_DELETE,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class DeleteFileInvalidPathError extends GraaspFileError {
-  constructor(filepath?: unknown) {
-    super(
-      {
-        code: 'GPFERR003',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_DELETE,
-      },
-      filepath,
-    );
-  }
-}
+export const DownloadFileInvalidParameterError = createError(
+  'GPFERR005',
+  FAILURE_MESSAGES.INVALID_DOWNLOAD_PARAMETERS,
+  StatusCodes.BAD_REQUEST,
+);
 
-export class DeleteFolderInvalidPathError extends GraaspFileError {
-  constructor(folderPath?: unknown) {
-    super(
-      {
-        code: 'GPFERR004',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_FOLDER_PATH_FOR_DELETE,
-      },
-      folderPath,
-    );
-  }
-}
+export const LocalFileNotFound = createError(
+  'GPFERR006',
+  FAILURE_MESSAGES.LOCAL_FILE_NOT_FOUND,
+  StatusCodes.NOT_FOUND,
+);
 
-export class DownloadFileInvalidParameterError extends GraaspFileError {
-  constructor() {
-    super({
-      code: 'GPFERR005',
-      statusCode: StatusCodes.BAD_REQUEST,
-      // todo: change message to indicate the the filepath did not exist
-      message: FAILURE_MESSAGES.INVALID_DOWNLOAD_PARAMETERS,
-    });
-  }
-}
-
-export class LocalFileNotFound extends GraaspFileError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR006',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.LOCAL_FILE_NOT_FOUND,
-      },
-      data,
-    );
-  }
-}
-
-export class S3FileNotFound extends GraaspFileError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR007',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.S3_FILE_NOT_FOUND,
-      },
-      data,
-    );
-  }
-}
+export const S3FileNotFound = createError(
+  'GPFERR007',
+  FAILURE_MESSAGES.S3_FILE_NOT_FOUND,
+  StatusCodes.NOT_FOUND,
+);
 
 export const UploadEmptyFileError = createError(
   'GPFERR008',
@@ -122,26 +64,14 @@ export const UploadFileUnexpectedError = createError(
   StatusCodes.INTERNAL_SERVER_ERROR,
 );
 
-export class DownloadFileUnexpectedError extends GraaspFileError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR011',
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        // TODO: change message
-        message: FAILURE_MESSAGES.DOWNLOAD_FILE_UNEXPECTED_ERROR,
-      },
-      data,
-    );
-  }
-}
+export const DownloadFileUnexpectedError = createError(
+  'GPFERR011',
+  FAILURE_MESSAGES.DOWNLOAD_FILE_UNEXPECTED_ERROR,
+  StatusCodes.INTERNAL_SERVER_ERROR,
+);
 
-export class MalformedFileConfigError extends GraaspFileError {
-  constructor(message: string) {
-    super({
-      code: 'GPFERR012',
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      message,
-    });
-  }
-}
+export const MalformedFileConfigError = createError(
+  'GPFERR012',
+  'Malformed file configuration',
+  StatusCodes.INTERNAL_SERVER_ERROR,
+);

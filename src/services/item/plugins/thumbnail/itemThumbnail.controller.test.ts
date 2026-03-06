@@ -156,7 +156,7 @@ describe('Thumbnail Plugin Tests', () => {
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
 
-          expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+          expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
         }
       });
 
@@ -262,7 +262,7 @@ describe('Thumbnail Plugin Tests', () => {
           payload: form3,
           headers: form3.getHeaders(),
         });
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
         const savedItem = await db.query.itemsRawTable.findFirst({
           where: eq(itemsRawTable.id, item.id),
         });

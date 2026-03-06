@@ -829,7 +829,7 @@ describe('Membership routes tests', () => {
           url: `/api/items/${item.id}/memberships/${membership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-        expect(response.json()).toMatchObject(new CannotDeleteOnlyAdmin({ id: expect.anything() }));
+        expect(response.json().message).toEqual(new CannotDeleteOnlyAdmin({ id: item.id }).message);
         expect(await getMembershipById(membership.id)).toBeDefined();
       });
     });

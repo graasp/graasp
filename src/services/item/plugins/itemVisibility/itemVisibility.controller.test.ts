@@ -97,9 +97,12 @@ describe('Item Visibility', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${ItemVisibilityType.Hidden}`,
         });
-        expect(res.json()).toMatchObject(
-          new ConflictingVisibilitiesInTheHierarchy(expect.anything()),
-        );
+        const expectedError = new ConflictingVisibilitiesInTheHierarchy({
+          itemPath: item.path,
+          type: ItemVisibilityType.Hidden,
+        });
+        expect(res.statusCode).toEqual(expectedError.statusCode);
+        expect(res.json().message).toEqual(expectedError.message);
       });
 
       it('Cannot create visibility if exists on parent', async () => {
@@ -116,9 +119,12 @@ describe('Item Visibility', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${child.id}/visibilities/${ItemVisibilityType.Hidden}`,
         });
-        expect(res.json()).toMatchObject(
-          new ConflictingVisibilitiesInTheHierarchy(expect.anything()),
-        );
+        const expectedError = new ConflictingVisibilitiesInTheHierarchy({
+          itemPath: child.path,
+          type: ItemVisibilityType.Hidden,
+        });
+        expect(res.statusCode).toEqual(expectedError.statusCode);
+        expect(res.json().message).toEqual(expectedError.message);
       });
 
       it('Bad request if item id is invalid', async () => {
@@ -215,7 +221,9 @@ describe('Item Visibility', () => {
             method: HttpMethod.Delete,
             url: `${ITEMS_ROUTE_PREFIX}/${child.id}/visibilities/${ItemVisibilityType.Public}`,
           });
-          expect(res.json()).toMatchObject(new CannotModifyParentVisibility(expect.anything()));
+          const expectedError = new CannotModifyParentVisibility(child.id);
+          expect(res.statusCode).toEqual(expectedError.statusCode);
+          expect(res.json().message).toEqual(expectedError.message);
         });
         it('Does not throw if visibility does not exist', async () => {
           const {
