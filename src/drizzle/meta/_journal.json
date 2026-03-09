@@ -148,6 +148,13 @@
       "when": 1768915972957,
       "tag": "0020_remove-extra-item-login",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1773039103189,
+      "tag": "0021_member-password-disallow-null-on-member-id",
+      "breakpoints": true
     }
   ]
 }
