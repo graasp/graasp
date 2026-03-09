@@ -1,0 +1,3 @@
+DROP VIEW "public"."members_view";--> statement-breakpoint
+ALTER TABLE "member_password" ALTER COLUMN "member_id" SET NOT NULL;--> statement-breakpoint
+CREATE VIEW "public"."members_view" AS (select "id", "name", "email", "extra", "type", "created_at", "updated_at", "user_agreements_date", "enable_save_actions", "last_authenticated_at", "is_validated", "marketing_emails_subscribed_at" from "account" where ("account"."type" = 'individual' and "account"."email" is not null));

@@ -189,7 +189,7 @@ export const memberPasswordsTable = pgTable(
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql.raw('DEFAULT')),
-    memberId: uuid('member_id').references(() => accountsTable.id, {
+    memberId: uuid('member_id').notNull().references(() => accountsTable.id, {
       onDelete: 'cascade',
     }),
   },
