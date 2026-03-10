@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { createError } from '@fastify/error';
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 import type { AccountRaw, MemberRaw } from '../drizzle/types';
 import {
   AccountType,
@@ -8,7 +10,6 @@ import {
   type MinimalMember,
 } from '../types';
 import { NotMemberOrGuest } from './account/errors';
-import { NotMember } from './member/error';
 
 // TODO: allow AccountRow or apply DTO on all relations?
 export function isMember(account: AuthenticatedUser | AccountRaw): account is MinimalMember {
@@ -20,6 +21,14 @@ export function isGuest(account: AuthenticatedUser | AccountRaw): account is Min
   return account.type === AccountType.Guest;
 }
 
+
+export const AssertNotMember = createError(
+  'AGMERR003',
+  FAILURE_MESSAGES.NOT_A_MEMBER,
+  StatusCodes.INTERNAL_SERVER_ERROR,
+);
+
+
 export function assertIsMember<Err extends Error, Args extends unknown[]>(
   account: AuthenticatedUser | AccountRaw,
   error?: new (...args: Args) => Err,
@@ -29,9 +38,7 @@ export function assertIsMember<Err extends Error, Args extends unknown[]>(
     if (error) {
       throw new error(...args);
     } else {
-      const defaultError = new NotMember();
-      defaultError.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-      throw defaultError;
+      throw new AssertNotMember();
     }
   }
 }
@@ -45,9 +52,7 @@ export function assertIsMemberForTest<Err extends Error, Args extends unknown[]>
     if (error) {
       throw new error(...args);
     } else {
-      const defaultError = new NotMember();
-      defaultError.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-      throw defaultError;
+      throw new AssertNotMember();
     }
   }
 }

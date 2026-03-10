@@ -186,7 +186,9 @@ describe('Chat Mention tests', () => {
           payload,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccessMention(mention));
+        const expectedError = new MemberCannotAccessMention({ id: mention.id });
+        expect(response.statusCode).toEqual(expectedError.statusCode);
+        expect(response.json().message).toEqual(expectedError.message);
       });
     });
   });
@@ -261,10 +263,11 @@ describe('Chat Mention tests', () => {
       });
 
       it('Throws if member does not have access to chat message', async () => {
+        const chatMessageId = chatMessages[0].id;
         const [mention] = await db
           .insert(chatMentionsTable)
           .values({
-            messageId: chatMessages[0].id,
+            messageId: chatMessageId,
             accountId: members[0].id,
           })
           .returning();
@@ -274,9 +277,9 @@ describe('Chat Mention tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${mention.id}`,
         });
 
-        expect(response.json()).toMatchObject(
-          new MemberCannotAccessMention({ id: expect.anything() }),
-        );
+        const expectedError = new MemberCannotAccessMention({ id: mention.id });
+        expect(response.statusCode).toEqual(expectedError.statusCode);
+        expect(response.json().message).toEqual(expectedError.message);
       });
     });
   });

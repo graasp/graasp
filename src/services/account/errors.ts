@@ -1,31 +1,17 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
+import { createError } from '@fastify/error';
 
-export const GraaspAccountError = ErrorFactory('graasp-plugin-account');
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 
-export class AccountNotFound extends GraaspAccountError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPAECCRR001',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.ACCOUNT_NOT_FOUND,
-      },
-      data,
-    );
-  }
-}
+export const AccountNotFound = createError(
+  'GPAECCRR001',
+  FAILURE_MESSAGES.ACCOUNT_NOT_FOUND,
+  StatusCodes.NOT_FOUND,
+);
 
-export class NotMemberOrGuest extends GraaspAccountError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPAECCRR002',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.NOT_MEMBER_OR_GUEST,
-      },
-      data,
-    );
-  }
-}
+export const NotMemberOrGuest = createError(
+  'GPAECCRR002',
+  FAILURE_MESSAGES.NOT_MEMBER_OR_GUEST,
+  StatusCodes.FORBIDDEN,
+);

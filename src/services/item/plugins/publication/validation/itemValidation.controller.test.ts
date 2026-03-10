@@ -111,7 +111,7 @@ describe('Item Validation Tests', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
 
       it('Throws if has write permission', async () => {
@@ -128,7 +128,7 @@ describe('Item Validation Tests', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
 
         // check no created entries
       });
@@ -158,133 +158,6 @@ describe('Item Validation Tests', () => {
       });
     });
   });
-
-  // REMOVE? not used anymore
-  // describe('GET /:itemId/validations/:itemValidationGroupId', () => {
-  //   it('Throws if signed out', async () => {
-  //     const response = await app.inject({
-  //       method: HttpMethod.Get,
-  //       url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
-  //     });
-
-  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //   });
-
-  //   describe('Signed In', () => {
-  //     it('Get item validation groups', async () => {
-  //       const {
-  //         items: [item],
-  //         actor,
-  //         itemValidationGroups: [itemValidationGroup],
-  //       } = await seedFromJson({
-  //         items: [
-  //           {
-  //             itemValidations: [{ groupName: 'name', status: ItemValidationStatus.Failure }],
-  //             memberships: [{ account: 'actor', permission: "admin" }],
-  //           },
-  //         ],
-  //       });
-  //       assertIsDefined(actor);
-  //       mockAuthenticate(actor);
-
-  //       const res = await app.inject({
-  //         method: HttpMethod.Get,
-  //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup.id}`,
-  //       });
-  //       expect(res.statusCode).toBe(StatusCodes.OK);
-  //       expectItemValidation(res.json(), itemValidationGroup);
-  //     });
-
-  //     it('Throws if has read permission', async () => {
-  //       const {
-  //         items: [item],
-  //         actor,
-  //         itemValidationGroups: [itemValidationGroup],
-  //       } = await seedFromJson({
-  //         items: [{ memberships: [{ account: 'actor', permission: "read" }] }],
-  //       });
-  //       assertIsDefined(actor);
-  //       mockAuthenticate(actor);
-
-  //       const res = await app.inject({
-  //         method: HttpMethod.Get,
-  //         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
-  //       });
-  //       expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
-  //     });
-
-  //     it('Throws if has write permission', async () => {
-  //       const {
-  //         items: [item],
-  //         actor,
-  //         itemValidationGroups: [itemValidationGroup],
-  //       } = await seedFromJson({
-  //         items: [{ memberships: [{ account: 'actor', permission: "write" }] }],
-  //       });
-  //       assertIsDefined(actor);
-  //       mockAuthenticate(actor);
-
-  //       const res = await app.inject({
-  //         method: HttpMethod.Get,
-  //         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
-  //       });
-  //       expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
-  //     });
-
-  //     it('Bad request if id is invalid', async () => {
-  //       const { actor } = await seedFromJson();
-  //       assertIsDefined(actor);
-  //       mockAuthenticate(actor);
-
-  //       const res = await app.inject({
-  //         method: HttpMethod.Get,
-  //         url: `${ITEMS_ROUTE_PREFIX}/invalid-id/validations/${v4()}`,
-  //       });
-  //       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //     });
-
-  //     it('Throws if item does not exist', async () => {
-  //       const { actor } = await seedFromJson();
-  //       assertIsDefined(actor);
-  //       mockAuthenticate(actor);
-
-  //       const res = await app.inject({
-  //         method: HttpMethod.Get,
-  //         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
-  //       });
-  //       expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-  //     });
-
-  //     it('Bad request if group id is invalid', async () => {
-  //       const { actor } = await seedFromJson();
-  //       assertIsDefined(actor);
-  //       mockAuthenticate(actor);
-
-  //       const res = await app.inject({
-  //         method: HttpMethod.Get,
-  //         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/invalid-id`,
-  //       });
-  //       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //     });
-
-  //     it('Throws if validation group does not exist', async () => {
-  //       const {
-  //         actor,
-  //         items: [item],
-  //       } = await seedFromJson({ items: [{}] });
-  //       assertIsDefined(actor);
-  //       mockAuthenticate(actor);
-
-  //       const res = await app.inject({
-  //         method: HttpMethod.Get,
-  //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${v4()}`,
-  //       });
-  //       expect(res.json()).toMatchObject(new ItemValidationGroupNotFound(expect.anything()));
-  //     });
-  //   });
-  // });
 
   describe('POST /:itemId/validate', () => {
     it('Throws if signed out', async () => {

@@ -1,35 +1,22 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
+import { createError } from '@fastify/error';
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 
-export const GraaspMemberProfileError = ErrorFactory('graasp-member-profile');
+export const MemberProfileNotFound = createError(
+  'GMPERR001',
+  FAILURE_MESSAGES.MEMBER_PROFILE_NOT_FOUND,
+  StatusCodes.NOT_FOUND,
+);
 
-export class MemberProfileNotFound extends GraaspMemberProfileError {
-  constructor() {
-    super({
-      code: 'GMPERR001',
-      statusCode: StatusCodes.NOT_FOUND,
-      message: FAILURE_MESSAGES.MEMBER_PROFILE_NOT_FOUND,
-    });
-  }
-}
+export const MemberProfileCreationError = createError(
+  'GMPERR002',
+  'Could not create member profile. This is an internal server error',
+  StatusCodes.INTERNAL_SERVER_ERROR,
+);
 
-export class MemberProfileCreationError extends GraaspMemberProfileError {
-  constructor() {
-    super({
-      code: 'GMPERR002',
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      message: 'Could not create member profile. This is an internal server error',
-    });
-  }
-}
-
-export class MemberProfilePropertiesEmpty extends GraaspMemberProfileError {
-  constructor() {
-    super({
-      code: 'GMPERR003',
-      statusCode: StatusCodes.BAD_REQUEST,
-      message: 'All properties of the member profile are empty',
-    });
-  }
-}
+export const MemberProfilePropertiesEmpty = createError(
+  'GMPERR003',
+  'All properties of the member profile are empty',
+  StatusCodes.BAD_REQUEST,
+);

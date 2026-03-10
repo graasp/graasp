@@ -229,7 +229,7 @@ export class ItemVisibilityRepository {
   ): Promise<void> {
     const entry = await this.getType(dbConnection, item.path, type);
     if (entry && entry.item.path !== item.path && shouldThrow) {
-      throw new CannotModifyParentVisibility(entry);
+      throw new CannotModifyParentVisibility(item.id);
     }
   }
 

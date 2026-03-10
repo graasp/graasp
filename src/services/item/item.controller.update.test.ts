@@ -663,7 +663,7 @@ describe('Item routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new HierarchyTooDeep());
+        expect(response.json().message).toEqual(new HierarchyTooDeep().message);
       });
 
       it('Cannot create inside non-folder item', async () => {
@@ -690,7 +690,7 @@ describe('Item routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(response.json()).toMatchObject(new ItemNotFolder({ id: parent.id }));
+        expect(response.json().message).toEqual(new ItemNotFolder({ id: parent.id }).message);
       });
     });
   });
