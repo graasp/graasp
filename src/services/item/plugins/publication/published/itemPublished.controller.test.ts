@@ -182,9 +182,7 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectManyPackedItems(
           res.json(),
-          items.map((i) =>
-            new PackedItemDTO({ ...i, creator: member }, { permission: 'admin' }).packed(),
-          ),
+          items.map((i) => new PackedItemDTO({ ...i, creator: member }, null).packed()),
           undefined,
           undefined,
           itemVisibilities,
@@ -231,9 +229,7 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectManyPackedItems(
           res.json(),
-          items.map((i) =>
-            new PackedItemDTO({ ...i, creator: member }, { permission: 'admin' }).packed(),
-          ),
+          items.map((i) => new PackedItemDTO({ ...i, creator: member }, null).packed()),
           member,
           undefined,
           itemVisibilities,
