@@ -96,6 +96,7 @@ describe('PackedItemService', () => {
         itemThumbnailService,
       ).createPackedItems(
         MOCK_DB,
+        actor,
         items.map((i) => ({ ...resolveItemType(i), creator: actor })),
         resultOfMemberships,
       );
@@ -103,6 +104,63 @@ describe('PackedItemService', () => {
       expect(packedItems[0].public!.id).toEqual(itemVisibilities[0].id);
       // should return parent visibility, not item visibility
       expect(packedItems[1].hidden!.id).toEqual(itemVisibilities[1].id);
+    });
+
+    it('Return the permission for the current user', async () => {
+      const MOCK_DB = {} as DBConnection;
+      const { actor, items, itemMemberships } = await seedFromJson({
+        items: [
+          {
+            memberships: [
+              { account: { name: 'toto' }, permission: 'admin' },
+              { account: 'actor', permission: 'read' },
+            ],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+
+      const itemVisibilityRepository = {
+        getForManyItems: vi.fn(),
+      } as unknown as ItemVisibilityRepository;
+      vi.spyOn(itemVisibilityRepository, 'getForManyItems').mockImplementation(async () => ({
+        data: {
+          [items[0].id]: [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        errors: [],
+      }));
+
+      const resultOfMemberships = {
+        data: {
+          [items[0].id]: [itemMemberships[0], itemMemberships[1]],
+        },
+        errors: [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      const itemMembershipRepository = {
+        getForManyItems: vi.fn(),
+      } as unknown as ItemMembershipRepository;
+      vi.spyOn(itemMembershipRepository, 'getForManyItems').mockImplementation(
+        async () => resultOfMemberships,
+      );
+
+      const itemThumbnailService = { getUrlsByItems: vi.fn() } as unknown as ItemThumbnailService;
+      vi.spyOn(itemThumbnailService, 'getUrlsByItems').mockImplementation(async () => ({}));
+
+      const packedItems = await new PackedItemService(
+        itemVisibilityRepository,
+        itemMembershipRepository,
+        itemThumbnailService,
+      ).createPackedItems(
+        MOCK_DB,
+        actor,
+        items.map((i) => ({ ...resolveItemType(i), creator: actor })),
+        resultOfMemberships,
+      );
+
+      expect(packedItems[0].permission).toEqual('read');
     });
   });
 });

@@ -158,7 +158,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       );
 
       // remap to discriminated packed items
-      const packedItems = await itemWrapperService.createPackedItems(db, result.data);
+      const packedItems = await itemWrapperService.createPackedItems(db, member, result.data);
       return { ...result, data: packedItems };
     },
   );

@@ -269,7 +269,7 @@ export class ItemPublishedService {
   async getItemsForMember(dbConnection: DBConnection, actor: MaybeUser, memberId: UUID) {
     const items = await this.itemRepository.getPublishedItemsForMember(dbConnection, memberId);
 
-    return this.itemWrapperService.createPackedItems(dbConnection, items);
+    return this.itemWrapperService.createPackedItems(dbConnection, actor, items);
   }
 
   async getRecentItems(dbConnection: DBConnection, actor: MaybeUser, limit?: number) {

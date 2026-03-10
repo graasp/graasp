@@ -9,6 +9,7 @@ import type {
   ItemWithCreator,
   MinimalAccount,
 } from '../../drizzle/types';
+import { MaybeUser } from '../../types';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { Item, resolveItemType } from './item';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
@@ -128,6 +129,7 @@ export class PackedItemService {
 
   async createPackedItems(
     dbConnection: DBConnection,
+    currentAccount: MaybeUser,
     items: ItemWithCreator[],
     memberships?: ResultOf<ItemMembershipRaw[]>,
   ): Promise<PackedItem[]> {
@@ -140,11 +142,15 @@ export class PackedItemService {
 
     const m =
       memberships ?? (await this.itemMembershipRepository.getForManyItems(dbConnection, items));
-
     const itemsThumbnails = await this.itemThumbnailService.getUrlsByItems(items);
 
     return items.map((item) => {
+      // get the permission for the current user
       const permission = m.data[item.id][0]?.permission;
+      // const itemMemberships = m.data[item.id];
+      // const permission =
+      //   itemMemberships.find((membership) => membership.accountId === currentAccount?.id)
+      //     ?.permission ?? null;
       const thumbnails = itemsThumbnails[item.id];
 
       // sort visibilities to retrieve the most restrictive (highest) visibility first
