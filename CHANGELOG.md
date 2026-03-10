@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.6](https://github.com/graasp/graasp-api/compare/v2.13.5...v2.13.6) (2026-03-10)
+
+
+### Bug Fixes
+
+* accessible returns wrong permission when there are multiple ([#2099](https://github.com/graasp/graasp-api/issues/2099)) ([62e931b](https://github.com/graasp/graasp-api/commit/62e931ba8cc8e9fb78c69c5381f140d55cd83056))
+
 ## [2.13.5](https://github.com/graasp/graasp-api/compare/v2.13.4...v2.13.5) (2026-03-04)
 
 
