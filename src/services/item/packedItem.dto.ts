@@ -146,11 +146,10 @@ export class PackedItemService {
 
     return items.map((item) => {
       // get the permission for the current user
-      const permission = m.data[item.id][0]?.permission;
-      // const itemMemberships = m.data[item.id];
-      // const permission =
-      //   itemMemberships.find((membership) => membership.accountId === currentAccount?.id)
-      //     ?.permission ?? null;
+      const itemMemberships = m.data[item.id];
+      const permission =
+        itemMemberships.find((membership) => membership.accountId === currentAccount?.id)
+          ?.permission ?? null;
       const thumbnails = itemsThumbnails[item.id];
 
       // sort visibilities to retrieve the most restrictive (highest) visibility first
