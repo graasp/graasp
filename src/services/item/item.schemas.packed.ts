@@ -14,7 +14,7 @@ import { embeddedLinkItemSchemaRef } from './plugins/embeddedLink/link.schemas';
 import { etherpadItemSchemaRef } from './plugins/etherpad/etherpad.schemas';
 import { fileItemSchemaRef } from './plugins/file/itemFile.schema';
 import { folderItemSchemaRef } from './plugins/folder/folder.schemas';
-import { h5pExtendedItemSchema, h5pItemSchemaRef } from './plugins/html/h5p/h5p.schemas';
+import { h5pItemSchemaRef } from './plugins/html/h5p/h5p.schemas';
 import { itemVisibilitySchemaRef } from './plugins/itemVisibility/itemVisibility.schemas';
 import { pageItemSchemaRef } from './plugins/page/page.schemas';
 import { shortcutItemSchemaRef } from './plugins/shortcut/shortcut.schemas';
@@ -74,31 +74,6 @@ export const packedItemSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const extendedItemSchemaRef = registerSchemaAsRef(
-  'extendedItem',
-  'Extended Item',
-  Type.Intersect(
-    [
-      Type.Union([
-        appItemSchemaRef,
-        documentItemSchemaRef,
-        embeddedLinkItemSchemaRef,
-        etherpadItemSchemaRef,
-        fileItemSchemaRef,
-        folderItemSchemaRef,
-        h5pExtendedItemSchema,
-        pageItemSchemaRef,
-        shortcutItemSchemaRef,
-      ]),
-      packedSchema,
-    ],
-    {
-      discriminator: 'type',
-      description: 'Item with extended information useful for complete display',
-    },
-  ),
-);
-
 export const getOne = {
   operationId: 'getItem',
   tags: ['item'],
@@ -108,7 +83,7 @@ export const getOne = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  response: { [StatusCodes.OK]: extendedItemSchemaRef, '4xx': errorSchemaRef },
+  response: { [StatusCodes.OK]: packedItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
 export const getAccessible = {
@@ -164,7 +139,7 @@ export const getChildren = {
     }),
   ),
   response: {
-    [StatusCodes.OK]: Type.Array(extendedItemSchemaRef),
+    [StatusCodes.OK]: Type.Array(packedItemSchemaRef),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

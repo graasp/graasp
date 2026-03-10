@@ -125,7 +125,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { id } }) => {
-      return itemService.getPacked(db, user?.account, id);
+      const packedItem = await itemService.getPacked(db, user?.account, id);
+      return packedItem;
     },
   );
 

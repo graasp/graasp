@@ -15,6 +15,7 @@ services:
       HOSTNAME: localhost
       # H5P storage using s3 api via garage
       H5P_FILE_STORAGE_HOST: http://s3.garage.localhost:3900
+      H5P_INTEGRATION_URL: http://h5p-items.web.garage.localhost:3902/h5p-integration/
       # endpoint of the nudenet model
       IMAGE_CLASSIFIER_API: http://nudenet:8080/infer
       # the DB config is set by the "db" service below
@@ -31,6 +32,10 @@ services:
       MAILER_CONNECTION: smtp://docker:docker@mailer:1025
       # the Garage config is set by the "garage" service below
       S3_FILE_ITEM_HOST: http://s3.garage.localhost:3900
+      # file storage options use s3 by default
+      FILE_STORAGE_TYPE: s3
+      S3_FILE_ITEM_REGION: garage
+      S3_FILE_ITEM_BUCKET: file-items
       # the Iframely config is set by the "iframely" service below
       EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://iframely:8061
       # Redirection for shortlinks
