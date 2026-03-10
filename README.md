@@ -166,10 +166,11 @@ S3_FILE_ITEM_ACCESS_KEY_ID=<your bucket key>
 S3_FILE_ITEM_SECRET_ACCESS_KEY=<your bucket secret>
 
 # Graasp H5P
-H5P_FILE_STORAGE_TYPE=local
-H5P_STORAGE_ROOT_PATH=/tmp/graasp-h5p/
-H5P_PATH_PREFIX=h5p-content/
-H5P_FILE_STORAGE_HOST=http://localhost:1081
+H5P_FILE_STORAGE_TYPE=s3
+H5P_CONTENT_REGION=garage
+H5P_CONTENT_BUCKET=h5p-items
+H5P_CONTENT_ACCESS_KEY_ID=<your bucket key>
+H5P_CONTENT_SECRET_ACCESS_KEY_ID=<your bucket secret>
 
 
 ### External services configuration
@@ -283,23 +284,33 @@ garage layout assign -z dc1 -c 1G <node-id>
 garage layout apply --version 1
 ```
 
-Create a bucket
+Create a bucket for the files and a bucket for the h5p items:
 
 ```sh
 garage bucket create file-items
+garage bucket create h5p-items
 
 garage bucket list
 
 garage bucket info file-items
+garage bucket info h5p-items
 ```
 
-Create an access key. Make not of the secret key as it will not be shown again !
+Create an access key. Make note of the secret key as it will not be shown again !
 
 ```sh
 garage key create core-s3-key
 
-# allow the key to access the bucket
+# allow the key to access the files bucket
 garage bucket allow --read --write --owner file-items --key core-s3-key
+# allow the key to access the h5p bucket
+garage bucket allow --read --write --owner h5p-items --key core-s3-key
+```
+
+Lastly we will expose the h5p-items bucket as a website so it can be consumed from the internet (public):
+
+```sh
+garage bucket website --allow h5p-items
 ```
 
 ### Umami
