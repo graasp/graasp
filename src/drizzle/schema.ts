@@ -891,6 +891,8 @@ export const itemsRawTable = pgTable(
       table.creatorId.asc().nullsLast().op('uuid_ops'),
     ),
     index('IDX_gist_item_path').using('gist', table.path.asc().nullsLast().op('gist_ltree_ops')),
+    // btree idnex for equality joins
+    index('IDX_btree_item_path').using('btree', table.path.asc().nullsLast()),
     index('IDX_item_deleted_at').using('btree', table.deletedAt.asc().nullsLast()),
     // allow the use of the view without loosing perf
     index('IDX_gist_item_path_deleted_at')

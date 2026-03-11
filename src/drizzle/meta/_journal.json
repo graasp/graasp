@@ -155,6 +155,13 @@
       "when": 1773039103189,
       "tag": "0021_member-password-disallow-null-on-member-id",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1773221308245,
+      "tag": "0022_improve-trash-queries",
+      "breakpoints": true
     }
   ]
 }
