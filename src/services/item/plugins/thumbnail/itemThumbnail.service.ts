@@ -140,7 +140,9 @@ export class ItemThumbnailService {
         itemsThumbnails[id][size] = result.value;
       } else {
         // log error
-        console.error(`Failed to get thumbnail for ID ${id} and size ${size}:`, result.reason);
+        this.logger.error(
+          `Failed to get thumbnail for ID ${id} and size ${size}: ${JSON.stringify(result.reason, null, 2)}`,
+        );
       }
     });
 

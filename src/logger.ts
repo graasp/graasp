@@ -67,10 +67,12 @@ export class BaseLogger implements FastifyBaseLogger {
   }
 
   error(message: unknown) {
+    let stringMessage = '';
     if (typeof message === 'string') {
-      this.logger.error(message);
+      stringMessage = message;
     } else {
-      console.error(message);
+      stringMessage = JSON.stringify(message, null, 2);
     }
+    this.logger.error(stringMessage);
   }
 }
