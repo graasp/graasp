@@ -151,8 +151,8 @@ if (H5P_FILE_STORAGE_TYPE === FileStorage.S3) {
   if (
     !process.env.H5P_CONTENT_REGION ||
     !process.env.H5P_CONTENT_BUCKET ||
-    !process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID ||
-    !process.env.H5P_CONTENT_ACCESS_KEY_ID
+    !process.env.H5P_CONTENT_ACCESS_KEY_ID ||
+    !process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID
   )
     throw new Error('H5P S3 configuration missing');
 }
@@ -160,8 +160,8 @@ export const H5P_S3_CONFIG = {
   s3: {
     s3Region: process.env.H5P_CONTENT_REGION,
     s3Bucket: process.env.H5P_CONTENT_BUCKET,
-    s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID,
     s3AccessKeyId: process.env.H5P_CONTENT_ACCESS_KEY_ID,
+    s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID,
   } as S3FileConfiguration,
 };
 
