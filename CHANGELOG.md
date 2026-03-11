@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.7](https://github.com/graasp/graasp-api/compare/v2.13.6...v2.13.7) (2026-03-11)
+
+
+### Bug Fixes
+
+* add s3 setup for h5p ([#2098](https://github.com/graasp/graasp-api/issues/2098)) ([61804a2](https://github.com/graasp/graasp-api/commit/61804a2d1e4e16b0a9fb1fbaff9e8f922d0cc389))
+* do not allow member_id FK to be null on member_password table ([#2096](https://github.com/graasp/graasp-api/issues/2096)) ([5a5e7ed](https://github.com/graasp/graasp-api/commit/5a5e7edfc27c3c71a798a9196cfd771701925231))
+
 ## [2.13.6](https://github.com/graasp/graasp-api/compare/v2.13.5...v2.13.6) (2026-03-10)
 
 
