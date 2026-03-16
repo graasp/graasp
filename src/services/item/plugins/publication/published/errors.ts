@@ -2,11 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createError } from '@fastify/error';
 
-import { ErrorFactory, PublishableItemTypeChecker } from '@graasp/sdk';
 
-import { ItemType } from '../../../../../schemas/global';
-
-export const GraaspPublishedError = ErrorFactory('graasp-plugin-published-item');
 
 export const ItemPublishedNotFound = createError(
   'GPPIERR001',
@@ -14,49 +10,20 @@ export const ItemPublishedNotFound = createError(
   StatusCodes.NOT_FOUND,
 );
 
-export class ItemTypeNotAllowedToPublish extends GraaspPublishedError {
-  constructor(itemId: string, itemType: ItemType) {
-    const allowedTypes = PublishableItemTypeChecker.getAllowedTypes();
-    super(
-      {
-        code: 'GPPIERR002',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: `The type "${itemType}" of item "${itemId}" is not allowed to be published. Only these types are allowed: ${allowedTypes}.`,
-      },
-      {
-        itemId,
-        itemType,
-      },
-    );
-  }
-}
+export const ItemTypeNotAllowedToPublish = createError(
+  'GPPIERR002',
+  'Item type not allowed to publish',
+  StatusCodes.BAD_REQUEST,
+);
 
-export class ItemPublicationAlreadyExists extends GraaspPublishedError {
-  constructor(itemId: string) {
-    super(
-      {
-        code: 'GPPIERR003',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: `The item "${itemId}" is already published.`,
-      },
-      {
-        itemId,
-      },
-    );
-  }
-}
+export const ItemPublicationAlreadyExists = createError(
+  'GPPIERR003',
+  'Item is already published',
+  StatusCodes.BAD_REQUEST,
+);
 
-export class ItemIsNotValidated extends GraaspPublishedError {
-  constructor(itemId: string) {
-    super(
-      {
-        code: 'GPPIERR004',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: `The item "${itemId}" must be validated before publishing it in the Libary.`,
-      },
-      {
-        itemId,
-      },
-    );
-  }
-}
+export const ItemIsNotValidated = createError(
+  'GPPIERR004',
+  'Item must be validated before publishing',
+  StatusCodes.BAD_REQUEST,
+);

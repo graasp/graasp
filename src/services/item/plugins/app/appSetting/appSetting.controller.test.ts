@@ -358,7 +358,7 @@ describe('Apps Settings Tests', () => {
           },
           payload: appSetting,
         });
-        expect(response.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(response.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
       it('Post app setting throws for write membership', async () => {
         const { apps } = await seedFromJson({ apps: [{}] });
@@ -388,7 +388,7 @@ describe('Apps Settings Tests', () => {
           },
           payload: appSetting,
         });
-        expect(response.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(response.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
       it('Invalid item id throws', async () => {
         const { apps } = await seedFromJson({ apps: [{}] });
@@ -497,7 +497,7 @@ describe('Apps Settings Tests', () => {
           },
           payload: { data: updatedSetting.data },
         });
-        expect(response.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(response.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
       it('Patch app setting throws for write membership', async () => {
         const { apps } = await seedFromJson({ apps: [{}] });
@@ -529,7 +529,7 @@ describe('Apps Settings Tests', () => {
           },
           payload: { data: updatedSetting.data },
         });
-        expect(response.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(response.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
       it('Invalid item id throws bad request', async () => {
         const {
@@ -730,7 +730,7 @@ describe('Apps Settings Tests', () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        expect(response.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(response.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
       it('Delete app setting throws for write membership', async () => {
         const { apps } = await seedFromJson({ apps: [{}] });
@@ -760,7 +760,7 @@ describe('Apps Settings Tests', () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        expect(response.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(response.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
     });
   });

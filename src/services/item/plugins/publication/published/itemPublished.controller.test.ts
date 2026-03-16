@@ -5,7 +5,7 @@ import waitForExpect from 'wait-for-expect';
 
 import type { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemValidationStatus } from '@graasp/sdk';
+import { HttpMethod, ItemValidationStatus, ItemVisibilityType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -363,7 +363,9 @@ describe('Item Published', () => {
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-        expect(res.json()).toMatchObject(new ItemVisibilityNotFound(expect.anything()));
+        expect(res.json().message).toEqual(
+          new ItemVisibilityNotFound(ItemVisibilityType.Public).message,
+        );
       });
 
       it('Cannot publish item with write rights', async () => {
@@ -385,7 +387,7 @@ describe('Item Published', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
 
       it('Cannot publish item with read rights', async () => {
@@ -407,7 +409,7 @@ describe('Item Published', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
 
       it('Cannot publish non-folder item', async () => {
@@ -570,7 +572,7 @@ describe('Item Published', () => {
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
       it('Cannot publish item with read rights', async () => {
         const {
@@ -593,7 +595,7 @@ describe('Item Published', () => {
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.json().message).toEqual(new MemberCannotAdminItem(item.id).message);
       });
       it('Throws if item id is invalid', async () => {
         const { actor } = await seedFromJson();

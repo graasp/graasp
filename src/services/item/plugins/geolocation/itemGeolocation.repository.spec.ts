@@ -816,39 +816,42 @@ describe('ItemGeolocationRepository', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
 
-      repository
-        .getItemsIn(db, actor, {
-          lat1: null,
-          lat2: null,
-          lng1: null,
-          lng2: null,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-        .catch((e) => {
-          expect(e).toMatchObject(new MissingGeolocationSearchParams(expect.anything()));
-        });
-      repository
-        .getItemsIn(db, actor, {
-          lat1: 1,
-          lat2: 2,
-          lng1: 1,
-          lng2: null,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-        .catch((e) => {
-          expect(e).toMatchObject(new MissingGeolocationSearchParams(expect.anything()));
-        });
-      repository
-        .getItemsIn(db, actor, {
-          lat1: 1,
-          lat2: 2,
-          lng1: 1,
-          lng2: null,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-        .catch((e) => {
-          expect(e).toMatchObject(new MissingGeolocationSearchParams(expect.anything()));
-        });
+      const geoloc1 = {
+        lat1: null,
+        lat2: null,
+        lng1: null,
+        lng2: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      repository.getItemsIn(db, actor, geoloc1).catch((e) => {
+        expect(e.message).toMatchObject(
+          new MissingGeolocationSearchParams({ parentItem: undefined, ...geoloc1 }).message,
+        );
+      });
+      const geoloc2 = {
+        lat1: 1,
+        lat2: 2,
+        lng1: 1,
+        lng2: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      repository.getItemsIn(db, actor, geoloc2).catch((e) => {
+        expect(e.message).toMatchObject(
+          new MissingGeolocationSearchParams({ parentItem: undefined, ...geoloc2 }).message,
+        );
+      });
+      const geoloc3 = {
+        lat1: 1,
+        lat2: 2,
+        lng1: 1,
+        lng2: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      repository.getItemsIn(db, actor, geoloc3).catch((e) => {
+        expect(e.message).toMatchObject(
+          new MissingGeolocationSearchParams({ parentItem: undefined, ...geoloc3 }).message,
+        );
+      });
     });
   });
   describe('put', () => {

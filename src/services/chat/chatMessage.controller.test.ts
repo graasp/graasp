@@ -144,7 +144,7 @@ describe('Chat Message tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
       });
     });
 
@@ -326,7 +326,7 @@ describe('Chat Message tests', () => {
           payload,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
       });
     });
   });
@@ -460,14 +460,15 @@ describe('Chat Message tests', () => {
         assertIsDefined(actor);
         mockAuthenticate(actor);
 
+        const id = v4();
         const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${id}`,
           payload,
         });
 
-        expect(response.json()).toMatchObject(new ChatMessageNotFound(expect.anything()));
+        expect(response.json().message).toEqual(new ChatMessageNotFound(id).message);
       });
 
       it('Throws if member does not have access to item', async () => {
@@ -488,7 +489,7 @@ describe('Chat Message tests', () => {
           payload,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json().message).toEqual(new MemberCannotAccess(chatMessage.id).message);
       });
 
       it('Throws if member does not have access to chat message', async () => {
@@ -511,7 +512,7 @@ describe('Chat Message tests', () => {
           payload,
         });
         const res = await response.json();
-        expect(res).toMatchObject(new MemberCannotEditMessage(expect.anything()));
+        expect(res.message).toEqual(new MemberCannotEditMessage(chatMessage.id).message);
       });
     });
   });
@@ -611,12 +612,13 @@ describe('Chat Message tests', () => {
         assertIsDefined(actor);
         mockAuthenticate(actor);
 
+        const id = v4();
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${id}`,
         });
 
-        expect(response.json()).toMatchObject(new ChatMessageNotFound(expect.anything()));
+        expect(response.json().message).toEqual(new ChatMessageNotFound(id).message);
       });
 
       it('Throws if member does not have access to item', async () => {
@@ -635,7 +637,7 @@ describe('Chat Message tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(item.id));
+        expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
       });
 
       it('Throws if member does not have access to chat message', async () => {
@@ -655,8 +657,10 @@ describe('Chat Message tests', () => {
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
         });
-        const res = await response.json();
-        expect(res).toMatchObject(new MemberCannotDeleteMessage({ id: expect.anything() }));
+
+        const expectedError = new MemberCannotDeleteMessage({ id: chatMessage.id });
+        expect(response.statusCode).toEqual(expectedError.statusCode);
+        expect(response.json().message).toEqual(expectedError.message);
       });
     });
   });
@@ -745,7 +749,7 @@ describe('Chat Message tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
       });
     });
   });

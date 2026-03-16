@@ -289,7 +289,7 @@ export class ItemService {
 
     // quick check, necessary for ts
     if (parentItem.type !== 'folder') {
-      throw new ItemNotFolder(parentItem);
+      throw new ItemNotFolder({ id: parentItem.id });
     }
 
     this.itemRepository.checkHierarchyDepth(parentItem);

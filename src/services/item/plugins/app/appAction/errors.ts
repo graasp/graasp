@@ -1,20 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ErrorFactory, FAILURE_MESSAGES } from '@graasp/sdk';
+import { createError } from '@fastify/error';
+import { FAILURE_MESSAGES } from '@graasp/sdk';
 
-import { PLUGIN_NAME } from '../constants';
-
-export const GraaspAppActionError = ErrorFactory(PLUGIN_NAME + '/app-action');
-
-export class AppActionNotAccessible extends GraaspAppActionError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GAERR006',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.APP_ACTION_NOT_ACCESSIBLE,
-      },
-      data,
-    );
-  }
-}
+export const AppActionNotAccessible = createError(
+  'GAERR006',
+  FAILURE_MESSAGES.APP_ACTION_NOT_ACCESSIBLE,
+  StatusCodes.FORBIDDEN,
+);

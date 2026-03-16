@@ -147,7 +147,7 @@ describe('Item Like', () => {
           url: `/api/items/${item.id}/likes`,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json().message).toEqual(new MemberCannotAccess(item.id).message);
       });
     });
 
